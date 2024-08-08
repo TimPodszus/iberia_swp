@@ -1,0 +1,17 @@
+.dialog-pane {
+    -fx-background-color: white;
+    -fx-font-family: 'sans-serif';
+}
+
+.dialog-pane .label {
+    -fx-text-fill: black;
+}
+
+.dialog-pane:header .header-panel {
+    -fx-background-color: white;
+}
+
+.dialog-pane:header .header-panel .label {
+    -fx-font-style: italic;
+    -fx-font-size: 2em;
+}

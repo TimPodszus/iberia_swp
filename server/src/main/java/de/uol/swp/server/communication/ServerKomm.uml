@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="0.0" y="967.0">de.uol.swp.server.communication.netty.Server</node>
+    <node x="474.0" y="302.0">de.uol.swp.server.communication.netty.NettyMessageContext</node>
+    <node x="86.0" y="0.0">de.uol.swp.server.communication.ServerHandlerDelegate</node>
+    <node x="774.0" y="0.0">de.uol.swp.server.communication.UUIDSession</node>
+    <node x="159.0" y="648.0">de.uol.swp.server.communication.netty.NettyServerHandler</node>
+    <node x="0.0" y="148.0">de.uol.swp.server.communication.ServerHandler</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="de.uol.swp.server.communication.netty.NettyServerHandler" target="de.uol.swp.server.communication.netty.NettyMessageContext">
+      <point x="121.0" y="-137.0" />
+      <point x="461.5" y="623.0" />
+      <point x="601.5" y="623.0" />
+      <point x="0.0" y="71.0" />
+    </edge>
+    <edge source="de.uol.swp.server.communication.ServerHandler" target="de.uol.swp.server.communication.ServerHandlerDelegate">
+      <point x="0.0" y="-225.0" />
+      <point x="0.0" y="49.0" />
+    </edge>
+    <edge source="de.uol.swp.server.communication.netty.NettyServerHandler" target="de.uol.swp.server.communication.ServerHandler">
+      <point x="-121.0" y="-137.0" />
+      <point x="219.5" y="623.0" />
+      <point x="113.5" y="623.0" />
+      <point x="-113.5" y="225.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="350.5" y="503.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Methods</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
