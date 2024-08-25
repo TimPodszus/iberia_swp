@@ -1,5 +1,5 @@
 .dialog-pane {
-    -fx-background-color: white;
+    -fx-background-color: #FFCB83;
     -fx-font-family: 'sans-serif';
 }
 
@@ -7,11 +7,32 @@
     -fx-text-fill: black;
 }
 
-.dialog-pane:header .header-panel {
-    -fx-background-color: white;
+.input {
+    -fx-padding: 0 64 12 64;
+    -fx-text-alignment: left;
 }
 
-.dialog-pane:header .header-panel .label {
-    -fx-font-style: italic;
-    -fx-font-size: 2em;
+.form-pane {
+    -fx-background-color: white;
+    -fx-font-family: 'sans-serif';
+    -fx-background-radius: 24px;
+    -fx-padding: 24px;
+}
+
+.login-button {
+    -fx-background-color: #FFCB83;
+    -fx-background-radius: 6px;
+    -fx-border-color: black;
+    -fx-border-radius: 6px;
+    -fx-text-fill: black;
+    -fx-padding: 6 12 6 12;
+}
+
+.register-button {
+    -fx-background-color: #858585;
+    -fx-background-radius: 6px;
+    -fx-border-color: black;
+    -fx-border-radius: 6px;
+    -fx-text-fill: white;
+    -fx-padding: 6 12 6 12;
 }
