@@ -1,14 +1,13 @@
 package de.uol.swp.server.cards;
 
+import de.uol.swp.server.city.City;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Getter
-public abstract class Card {
-    private final int id;
-    private final String title;
-    private final String type;
+public class InfectionCard implements Card {
+    private final City city;
 }

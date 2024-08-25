@@ -6,10 +6,8 @@ import lombok.*;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Getter
-
-public class Infection
-{
+public class Infection {
     @Setter
-    private static int severity;
+    private int severity;
     private final Plague plague;
 }

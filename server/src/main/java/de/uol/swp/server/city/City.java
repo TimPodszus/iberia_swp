@@ -8,7 +8,6 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Getter
-
 public class City {
     private final String name;
     private final int foundationDate;

@@ -4,11 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import de.uol.swp.server.cards.*;
+
+@Getter
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Getter
-public abstract class Card {
-    private final int id;
-    private final String title;
-    private final String type;
+public class EventCard implements Card {
+    private final String action;
 }

@@ -2,13 +2,13 @@ package de.uol.swp.server.plague;
 
 import lombok.*;
 
-@NoArgsConstructor
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Getter
 public class Plague {
-    static String name;
-    static int cubesRemaining;
+    private final String name;
     @Setter
-    static boolean researched;
+    private int cubesRemaining;
+    @Setter
+    private boolean researched;
 }

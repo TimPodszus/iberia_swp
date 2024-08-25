@@ -1,6 +1,5 @@
 package de.uol.swp.server.connection;
 
-
 import lombok.*;
 import de.uol.swp.server.city.*;
 
@@ -11,7 +10,7 @@ public class Connection {
     private final City startCity;
     private final City endCity;
     @Setter
-    private static boolean hasTrainTrack;
+    private boolean hasTrainTrack;
     private final boolean isWaterWay;
     private final boolean canBuildTrainTracks;
     private final boolean isShipRoute;

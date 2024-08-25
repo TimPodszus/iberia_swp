@@ -1,54 +1,57 @@
 package de.uol.swp.server.gameturn;
 
+import de.uol.swp.server.board.Board;
+import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.city.City;
 import de.uol.swp.server.connection.Connection;
+import de.uol.swp.server.player.Player;
+import de.uol.swp.server.region.Region;
 import lombok.*;
 
-@NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Getter
 public class GameTurn {
-
-    private static int round;
-    private static Player currentPlayer;
-    private static Board board;
+    private final int round;
+    private final Player currentPlayer;
+    private final Board board;
     @Setter
-    private static int actionsRemaining;
+    private int actionsRemaining;
 
-    void placeWaterTreatment(Region region){
+    void placeWaterTreatment(Region region) {
         //not implemented
     }
-    void buildHospital(City city){
+    void buildHospital(City city) {
         //not implemented
     }
-    void buildTrainTracks(Connection connection){
+    void buildTrainTracks(Connection connection) {
         //not implemented
     }
-    void tradeCards(Player tradingPartner){
+    void tradeCards(Player tradingPartner) {
         //not implemented
     }
-    void treatInfection(City city){
+    void treatInfection(City city) {
         //not implemented
     }
-    void researchPlague(){
+    void researchPlague() {
         //not implemented
     }
-    void useRoleAbility(){
+    void useRoleAbility() {
         //not implemented
     }
-    void move(City destination){
+    void move(City destination) {
         //not implemented
     }
-    void drawInfectionCard(){
+    void drawInfectionCard() {
         //not implemented
     }
-    void drawPlayerCard(){
+    void drawPlayerCard() {
         //not implemented
     }
-    void infectCity(InfectionCard infectionCard){
+    void infectCity(InfectionCard infectionCard) {
         //not implemented
     }
-    void infectCity(InfectionCard infectionCard, int amount){
+    void infectCity(InfectionCard infectionCard, int amount) {
         //not implemented
     }
 

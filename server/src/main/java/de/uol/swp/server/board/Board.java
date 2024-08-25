@@ -1,5 +1,7 @@
 package de.uol.swp.server.board;
 
+import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.City;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +23,4 @@ public class Board {
     private List<InfectionCard> infectionCardDiscardPile;
     private List<Card> playerCardDrawPile;
     private List<Card> playerCardDiscardPile;
-
-
 }
