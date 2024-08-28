@@ -9,7 +9,6 @@ import de.uol.swp.server.region.Region;
 import lombok.*;
 
 @AllArgsConstructor
-@RequiredArgsConstructor
 @Getter
 public class GameTurn {
     private final int round;

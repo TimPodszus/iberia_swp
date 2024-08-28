@@ -10,7 +10,6 @@ import lombok.Setter;
 
 import java.util.List;
 
-@RequiredArgsConstructor
 @AllArgsConstructor
 @Getter
 public class Board {

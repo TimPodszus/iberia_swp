@@ -20,10 +20,13 @@ public class Region {
         waterTreatments += count;
     }
 
-    public void decreaseWaterTreatments(int count) {
-        waterTreatments -= count;
-        if (waterTreatments < 0) {
-            waterTreatments = 0;
+    public void decreaseWaterTreatments(int count) throws Exception
+    {
+        if(waterTreatments >= count){
+            waterTreatments -= count;
+        }
+        else{
+            throw new Exception("Nicht genug Wasseraufbereitungsmarker in dieser Region verfügbar");
         }
     }
 }

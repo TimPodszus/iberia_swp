@@ -12,16 +12,16 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter
-@RequiredArgsConstructor
 @AllArgsConstructor
 public class Player {
     private final String username;
     private final Role role;
     @Setter
-    private City currentPosition;
+    private City city;
     @Setter
     private List<Card> cards;
     private final User user;
+
     public void playCard(Card card) {
         //not implemented
     }

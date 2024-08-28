@@ -4,7 +4,6 @@ import lombok.*;
 import de.uol.swp.server.city.*;
 
 @AllArgsConstructor
-@RequiredArgsConstructor
 @Getter
 public class Connection {
     private final City startCity;
