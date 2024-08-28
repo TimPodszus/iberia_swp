@@ -16,11 +16,11 @@ public class Region {
     private int waterTreatments;
     private boolean preventionMarker;
 
-    public void increaseWatertreatments(int count) {
+    public void increaseWaterTreatments(int count) {
         waterTreatments += count;
     }
 
-    public void decreaseWatertreatments(int count) {
+    public void decreaseWaterTreatments(int count) {
         waterTreatments -= count;
         if (waterTreatments < 0) {
             waterTreatments = 0;

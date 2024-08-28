@@ -1,13 +1,19 @@
 package de.uol.swp.server.cards;
 
 import de.uol.swp.server.city.City;
-import lombok.AllArgsConstructor;
+
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+
 
 @Getter
-@RequiredArgsConstructor
-@AllArgsConstructor
-public class CityCard implements Card {
+
+public class CityCard extends Card
+{
     private final City city;
+
+    protected CityCard(int id, String title, String type, City city)
+    {
+        super(id, title, type);
+        this.city = city;
+    }
 }

@@ -25,10 +25,5 @@ public class Player {
     public void playCard(Card card) {
         //not implemented
     }
-    public Player(String username, Role role, User user, City currentPosition) {
-        this.username = username;
-        this.role = role;
-        this.user = user;
-        this.currentPosition = currentPosition;
-    }
+
 }

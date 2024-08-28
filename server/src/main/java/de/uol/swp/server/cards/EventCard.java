@@ -1,14 +1,21 @@
 package de.uol.swp.server.cards;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-import de.uol.swp.server.cards.*;
+import lombok.Getter;
+
 
 @Getter
-@RequiredArgsConstructor
-@AllArgsConstructor
-public class EventCard implements Card {
+
+public class EventCard extends Card {
     private final String action;
+
+    protected EventCard(int id, String title, String type, String action)
+    {
+        super(id, title, type);
+        this.action = action;
+    }
+
+    public void executeAction(){
+        //not implemented
+    }
 }
