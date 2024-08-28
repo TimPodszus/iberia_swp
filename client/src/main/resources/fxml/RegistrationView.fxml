@@ -7,9 +7,10 @@
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="436.0" prefWidth="722.0" styleClass="dialog-pane" stylesheets="@../css/myDialog.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.register.RegistrationPresenter">
-   <AnchorPane layoutX="120.0" layoutY="56.0" prefHeight="324.0" prefWidth="482.0" styleClass="form-pane" stylesheets="@../css/myDialog.css" AnchorPane.bottomAnchor="56.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="120.0" AnchorPane.topAnchor="56.0">
+<AnchorPane prefHeight="720.0" prefWidth="1280.0" styleClass="dialog-pane" stylesheets="@../css/myDialog.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.register.RegistrationPresenter">
+   <AnchorPane layoutX="120.0" layoutY="56.0" prefHeight="324.0" prefWidth="482.0" styleClass="form-pane" stylesheets="@../css/myDialog.css" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="180.0">
       <children>
           <Button id="cancelButton" layoutX="14.0" layoutY="305.0" mnemonicParsing="false" onAction="#onCancelButtonPressed" styleClass="register-button" stylesheets="@../css/myDialog.css" text="Cancel" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
           <Button id="registerButton" defaultButton="true" layoutX="392.0" layoutY="275.0" mnemonicParsing="false" onAction="#onRegisterButtonPressed" styleClass="login-button" stylesheets="@../css/myDialog.css" text="Register" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
@@ -18,7 +19,7 @@
                <VBox prefHeight="200.0" prefWidth="100.0" styleClass="input" stylesheets="@../css/myDialog.css">
                   <children>
                       <Label stylesheets="@../css/myDialog.css" text="Login" />
-                      <TextField id="loginField" fx:id="loginField" promptText="Enter Login" style="-fx-text-alignment: left;" styleClass="input" stylesheets="@../css/myDialog.css">
+                      <TextField id="loginField" fx:id="loginField" promptText="Enter Login" style="-fx-text-alignment: left;" stylesheets="@../css/myDialog.css">
                           <tooltip>
                               <Tooltip style="-fx-text-alignment: LEFT;" text="Enter your login here" />
                           </tooltip>
@@ -40,6 +41,11 @@
                </VBox>
             </children>
          </VBox>
+         <Label alignment="CENTER" layoutX="386.0" layoutY="28.0" style="-fx-font-size: 2em;" text="IBERIA" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0">
+            <font>
+               <Font size="72.0" />
+            </font>
+         </Label>
       </children>
    </AnchorPane>
 </AnchorPane>
