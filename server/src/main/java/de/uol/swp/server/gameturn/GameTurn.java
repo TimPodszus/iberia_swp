@@ -6,51 +6,84 @@ import de.uol.swp.server.city.City;
 import de.uol.swp.server.connection.Connection;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.Region;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @AllArgsConstructor
 @Getter
-public class GameTurn {
+public class GameTurn
+{
     private final int round;
     private final Player currentPlayer;
     private final Board board;
     @Setter
     private int actionsRemaining;
 
-    void placeWaterTreatment(Region region) {
+    void placeWaterTreatment(Region region, int count) throws Exception
+    {
+        int waterTreatmentsRemaining = board.getWaterTreatmentsLeft();
+
+        if (waterTreatmentsRemaining < count) {
+            throw new Exception("Es sind nichtmehr genug Wasseraufbereitungsmarker vorhanden!");
+        }
+
+        region.increaseWaterTreatments(count);
+        board.setWaterTreatmentsLeft(waterTreatmentsRemaining - count);
+    }
+
+    void buildHospital(City city)
+    {
         //not implemented
     }
-    void buildHospital(City city) {
+
+    void buildTrainTracks(Connection connection)
+    {
         //not implemented
     }
-    void buildTrainTracks(Connection connection) {
+
+    void tradeCards(Player tradingPartner)
+    {
         //not implemented
     }
-    void tradeCards(Player tradingPartner) {
+
+    void treatInfection(City city)
+    {
         //not implemented
     }
-    void treatInfection(City city) {
+
+    void researchPlague()
+    {
         //not implemented
     }
-    void researchPlague() {
+
+    void useRoleAbility()
+    {
         //not implemented
     }
-    void useRoleAbility() {
+
+    void move(City destination)
+    {
         //not implemented
     }
-    void move(City destination) {
+
+    void drawInfectionCard()
+    {
         //not implemented
     }
-    void drawInfectionCard() {
+
+    void drawPlayerCard()
+    {
         //not implemented
     }
-    void drawPlayerCard() {
+
+    void infectCity(InfectionCard infectionCard)
+    {
         //not implemented
     }
-    void infectCity(InfectionCard infectionCard) {
-        //not implemented
-    }
-    void infectCity(InfectionCard infectionCard, int amount) {
+
+    void infectCity(InfectionCard infectionCard, int amount)
+    {
         //not implemented
     }
 

@@ -5,14 +5,14 @@ import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.City;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
 @AllArgsConstructor
 @Getter
-public class Board {
+public class Board
+{
     private final List<City> cities;
     @Setter
     private int infectionCounter;
@@ -22,4 +22,8 @@ public class Board {
     private List<InfectionCard> infectionCardDiscardPile;
     private List<Card> playerCardDrawPile;
     private List<Card> playerCardDiscardPile;
+    @Setter
+    private int waterTreatmentsLeft;
+    @Setter
+    private int tracksLeft;
 }
