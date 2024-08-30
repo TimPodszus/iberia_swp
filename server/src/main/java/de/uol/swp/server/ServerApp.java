@@ -72,9 +72,9 @@ class ServerApp {
 		UserManagement userManagement = injector.getInstance(UserManagement.class);
 
 		// TODO: Remove after registration is implemented
-		for (int i = 0; i < 5; i++) {
-			userManagement.createUser(new UserDTO("test" + i, "test" + i, "test" + i + "@test.de"));
-		}
+		//for (int i = 0; i < 5; i++) {
+		//	userManagement.createUser(new UserDTO("test" + i, "test" + i, "test" + i + "@test.de"));
+		//}
 
 		// Remark: As these services are not referenced by any other class
 		// we will need to create instances here (and inject dependencies)

@@ -1,4 +1,4 @@
-package de.uol.swp.server.usermanagement.store;
+/*package de.uol.swp.server.usermanagement.store;
 
 import com.google.common.base.Strings;
 import de.uol.swp.common.user.User;
@@ -20,7 +20,7 @@ import java.util.*;
  * @author Marco Grawunder
  * @since 2019-08-05
  */
-
+/*
 public class MainMemoryBasedUserStore extends AbstractUserStore implements UserStore {
 
     private final Map<String, User> users = new HashMap<>();
@@ -71,3 +71,4 @@ public class MainMemoryBasedUserStore extends AbstractUserStore implements UserS
     }
 
 }
+*/

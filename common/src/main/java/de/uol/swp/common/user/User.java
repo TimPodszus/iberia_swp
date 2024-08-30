@@ -32,14 +32,6 @@ public interface User extends Serializable, Comparable<User> {
     String getPassword();
 
     /**
-     * Getter for the email variable
-     *
-     * @return email address of the user as String
-     * @since 2019-08-05
-     */
-    String getEMail();
-
-    /**
      * Creates a duplicate of this object leaving its password empty
      *
      * @return Copy of this with empty password field
