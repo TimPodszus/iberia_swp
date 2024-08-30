@@ -1,12 +1,15 @@
 package de.uol.swp.server.plague;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 
 @AllArgsConstructor
 @Getter
-public class Plague {
-    private final String name;
+public class Plague
+{
+    private final PlaqueName name;
     @Setter
     private int cubesRemaining;
     @Setter
