@@ -1,6 +1,6 @@
 package de.uol.swp.server.plague;
 
-public enum PlaqueName
+public enum PlagueName
 {
     CHOLERA, YELLOW_FEVER, MALARIA, TYPHUS;
 }

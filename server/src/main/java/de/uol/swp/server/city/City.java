@@ -1,6 +1,6 @@
 package de.uol.swp.server.city;
 
-import de.uol.swp.server.plague.PlaqueName;
+import de.uol.swp.server.plague.PlagueName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 public class City
 {
-    private final PlaqueName plaqueName;
+    private final PlagueName plagueName;
     private final String name;
     private final int foundationDate;
     private final boolean isHarbourCity;

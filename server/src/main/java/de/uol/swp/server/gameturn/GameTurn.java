@@ -50,13 +50,13 @@ public class GameTurn
         }
         // Für die Ereigniskarte "Krankenhausgründung"
         else if (currentPlayer.getCity()
-                              .getPlaqueName() != city.getPlaqueName()) {
+                              .getPlagueName() != city.getPlagueName()) {
             throw new Exception("Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren");
         }
 
         citiesWithHospital.stream()
-                          .filter(c -> c.getPlaqueName()
-                                        .equals(city.getPlaqueName()))
+                          .filter(c -> c.getPlagueName()
+                                        .equals(city.getPlagueName()))
                           .forEach(c -> c.setHasHospital(false));
 
         city.setHasHospital(true);

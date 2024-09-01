@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 public class Plague
 {
-    private final PlaqueName name;
+    private final PlagueName name;
     @Setter
     private int cubesRemaining;
     @Setter
