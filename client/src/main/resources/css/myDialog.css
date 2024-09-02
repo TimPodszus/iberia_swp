@@ -35,6 +35,24 @@
     -fx-text-fill: white;
     -fx-padding: 6 12 6 12;
 }
+
+.login-button {
+    -fx-background-color: #FFCB83;
+    -fx-background-radius: 6px;
+    -fx-border-color: black;
+    -fx-border-radius: 6px;
+    -fx-text-fill: black;
+    -fx-padding: 6 12 6 12;
+}
+
+.register-button {
+    -fx-background-color: #858585;
+    -fx-background-radius: 6px;
+    -fx-border-color: black;
+    -fx-border-radius: 6px;
+    -fx-text-fill: white;
+    -fx-padding: 6 12 6 12;
+}
 .menu-button {
     -fx-background-color: #858585;
     -fx-background-radius: 6px;
