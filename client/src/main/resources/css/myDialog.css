@@ -9,6 +9,7 @@
 
 .input {
     -fx-padding: 0 64 12 64;
+    -fx-text-alignment: left;
 }
 
 .form-pane {
