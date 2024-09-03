@@ -22,6 +22,14 @@ public class Player
     private List<Card> cards;
     private final User user;
 
+    public void addCard(Card card)
+    {
+        //not implemented
+
+        //Für Unittest:
+        cards.add(card);
+    }
+
     public void playCard(Card card)
     {
         //not implemented
@@ -30,6 +38,9 @@ public class Player
     public void discardCard(Card card)
     {
         //not implemented
+
+        //Für Unittest:
+        cards.remove(card);
     }
 
 }
