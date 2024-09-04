@@ -49,9 +49,9 @@ public class UserDTO implements User {
      * @return UserDTO copy of User object
      * @since 2019-08-13
      */
-    public static UserDTO create(User user) {
-        return new UserDTO(user.getUsername(), user.getPassword());
-    }
+    //public static UserDTO create(User user) {
+     //   return new UserDTO(user.getUsername(), user.getPassword());
+   // }
 
     /**
      * Copy constructor leaving password variable empty
@@ -72,11 +72,7 @@ public class UserDTO implements User {
     public String getUsername() {
         return username;
     }
-
-    @Override
-   // public byte[] getPassword() {return hashedPassword;}
-
-    @Override
+    
     public User getWithoutPassword() {
         return new UserDTO(username, "");
     }

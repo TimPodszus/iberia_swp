@@ -23,13 +23,6 @@ public interface User extends Serializable, Comparable<User> {
      */
     String getUsername();
 
-    /**
-     * Getter for the password variable
-     *
-     * @return password of the user as String
-     * @since 2019-08-05
-     */
-    String getPassword();
 
     /**
      * Creates a duplicate of this object leaving its password empty

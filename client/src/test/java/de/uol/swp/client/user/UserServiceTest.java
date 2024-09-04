@@ -2,6 +2,7 @@ package de.uol.swp.client.user;
 
 
 import de.uol.swp.client.EventBusBasedTest;
+import de.uol.swp.common.passwordHashing.PasswordHashing;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -42,7 +43,7 @@ public class UserServiceTest extends EventBusBasedTest {
      */
     private void loginUser() throws InterruptedException {
         UserService userService = new UserService(getBus());
-        userService.login(defaultUser.getUsername(), defaultUser.getPassword());
+        userService.login(defaultUser.getUsername(), "Test");
         waitForLock();
     }
 
@@ -92,7 +93,6 @@ public class UserServiceTest extends EventBusBasedTest {
 
         LoginRequest loginRequest = (LoginRequest) event;
         assertEquals(loginRequest.getUsername(), defaultUser.getUsername());
-        assertEquals(loginRequest.getPassword(), defaultUser.getPassword());
     }
 
     /**
@@ -153,7 +153,7 @@ public class UserServiceTest extends EventBusBasedTest {
         RegisterUserRequest request = (RegisterUserRequest) event;
 
         assertEquals(request.getUser().getUsername(), defaultUser.getUsername());
-        assertEquals(request.getUser().getPassword(), defaultUser.getPassword());
+
         assertFalse(request.authorizationNeeded());
 
     }
@@ -185,7 +185,7 @@ public class UserServiceTest extends EventBusBasedTest {
         UpdateUserRequest request = (UpdateUserRequest) event;
 
         assertEquals(request.getUser().getUsername(), defaultUser.getUsername());
-        assertEquals(request.getUser().getPassword(), defaultUser.getPassword());
+
         assertTrue(request.authorizationNeeded());
     }
 

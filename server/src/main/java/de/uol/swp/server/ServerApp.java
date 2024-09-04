@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
  * users while the MainMemoryBasedUserStore is still in use.
  *
  * @author Marco Grawunder
- * @see de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore
+ *
  * @since 2017-03-17
  */
 class ServerApp {
