@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UserServiceTest extends EventBusBasedTest {
 
-    final User defaultUser = new UserDTO("Marco", "test", "marco@test.de");
+    final User defaultUser = new UserDTO("Marco", "test");
 
 
     /**
@@ -154,7 +154,6 @@ public class UserServiceTest extends EventBusBasedTest {
 
         assertEquals(request.getUser().getUsername(), defaultUser.getUsername());
         assertEquals(request.getUser().getPassword(), defaultUser.getPassword());
-        assertEquals(request.getUser().getEMail(), defaultUser.getEMail());
         assertFalse(request.authorizationNeeded());
 
     }
@@ -187,7 +186,6 @@ public class UserServiceTest extends EventBusBasedTest {
 
         assertEquals(request.getUser().getUsername(), defaultUser.getUsername());
         assertEquals(request.getUser().getPassword(), defaultUser.getPassword());
-        assertEquals(request.getUser().getEMail(), defaultUser.getEMail());
         assertTrue(request.authorizationNeeded());
     }
 

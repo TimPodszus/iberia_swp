@@ -1,5 +1,6 @@
 package de.uol.swp.common.user.request;
 
+import de.uol.swp.common.passwordHashing.PasswordHashing;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class LoginRequestTest {
 
     final String username = "Marco";
-    final String password = "Test";
+    final byte[] password = PasswordHashing.hashPassword("Test");
 
     /**
      * Test for creation of the LoginRequests
@@ -29,7 +30,7 @@ public class LoginRequestTest {
         LoginRequest request = new LoginRequest(username, password);
 
         assertEquals(username, request.getUsername());
-        assertEquals(password, request.getPassword());
+        assertEquals(password, request.getHashedPassword());
     }
 
     /**
@@ -45,13 +46,13 @@ public class LoginRequestTest {
         LoginRequest request = new LoginRequest(username, password);
 
         assertEquals(username, request.getUsername());
-        assertEquals(password, request.getPassword());
+        assertEquals(password, request.getHashedPassword());
 
         request.setUsername("Marco1");
-        request.setPassword("Test1");
+        request.setHashedPassword("Test1");
 
         assertEquals("Marco1", request.getUsername());
-        assertEquals("Test1", request.getPassword());
+        assertEquals(PasswordHashing.hashPassword("Test1"), request.getHashedPassword());
     }
 
 }

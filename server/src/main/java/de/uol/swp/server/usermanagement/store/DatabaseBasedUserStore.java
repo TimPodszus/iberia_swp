@@ -3,15 +3,17 @@ package de.uol.swp.server.usermanagement.store;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.database.DatabaseConnection;
+import org.apache.logging.log4j.LogManager;
 
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class DatabaseBasedUserStore extends AbstractUserStore implements UserStore{
-
+    private static final org.apache.logging.log4j.Logger LOG = LogManager.getLogger(DatabaseBasedUserStore.class);
 
     public Optional<User> findUser(String username, String password) {
         try {
@@ -24,17 +26,14 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
             ps.setString(2, password);
             //Execute the query
             ResultSet rs = ps.executeQuery();
-            // Check if the user exists
-            while (rs.next()) {
+            if (rs.next()) {
                 //return UserDTO object
                 UserDTO user = new UserDTO(rs.getString("username"), rs.getString("password"));
                 return Optional.of(user);
             }
 
         } catch (Exception e) {
-
-            // Display the DB exception if any
-            System.out.println(e);
+            LOG.error(e);
         }
         return Optional.empty();
     }
@@ -42,6 +41,22 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
     @Override
     public Optional<User> findUser(String username)
     {
+        try {
+            // Get the connection to the database
+            DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+            Connection connection = dbConnection.getConnection();
+
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM User WHERE username = ?");
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UserDTO user = new UserDTO(rs.getString("username"));
+                return Optional.of(user);
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
         return Optional.empty();
     }
 

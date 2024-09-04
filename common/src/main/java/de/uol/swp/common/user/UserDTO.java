@@ -1,5 +1,7 @@
 package de.uol.swp.common.user;
 
+import de.uol.swp.common.passwordHashing.PasswordHashing;
+
 import java.util.Objects;
 
 /**
@@ -14,8 +16,8 @@ import java.util.Objects;
  */
 public class UserDTO implements User {
 
-    private final String username;
-    private final String password;
+    private  String username;
+    private  byte[] hashedPassword;
 
 
     /**
@@ -28,11 +30,16 @@ public class UserDTO implements User {
     public UserDTO(String username, String password) {
         if (Objects.nonNull(username) && Objects.nonNull(password)) {
             this.username = username;
-            this.password = password;
+            this.hashedPassword = PasswordHashing.hashPassword(password);
 
         }else{
             throw new IllegalArgumentException("Username and password cannot be null");
         }
+    }
+
+    public UserDTO(String username)
+    {
+        createWithoutPassword(new UserDTO(username, ""));
     }
 
     /**
@@ -67,9 +74,7 @@ public class UserDTO implements User {
     }
 
     @Override
-    public String getPassword() {
-        return password;
-    }
+   // public byte[] getPassword() {return hashedPassword;}
 
     @Override
     public User getWithoutPassword() {
