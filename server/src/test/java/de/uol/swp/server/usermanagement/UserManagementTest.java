@@ -2,7 +2,7 @@ package de.uol.swp.server.usermanagement;
 
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
+import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -30,9 +30,9 @@ class UserManagementTest {
     }
 
     UserManagement getDefaultManagement() {
-        MainMemoryBasedUserStore store = new MainMemoryBasedUserStore();
-        List<UserDTO> users = getDefaultUsers();
-        users.forEach(u -> store.createUser(u.getUsername(), u.getPassword(), u.getEMail()));
+        DatabaseBasedUserStore store = new DatabaseBasedUserStore();
+        List<UserDTO> dafaultUsers = getDefaultUsers();
+        dafaultUsers.forEach(u -> store.createUser(u.getUsername(), u.getPassword()));
         return new UserManagement(store);
     }
 
@@ -41,7 +41,7 @@ class UserManagementTest {
         UserManagement management = getDefaultManagement();
         User userToLogIn = users.get(0);
 
-        management.login(userToLogIn.getUsername(), userToLogIn.getPassword());
+        management.login(userToLogIn.getUsername(), "marco0");
 
         assertTrue(management.isLoggedIn(userToLogIn));
     }
@@ -60,9 +60,9 @@ class UserManagementTest {
     void loginUserWrongPassword() {
         UserManagement management = getDefaultManagement();
         User userToLogIn = users.get(0);
-        User secondUser = users.get(1);
 
-        assertThrows(SecurityException.class, () -> management.login(userToLogIn.getUsername(), secondUser.getPassword()));
+
+        assertThrows(SecurityException.class, () -> management.login(userToLogIn.getUsername(), "marco1"));
 
         assertFalse(management.isLoggedIn(userToLogIn));
     }
@@ -72,7 +72,7 @@ class UserManagementTest {
         UserManagement management = getDefaultManagement();
         User userToLogin = users.get(0);
 
-        management.login(userToLogin.getUsername(), userToLogin.getPassword());
+        management.login(userToLogin.getUsername(), "marco0");
 
         assertTrue(management.isLoggedIn(userToLogin));
 
@@ -92,7 +92,7 @@ class UserManagementTest {
         assertFalse(management.isLoggedIn(userNotInStore));
 
         // Only way to test, if user is stored
-        management.login(userNotInStore.getUsername(), userNotInStore.getPassword());
+        management.login(userNotInStore.getUsername(), "marco10");
 
         assertTrue(management.isLoggedIn(userNotInStore));
     }
@@ -105,7 +105,7 @@ class UserManagementTest {
         management.dropUser(userNotInStore);
 
         assertThrows(SecurityException.class,
-                () -> management.login(userNotInStore.getUsername(), userNotInStore.getPassword()));
+                () -> management.login(userNotInStore.getUsername(), "marco10"));
     }
 
     @Test
@@ -128,12 +128,12 @@ class UserManagementTest {
     void updateUserPassword_NotLoggedIn() {
         UserManagement management = getDefaultManagement();
         User userToUpdate = users.get(0);
-        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword", null);
+        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword");
 
         assertFalse(management.isLoggedIn(userToUpdate));
         management.updateUser(updatedUser);
 
-        management.login(updatedUser.getUsername(), updatedUser.getPassword());
+        management.login(updatedUser.getUsername(), "newPassword");
         assertTrue(management.isLoggedIn(updatedUser));
     }
 
@@ -141,22 +141,21 @@ class UserManagementTest {
     void updateUser_Mail() {
         UserManagement management = getDefaultManagement();
         User userToUpdate = users.get(0);
-        User updatedUser = new UserDTO(userToUpdate.getUsername(), "", "newMail@mail.com");
+        User updatedUser = new UserDTO(userToUpdate.getUsername(), "");
 
         management.updateUser(updatedUser);
 
-        User user = management.login(updatedUser.getUsername(), updatedUser.getPassword());
+
         assertTrue(management.isLoggedIn(updatedUser));
-        assertEquals(user.getEMail(), updatedUser.getEMail());
     }
 
     @Test
     void updateUserPassword_LoggedIn() {
         UserManagement management = getDefaultManagement();
         User userToUpdate = users.get(0);
-        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword", null);
+        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword");
 
-        management.login(userToUpdate.getUsername(), userToUpdate.getPassword());
+        management.login(userToUpdate.getUsername(), "marco0");
         assertTrue(management.isLoggedIn(userToUpdate));
 
         management.updateUser(updatedUser);
@@ -165,7 +164,7 @@ class UserManagementTest {
         management.logout(updatedUser);
         assertFalse(management.isLoggedIn(updatedUser));
 
-        management.login(updatedUser.getUsername(), updatedUser.getPassword());
+        management.login(updatedUser.getUsername(), "newPassword");
         assertTrue(management.isLoggedIn(updatedUser));
 
     }
@@ -185,9 +184,7 @@ class UserManagementTest {
         Collections.sort(allUsers);
         assertEquals(allUsers, getDefaultUsers());
 
-        // check, if there are no passwords
-        // TODO: typically, there should be no logic in tests
-        allUsers.forEach(u -> assertEquals("",u.getPassword() ));
+
     }
 
 

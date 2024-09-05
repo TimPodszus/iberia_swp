@@ -42,6 +42,10 @@ public class UserDTO implements User {
         createWithoutPassword(new UserDTO(username, ""));
     }
 
+    public UserDTO(String username, byte[] hashedPassword) {
+        this.username = username;
+        this.hashedPassword = hashedPassword;
+    }
     /**
      * Copy constructor
      *
@@ -49,13 +53,12 @@ public class UserDTO implements User {
      * @return UserDTO copy of User object
      * @since 2019-08-13
      */
-    //public static UserDTO create(User user) {
-     //   return new UserDTO(user.getUsername(), user.getPassword());
-   // }
+    public static UserDTO create(User user) {
+       return new UserDTO(user.getUsername(), user.getPassword());
+    }
 
     /**
      * Copy constructor leaving password variable empty
-     *
      * This constructor is used for the user list, because it would be a major security
      * flaw to send all user data including passwords to everyone connected.
      *
@@ -77,6 +80,9 @@ public class UserDTO implements User {
         return new UserDTO(username, "");
     }
 
+    public byte[] getPassword() {
+        return hashedPassword;
+    }
     @Override
     public int compareTo(User o) {
         return username.compareTo(o.getUsername());
