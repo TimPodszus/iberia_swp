@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class LoginRequestTest {
 
     final String username = "Marco";
-    final byte[] password = PasswordHashing.hashPassword("Test");
+    final String password = "Test";
 
     /**
      * Test for creation of the LoginRequests
@@ -30,7 +30,7 @@ public class LoginRequestTest {
         LoginRequest request = new LoginRequest(username, password);
 
         assertEquals(username, request.getUsername());
-        assertEquals(password, request.getHashedPassword());
+        assertEquals(password, request.getPassword());
     }
 
     /**
@@ -46,13 +46,13 @@ public class LoginRequestTest {
         LoginRequest request = new LoginRequest(username, password);
 
         assertEquals(username, request.getUsername());
-        assertEquals(password, request.getHashedPassword());
+        assertEquals(password, request.getPassword());
 
         request.setUsername("Marco1");
-        request.setHashedPassword("Test1");
+        request.setPassword("Test1");
 
         assertEquals("Marco1", request.getUsername());
-        assertEquals(PasswordHashing.hashPassword("Test1"), request.getHashedPassword());
+        assertEquals(PasswordHashing.hashPassword("Test1"), request.getPassword());
     }
 
 }

@@ -21,7 +21,8 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
             DatabaseConnection dbConnection = DatabaseConnection.getInstance();
             Connection connection = dbConnection.getConnection();
             // Prepare the SQL statement
-            PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM `User` WHERE username = ? and password = ?");
+            PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM User WHERE username " +
+                    "= ? and password = ?");
             ps.setString(1, username);
             ps.setString(2, password);
             //Execute the query
@@ -46,8 +47,7 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
             DatabaseConnection dbConnection = DatabaseConnection.getInstance();
             Connection connection = dbConnection.getConnection();
 
-            PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM 'User' WHERE username =" +
-                    " ?");
+            PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM 'User' WHERE username = ?");
             ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {

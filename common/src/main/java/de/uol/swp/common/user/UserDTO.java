@@ -1,6 +1,7 @@
 package de.uol.swp.common.user;
 
 import de.uol.swp.common.passwordHashing.PasswordHashing;
+import lombok.Getter;
 
 import java.util.Objects;
 
@@ -17,7 +18,8 @@ import java.util.Objects;
 public class UserDTO implements User {
 
     private  String username;
-    private  byte[] hashedPassword;
+    @Getter
+    private  String password;
 
 
     /**
@@ -30,7 +32,7 @@ public class UserDTO implements User {
     public UserDTO(String username, String password) {
         if (Objects.nonNull(username) && Objects.nonNull(password)) {
             this.username = username;
-            this.hashedPassword = PasswordHashing.hashPassword(password);
+            this.password = PasswordHashing.hashPassword(password);
 
         }else{
             throw new IllegalArgumentException("Username and password cannot be null");
@@ -42,10 +44,6 @@ public class UserDTO implements User {
         createWithoutPassword(new UserDTO(username, ""));
     }
 
-    public UserDTO(String username, byte[] hashedPassword) {
-        this.username = username;
-        this.hashedPassword = hashedPassword;
-    }
     /**
      * Copy constructor
      *
@@ -80,9 +78,6 @@ public class UserDTO implements User {
         return new UserDTO(username, "");
     }
 
-    public byte[] getPassword() {
-        return hashedPassword;
-    }
     @Override
     public int compareTo(User o) {
         return username.compareTo(o.getUsername());

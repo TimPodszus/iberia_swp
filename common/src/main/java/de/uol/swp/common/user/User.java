@@ -22,7 +22,7 @@ public interface User extends Serializable, Comparable<User> {
      */
     String getUsername();
 
-    byte[] getPassword();
+    String getPassword();
 
     /**
      * Creates a duplicate of this object leaving its password empty

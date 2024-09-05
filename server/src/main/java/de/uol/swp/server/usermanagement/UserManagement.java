@@ -65,7 +65,7 @@ public class UserManagement extends AbstractUserManagement {
             throw new UserManagementException("Username unknown!");
         }
         // Only update if there are new values
-        byte[] newPassword = firstNotNull(userToUpdate.getPassword(), user.get().getPassword());
+       String newPassword = firstNotNull(userToUpdate.getPassword(), user.get().getPassword());
         return userStore.updateUser(userToUpdate.getUsername(), newPassword );
 
     }
@@ -92,8 +92,8 @@ public class UserManagement extends AbstractUserManagement {
      *
      * @since 2019-08-05
      */
-    private byte[] firstNotNull(byte[] firstValue, byte[] secondValue) {
-        return Strings.isNullOrEmpty(Arrays.toString(firstValue))?secondValue:firstValue;
+    private String firstNotNull(String firstValue, String secondValue) {
+        return Strings.isNullOrEmpty(firstValue) ? secondValue : firstValue;
     }
 
     @Override

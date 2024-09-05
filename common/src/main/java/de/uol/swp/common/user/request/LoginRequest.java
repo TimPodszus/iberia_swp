@@ -23,28 +23,23 @@ public class LoginRequest extends AbstractRequestMessage {
     @Setter
     private String username;
 	@Setter
-	private byte[] hashedPassword;
+	private String password;
 
 	/**
 	 * Constructor
 	 *
 	 * @param username username the user tries to log in with
-	 * @param hashedPassword hashed password the user tries to log in with
+	 * @param password hashed password the user tries to log in with
 	 * @since  2017-03-17
 	 */
-	public LoginRequest(String username, byte[] hashedPassword) {
+	public LoginRequest(String username, String password) {
 		this.username = username;
-		this.hashedPassword = hashedPassword;
+		this.password = password;
 	}
 
 	@Override
 	public boolean authorizationNeeded() {
 		return false;
-	}
-
-	public void setHashedPassword(String password) {
-		hashedPassword= PasswordHashing.hashPassword(password);
-
 	}
 
 
@@ -55,12 +50,12 @@ public class LoginRequest extends AbstractRequestMessage {
         if (o == null || getClass() != o.getClass()) return false;
         LoginRequest that = (LoginRequest) o;
         return Objects.equals(username, that.username) &&
-            PasswordUtil.compareCredentials(hashedPassword, that.hashedPassword);
+            PasswordHashing.compareCredentials(password, that.password);
 
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, hashedPassword);
+        return Objects.hash(username, password);
     }
 }

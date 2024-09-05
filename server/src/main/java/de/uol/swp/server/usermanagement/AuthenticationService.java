@@ -109,11 +109,11 @@ public class AuthenticationService extends AbstractService {
     @Subscribe
     public void onLoginRequest(LoginRequest msg) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Got new auth message with {} {}", msg.getUsername() , msg.getHashedPassword());
+            LOG.debug("Got new auth message with {} {}", msg.getUsername() , msg.getPassword());
         }
         ServerInternalMessage returnMessage;
         try {
-            User newUser = userManagement.login(msg.getUsername(), Arrays.toString(msg.getHashedPassword()));
+            User newUser = userManagement.login(msg.getUsername(), msg.getPassword());
             returnMessage = new ClientAuthorizedMessage(newUser);
             Session newSession = UUIDSession.create(newUser);
             userSessions.put(newSession, newUser);

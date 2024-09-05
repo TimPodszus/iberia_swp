@@ -3,10 +3,19 @@ package de.uol.swp.common.passwordHashing;
 import org.apache.directory.api.ldap.model.constants.LdapSecurityConstants;
 import org.apache.directory.api.ldap.model.password.PasswordUtil;
 
+import java.nio.charset.StandardCharsets;
+
 public class PasswordHashing
 {
-    public static byte[] hashPassword(String password)
+    public static String hashPassword(String password)
     {
-        return PasswordUtil.createStoragePassword(password, LdapSecurityConstants.HASH_METHOD_SSHA512 );
+        byte[] bytes = PasswordUtil.createStoragePassword(password, LdapSecurityConstants.HASH_METHOD_SHA512 );
+        return new String(bytes ,StandardCharsets.UTF_8);
+
+    }
+
+    public static boolean compareCredentials(String password, String hashedPassword)
+    {
+        return PasswordUtil.compareCredentials(password.getBytes(StandardCharsets.UTF_8), hashedPassword.getBytes(StandardCharsets.UTF_8));
     }
 }
