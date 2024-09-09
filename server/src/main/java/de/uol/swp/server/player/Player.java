@@ -6,14 +6,14 @@ import de.uol.swp.server.role.Role;
 import de.uol.swp.server.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class Player {
+public class Player
+{
     private final String username;
     private final Role role;
     @Setter
@@ -22,8 +22,25 @@ public class Player {
     private List<Card> cards;
     private final User user;
 
-    public void playCard(Card card) {
+    public void addCard(Card card)
+    {
         //not implemented
+
+        //Für Unittest:
+        cards.add(card);
+    }
+
+    public void playCard(Card card)
+    {
+        //not implemented
+    }
+
+    public void discardCard(Card card)
+    {
+        //not implemented
+
+        //Für Unittest:
+        cards.remove(card);
     }
 
 }
