@@ -33,6 +33,5 @@ unit-test-job:
       - target/
     reports:
       junit: "**/target/surefire-reports/*.xml"
-      cobertura: "**/target/site/jacoco/jacoco.xml"
   coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
 
