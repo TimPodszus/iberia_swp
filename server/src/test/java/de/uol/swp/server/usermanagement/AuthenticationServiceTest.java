@@ -2,6 +2,7 @@ package de.uol.swp.server.usermanagement;
 
 
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
 import org.greenrobot.eventbus.Subscribe;
 
 import de.uol.swp.common.user.Session;
@@ -14,7 +15,6 @@ import de.uol.swp.common.user.request.RetrieveAllOnlineUsersRequest;
 import de.uol.swp.common.user.response.AllOnlineUsersResponse;
 import de.uol.swp.server.message.ClientAuthorizedMessage;
 import de.uol.swp.server.message.ServerExceptionMessage;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import de.uol.swp.server.usermanagement.store.UserStore;
 import org.junit.jupiter.api.Test;
 
@@ -24,13 +24,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 
-public class AuthenticationServiceTest extends EventBusBasedTest {
+ class AuthenticationServiceTest extends EventBusBasedTest {
 
     final User user = new UserDTO("name", "password");
     final User user2 = new UserDTO("name2", "password2");
     final User user3 = new UserDTO("name3", "password3");
 
-    final UserStore userStore = new MainMemoryBasedUserStore();
+    final UserStore userStore = new DatabaseBasedUserStore();
     final UserManagement userManagement = new UserManagement(userStore);
     final AuthenticationService authService = new AuthenticationService(getBus(), userManagement);
 
@@ -62,7 +62,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest {
         postAndWait(loginRequest);
         assertTrue(userManagement.isLoggedIn(user));
         // is message send
-        assertTrue(event instanceof ClientAuthorizedMessage);
+        assertInstanceOf(ClientAuthorizedMessage.class, event);
         userManagement.dropUser(user);
     }
 
@@ -73,7 +73,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest {
         postAndWait(loginRequest);
 
         assertFalse(userManagement.isLoggedIn(user));
-        assertTrue(event instanceof ServerExceptionMessage);
+        assertInstanceOf(ServerExceptionMessage.class, event);
         userManagement.dropUser(user);
     }
 
@@ -90,7 +90,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest {
 
         assertFalse(userManagement.isLoggedIn(user));
         assertFalse(authService.getSession(user).isPresent());
-        assertTrue(event instanceof UserLoggedOutMessage);
+        assertInstanceOf(UserLoggedOutMessage.class, event);
     }
 
     private void loginUser(User userToLogin) {
@@ -108,7 +108,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest {
 
         RetrieveAllOnlineUsersRequest request = new RetrieveAllOnlineUsersRequest();
         postAndWait(request);
-        assertTrue(event instanceof AllOnlineUsersResponse);
+        assertInstanceOf(AllOnlineUsersResponse.class, event);
 
         assertEquals(1, ((AllOnlineUsersResponse) event).getUsers().size());
         assertEquals(user, ((AllOnlineUsersResponse) event).getUsers().get(0));
@@ -128,7 +128,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest {
         RetrieveAllOnlineUsersRequest request = new RetrieveAllOnlineUsersRequest();
         postAndWait(request);
 
-        assertTrue(event instanceof AllOnlineUsersResponse);
+        assertInstanceOf(AllOnlineUsersResponse.class, event);
 
         List<User> returnedUsers = new ArrayList<>(((AllOnlineUsersResponse) event).getUsers());
 
@@ -144,7 +144,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest {
     void loggedInUsersEmpty() throws InterruptedException {
         RetrieveAllOnlineUsersRequest request = new RetrieveAllOnlineUsersRequest();
         postAndWait(request);
-        assertTrue(event instanceof AllOnlineUsersResponse);
+        assertInstanceOf(AllOnlineUsersResponse.class, event);
 
         assertTrue(((AllOnlineUsersResponse) event).getUsers().isEmpty());
 

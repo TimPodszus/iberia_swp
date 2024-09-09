@@ -13,13 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.server.message.ClientAuthorizedMessage
  * @since 2023-05-14
  */
-public class ClientAuthorizedMessageTest {
+ class ClientAuthorizedMessageTest {
 
-    final User user = new UserDTO("name", "password", "email@test.de");
+    final User user = new UserDTO("name", "password");
 
     /**
      * Test for the creation of ClientAuthorizedMessages
-     *
      * This test checks if the user of the ClientAuthorizedMessage gets
      * set correctly during the creation of a new message
      *

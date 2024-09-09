@@ -11,15 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.lobby.message.LobbyJoinUserRequest
  * @since 2023-05-14
  */
-public class LobbyJoinUserRequestTest {
+ class LobbyJoinUserRequestTest {
 
     final String lobbyName = "Test";
-    final UserDTO user = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
+    final UserDTO user = new UserDTO("Marco", "Marco");
 
 
     /**
      * Test for creation of the LobbyJoinUserRequests
-     *
      * This test checks if the lobbyName and the user of the LobbyJoinUserRequest gets
      * set correctly during the creation of the request
      *

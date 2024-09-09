@@ -4,60 +4,55 @@ import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.database.DatabaseConnection;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 
 public class DatabaseBasedUserStore extends AbstractUserStore implements UserStore{
-    private static final org.apache.logging.log4j.Logger LOG = LogManager.getLogger(DatabaseBasedUserStore.class);
+    private static final Logger LOG = LogManager.getLogger(DatabaseBasedUserStore.class);
+    private final Connection connection;
+
+    public DatabaseBasedUserStore() {
+        try {
+            connection = DatabaseConnection.getInstance().getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public Optional<User> findUser(String username, String password) {
-        try {
-            // Get the connection to the database
-            DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-            Connection connection = dbConnection.getConnection();
-            // Prepare the SQL statement
-            PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM User WHERE username " +
-                    "= ? and password = ?");
+        try (PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM User WHERE username = ? and password = ?")) {
             ps.setString(1, username);
             ps.setString(2, password);
-            //Execute the query
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                //return UserDTO object
-                UserDTO user = new UserDTO(rs.getString("username"), rs.getString("password"));
-                return Optional.of(user);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    UserDTO user = new UserDTO(rs.getString("username"), rs.getString("password"));
+                    return Optional.of(user);
+                }
             }
-
-        } catch (Exception e) {
-            LOG.error(e);
+        } catch (Exception e) {LOG.error(e);
         }
         return Optional.empty();
     }
 
     @Override
-    public Optional<User> findUser(String username)
-    {
-        try {
-            // Get the connection to the database
-            DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-            Connection connection = dbConnection.getConnection();
-
-            PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM 'User' WHERE username = ?");
+    public Optional<User> findUser(String username) {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM User WHERE username = ?")) {
             ps.setString(1, username);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                //return UserDTO object
-                UserDTO user = new UserDTO(rs.getString("username"), rs.getString("password"));
-                return Optional.of(user);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    UserDTO user = new UserDTO(rs.getString("username"), rs.getString("password"));
+                    return Optional.of(user);
+                }
             }
-        }
-        catch (Exception e) {
-            System.out.println(e);
+        } catch (Exception e) {
+            LOG.error(e);
         }
         return Optional.empty();
     }

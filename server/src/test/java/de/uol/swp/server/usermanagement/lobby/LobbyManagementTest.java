@@ -2,26 +2,24 @@ package de.uol.swp.server.usermanagement.lobby;
 
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.lobby.LobbyManagement;
-import de.uol.swp.server.lobby.LobbyService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserManagement;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
+import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
+
 import org.greenrobot.eventbus.EventBus;
 import org.junit.jupiter.api.Test;
 
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings("UnstableApiUsage")
-public class LobbyManagementTest {
+class LobbyManagementTest {
 
-    static final UserDTO firstOwner = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
+    static final UserDTO firstOwner = new UserDTO("Marco", "Marco");
 
     final EventBus bus = EventBus.getDefault();
-    final UserManagement userManagement = new UserManagement(new MainMemoryBasedUserStore());
+    final UserManagement userManagement = new UserManagement(new DatabaseBasedUserStore());
     final AuthenticationService authService = new AuthenticationService(bus, userManagement);
     final LobbyManagement lobbyManagement = new LobbyManagement();
-    final LobbyService lobbyService = new LobbyService(lobbyManagement, authService, bus);
 
     LobbyManagement getDefaultManagement() {
         LobbyManagement management = new LobbyManagement();
@@ -35,26 +33,32 @@ public class LobbyManagementTest {
 
         assertNotNull(lobbyManagement.getLobby("Test"));
         if(lobbyManagement.getLobby("Test").isPresent()){
-            assertEquals(lobbyManagement.getLobby("Test").get().getOwner(), firstOwner);
+            assertEquals(firstOwner,
+                    lobbyManagement.getLobby("Test")
+                                   .get()
+                                   .getOwner());
         }
     }
 
     @Test
     void dropLobbyTest() {
-        LobbyManagement lobbyManagement = getDefaultManagement();
+        LobbyManagement localLobbyManagement = getDefaultManagement();
 
-        lobbyManagement.dropLobby("Test");
+        localLobbyManagement.dropLobby("Test");
 
-        assertTrue(lobbyManagement.getLobby("Test").isEmpty());
+        assertTrue(localLobbyManagement.getLobby("Test").isEmpty());
     }
 
     @Test
     void getLobbyTest() {
-        LobbyManagement lobbyManagement = getDefaultManagement();
+        LobbyManagement localLobbyManagement = getDefaultManagement();
 
-        if(lobbyManagement.getLobby("Test").isPresent()){
-            assertNotNull(lobbyManagement.getLobby("Test"));
-            assertEquals(lobbyManagement.getLobby("Test").get().getOwner(), firstOwner);
+        if(localLobbyManagement.getLobby("Test").isPresent()){
+            assertNotNull(localLobbyManagement.getLobby("Test"));
+            assertEquals(firstOwner,
+                    localLobbyManagement.getLobby("Test")
+                                        .get()
+                                        .getOwner());
         }
     }
 
