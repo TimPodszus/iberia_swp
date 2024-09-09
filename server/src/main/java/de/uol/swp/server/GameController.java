@@ -1,9 +1,10 @@
 package de.uol.swp.server;
 
+import de.uol.swp.common.enums.Action;
 import de.uol.swp.server.gameturn.GameTurn;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.player.Player;
-
+import lombok.Getter;
 import java.util.List;
 
 public class GameController
@@ -26,6 +27,10 @@ public class GameController
         nextTurn();
     }
 
+    public void processPlayerAction(Action action) {
+        currentTurn.processAction(action);
+    }
+
     public void nextTurn()
     {
         if (isGameOver()) {
@@ -36,7 +41,6 @@ public class GameController
         Player currentPlayer = players.get(currentPlayerIndex);
         System.out.println(currentPlayer.getUsername() + " ist nun am Zug!");
 
-        // Erstelle einen neuen GameTurn für den aktuellen Spieler
         currentTurn = new GameTurn(currentPlayer, board);
         currentTurn.startTurn();
         finishTurn(currentPlayer);
@@ -52,7 +56,6 @@ public class GameController
 
     private boolean isGameOver()
     {
-        // Füge Logik hinzu, um zu überprüfen, ob das Spiel beendet ist
         return false;
     }
 
@@ -61,4 +64,5 @@ public class GameController
         System.out.println("Game over!");
         // Logik zum Beenden des Spiels, z. B. Spieler benachrichtigen, Ergebnisse speichern, etc.
     }
+
 }
