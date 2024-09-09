@@ -6,28 +6,36 @@ import de.uol.swp.server.database.DatabaseConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 
-public class DatabaseBasedUserStore extends AbstractUserStore implements UserStore{
+public class DatabaseBasedUserStore extends AbstractUserStore implements UserStore
+{
     private static final Logger LOG = LogManager.getLogger(DatabaseBasedUserStore.class);
     private final Connection connection;
 
-    public DatabaseBasedUserStore() {
+    public DatabaseBasedUserStore()
+    {
         try {
-            connection = DatabaseConnection.getInstance().getConnection();
+            connection = DatabaseConnection.getInstance()
+                                           .getConnection();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Optional<User> findUser(String username, String password) {
-        try (PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM User WHERE username = ? and password = ?")) {
+    public Optional<User> findUser(String username, String password)
+    {
+        try (
+                PreparedStatement ps = connection.prepareStatement(
+                        "SELECT username, password FROM User WHERE username = ? and password = ?")
+        ) {
             ps.setString(1, username);
             ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
@@ -36,13 +44,15 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
                     return Optional.of(user);
                 }
             }
-        } catch (Exception e) {LOG.error(e);
+        } catch (Exception e) {
+            LOG.error(e);
         }
         return Optional.empty();
     }
 
     @Override
-    public Optional<User> findUser(String username) {
+    public Optional<User> findUser(String username)
+    {
         try (PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM User WHERE username = ?")) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -60,13 +70,33 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
     @Override
     public User createUser(String username, String password)
     {
+        try {
+            if (username.isEmpty() || password.isEmpty()) {
+                throw new Exception("Password and username cannot be empty");
+            }
+
+            if (findUser(username).isPresent()) {
+                throw new Exception("A user with this username already exists");
+            }
+
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO User (username, password) VALUES (?, ?)");
+            ps.setString(1, username);
+            ps.setString(2, password);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return new UserDTO(rs.getString("username"), rs.getString("password"));
+            }
+        } catch (Exception e) {
+            LOG.error(e);
+        }
         return null;
     }
 
     @Override
     public User createUser(String username, byte[] password)
     {
-        return null;
+        return createUser(username, new String(password, StandardCharsets.UTF_8));
     }
 
     @Override
