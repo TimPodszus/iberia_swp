@@ -32,11 +32,11 @@ public class GameTurn
 
     void buildTrainTracks(Connection connection) throws Exception
     {
-        if (!connection.isCanBuildTrainTracks()) {
+        if (!connection.isTrainTrackBuildable()) {
             throw new Exception("Auf dieser Verbindung kann keine Zugstrecke gebaut werden");
         }
 
-        if (connection.isHasTrainTrack()) {
+        if (connection.isTrainTrack()) {
             throw new Exception("Auf dieser Verbindung existiert bereits eine Zugstrecke");
         }
 
@@ -44,7 +44,7 @@ public class GameTurn
             throw new Exception("Es sind nichtmehr genug Schienen vorhanden!");
         }
 
-        connection.setHasTrainTrack(true);
+        connection.setTrainTrack(true);
     }
 
     void tradeCards(Player tradingPartner)
@@ -91,6 +91,4 @@ public class GameTurn
     {
         //not implemented
     }
-
-
 }

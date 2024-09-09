@@ -1,16 +1,19 @@
 package de.uol.swp.server.connection;
 
-import lombok.*;
-import de.uol.swp.server.city.*;
+import de.uol.swp.server.city.City;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @AllArgsConstructor
 @Getter
-public class Connection {
+public class Connection
+{
     private final City startCity;
     private final City endCity;
     @Setter
-    private boolean hasTrainTrack;
+    private boolean trainTrack;
     private final boolean isWaterWay;
-    private final boolean canBuildTrainTracks;
+    private final boolean trainTrackBuildable;
     private final boolean isShipRoute;
 }
