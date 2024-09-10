@@ -1,5 +1,6 @@
 package de.uol.swp.common.user.request;
 
+import de.uol.swp.common.passwordHashing.PasswordHashing;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,7 +52,7 @@ public class LoginRequestTest {
         request.setPassword("Test1");
 
         assertEquals("Marco1", request.getUsername());
-        assertEquals("Test1", request.getPassword());
+        assertEquals(PasswordHashing.hashPassword("Test1"), request.getPassword());
     }
 
 }

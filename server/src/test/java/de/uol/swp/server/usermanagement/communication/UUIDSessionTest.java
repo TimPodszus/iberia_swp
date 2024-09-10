@@ -9,10 +9,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SuppressWarnings("UnstableApiUsage")
-public class UUIDSessionTest {
+class UUIDSessionTest {
 
-    final User user = new UserDTO("name", "password", "email@test.de");
+    final User user = new UserDTO("name", "password");
 
     @Test
     void createSessionTest() {

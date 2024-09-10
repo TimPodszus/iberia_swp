@@ -5,10 +5,9 @@ import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.lobby.LobbyManagement;
-import de.uol.swp.server.lobby.LobbyService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserManagement;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
+import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
 import org.junit.jupiter.api.Test;
@@ -17,8 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LobbyServiceTest {
 
-    static final UserDTO firstOwner = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
-    static final UserDTO secondOwner = new UserDTO("Marco2", "Marco2", "Marco2@Grawunder.com");
+    static final UserDTO firstOwner = new UserDTO("Marco", "Marco");
+    static final UserDTO secondOwner = new UserDTO("Marco2", "Marco2");
 
     // Special version of event bus for testing
     final EventBus bus = EventBus.builder()
@@ -26,10 +25,9 @@ class LobbyServiceTest {
             .sendNoSubscriberEvent(false)
             .throwSubscriberException(true)
             .build();
-    final UserManagement userManagement = new UserManagement(new MainMemoryBasedUserStore());
+    final UserManagement userManagement = new UserManagement(new DatabaseBasedUserStore());
     final AuthenticationService authService = new AuthenticationService(bus, userManagement);
     final LobbyManagement lobbyManagement = new LobbyManagement();
-    final LobbyService lobbyService = new LobbyService(lobbyManagement, authService, bus);
 
     @Test
     void createLobbyTest() {
@@ -42,7 +40,10 @@ class LobbyServiceTest {
         assertNotNull(lobbyManagement.getLobby("Test"));
         // Checks whether it is also the correct owner
         if (lobbyManagement.getLobby("Test").isPresent()) {
-            assertEquals(lobbyManagement.getLobby("Test").get().getOwner(), firstOwner);
+            assertEquals(firstOwner,
+                    lobbyManagement.getLobby("Test")
+                                   .get()
+                                   .getOwner());
         }
     }
 
@@ -58,14 +59,17 @@ class LobbyServiceTest {
                 () -> bus.post(request2)
         );
         // Check if the nested exception is the right exception
-        assertTrue(e.getCause() instanceof IllegalArgumentException);
+        assertInstanceOf(IllegalArgumentException.class, e.getCause());
 
         // old lobby should be still in the LobbyManagement
         assertNotNull(lobbyManagement.getLobby("Test"));
 
         // old lobby should not be overwritten!
         if (lobbyManagement.getLobby("Test").isPresent()) {
-            assertNotEquals(lobbyManagement.getLobby("Test").get().getOwner(), secondOwner);
+            assertNotEquals(secondOwner,
+                    lobbyManagement.getLobby("Test")
+                                   .get()
+                                   .getOwner());
         }
     }
 

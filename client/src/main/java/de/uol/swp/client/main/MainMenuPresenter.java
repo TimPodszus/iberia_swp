@@ -161,7 +161,7 @@ public class MainMenuPresenter extends AbstractPresenter {
      */
     @FXML
     void onCreateLobby(ActionEvent event) {
-        lobbyService.createNewLobby("test", new UserDTO("ich", "", ""));
+        lobbyService.createNewLobby("test", new UserDTO("ich", ""));
     }
 
     /**
@@ -177,7 +177,7 @@ public class MainMenuPresenter extends AbstractPresenter {
      */
     @FXML
     void onJoinLobby(ActionEvent event) {
-        lobbyService.joinLobby("test", new UserDTO("ich", "", ""));
+        lobbyService.joinLobby("test", new UserDTO("ich", ""));
     }
 
 
