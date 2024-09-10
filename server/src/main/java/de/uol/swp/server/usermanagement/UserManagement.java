@@ -1,15 +1,13 @@
 package de.uol.swp.server.usermanagement;
 
 import com.google.common.base.Strings;
+
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.usermanagement.store.UserStore;
 
 import com.google.inject.Inject;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Handles most user related issues e.g. login/logout
@@ -57,7 +55,7 @@ public class UserManagement extends AbstractUserManagement {
         if (user.isPresent()){
             throw new UserManagementException("Username already used!");
         }
-        return userStore.createUser(userToCreate.getUsername(), userToCreate.getPassword(), userToCreate.getEMail());
+        return userStore.createUser(userToCreate.getUsername(), userToCreate.getPassword());
     }
 
     @Override
@@ -67,9 +65,8 @@ public class UserManagement extends AbstractUserManagement {
             throw new UserManagementException("Username unknown!");
         }
         // Only update if there are new values
-        String newPassword = firstNotNull(userToUpdate.getPassword(), user.get().getPassword());
-        String newEMail = firstNotNull(userToUpdate.getEMail(), user.get().getEMail());
-        return userStore.updateUser(userToUpdate.getUsername(), newPassword, newEMail);
+       String newPassword = firstNotNull(userToUpdate.getPassword(), user.get().getPassword());
+        return userStore.updateUser(userToUpdate.getUsername(), newPassword );
 
     }
 
@@ -85,17 +82,18 @@ public class UserManagement extends AbstractUserManagement {
 
     /**
      * Sub-function of update user
-     *
      * This method is used to set the new user values to the old ones if the values
      * in the update request were empty.
      *
-     * @param firstValue value to update to, empty String or null
+     * @param firstValue  value to update to, empty String or null
      * @param secondValue the old value
-     * @return String containing the value to be used in the update command
+     *
+     * @return byte[] containing the value to be used in the update command
+     *
      * @since 2019-08-05
      */
     private String firstNotNull(String firstValue, String secondValue) {
-        return Strings.isNullOrEmpty(firstValue)?secondValue:firstValue;
+        return Strings.isNullOrEmpty(firstValue) ? secondValue : firstValue;
     }
 
     @Override

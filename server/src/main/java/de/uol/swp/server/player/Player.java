@@ -3,7 +3,7 @@ package de.uol.swp.server.player;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.role.Role;
-import de.uol.swp.server.user.User;
+import de.uol.swp.common.user.UserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +20,7 @@ public class Player
     private City city;
     @Setter
     private List<Card> cards;
-    private final User user;
+    private final UserDTO user;
 
     public void addCard(Card card)
     {
