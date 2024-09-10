@@ -99,7 +99,7 @@ public class RegistrationPresenter extends AbstractPresenter {
         } else if (Strings.isNullOrEmpty(passwordField1.getText())) {
             eventBus.post(new RegistrationErrorEvent("Password cannot be empty"));
         } else {
-            userService.createUser(new UserDTO(loginField.getText(), passwordField1.getText(), "empty"));
+            userService.createUser(new UserDTO(loginField.getText(), passwordField1.getText()));
         }
     }
 
