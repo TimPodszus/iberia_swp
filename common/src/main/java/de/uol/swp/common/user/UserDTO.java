@@ -15,11 +15,11 @@ import java.util.Objects;
  * @see de.uol.swp.common.user.response.AllOnlineUsersResponse
  * @since 2019-08-13
  */
-public class UserDTO implements User {
-
-    private  String username;
-    @Getter
-    private  String password;
+@Getter
+public class UserDTO implements User
+{
+    private String username;
+    private String password;
 
 
     /**
@@ -27,14 +27,16 @@ public class UserDTO implements User {
      *
      * @param username username of the user
      * @param password password the user uses
+     *
      * @since 2019-08-13
      */
-    public UserDTO(String username, String password) {
+    public UserDTO(String username, String password)
+    {
         if (Objects.nonNull(username) && Objects.nonNull(password)) {
             this.username = username;
             this.password = PasswordHashing.hashPassword(password);
 
-        }else{
+        } else {
             throw new IllegalArgumentException("Username and password cannot be null");
         }
     }
@@ -48,11 +50,14 @@ public class UserDTO implements User {
      * Copy constructor
      *
      * @param user User object to copy the values of
+     *
      * @return UserDTO copy of User object
+     *
      * @since 2019-08-13
      */
-    public static UserDTO create(User user) {
-       return new UserDTO(user.getUsername(), user.getPassword());
+    public static UserDTO create(User user)
+    {
+        return new UserDTO(user.getUsername(), user.getPassword());
     }
 
     /**
@@ -61,38 +66,44 @@ public class UserDTO implements User {
      * flaw to send all user data including passwords to everyone connected.
      *
      * @param user User object to copy the values of
+     *
      * @return UserDTO copy of User object having the password variable left empty
+     *
      * @since 2019-08-13
      */
-    public static UserDTO createWithoutPassword(User user) {
+    public static UserDTO createWithoutPassword(User user)
+    {
         return new UserDTO(user.getUsername(), "");
     }
 
 
-    @Override
-    public String getUsername() {
-        return username;
-    }
-    
-    public User getWithoutPassword() {
+    public User getWithoutPassword()
+    {
         return new UserDTO(username, "");
     }
 
     @Override
-    public int compareTo(User o) {
+    public int compareTo(User o)
+    {
         return username.compareTo(o.getUsername());
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         UserDTO userDTO = (UserDTO) o;
         return Objects.equals(username, userDTO.username);
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(username);
     }
 }

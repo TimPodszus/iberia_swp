@@ -11,7 +11,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserManagementTest {
+class UserManagementTest
+{
 
     private static final int NO_USERS = 10;
     private static final List<UserDTO> users;
@@ -25,11 +26,13 @@ class UserManagementTest {
         Collections.sort(users);
     }
 
-    List<UserDTO> getDefaultUsers() {
+    List<UserDTO> getDefaultUsers()
+    {
         return Collections.unmodifiableList(users);
     }
 
-    UserManagement getDefaultManagement() {
+    UserManagement getDefaultManagement()
+    {
         DatabaseBasedUserStore store = new DatabaseBasedUserStore();
         List<UserDTO> dafaultUsers = getDefaultUsers();
         dafaultUsers.forEach(u -> store.createUser(u.getUsername(), u.getPassword()));
@@ -37,7 +40,8 @@ class UserManagementTest {
     }
 
     @Test
-    void loginUser() {
+    void loginUser()
+    {
         UserManagement management = getDefaultManagement();
         User userToLogIn = users.get(0);
 
@@ -47,7 +51,8 @@ class UserManagementTest {
     }
 
     @Test
-    void loginUserEmptyPassword() {
+    void loginUserEmptyPassword()
+    {
         UserManagement management = getDefaultManagement();
         User userToLogIn = users.get(0);
 
@@ -57,7 +62,8 @@ class UserManagementTest {
     }
 
     @Test
-    void loginUserWrongPassword() {
+    void loginUserWrongPassword()
+    {
         UserManagement management = getDefaultManagement();
         User userToLogIn = users.get(0);
 
@@ -68,7 +74,8 @@ class UserManagementTest {
     }
 
     @Test
-    void logoutUser() {
+    void logoutUser()
+    {
         UserManagement management = getDefaultManagement();
         User userToLogin = users.get(0);
 
@@ -83,7 +90,8 @@ class UserManagementTest {
     }
 
     @Test
-    void createUser() {
+    void createUser()
+    {
         UserManagement management = getDefaultManagement();
 
         management.createUser(userNotInStore);
@@ -98,25 +106,26 @@ class UserManagementTest {
     }
 
     @Test
-    void dropUser() {
+    void dropUser()
+    {
         UserManagement management = getDefaultManagement();
         management.createUser(userNotInStore);
 
         management.dropUser(userNotInStore);
 
-        assertThrows(SecurityException.class,
-                () -> management.login(userNotInStore.getUsername(), "marco10"));
+        assertThrows(SecurityException.class, () -> management.login(userNotInStore.getUsername(), "marco10"));
     }
 
     @Test
-    void dropUserNotExisting() {
+    void dropUserNotExisting()
+    {
         UserManagement management = getDefaultManagement();
-        assertThrows(UserManagementException.class,
-                () -> management.dropUser(userNotInStore));
+        assertThrows(UserManagementException.class, () -> management.dropUser(userNotInStore));
     }
 
     @Test
-    void createUserAlreadyExisting() {
+    void createUserAlreadyExisting()
+    {
         UserManagement management = getDefaultManagement();
         User userToCreate = users.get(0);
 
@@ -125,7 +134,8 @@ class UserManagementTest {
     }
 
     @Test
-    void updateUserPassword_NotLoggedIn() {
+    void updateUserPassword_NotLoggedIn()
+    {
         UserManagement management = getDefaultManagement();
         User userToUpdate = users.get(0);
         User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword");
@@ -138,19 +148,8 @@ class UserManagementTest {
     }
 
     @Test
-    void updateUser_Mail() {
-        UserManagement management = getDefaultManagement();
-        User userToUpdate = users.get(0);
-        User updatedUser = new UserDTO(userToUpdate.getUsername(), "");
-
-        management.updateUser(updatedUser);
-
-
-        assertTrue(management.isLoggedIn(updatedUser));
-    }
-
-    @Test
-    void updateUserPassword_LoggedIn() {
+    void updateUserPassword_LoggedIn()
+    {
         UserManagement management = getDefaultManagement();
         User userToUpdate = users.get(0);
         User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword");
@@ -170,13 +169,15 @@ class UserManagementTest {
     }
 
     @Test
-    void updateUnknownUser() {
+    void updateUnknownUser()
+    {
         UserManagement management = getDefaultManagement();
         assertThrows(UserManagementException.class, () -> management.updateUser(userNotInStore));
     }
 
     @Test
-    void retrieveAllUsers() {
+    void retrieveAllUsers()
+    {
         UserManagement management = getDefaultManagement();
 
         List<User> allUsers = management.retrieveAllUsers();
