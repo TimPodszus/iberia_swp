@@ -17,7 +17,7 @@
                <children>
                   <HBox prefWidth="200.0" spacing="6.0">
                      <children>
-                        <TextField maxHeight="1.7976931348623157E308" promptText="Search lobby" HBox.hgrow="ALWAYS" />
+                        <TextField maxHeight="1.7976931348623157E308" promptText="Search iLobby" HBox.hgrow="ALWAYS" />
                         <Button mnemonicParsing="false" styleClass="search-button" text="Search" />
                      </children>
                   </HBox>

@@ -11,8 +11,10 @@
    <VBox alignment="CENTER" layoutX="250.0" layoutY="100.0" prefHeight="200.0" prefWidth="100.0" spacing="12.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="100.0">
       <children>
            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onJoinLobby" style="-fx-margin: 12px;" styleClass="menu-button" text="Current games" />
-           <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateLobby" styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Join lobby" />
-         <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateLobby" styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Create lobby" />
+           <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateLobby"
+                   styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Join lobby" />
+         <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateLobby"
+                 styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Create lobby" />
          <HBox alignment="CENTER" prefWidth="200.0" spacing="12.0">
             <children>
                <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateLobby" styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Options" HBox.hgrow="ALWAYS" />

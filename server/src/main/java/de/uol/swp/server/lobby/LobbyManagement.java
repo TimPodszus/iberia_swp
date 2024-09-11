@@ -1,18 +1,22 @@
 package de.uol.swp.server.lobby;
 
-import de.uol.swp.common.lobby.Lobby;
-import de.uol.swp.common.lobby.dto.LobbyDTO;
+import de.uol.swp.common.lobby.ILobby;
+import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.user.User;
+import de.uol.swp.server.player.Player;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Manages creation, deletion and storing of lobbies
  *
- * @see de.uol.swp.common.lobby.Lobby
- * @see de.uol.swp.common.lobby.dto.LobbyDTO
+ * @see ILobby
+ * @see ILobbyDTO
  * @author Marco Grawunder
  * @since 2019-10-08
  */
@@ -32,11 +36,33 @@ public class LobbyManagement {
      * @since 2019-10-08
      */
     public void createLobby(String name, User owner) {
+
         if (lobbies.containsKey(name)) {
             throw new IllegalArgumentException("Lobby name " + name + " already exists!");
         }
-        lobbies.put(name, new LobbyDTO(name, owner));
+        String lobbyCode = generateLobbyCode();
+        List<Player> players = new ArrayList<>();
+        Player ownerPlayer = new Player(owner.getUsername(), null, null, new ArrayList<>(), owner);
+        players.add(ownerPlayer);
+
+        Lobby newLobby = new Lobby(name, lobbyCode, players, 4, null);
+        lobbies.put(name, newLobby);
+
     }
+
+    /**
+     * Generates a unique lobby code.
+     *
+     * @return a unique lobby code
+     */
+    private String generateLobbyCode() {
+        final String[] code = new String[1];
+        do {
+            code[0] = UUID.randomUUID().toString().substring(0, 8);
+        } while (lobbies.values().stream().anyMatch(iLobby -> iLobby.getLobbyCode().equals(code[0])));
+        return code[0];
+    }
+
 
     /**
      * Deletes lobby with requested name
@@ -48,7 +74,7 @@ public class LobbyManagement {
      */
     public void dropLobby(String name) {
         if (!lobbies.containsKey(name)) {
-            throw new IllegalArgumentException("Lobby name " + name + " not found!");
+            throw new IllegalArgumentException("ILobby name " + name + " not found!");
         }
         lobbies.remove(name);
     }
@@ -61,7 +87,7 @@ public class LobbyManagement {
      * @see Optional
      * @since 2019-10-08
      */
-    public Optional<Lobby> getLobby(String name) {
+    public Optional<ILobby> getLobby(String name) {
         Lobby lobby = lobbies.get(name);
         if (lobby != null) {
             return Optional.of(lobby);

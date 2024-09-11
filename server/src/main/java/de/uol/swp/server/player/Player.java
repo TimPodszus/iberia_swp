@@ -1,12 +1,11 @@
 package de.uol.swp.server.player;
 
+import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.role.Role;
-import de.uol.swp.server.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;

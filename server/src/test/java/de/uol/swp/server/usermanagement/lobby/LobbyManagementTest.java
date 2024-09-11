@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("UnstableApiUsage")
-public class LobbyManagementTest {
+public class LobbyManagementTest
+{
 
     static final UserDTO firstOwner = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
 

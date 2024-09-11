@@ -1,5 +1,6 @@
 package de.uol.swp.common.lobby;
 
+import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.user.User;
 
 import java.util.Set;
@@ -11,10 +12,11 @@ import java.util.Set;
  * possible that not every client has to have every information of the lobby.
  *
  * @author Marco Grawunder
- * @see de.uol.swp.common.lobby.dto.LobbyDTO
+ * @see ILobbyDTO
  * @since 2019-10-08
  */
-public interface Lobby {
+public interface ILobby
+{
 
     /**
      * Getter for the lobby's name
@@ -64,4 +66,5 @@ public interface Lobby {
      */
     Set<User> getUsers();
 
+    String getLobbyCode();
 }

@@ -1,6 +1,6 @@
 package de.uol.swp.common.lobby.dto;
 
-import de.uol.swp.common.lobby.Lobby;
+import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.user.User;
 
 import java.util.Collections;
@@ -17,7 +17,8 @@ import java.util.TreeSet;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-public class LobbyDTO implements Lobby {
+public class ILobbyDTO implements ILobby
+{
 
     private final String name;
     private User owner;
@@ -31,7 +32,7 @@ public class LobbyDTO implements Lobby {
      *                owner
      * @since 2019-10-08
      */
-    public LobbyDTO(String name, User creator) {
+    public ILobbyDTO(String name, User creator) {
         this.name = name;
         this.owner = creator;
         this.users.add(creator);
@@ -50,7 +51,7 @@ public class LobbyDTO implements Lobby {
     @Override
     public void leaveUser(User user) {
         if (users.size() == 1) {
-            throw new IllegalArgumentException("Lobby must contain at least one user!");
+            throw new IllegalArgumentException("ILobby must contain at least one user!");
         }
         if (users.contains(user)) {
             this.users.remove(user);
@@ -76,6 +77,12 @@ public class LobbyDTO implements Lobby {
     @Override
     public Set<User> getUsers() {
         return Collections.unmodifiableSet(users);
+    }
+
+    @Override
+    public String getLobbyCode()
+    {
+        return null;
     }
 
 }
