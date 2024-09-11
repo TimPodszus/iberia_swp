@@ -5,6 +5,7 @@ import de.uol.swp.server.gameturn.GameTurn;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.player.Player;
 import lombok.Getter;
+
 import java.util.List;
 
 public class GameController
@@ -27,7 +28,16 @@ public class GameController
         nextTurn();
     }
 
-    public void processPlayerAction(Action action) {
+    public void receiveActionMessage(Player player, Action action) {
+        // Stelle sicher, dass der richtige Spieler am Zug ist
+        if (players.get(currentPlayerIndex).equals(player)) {
+            processPlayerAction(action);
+            // Verarbeite weitere Logik oder sende Antwortnachrichten
+        }
+    }
+
+    public void processPlayerAction(Action action)
+    {
         currentTurn.processAction(action);
     }
 
