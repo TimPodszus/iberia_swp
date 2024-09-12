@@ -1,6 +1,9 @@
+CREATE DATABASE iberia_db;
+USE iberia_db;
+
 CREATE TABLE User (
     userID INT PRIMARY KEY AUTO_INCREMENT,
-    email VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL
 );
 
