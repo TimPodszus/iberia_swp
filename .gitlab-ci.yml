@@ -12,7 +12,7 @@ cache:
     - .m2/repository
 
 build-job:
-  image: maven:3.8.6-openjdk-22
+  image: maven:3.8.6-openjdk-18
   stage: build
   script:
     - echo "Starting Maven build for all modules..."
@@ -22,7 +22,7 @@ build-job:
       - target/
 
 unit-test-job:
-  image: maven:3.8.6-openjdk-22
+  image: maven:3.8.6-openjdk-18
   stage: test
   script:
     - echo "Running unit tests across all modules..."
