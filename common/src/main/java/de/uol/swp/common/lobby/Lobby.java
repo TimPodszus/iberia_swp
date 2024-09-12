@@ -17,6 +17,13 @@ import java.util.Set;
 public interface Lobby {
 
     /**
+     * Getter for the lobby's id
+     *
+     * @return A String containing the id of the lobby
+     */
+    String getId();
+
+    /**
      * Getter for the lobby's name
      *
      * @return A String containing the name of the lobby

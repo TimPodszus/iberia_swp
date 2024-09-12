@@ -15,8 +15,9 @@ public class ActionMessage extends AbstractRequestMessage {
      *
      * @param action the action associated with this message
      */
-    public ActionMessage(Action action) {
+    public ActionMessage(Action action, MessageContext context) {
         this.action = action;
+        this.setMessageContext(context);
     }
 
     /**

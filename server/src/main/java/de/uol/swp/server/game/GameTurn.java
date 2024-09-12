@@ -1,4 +1,4 @@
-package de.uol.swp.server.gameturn;
+package de.uol.swp.server.game;
 import de.uol.swp.common.enums.Action;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.InfectionCard;
@@ -29,9 +29,11 @@ public class GameTurn
         this.isTurnOver = false;
     }
 
-    public void startTurn() {
-        System.out.println("Starte Zug für " + currentPlayer.getUsername());
+    public void startTurn() throws InterruptedException
+    {
+        System.out.println("Starte Zug für " + currentPlayer.getUser().getUsername());
         while(!isTurnOver){
+            wait();
         }
     }
 
@@ -93,7 +95,7 @@ public class GameTurn
         endTurn();
     }
     private void endTurn() {
-        System.out.println("Turn ended for player: " + currentPlayer.getUsername());
+        System.out.println("Turn ended for player: " + currentPlayer.getUser().getUsername());
         isTurnOver = true;
     }
 

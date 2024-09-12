@@ -1,7 +1,7 @@
 package de.uol.swp.server.communication;
 
 
-import de.uol.swp.server.GameController;
+import de.uol.swp.server.game.GameController;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -74,7 +74,7 @@ public class ServerHandler implements ServerHandlerDelegate
         }
 
         final Optional<MessageContext> messageContext = msg.getMessageContext();
-        if (!messageContext.isPresent()) {
+        if (messageContext.isEmpty()) {
             LOG.error("No message context for {}", msg);
             return; // Beendet die Methode frühzeitig, wenn kein Kontext vorhanden ist.
         }
@@ -84,8 +84,7 @@ public class ServerHandler implements ServerHandlerDelegate
             checkIfMessageNeedsAuthorization(messageContext.get(), msg);
 
             // Poste die Nachricht im EventBus, wenn sie nicht speziell als ActionMessage behandelt werden muss
-            if (msg instanceof ActionMessage) {
-                ActionMessage actionMessage = (ActionMessage) msg;
+            if (msg instanceof ActionMessage actionMessage) {
                 handleMessageAction(actionMessage);
             } else {
                 eventBus.post(msg);
@@ -114,7 +113,7 @@ public class ServerHandler implements ServerHandlerDelegate
     {
         if (msg.authorizationNeeded()) {
             final Optional<Session> session = getSession(ctx);
-            if (!session.isPresent()) {
+            if (session.isEmpty()) {
                 throw new SecurityException("Authorization required. Client not logged in!");
             }
             msg.setSession(session.get());
@@ -462,7 +461,6 @@ public class ServerHandler implements ServerHandlerDelegate
         Optional<MessageContext> context = actionMessage.getMessageContext();
         if (context.isPresent()) {
             Session session = getSession(context.get()).orElseThrow(() -> new SecurityException("Client not logged in"));
-            // Stelle sicher, dass der Spieler, der die Aktion ausführt, auch der aktuelle Spieler ist, usw.
             gameController.receiveActionMessage(session.getUser(), actionMessage.getAction());
         } else {
             LOG.error("ActionMessage received without a valid context");
