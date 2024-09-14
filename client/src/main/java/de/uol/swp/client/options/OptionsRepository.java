@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Properties;
 
 @Getter
-@Setter
 public class OptionsRepository {
     private static final String OPTIONS_FILE = "options.properties";
     private static final String VOLUME_IDENTIFIER = "VOLUME";
@@ -46,6 +45,26 @@ public class OptionsRepository {
     }
 
     /**
+     * Sets the chatEnabled property and updates the options file.
+     *
+     * @param chatEnabled the new value for the chatEnabled property
+     */
+    public void setChatEnabled(boolean chatEnabled) {
+        this.chatEnabled = chatEnabled;
+        properties.setProperty(CHAT_ENABLED_IDENTIFIER, String.valueOf(chatEnabled));
+    }
+
+    /**
+     * Sets the volume property and updates the options file.
+     *
+     * @param volume the new value for the volume property
+     */
+    public void setVolume(double volume) {
+        this.volume = volume;
+        properties.setProperty(VOLUME_IDENTIFIER, String.valueOf(volume));
+    }
+
+    /**
      * Loads properties from the options file.
      *
      * @throws IOException if an I/O error occurs when reading from the input stream.
@@ -55,7 +74,10 @@ public class OptionsRepository {
         properties = new Properties();
 
         // Get the path to the resource directory
-        String resourcePath = Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResource("")).getPath();
+        String resourcePath = Objects.requireNonNull(Thread.currentThread()
+                                                           .getContextClassLoader()
+                                                           .getResource(""))
+                                     .getPath();
 
         // Construct the full path to the options file
         String path = resourcePath + OPTIONS_FILE;
