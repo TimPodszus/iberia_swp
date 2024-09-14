@@ -1,6 +1,6 @@
 package de.uol.swp.common.lobby;
 
-import de.uol.swp.common.lobby.dto.ILobbyDTO;
+import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-class iLobbyDTOTest
+class LobbyDTOTest
 {
 
     private static final User defaultUser = new UserDTO("marco", "marco", "marco@grawunder.de");
@@ -43,7 +43,7 @@ class iLobbyDTOTest
      */
     @Test
     void createLobbyTest() {
-        ILobby iLobby = new ILobbyDTO("test", defaultUser);
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
 
         assertEquals("test", iLobby.getName());
         assertEquals(1, iLobby.getUsers().size());
@@ -61,7 +61,7 @@ class iLobbyDTOTest
      */
     @Test
     void joinUserLobbyTest() {
-        ILobby iLobby = new ILobbyDTO("test", defaultUser);
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
 
         iLobby.joinUser(users.get(0));
         assertEquals(2,
@@ -87,7 +87,7 @@ class iLobbyDTOTest
      */
     @Test
     void leaveUserLobbyTest() {
-        ILobby iLobby = new ILobbyDTO("test", defaultUser);
+        ILobby iLobby = new LobbyDTO("test", defaultUser,"testcode");
         users.forEach(iLobby::joinUser);
 
         assertEquals(iLobby.getUsers().size(), users.size() + 1);
@@ -107,7 +107,7 @@ class iLobbyDTOTest
      */
     @Test
     void removeOwnerFromLobbyTest() {
-        ILobby iLobby = new ILobbyDTO("test", defaultUser);
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
         users.forEach(iLobby::joinUser);
 
         iLobby.leaveUser(defaultUser);
@@ -127,7 +127,7 @@ class iLobbyDTOTest
      */
     @Test
     void updateOwnerTest() {
-        ILobby iLobby = new ILobbyDTO("test", defaultUser);
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
         users.forEach(iLobby::joinUser);
 
         iLobby.updateOwner(users.get(6));
@@ -145,7 +145,7 @@ class iLobbyDTOTest
      */
     @Test
     void assureNonEmptyLobbyTest() {
-        ILobby iLobby = new ILobbyDTO("test", defaultUser);
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
 
         assertThrows(IllegalArgumentException.class, () -> iLobby.leaveUser(defaultUser));
     }

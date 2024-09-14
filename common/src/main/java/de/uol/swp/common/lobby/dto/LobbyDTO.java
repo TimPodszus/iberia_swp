@@ -6,6 +6,7 @@ import de.uol.swp.common.user.User;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 /**
  * Object to transfer the information of a game lobby
@@ -17,12 +18,17 @@ import java.util.TreeSet;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-public class ILobbyDTO implements ILobby
+public class LobbyDTO implements ILobby
 {
 
     private final String name;
     private User owner;
     private final Set<User> users = new TreeSet<>();
+
+    private String lobbyCode;
+
+    private int difficulty;
+
 
     /**
      * Constructor
@@ -32,10 +38,12 @@ public class ILobbyDTO implements ILobby
      *                owner
      * @since 2019-10-08
      */
-    public ILobbyDTO(String name, User creator) {
+    public LobbyDTO(String name, User creator, String lobbyCode, int difficulty) {
         this.name = name;
         this.owner = creator;
         this.users.add(creator);
+        this.lobbyCode = lobbyCode;
+        this.difficulty = difficulty;
     }
 
     @Override
@@ -82,7 +90,11 @@ public class ILobbyDTO implements ILobby
     @Override
     public String getLobbyCode()
     {
-        return null;
+        return lobbyCode;
     }
 
+    public int getDifficulty()
+    {
+        return difficulty;
+    }
 }

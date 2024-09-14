@@ -30,6 +30,7 @@ public class LobbyService extends AbstractService {
     private final LobbyManagement lobbyManagement;
     private final AuthenticationService authenticationService;
 
+
     /**
      * Constructor
      *
@@ -93,7 +94,7 @@ public class LobbyService extends AbstractService {
      * Handles LobbyLeaveUserRequests found on the EventBus
      *
      * If a LobbyLeaveUserRequest is detected on the EventBus, this method is called.
-     * It removes a user from a ILobby stored in the LobbyManagement and sends a
+     * It removes a user from a Lobby stored in the LobbyManagement and sends a
      * UserLeftLobbyMessage to every user in the lobby.
      *
      * @param lobbyLeaveUserRequest The LobbyJoinUserRequest found on the EventBus

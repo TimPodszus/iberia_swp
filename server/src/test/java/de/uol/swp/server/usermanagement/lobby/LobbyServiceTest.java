@@ -62,7 +62,7 @@ class LobbyServiceTest
         // The post will lead to a call of a LobbyService function
         bus.post(request);
 
-        // Check if ILobby was created
+        // Check if Lobby was created
         assertNotNull(lobbyManagement.getLobby("Test"));
         // Checks whether it is also the correct owner
         if (lobbyManagement.getLobby("Test").isPresent()) {

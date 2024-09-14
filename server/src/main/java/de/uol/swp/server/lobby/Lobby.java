@@ -17,16 +17,14 @@ public class Lobby implements ILobby
 {
     private final String name;
     private final String lobbyCode;
-    private final List<Player> players;
+    private final List<User> users;
     @Setter
     private int difficulty;
-    @Setter
-    private Board board;
 
 
 
-    public void addPlayer(Player player) {
-        players.add(player);
+    public void addUser(User user) {
+        users.add(user);
     }
 
     @Override

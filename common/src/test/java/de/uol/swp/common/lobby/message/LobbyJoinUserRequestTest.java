@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Test for the lobby leave user request
+ * Test for the lobby join user request
  *
- * @see de.uol.swp.common.lobby.message.LobbyLeaveUserRequest
+ * @see de.uol.swp.common.lobby.message.LobbyJoinUserRequest
  * @since 2023-05-14
  */
-public class iLobbyLeaveUserRequestTest
+public class LobbyJoinUserRequestTest
 {
 
     final String lobbyName = "Test";
@@ -19,16 +19,16 @@ public class iLobbyLeaveUserRequestTest
 
 
     /**
-     * Test for creation of the LobbyLeaveUserRequests
+     * Test for creation of the LobbyJoinUserRequests
      *
-     * This test checks if the lobbyName and the user of the LobbyLeaveUserRequest gets
+     * This test checks if the lobbyName and the user of the LobbyJoinUserRequest gets
      * set correctly during the creation of the request
      *
      * @since 2023-05-14
      */
     @Test
-    void createLobbyLeaveUserRequest() {
-        LobbyLeaveUserRequest request = new LobbyLeaveUserRequest(lobbyName, user);
+    void createLobbyJoinUserRequest() {
+        LobbyJoinUserRequest request = new LobbyJoinUserRequest(lobbyName, user);
 
         assertEquals(lobbyName, request.getName());
         assertEquals(user, request.getUser());
