@@ -1,7 +1,6 @@
 package de.uol.swp.client.options;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.FileInputStream;
 import java.io.IOException;
