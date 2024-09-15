@@ -5,7 +5,8 @@ import de.uol.swp.client.lobby.CurrentGamesPresenter;
 import de.uol.swp.client.lobby.LobbyOverviewPresenter;
 import de.uol.swp.client.lobby.LobbyScreenPresenter;
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
-import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
+import de.uol.swp.client.main.event.ShowLastSceneEvent;
+import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.options.OptionsPresenter;
 import de.uol.swp.client.options.event.ShowOptionViewEvent;
 import org.greenrobot.eventbus.EventBus;
@@ -242,6 +243,22 @@ public class SceneManager {
             optionScene.getStylesheets()
                        .add(STYLE_SHEET);
         }
+    }
+
+    /**
+     * Handles ShowLastSceneEvent detected on the EventBus.
+     * <p>
+     * If a ShowLastSceneEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the last
+     * scene that was shown before the current one.
+     *
+     * @param event The ShowLastSceneEvent detected on the EventBus
+     * @see de.uol.swp.client.main.event.ShowLastSceneEvent
+     * @since 2024-09-15
+     */
+    @Subscribe
+    public void onShowLastSceneEvent(ShowLastSceneEvent event) {
+        showScene(lastScene, lastTitle);
     }
 
     /**
