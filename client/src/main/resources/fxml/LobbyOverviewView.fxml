@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="720.0" prefWidth="1280.0" styleClass="background-pane" stylesheets="@../css/lobbyOverview.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.register.RegistrationPresenter">
+<AnchorPane prefHeight="720.0" prefWidth="1280.0" styleClass="background-pane" stylesheets="@../css/lobbyOverview.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.lobby.LobbyOverviewPresenter">
    <children>
       <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="content-pane" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="20.0">
          <children>
@@ -17,13 +17,13 @@
                <children>
                   <HBox prefWidth="200.0" spacing="6.0">
                      <children>
-                        <TextField maxHeight="1.7976931348623157E308" promptText="Search lobby" HBox.hgrow="ALWAYS" />
-                        <Button mnemonicParsing="false" styleClass="search-button" text="Search" />
+                        <TextField fx:id="searchInput" maxHeight="1.7976931348623157E308" promptText="Search lobby" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="searchButton" mnemonicParsing="false" onAction="#onSearchButtonPressed" styleClass="search-button" text="Search" />
                      </children>
                   </HBox>
                   <ScrollPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                      <content>
-                        <TableView maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="563.0" prefWidth="1070.0">
+                        <TableView fx:id="lobbyTable" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="563.0" prefWidth="1070.0">
                           <columns>
                             <TableColumn maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="748.0" resizable="false" text="Name" />
                             <TableColumn minWidth="9.0" prefWidth="124.0" resizable="false" text="Players" />
@@ -37,6 +37,6 @@
             </VBox>
          </children>
       </AnchorPane>
-      <Button layoutX="14.0" layoutY="20.0" mnemonicParsing="false" prefHeight="48.0" prefWidth="48.0" styleClass="back-button" text="&lt;-" AnchorPane.leftAnchor="16.0" AnchorPane.topAnchor="20.0" />
+      <Button layoutX="14.0" layoutY="20.0" mnemonicParsing="false" onAction="#onBackButtonPressed" prefHeight="48.0" prefWidth="48.0" styleClass="back-button" text="&lt;-" AnchorPane.leftAnchor="16.0" AnchorPane.topAnchor="20.0" />
    </children>
 </AnchorPane>
