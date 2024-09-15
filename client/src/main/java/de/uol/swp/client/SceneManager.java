@@ -1,7 +1,13 @@
 package de.uol.swp.client;
 
 import com.google.inject.Provider;
+import de.uol.swp.client.lobby.CurrentGamesPresenter;
+import de.uol.swp.client.lobby.LobbyOverviewPresenter;
+import de.uol.swp.client.lobby.LobbyScreenPresenter;
+import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
+import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.options.OptionsPresenter;
+import de.uol.swp.client.options.event.ShowOptionViewEvent;
 import de.uol.swp.client.options.events.ShowOptionsViewEvent;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -36,7 +42,6 @@ import java.net.URL;
  * @since 2019-09-03
  */
 public class SceneManager {
-
     static final Logger LOG = LogManager.getLogger(SceneManager.class);
     static final String STYLE_SHEET = "css/swp.css";
     static final String DIALOG_STYLE_SHEET = "css/myDialog.css";
@@ -45,6 +50,10 @@ public class SceneManager {
     private Scene loginScene;
     private String lastTitle;
     private Scene registrationScene;
+    private Scene lobbyOverviewScene;
+    private Scene lobbyScene;
+    private Scene currentGamesScene;
+    private Scene optionScene;
     private Scene mainScene;
     private Scene optionsScene;
     private Scene lastScene = null;
@@ -53,7 +62,9 @@ public class SceneManager {
     private final Provider<FXMLLoader> loaderProvider;
 
     @Inject
-    public SceneManager(EventBus eventBus, Provider<FXMLLoader> loaderProvider, @Assisted Stage primaryStage) throws IOException {
+    public SceneManager(
+            EventBus eventBus, Provider<FXMLLoader> loaderProvider, @Assisted Stage primaryStage
+    ) throws IOException {
         eventBus.register(this);
         this.primaryStage = primaryStage;
         this.loaderProvider = loaderProvider;
@@ -71,6 +82,9 @@ public class SceneManager {
         initLoginView();
         initMainView();
         initRegistrationView();
+        initLobbyOverviewView();
+        initLobbyScreen();
+        initCurrentGamesView();
         initOptionsView();
     }
 
@@ -113,8 +127,9 @@ public class SceneManager {
     private void initMainView() throws IOException {
         if (mainScene == null) {
             Parent rootPane = initPresenter(MainMenuPresenter.FXML);
-            mainScene = new Scene(rootPane, 800, 600);
-            mainScene.getStylesheets().add(STYLE_SHEET);
+            mainScene = new Scene(rootPane, 1280, 720);
+            mainScene.getStylesheets()
+                     .add(STYLE_SHEET);
         }
     }
 
@@ -130,8 +145,9 @@ public class SceneManager {
     private void initLoginView() throws IOException {
         if (loginScene == null) {
             Parent rootPane = initPresenter(LoginPresenter.FXML);
-            loginScene = new Scene(rootPane, 400, 200);
-            loginScene.getStylesheets().add(STYLE_SHEET);
+            loginScene = new Scene(rootPane, 1280, 720);
+            loginScene.getStylesheets()
+                      .add(STYLE_SHEET);
         }
     }
 
@@ -148,8 +164,85 @@ public class SceneManager {
     private void initRegistrationView() throws IOException {
         if (registrationScene == null) {
             Parent rootPane = initPresenter(RegistrationPresenter.FXML);
-            registrationScene = new Scene(rootPane, 400, 200);
-            registrationScene.getStylesheets().add(STYLE_SHEET);
+            registrationScene = new Scene(rootPane, 1280, 720);
+            registrationScene.getStylesheets()
+                             .add(STYLE_SHEET);
+        }
+    }
+
+    /**
+     * Initializes the lobby overview view.
+     * <p>
+     * If the lobbyOverviewScene is null, it gets set to a new scene containing
+     * a pane showing the lobby overview view as specified by the LobbyOverviewPresenter
+     * FXML file.
+     *
+     * @throws IOException if the FXML file cannot be loaded
+     * @see de.uol.swp.client.lobby.LobbyOverviewPresenter
+     */
+    private void initLobbyOverviewView() throws IOException {
+        if (lobbyOverviewScene == null) {
+            Parent rootPane = initPresenter(LobbyOverviewPresenter.FXML);
+            lobbyOverviewScene = new Scene(rootPane, 1280, 720);
+            lobbyOverviewScene.getStylesheets()
+                              .add(STYLE_SHEET);
+        }
+    }
+
+    /**
+     * Initializes the lobby screen.
+     * <p>
+     * If the lobbyScene is null, it gets set to a new scene containing
+     * a pane showing the lobby screen as specified by the LobbyScreenPresenter
+     * FXML file.
+     *
+     * @throws IOException if the FXML file cannot be loaded
+     * @see de.uol.swp.client.lobby.LobbyScreenPresenter
+     */
+    private void initLobbyScreen() throws IOException {
+        if (lobbyScene == null) {
+            Parent rootPane = initPresenter(LobbyScreenPresenter.FXML);
+            lobbyScene = new Scene(rootPane, 1280, 720);
+            lobbyScene.getStylesheets()
+                      .add(STYLE_SHEET);
+        }
+    }
+
+    /**
+     * Initializes the current games view.
+     * <p>
+     * If the currentGamesScene is null, it gets set to a new scene containing
+     * a pane showing the current games view as specified by the CurrentGamesPresenter
+     * FXML file.
+     *
+     * @throws IOException if the FXML file cannot be loaded
+     * @see de.uol.swp.client.lobby.CurrentGamesPresenter
+     */
+    private void initCurrentGamesView() throws IOException {
+        if (currentGamesScene == null) {
+            Parent rootPane = initPresenter(CurrentGamesPresenter.FXML);
+            currentGamesScene = new Scene(rootPane, 1280, 720);
+            currentGamesScene.getStylesheets()
+                             .add(STYLE_SHEET);
+        }
+    }
+
+    /**
+     * Initializes the options view.
+     * <p>
+     * If the optionScene is null, it gets set to a new scene containing
+     * a pane showing the options view as specified by the OptionsPresenter
+     * FXML file.
+     *
+     * @throws IOException if the FXML file cannot be loaded
+     * @see de.uol.swp.client.options.OptionsPresenter
+     */
+    private void initOptionView() throws IOException {
+        if (optionScene == null) {
+            Parent rootPane = initPresenter(OptionsPresenter.FXML);
+            optionScene = new Scene(rootPane, 1280, 720);
+            optionScene.getStylesheets()
+                       .add(STYLE_SHEET);
         }
     }
 
@@ -170,7 +263,8 @@ public class SceneManager {
 
         Parent rootPane = initPresenter(OptionsPresenter.FXML);
         optionsScene = new Scene(rootPane, 400, 200);
-        optionsScene.getStylesheets().add(STYLE_SHEET);
+        optionsScene.getStylesheets()
+                    .add(STYLE_SHEET);
     }
 
     /**
@@ -202,6 +296,49 @@ public class SceneManager {
     @Subscribe
     public void onShowLoginViewEvent(ShowLoginViewEvent event) {
         showLoginScreen();
+    }
+
+    /**
+     * Handles ShowLobbyOverviewViewEvent detected on the EventBus.
+     * <p>
+     * If a ShowLobbyOverviewViewEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the lobby overview screen.
+     *
+     * @param event The ShowLobbyOverviewViewEvent detected on the EventBus
+     * @see ShowLobbyOverviewViewEvent
+     */
+    @Subscribe
+    public void onShowLobbyOverviewViewEvent(ShowLobbyOverviewViewEvent event) {
+        showLobbyOverviewScreen();
+    }
+
+
+    /**
+     * Handles ShowCurrentGamesViewEvent detected on the EventBus.
+     * <p>
+     * If a ShowCurrentGamesViewEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the current games screen.
+     *
+     * @param event The ShowCurrentGamesViewEvent detected on the EventBus
+     * @see de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent
+     */
+    @Subscribe
+    public void onShowCurrentGamesViewEvent(ShowCurrentGamesViewEvent event) {
+        showCurrentGamesScreen();
+    }
+
+    /**
+     * Handles ShowOptionViewEvent detected on the EventBus.
+     * <p>
+     * If a ShowOptionViewEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the options screen.
+     *
+     * @param event The ShowOptionViewEvent detected on the EventBus
+     * @see de.uol.swp.client.options.event.ShowOptionViewEvent
+     */
+    @Subscribe
+    public void onShowOptionViewEvent(ShowOptionViewEvent event) {
+        showOptionsScreen();
     }
 
     /**
@@ -246,7 +383,8 @@ public class SceneManager {
             Alert a = new Alert(Alert.AlertType.ERROR, message + e);
             // based on: https://stackoverflow.com/questions/28417140/styling-default-javafx-dialogs/28421229#28421229
             DialogPane pane = a.getDialogPane();
-            pane.getStylesheets().add(DIALOG_STYLE_SHEET);
+            pane.getStylesheets()
+                .add(DIALOG_STYLE_SHEET);
             a.showAndWait();
         });
     }
@@ -319,7 +457,8 @@ public class SceneManager {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Error logging in to server");
             // based on: https://stackoverflow.com/questions/28417140/styling-default-javafx-dialogs/28421229#28421229
             DialogPane pane = alert.getDialogPane();
-            pane.getStylesheets().add(DIALOG_STYLE_SHEET);
+            pane.getStylesheets()
+                .add(DIALOG_STYLE_SHEET);
             alert.showAndWait();
             showLoginScreen();
         });
@@ -354,11 +493,39 @@ public class SceneManager {
      * <p>
      * Switches the current Scene to the registrationScene and sets the title of
      * the window to "Registration"
-     *
-     * @since 2019-09-03
      */
     public void showRegistrationScreen() {
         showScene(registrationScene, "Registration");
+    }
+
+    /**
+     * Shows the lobby overview screen.
+     * <p>
+     * Switches the current Scene to the lobbyOverviewScene and sets the title of
+     * the window to "Lobbyübersicht".
+     */
+    public void showLobbyOverviewScreen() {
+        showScene(lobbyOverviewScene, "Lobbyübersicht");
+    }
+
+    /**
+     * Shows the lobby screen.
+     * <p>
+     * Switches the current Scene to the lobbyScene and sets the title of
+     * the window to "Lobby".
+     */
+    public void showLobbyScreen() {
+        showScene(lobbyScene, "Lobby");
+    }
+
+    /**
+     * Shows the current games screen.
+     * <p>
+     * Switches the current Scene to the currentGamesScene and sets the title of
+     * the window to "Aktuelle Spiele".
+     */
+    public void showCurrentGamesScreen() {
+        showScene(currentGamesScene, "Aktuelle Spiele");
     }
 
     /**
