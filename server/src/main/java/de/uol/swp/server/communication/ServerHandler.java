@@ -1,7 +1,7 @@
 package de.uol.swp.server.communication;
 
 
-import de.uol.swp.server.game.GameController;
+import de.uol.swp.server.GameManager;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -29,8 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 
 
-public class ServerHandler implements ServerHandlerDelegate
-{
+public class ServerHandler implements ServerHandlerDelegate {
 
     private static final Logger LOG = LogManager.getLogger(ServerHandler.class);
 
@@ -49,26 +48,23 @@ public class ServerHandler implements ServerHandlerDelegate
      */
     private final EventBus eventBus;
 
-    private final GameController gameController;
+    private final GameManager gameManager;
 
     /**
      * Constructor
      *
      * @param eventBus the EventBus used throughout the entire server
-     *
      * @see EventBus
      */
     @Inject
-    public ServerHandler(EventBus eventBus, GameController gameController)
-    {
+    public ServerHandler(EventBus eventBus, GameManager gameManager) {
         this.eventBus = eventBus;
-        this.gameController = gameController;
+        this.gameManager = gameManager;
         eventBus.register(this);
     }
 
     @Override
-    public void process(RequestMessage msg)
-    {
+    public void process(RequestMessage msg) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Received new message from client {}", msg);
         }
@@ -90,7 +86,8 @@ public class ServerHandler implements ServerHandlerDelegate
                 eventBus.post(msg);
             }
         } catch (Exception e) {
-            LOG.error("ServerException {} {}",
+            LOG.error(
+                    "ServerException {} {}",
                     e.getClass()
                      .getName(),
                     e.getMessage()
@@ -105,12 +102,10 @@ public class ServerHandler implements ServerHandlerDelegate
      *
      * @param ctx the MessageContext connected to the message to check
      * @param msg the message to check
-     *
      * @throws SecurityException authorization requirement not met
      * @since 2019-11-20
      */
-    private void checkIfMessageNeedsAuthorization(MessageContext ctx, RequestMessage msg)
-    {
+    private void checkIfMessageNeedsAuthorization(MessageContext ctx, RequestMessage msg) {
         if (msg.authorizationNeeded()) {
             final Optional<Session> session = getSession(ctx);
             if (session.isEmpty()) {
@@ -128,15 +123,14 @@ public class ServerHandler implements ServerHandlerDelegate
      * affiliated.
      *
      * @param msg The ServerExceptionMessage found on the EventBus
-     *
      * @since 2019-11-20
      */
     @Subscribe
-    public void onServerExceptionMessage(ServerExceptionMessage msg)
-    {
+    public void onServerExceptionMessage(ServerExceptionMessage msg) {
         Optional<MessageContext> ctx = getCtx(msg);
         LOG.error(msg.getException());
-        ctx.ifPresent(channelHandlerContext -> sendToClient(channelHandlerContext,
+        ctx.ifPresent(channelHandlerContext -> sendToClient(
+                channelHandlerContext,
                 new ExceptionMessage(msg.getException()
                                         .getMessage())
         ));
@@ -146,15 +140,13 @@ public class ServerHandler implements ServerHandlerDelegate
     // Handling of connected clients
     // -------------------------------------------------------------------------------
     @Override
-    public void newClientConnected(MessageContext ctx)
-    {
+    public void newClientConnected(MessageContext ctx) {
         LOG.debug("New client {} connected", ctx);
         connectedClients.add(ctx);
     }
 
     @Override
-    public void clientDisconnected(MessageContext ctx)
-    {
+    public void clientDisconnected(MessageContext ctx) {
         LOG.debug("Client disconnected");
         Session session = this.activeSessions.get(ctx);
         if (session != null) {
@@ -179,14 +171,12 @@ public class ServerHandler implements ServerHandlerDelegate
      * for notifying all connected clients.
      *
      * @param msg The ClientAuthorizedMessage found on the EventBus
-     *
      * @see de.uol.swp.server.communication.ServerHandler#sendToClient(MessageContext, ResponseMessage)
      * @see de.uol.swp.server.communication.ServerHandler#sendMessage(ServerMessage)
      * @since 2019-11-20
      */
     @Subscribe
-    public void onClientAuthorizedMessage(ClientAuthorizedMessage msg)
-    {
+    public void onClientAuthorizedMessage(ClientAuthorizedMessage msg) {
         Optional<MessageContext> ctx = getCtx(msg);
         final Optional<Session> session = msg.getSession();
         if (ctx.isPresent() && session.isPresent()) {
@@ -207,13 +197,11 @@ public class ServerHandler implements ServerHandlerDelegate
      * to send it to the connected client.
      *
      * @param msg The UserLoggedOutMessage found on the EventBus
-     *
      * @see de.uol.swp.server.communication.ServerHandler#sendMessage(ServerMessage)
      * @since 2019-11-20
      */
     @Subscribe
-    public void onUserLoggedOutMessage(UserLoggedOutMessage msg)
-    {
+    public void onUserLoggedOutMessage(UserLoggedOutMessage msg) {
         Optional<MessageContext> ctx = getCtx(msg);
         ctx.ifPresent(this::removeSession);
         sendMessage(msg);
@@ -231,13 +219,11 @@ public class ServerHandler implements ServerHandlerDelegate
      * sendToClient for sending.
      *
      * @param msg The ResponseMessage found on the EventBus
-     *
      * @see de.uol.swp.server.communication.ServerHandler#sendToClient(MessageContext, ResponseMessage)
      * @since 2019-11-20
      */
     @Subscribe
-    public void onResponseMessage(ResponseMessage msg)
-    {
+    public void onResponseMessage(ResponseMessage msg) {
         Optional<MessageContext> ctx = getCtx(msg);
         if (ctx.isPresent()) {
             msg.setSession(null);
@@ -261,20 +247,20 @@ public class ServerHandler implements ServerHandlerDelegate
      * to sendMessage in order to send it to all connected clients.
      *
      * @param msg The ServerMessage found on the EventBus
-     *
      * @see de.uol.swp.server.communication.ServerHandler#sendMessage(ServerMessage)
      * @since 2019-11-20
      */
     @Subscribe
-    public void onServerMessage(ServerMessage msg)
-    {
+    public void onServerMessage(ServerMessage msg) {
         msg.setSession(null);
         msg.setMessageContext(null);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Send {} to {}",
+            LOG.debug(
+                    "Send {} to {}",
                     msg,
                     (msg.getReceiver()
-                        .isEmpty() || msg.getReceiver() == null ? "all" : msg.getReceiver()));
+                        .isEmpty() || msg.getReceiver() == null ? "all" : msg.getReceiver())
+            );
         }
         sendMessage(msg);
     }
@@ -289,11 +275,9 @@ public class ServerHandler implements ServerHandlerDelegate
      *
      * @param ctx        The MessageContext belonging to the Session
      * @param newSession the Session to add
-     *
      * @since 2019-11-20
      */
-    private void putSession(MessageContext ctx, Session newSession)
-    {
+    private void putSession(MessageContext ctx, Session newSession) {
 
         // TODO: check if session is already bound to connection
         activeSessions.put(ctx, newSession);
@@ -303,11 +287,9 @@ public class ServerHandler implements ServerHandlerDelegate
      * Removes a Session specified by MessageContext from the activeSessions
      *
      * @param ctx the MessageContext
-     *
      * @since 2019-11-20
      */
-    private void removeSession(MessageContext ctx)
-    {
+    private void removeSession(MessageContext ctx) {
         activeSessions.remove(ctx);
     }
 
@@ -315,15 +297,12 @@ public class ServerHandler implements ServerHandlerDelegate
      * Gets the Session for a given MessageContext
      *
      * @param ctx The MeesageContext
-     *
      * @return Optional containing the Session if found
-     *
      * @see de.uol.swp.common.user.Session
      * @see de.uol.swp.common.message.MessageContext
      * @since 2019-11-20
      */
-    private Optional<Session> getSession(MessageContext ctx)
-    {
+    private Optional<Session> getSession(MessageContext ctx) {
         Session session = activeSessions.get(ctx);
         return session != null ? Optional.of(session) : Optional.empty();
     }
@@ -332,15 +311,12 @@ public class ServerHandler implements ServerHandlerDelegate
      * Gets MessageContext from Message
      *
      * @param message Message to get the MessageContext from
-     *
      * @return Optional containing the MessageContext if there is any
-     *
      * @see de.uol.swp.common.message.Message
      * @see de.uol.swp.common.message.MessageContext
      * @since 2019-11-20
      */
-    private Optional<MessageContext> getCtx(Message message)
-    {
+    private Optional<MessageContext> getCtx(Message message) {
         if (message.getMessageContext()
                    .isPresent()) {
             return message.getMessageContext();
@@ -356,15 +332,12 @@ public class ServerHandler implements ServerHandlerDelegate
      * Gets MessageContext for specified receiver
      *
      * @param session Session of the user to search
-     *
      * @return Optional containing MessageContext if there is one
-     *
      * @see de.uol.swp.common.user.Session
      * @see de.uol.swp.common.message.MessageContext
      * @since 2019-11-20
      */
-    private Optional<MessageContext> getCtx(Session session)
-    {
+    private Optional<MessageContext> getCtx(Session session) {
         for (Map.Entry<MessageContext, Session> e : activeSessions.entrySet()) {
             if (e.getValue()
                  .equals(session)) {
@@ -378,15 +351,12 @@ public class ServerHandler implements ServerHandlerDelegate
      * Gets MessageContexts for specified receivers
      *
      * @param receiver A list containing the sessions of the users to search
-     *
      * @return List of MessageContexts for the given sessions
-     *
      * @see de.uol.swp.common.user.Session
      * @see de.uol.swp.common.message.MessageContext
      * @since 2019-11-20
      */
-    private List<MessageContext> getCtx(List<Session> receiver)
-    {
+    private List<MessageContext> getCtx(List<Session> receiver) {
         List<MessageContext> ctxs = new ArrayList<>();
         receiver.forEach(r -> {
             Optional<MessageContext> s = getCtx(r);
@@ -405,13 +375,11 @@ public class ServerHandler implements ServerHandlerDelegate
      *
      * @param ctx     The MessageContext containing the specified client
      * @param message The Message to send
-     *
      * @see de.uol.swp.common.message.ResponseMessage
      * @see de.uol.swp.common.message.MessageContext
      * @since 2019-11-20
      */
-    private void sendToClient(MessageContext ctx, ResponseMessage message)
-    {
+    private void sendToClient(MessageContext ctx, ResponseMessage message) {
         LOG.trace("Trying to sendMessage to client: {} {}", ctx, message);
         ctx.writeAndFlush(message);
     }
@@ -420,12 +388,10 @@ public class ServerHandler implements ServerHandlerDelegate
      * Sends a ServerMessage to either a specified receiver or all connected clients
      *
      * @param msg ServerMessage to send
-     *
      * @see de.uol.swp.common.message.ServerMessage
      * @since 2019-11-20
      */
-    private void sendMessage(ServerMessage msg)
-    {
+    private void sendMessage(ServerMessage msg) {
         if (msg.getReceiver() == null || msg.getReceiver()
                                             .isEmpty()) {
             sendToMany(connectedClients, msg);
@@ -439,13 +405,11 @@ public class ServerHandler implements ServerHandlerDelegate
      *
      * @param sendTo List of MessageContexts to send the message to
      * @param msg    message to send
-     *
      * @see de.uol.swp.common.message.MessageContext
      * @see de.uol.swp.common.message.ServerMessage
      * @since 2019-11-20
      */
-    private void sendToMany(List<MessageContext> sendTo, ServerMessage msg)
-    {
+    private void sendToMany(List<MessageContext> sendTo, ServerMessage msg) {
         for (MessageContext client : sendTo) {
             try {
                 client.writeAndFlush(msg);
@@ -456,12 +420,12 @@ public class ServerHandler implements ServerHandlerDelegate
         }
     }
 
-    private void handleMessageAction(ActionMessage actionMessage)
-    {
+    private void handleMessageAction(ActionMessage actionMessage) {
         Optional<MessageContext> context = actionMessage.getMessageContext();
         if (context.isPresent()) {
             Session session = getSession(context.get()).orElseThrow(() -> new SecurityException("Client not logged in"));
-            gameController.receiveActionMessage(session.getUser(), actionMessage.getAction());
+            gameManager.receiveAndForwardActionMessage(session.getUser(), actionMessage.getAction(),
+                    actionMessage.getLobbyId() );
         } else {
             LOG.error("ActionMessage received without a valid context");
         }

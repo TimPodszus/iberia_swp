@@ -42,7 +42,7 @@ class LobbyDTOTest {
      */
     @Test
     void createLobbyTest() {
-        Lobby lobby = new LobbyDTO("test", defaultUser);
+        Lobby lobby = new LobbyDTO("test", defaultUser, "testcode");
 
         assertEquals("test", lobby.getName());
         assertEquals(1, lobby.getUsers().size());
@@ -60,7 +60,7 @@ class LobbyDTOTest {
      */
     @Test
     void joinUserLobbyTest() {
-        Lobby lobby = new LobbyDTO("test", defaultUser);
+        Lobby lobby = new LobbyDTO("test", defaultUser, "testcode");
 
         lobby.joinUser(users.get(0));
         assertEquals(2,lobby.getUsers().size());
@@ -84,7 +84,7 @@ class LobbyDTOTest {
      */
     @Test
     void leaveUserLobbyTest() {
-        Lobby lobby = new LobbyDTO("test", defaultUser);
+        Lobby lobby = new LobbyDTO("test", defaultUser, "testcode");
         users.forEach(lobby::joinUser);
 
         assertEquals(lobby.getUsers().size(), users.size() + 1);
@@ -104,7 +104,7 @@ class LobbyDTOTest {
      */
     @Test
     void removeOwnerFromLobbyTest() {
-        Lobby lobby = new LobbyDTO("test", defaultUser);
+        Lobby lobby = new LobbyDTO("test", defaultUser, "testcode");
         users.forEach(lobby::joinUser);
 
         lobby.leaveUser(defaultUser);
@@ -124,7 +124,7 @@ class LobbyDTOTest {
      */
     @Test
     void updateOwnerTest() {
-        Lobby lobby = new LobbyDTO("test", defaultUser);
+        Lobby lobby = new LobbyDTO("test", defaultUser, "testcode");
         users.forEach(lobby::joinUser);
 
         lobby.updateOwner(users.get(6));
@@ -142,7 +142,7 @@ class LobbyDTOTest {
      */
     @Test
     void assureNonEmptyLobbyTest() {
-        Lobby lobby = new LobbyDTO("test", defaultUser);
+        Lobby lobby = new LobbyDTO("test", defaultUser, "testcode");
 
         assertThrows(IllegalArgumentException.class, () -> lobby.leaveUser(defaultUser));
     }

@@ -1,6 +1,8 @@
 package de.uol.swp.server;
 
+import de.uol.swp.common.enums.Action;
 import de.uol.swp.common.lobby.Lobby;
+import de.uol.swp.common.user.User;
 import de.uol.swp.server.game.GameController;
 
 import java.util.Map;
@@ -8,6 +10,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GameManager {
     private Map<String, GameController> gameControllers = new ConcurrentHashMap<>();
+
+    public Map<String, GameController> getGameControllers() {
+        return gameControllers;
+    }
 
     public void createGameForLobby(Lobby lobby) {
         String lobbyId = lobby.getId();
@@ -24,5 +30,12 @@ public class GameManager {
 
     public void endGame(String lobbyId) {
         GameController gameController = gameControllers.remove(lobbyId);
+    }
+
+    public void receiveAndForwardActionMessage(User user, Action action, String lobbyId) {
+        GameController gameController = getGameController(lobbyId);
+        if (gameController != null) {
+            gameController.receiveActionMessage(user, action);
+        }
     }
 }

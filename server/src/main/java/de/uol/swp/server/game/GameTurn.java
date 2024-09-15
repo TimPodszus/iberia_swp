@@ -1,4 +1,5 @@
 package de.uol.swp.server.game;
+
 import de.uol.swp.common.enums.Action;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.InfectionCard;
@@ -10,8 +11,7 @@ import lombok.*;
 
 @AllArgsConstructor
 @Getter
-public class GameTurn
-{
+public class GameTurn {
     private Player currentPlayer;
     private Board board;
     private int actionsRemaining;
@@ -19,8 +19,7 @@ public class GameTurn
     private boolean isInfectionPhase;
     private boolean isTurnOver;
 
-    public GameTurn(Player currentPlayer, Board board)
-    {
+    public GameTurn(Player currentPlayer, Board board) {
         this.currentPlayer = currentPlayer;
         this.board = board;
         this.actionsRemaining = 4;
@@ -29,10 +28,10 @@ public class GameTurn
         this.isTurnOver = false;
     }
 
-    public void startTurn() throws InterruptedException
-    {
-        System.out.println("Starte Zug für " + currentPlayer.getUser().getUsername());
-        while(!isTurnOver){
+    public void startTurn() throws InterruptedException {
+        System.out.println("Starte Zug für " + currentPlayer.getUser()
+                                                            .getUsername());
+        while (!isTurnOver) {
             wait();
         }
     }
@@ -89,68 +88,59 @@ public class GameTurn
     private void startInfectionPhase() {
         isInfectionPhase = true;
         int infectionCounter = board.getInfectionCounter();
-        for(int i = 1; i <= infectionCounter; i++){
+        for (int i = 1; i <= infectionCounter; i++) {
             infectCity(drawInfectionCard(), 1);
         }
         endTurn();
     }
-    private void endTurn() {
-        System.out.println("Turn ended for player: " + currentPlayer.getUser().getUsername());
+
+    public void endTurn() {
+        System.out.println("Turn ended for player: " + currentPlayer.getUser()
+                                                                    .getUsername());
         isTurnOver = true;
     }
 
-    void placeWaterTreatment(Region region)
-    {
+    void placeWaterTreatment(Region region) {
         //not implemented
     }
 
-    void buildHospital(City city)
-    {
+    void buildHospital(City city) {
         //not implemented
     }
 
-    void buildTrainTracks(Connection connection)
-    {
+    void buildTrainTracks(Connection connection) {
         //not implemented
     }
 
-    void tradeCards(Player tradingPartner)
-    {
+    void tradeCards(Player tradingPartner) {
         //not implemented
     }
 
-    void treatInfection(City city)
-    {
+    void treatInfection(City city) {
         //not implemented
     }
 
-    void researchPlague()
-    {
+    void researchPlague() {
         //not implemented
     }
 
-    void useRoleAbility()
-    {
+    void useRoleAbility() {
         //not implemented
     }
 
-    void move(City destination)
-    {
+    void move(City destination) {
         //not implemented
     }
 
-     private InfectionCard drawInfectionCard()
-    {
+    private InfectionCard drawInfectionCard() {
         return null;
     }
 
-    void drawPlayerCard()
-    {
+    void drawPlayerCard() {
         //not implemented
     }
 
-    void infectCity(InfectionCard infectionCard, int amount)
-    {
+    void infectCity(InfectionCard infectionCard, int amount) {
         //not implemented
     }
 
