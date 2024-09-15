@@ -14,6 +14,10 @@ class OptionsRepositoryTest {
         this.optionsRepository = new OptionsRepository();
     }
 
+    /**
+     * Tests the setChatEnabled method of OptionsRepository.
+     * Ensures that the chatEnabled property is correctly set and retrieved.
+     */
     @Test
     void testSetChatEnabled() {
         this.optionsRepository.setChatEnabled(true);
@@ -23,6 +27,10 @@ class OptionsRepositoryTest {
         assertFalse(this.optionsRepository.isChatEnabled());
     }
 
+    /**
+     * Tests the setVolume method of OptionsRepository.
+     * Ensures that the volume property is correctly set and retrieved.
+     */
     @Test
     void testSetVolume() {
         this.optionsRepository.setVolume(50.0);
@@ -32,6 +40,10 @@ class OptionsRepositoryTest {
         assertEquals(0.0, this.optionsRepository.getVolume());
     }
 
+    /**
+     * Tests the saveProperties method of OptionsRepository.
+     * Ensures that the properties are correctly saved and retrieved.
+     */
     @Test
     void testSaveProperties() {
         this.optionsRepository.setChatEnabled(true);
