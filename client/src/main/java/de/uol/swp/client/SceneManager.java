@@ -6,9 +6,9 @@ import de.uol.swp.client.lobby.LobbyOverviewPresenter;
 import de.uol.swp.client.lobby.LobbyScreenPresenter;
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
+import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.options.OptionsPresenter;
-import de.uol.swp.client.options.event.ShowOptionViewEvent;
-import de.uol.swp.client.options.events.ShowOptionsViewEvent;
+import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -248,6 +248,22 @@ public class SceneManager {
     }
 
     /**
+     * Handles ShowLastSceneEvent detected on the EventBus.
+     * <p>
+     * If a ShowLastSceneEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the last
+     * scene that was shown before the current one.
+     *
+     * @param event The ShowLastSceneEvent detected on the EventBus
+     * @see de.uol.swp.client.main.event.ShowLastSceneEvent
+     * @since 2019-09-03
+     */
+    @Subscribe
+    public void onShowLastSceneEvent(ShowLastSceneEvent event) {
+        showScene(lastScene, lastTitle);
+    }
+
+    /**
      * Handles ShowRegistrationViewEvent detected on the EventBus
      * <p>
      * If a ShowRegistrationViewEvent is detected on the EventBus, this method gets
@@ -308,20 +324,6 @@ public class SceneManager {
     }
 
     /**
-     * Handles ShowOptionViewEvent detected on the EventBus.
-     * <p>
-     * If a ShowOptionViewEvent is detected on the EventBus, this method gets
-     * called. It calls a method to switch the current screen to the options screen.
-     *
-     * @param event The ShowOptionViewEvent detected on the EventBus
-     * @see de.uol.swp.client.options.event.ShowOptionViewEvent
-     */
-    @Subscribe
-    public void onShowOptionViewEvent(ShowOptionViewEvent event) {
-        showOptionsScreen();
-    }
-
-    /**
      * Handles RegistrationCanceledEvent detected on the EventBus
      * <p>
      * If a RegistrationCanceledEvent is detected on the EventBus, this method gets
@@ -376,7 +378,7 @@ public class SceneManager {
      * called. It calls a method to switch the current screen to the options screen.
      *
      * @param event The ShowOptionsViewEvent detected on the EventBus
-     * @see de.uol.swp.client.options.events.ShowOptionsViewEvent
+     * @see ShowOptionsViewEvent
      * @since 2024-09-11
      */
     @Subscribe

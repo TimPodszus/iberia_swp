@@ -1,4 +1,4 @@
-package de.uol.swp.client.options.events;
+package de.uol.swp.client.options.event;
 
 import lombok.NoArgsConstructor;
 
