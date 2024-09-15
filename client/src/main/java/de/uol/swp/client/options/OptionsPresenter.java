@@ -27,6 +27,11 @@ public class OptionsPresenter extends AbstractPresenter {
      * @since 2024-09-11
      */
     public OptionsPresenter() {
+
+    }
+
+    @FXML
+    public void initialize() {
         volumeSlider.setValue(optionsRepository.getVolume());
         volumeLabel.setText(optionsRepository.getVolume() + " %");
         chatEnabledCheckbox.setSelected(optionsRepository.isChatEnabled());

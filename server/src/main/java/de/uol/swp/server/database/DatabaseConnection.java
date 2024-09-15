@@ -1,4 +1,5 @@
 package de.uol.swp.server.database;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,7 +13,7 @@ public class DatabaseConnection {
     // Datenbankverbindungsinformationen
     private final String jdbcUrl = "jdbc:mysql://localhost:3306/iberia_db";
     private final String username = "root";
-    private final String password = "iberia2024";
+    private final String password = "123456";
 
     // Privater Konstruktor, um eine Instanz zu verhindern
     private DatabaseConnection() throws SQLException {

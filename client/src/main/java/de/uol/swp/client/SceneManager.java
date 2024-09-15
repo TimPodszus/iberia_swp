@@ -53,7 +53,6 @@ public class SceneManager {
     private Scene lobbyOverviewScene;
     private Scene lobbyScene;
     private Scene currentGamesScene;
-    private Scene optionScene;
     private Scene mainScene;
     private Scene optionsScene;
     private Scene lastScene = null;
@@ -224,25 +223,6 @@ public class SceneManager {
             currentGamesScene = new Scene(rootPane, 1280, 720);
             currentGamesScene.getStylesheets()
                              .add(STYLE_SHEET);
-        }
-    }
-
-    /**
-     * Initializes the options view.
-     * <p>
-     * If the optionScene is null, it gets set to a new scene containing
-     * a pane showing the options view as specified by the OptionsPresenter
-     * FXML file.
-     *
-     * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.options.OptionsPresenter
-     */
-    private void initOptionView() throws IOException {
-        if (optionScene == null) {
-            Parent rootPane = initPresenter(OptionsPresenter.FXML);
-            optionScene = new Scene(rootPane, 1280, 720);
-            optionScene.getStylesheets()
-                       .add(STYLE_SHEET);
         }
     }
 
