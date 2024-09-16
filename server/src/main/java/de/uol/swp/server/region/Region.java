@@ -10,22 +10,23 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class Region {
+public class Region
+{
     private final int id;
     private final List<City> surroundingCities;
     private int waterTreatments;
     private boolean preventionMarker;
 
-    public void increaseWaterTreatments(int count) {
+    public void increaseWaterTreatments(int count)
+    {
         waterTreatments += count;
     }
 
     public void decreaseWaterTreatments(int count) throws Exception
     {
-        if(waterTreatments >= count){
+        if (waterTreatments >= count) {
             waterTreatments -= count;
-        }
-        else{
+        } else {
             throw new Exception("Nicht genug Wasseraufbereitungsmarker in dieser Region verfügbar");
         }
     }
