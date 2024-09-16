@@ -9,40 +9,49 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="720.0" prefWidth="1280.0" styleClass="background-pane" stylesheets="@../css/optionView.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.main.MainMenuPresenter">
-   <children>
-      <AnchorPane layoutX="261.0" layoutY="118.0" prefHeight="200.0" prefWidth="200.0" styleClass="content-pane" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="60.0">
-         <children>
-            <Label layoutX="161.0" layoutY="70.0" styleClass="h2" text="Options" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-            <VBox layoutX="14.0" layoutY="47.0" prefHeight="200.0" prefWidth="514.0" spacing="18.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
-               <children>
-                  <VBox maxHeight="-Infinity" prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
-                     <children>
-                        <Label text="Change username" />
-                        <HBox prefWidth="200.0" spacing="6.0">
-                           <children>
-                              <TextField maxHeight="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-                              <Button mnemonicParsing="false" styleClass="change-button" text="Change" HBox.hgrow="NEVER" />
-                           </children>
-                        </HBox>
-                     </children>
-                  </VBox>
-                  <VBox prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
-                     <children>
-                        <Label text="Volume" />
-                        <Slider blockIncrement="5.0" snapToTicks="true" value="100.0" />
-                        <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="100%" VBox.vgrow="ALWAYS" />
-                     </children>
-                  </VBox>
-                  <VBox fillWidth="false" prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
-                     <children>
-                        <Label text="Chat" />
-                        <CheckBox mnemonicParsing="false" selected="true" text="Activate chat" />
-                     </children>
-                  </VBox>
-               </children>
-            </VBox>
-         </children>
-      </AnchorPane>
-   </children>
+<AnchorPane prefHeight="720.0" prefWidth="1280.0" styleClass="background-pane" stylesheets="@../css/optionView.css"
+            xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="de.uol.swp.client.options.OptionsPresenter">
+    <children>
+        <AnchorPane layoutX="261.0" layoutY="118.0" prefHeight="200.0" prefWidth="200.0" styleClass="content-pane"
+                    AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0"
+                    AnchorPane.topAnchor="60.0">
+            <children>
+                <Label layoutX="161.0" layoutY="70.0" styleClass="h2" text="Options" AnchorPane.leftAnchor="0.0"
+                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                <VBox layoutX="14.0" layoutY="47.0" prefHeight="200.0" prefWidth="514.0" spacing="18.0"
+                      AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                      AnchorPane.topAnchor="40.0">
+                    <children>
+                        <VBox maxHeight="-Infinity" prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
+                            <children>
+                                <Label text="Change username"/>
+                                <HBox prefWidth="200.0" spacing="6.0">
+                                    <children>
+                                        <TextField maxHeight="1.7976931348623157E308" HBox.hgrow="ALWAYS"/>
+                                        <Button mnemonicParsing="false" styleClass="change-button" text="Change"
+                                                HBox.hgrow="NEVER"/>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                        <VBox prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
+                            <children>
+                                <Label text="Volume"/>
+                                <Slider blockIncrement="5.0" snapToTicks="true" value="100.0"/>
+                                <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="100%"
+                                       VBox.vgrow="ALWAYS"/>
+                            </children>
+                        </VBox>
+                        <VBox fillWidth="false" prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
+                            <children>
+                                <Label text="Chat"/>
+                                <CheckBox mnemonicParsing="false" selected="true" text="Activate chat"/>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
+    </children>
 </AnchorPane>
