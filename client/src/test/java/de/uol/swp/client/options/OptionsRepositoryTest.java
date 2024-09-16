@@ -21,7 +21,7 @@ class OptionsRepositoryTest {
     @Test
     void testSetChatEnabled() {
         this.optionsRepository.setChatEnabled(true);
-        assert (this.optionsRepository.isChatEnabled());
+        assertTrue(this.optionsRepository.isChatEnabled());
 
         this.optionsRepository.setChatEnabled(false);
         assertFalse(this.optionsRepository.isChatEnabled());
