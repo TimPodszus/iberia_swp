@@ -7,7 +7,6 @@ import java.util.Set;
 
 /**
  * Interface to unify lobby objects
- *
  * This is an Interface to allow for multiple types of lobby objects since it is
  * possible that not every client has to have every information of the lobby.
  *

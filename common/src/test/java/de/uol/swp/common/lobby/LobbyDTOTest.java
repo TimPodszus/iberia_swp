@@ -36,14 +36,13 @@ class LobbyDTOTest
 
     /**
      * This test check whether a lobby is created correctly
-     *
      * If the variables are not set correctly the test fails
      *
      * @since 2019-10-08
      */
     @Test
     void createLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
 
         assertEquals("test", iLobby.getName());
         assertEquals(1, iLobby.getUsers().size());
@@ -53,7 +52,6 @@ class LobbyDTOTest
 
     /**
      * This test check whether a user can join a lobby
-     *
      * The test fails if the size of the user list of the lobby does not get bigger
      * or a user who joined is not in the list.
      *
@@ -61,7 +59,7 @@ class LobbyDTOTest
      */
     @Test
     void joinUserLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
 
         iLobby.joinUser(users.get(0));
         assertEquals(2,
@@ -79,7 +77,6 @@ class LobbyDTOTest
 
     /**
      * This test check whether a user can leave a lobby
-     *
      * The test fails if the size of the user list of the lobby does not get smaller
      * or the user who left is still in the list.
      *
@@ -87,7 +84,7 @@ class LobbyDTOTest
      */
     @Test
     void leaveUserLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser,"testcode");
+        ILobby iLobby = new LobbyDTO("test", defaultUser,"testcode", 4);
         users.forEach(iLobby::joinUser);
 
         assertEquals(iLobby.getUsers().size(), users.size() + 1);
@@ -98,8 +95,7 @@ class LobbyDTOTest
     }
 
     /**
-     * Test to check if the owner can leave the ILobby correctly
-     *
+     * Test to check if the owner can leave the Lobby correctly
      * This test fails if the owner field is not updated if the owner leaves the
      * lobby or if he still is in the user list of the lobby.
      *
@@ -107,7 +103,7 @@ class LobbyDTOTest
      */
     @Test
     void removeOwnerFromLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
         users.forEach(iLobby::joinUser);
 
         iLobby.leaveUser(defaultUser);
@@ -120,14 +116,13 @@ class LobbyDTOTest
     /**
      * This checks if the owner of a lobby can be updated and if he has have joined
      * the lobby
-     *
      * This test fails if the owner cannot be updated or does not have to be joined
      *
      * @since 2019-10-08
      */
     @Test
     void updateOwnerTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
         users.forEach(iLobby::joinUser);
 
         iLobby.updateOwner(users.get(6));
@@ -138,14 +133,13 @@ class LobbyDTOTest
 
     /**
      * This test check whether a lobby can be empty
-     *
      * If the leaveUser function does not throw an Exception the test fails
      *
      * @since 2019-10-08
      */
     @Test
     void assureNonEmptyLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode");
+        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
 
         assertThrows(IllegalArgumentException.class, () -> iLobby.leaveUser(defaultUser));
     }

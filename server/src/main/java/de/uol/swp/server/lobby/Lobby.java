@@ -2,8 +2,6 @@ package de.uol.swp.server.lobby;
 
 import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.user.User;
-import de.uol.swp.server.board.Board;
-import de.uol.swp.server.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,7 +32,7 @@ public class Lobby implements ILobby
     @Override
     public void updateOwner(User user)
     {
-
+        // TODO document why this method is empty
     }
 
     @Override
@@ -46,18 +44,19 @@ public class Lobby implements ILobby
     @Override
     public void joinUser(User user)
     {
-
+        // TODO document why this method is empty
     }
 
     @Override
     public void leaveUser(User user)
     {
-
+        // TODO document why this method is empty
     }
 
     @Override
     public Set<User> getUsers()
     {
+
         return null;
     }
 }

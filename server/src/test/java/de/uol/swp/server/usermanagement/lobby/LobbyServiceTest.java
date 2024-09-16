@@ -7,6 +7,7 @@ import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
 
 import de.uol.swp.common.user.UserDTO;
 
+import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.lobby.LobbyManagement;
 import de.uol.swp.server.lobby.LobbyService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
@@ -24,7 +25,7 @@ import org.mockito.MockitoAnnotations;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class LobbyServiceTest
+class LobbyServiceTest extends EventBusBasedTest
 {
 
     static final UserDTO firstOwner = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
@@ -46,7 +47,7 @@ class LobbyServiceTest
     @Mock
     private UserDTO mockUserDTO = new UserDTO("TestUser", "TestPassword", "testemail@gmx.de");
     @InjectMocks
-    private LobbyService lobbyService = new LobbyService(lobbyManagement, authService, bus);
+    private LobbyService lobbyService = new LobbyService(lobbyManagement, authService, getBus());
 
     @BeforeEach
     public void setUp() {
@@ -132,25 +133,25 @@ class LobbyServiceTest
 
 
     @Test
-    void lobbyIsAddedToOpenLobbyListTest() {
+    void lobbyIsAddedToOpenLobbyListTest() throws InterruptedException {
+
         // Arrange
         final CreateLobbyRequest request = new CreateLobbyRequest("TestLobby", firstOwner);
 
         // Act
-        bus.post(request);
+        postAndWait(request);
 
-        System.out.println("Lobbies: " + lobbyManagement.getLobby("TestLobby"));
         // Assert
         assertTrue(lobbyManagement.getLobby("TestLobby").isPresent(), "Lobby should be added to the list of open lobbies.");
     }
 
     @Test
-    void creatorIsAutomaticallyAddedToLobbyTest() {
+    void creatorIsAutomaticallyAddedToLobbyTest() throws InterruptedException {
         // Arrange
-        final CreateLobbyRequest request = new CreateLobbyRequest("TestLobby", firstOwner);
+        final CreateLobbyRequest request = new CreateLobbyRequest("TestLobby2", firstOwner);
 
         // Act
-        bus.post(request);
+        postAndWait(request);
 
         // Assert
         if (lobbyManagement.getLobby("TestLobby").isPresent()) {
@@ -162,12 +163,12 @@ class LobbyServiceTest
     }
 
     @Test
-    void lobbyNameAndLobbyCodeAreGeneratedTest() {
+    void lobbyNameAndLobbyCodeAreGeneratedTest() throws InterruptedException {
         // Arrange
-        final CreateLobbyRequest request = new CreateLobbyRequest("TestLobby", firstOwner);
+        final CreateLobbyRequest request = new CreateLobbyRequest("TestLobby3", firstOwner);
 
         // Act
-        bus.post(request);
+        postAndWait(request);
 
         // Assert
         ILobby createdLobby = lobbyManagement.getLobby("TestLobby").orElse(null);

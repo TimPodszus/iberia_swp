@@ -6,11 +6,10 @@ import de.uol.swp.common.user.User;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
+
 
 /**
  * Object to transfer the information of a game lobby
- *
  * This object is used to communicate the current state of game lobbies between
  * the server and clients. It contains information about the Name of the lobby,
  * who owns the lobby and who joined the lobby.
@@ -25,9 +24,9 @@ public class LobbyDTO implements ILobby
     private User owner;
     private final Set<User> users = new TreeSet<>();
 
-    private String lobbyCode;
+    private final String lobbyCode;
 
-    private int difficulty;
+    private final int difficulty;
 
 
     /**

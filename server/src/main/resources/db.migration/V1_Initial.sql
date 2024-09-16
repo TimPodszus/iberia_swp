@@ -34,8 +34,8 @@ CREATE TABLE Plague (
 CREATE TABLE Lobby (
     lobbyID INT PRIMARY KEY AUTO_INCREMENT,
     difficulty INT NOT NULL,
-    boardID INT,
-    FOREIGN KEY (boardID) REFERENCES Board(boardID)
+    owner VARCHAR(255),
+    users VARCHAR(255)
 );
 
 CREATE TABLE Player (

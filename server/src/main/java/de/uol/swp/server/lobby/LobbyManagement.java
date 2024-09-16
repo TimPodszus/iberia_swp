@@ -1,12 +1,11 @@
 package de.uol.swp.server.lobby;
 
 import de.uol.swp.common.lobby.ILobby;
-import de.uol.swp.common.lobby.dao.LobbyDAO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.database.DatabaseConnection;
-import de.uol.swp.server.player.Player;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,7 +31,7 @@ public class LobbyManagement {
     private final Map<String, Lobby> lobbies = new HashMap<>();
 
     private static final String INSERT_LOBBY_SQL = "INSERT INTO Lobby (id, difficulty, owner, users) VALUES (?, ?, ?," + " ?)";
-    private static final String INSERT_LOBBY_USER_SQL = "INSERT INTO User (userID, user_name, password) VALUES (?, ?," + " ?)";
+    private static final String INSERT_LOBBY_USER_SQL = "INSERT INTO User (userID, username, password) VALUES (?, ?," + " ?)";
 
 
     /**
