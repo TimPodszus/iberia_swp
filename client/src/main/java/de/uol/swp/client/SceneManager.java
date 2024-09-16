@@ -46,6 +46,9 @@ public class SceneManager {
     static final String STYLE_SHEET = "css/swp.css";
     static final String DIALOG_STYLE_SHEET = "css/myDialog.css";
 
+    private static final int DEFAULT_WIDTH = 1280;
+    private static final int DEFAULT_HEIGHT = 720;
+
     private final Stage primaryStage;
     private Scene loginScene;
     private String lastTitle;
@@ -126,7 +129,7 @@ public class SceneManager {
     private void initMainView() throws IOException {
         if (mainScene == null) {
             Parent rootPane = initPresenter(MainMenuPresenter.FXML);
-            mainScene = new Scene(rootPane, 1280, 720);
+            mainScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             mainScene.getStylesheets()
                      .add(STYLE_SHEET);
         }
@@ -144,7 +147,7 @@ public class SceneManager {
     private void initLoginView() throws IOException {
         if (loginScene == null) {
             Parent rootPane = initPresenter(LoginPresenter.FXML);
-            loginScene = new Scene(rootPane, 1280, 720);
+            loginScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             loginScene.getStylesheets()
                       .add(STYLE_SHEET);
         }
@@ -163,7 +166,7 @@ public class SceneManager {
     private void initRegistrationView() throws IOException {
         if (registrationScene == null) {
             Parent rootPane = initPresenter(RegistrationPresenter.FXML);
-            registrationScene = new Scene(rootPane, 1280, 720);
+            registrationScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             registrationScene.getStylesheets()
                              .add(STYLE_SHEET);
         }
@@ -182,7 +185,7 @@ public class SceneManager {
     private void initLobbyOverviewView() throws IOException {
         if (lobbyOverviewScene == null) {
             Parent rootPane = initPresenter(LobbyOverviewPresenter.FXML);
-            lobbyOverviewScene = new Scene(rootPane, 1280, 720);
+            lobbyOverviewScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             lobbyOverviewScene.getStylesheets()
                               .add(STYLE_SHEET);
         }
@@ -201,7 +204,7 @@ public class SceneManager {
     private void initLobbyScreen() throws IOException {
         if (lobbyScene == null) {
             Parent rootPane = initPresenter(LobbyScreenPresenter.FXML);
-            lobbyScene = new Scene(rootPane, 1280, 720);
+            lobbyScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             lobbyScene.getStylesheets()
                       .add(STYLE_SHEET);
         }
@@ -220,7 +223,7 @@ public class SceneManager {
     private void initCurrentGamesView() throws IOException {
         if (currentGamesScene == null) {
             Parent rootPane = initPresenter(CurrentGamesPresenter.FXML);
-            currentGamesScene = new Scene(rootPane, 1280, 720);
+            currentGamesScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             currentGamesScene.getStylesheets()
                              .add(STYLE_SHEET);
         }
@@ -242,7 +245,7 @@ public class SceneManager {
         }
 
         Parent rootPane = initPresenter(OptionsPresenter.FXML);
-        optionsScene = new Scene(rootPane, 400, 200);
+        optionsScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         optionsScene.getStylesheets()
                     .add(STYLE_SHEET);
     }
