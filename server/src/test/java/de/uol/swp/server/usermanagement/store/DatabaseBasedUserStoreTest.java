@@ -36,13 +36,11 @@ public class DatabaseBasedUserStoreTest
         Optional<User> user = userStore.findUser("testuser", "testpassword");
 
         assertTrue(user.isPresent());
-        assertEquals(
-                "testuser",
+        assertEquals("testuser",
                 user.get()
                     .getUsername()
         );
-        assertEquals(
-                "{SHA512}6eYzCXq5zrPkjsP3DuK+ukHQXVQg7+5dqF+X2XAFcnWH/aM+9P8jIgiPTHnoEzzJzZ81EvTTowPL21vFhUFaAA==",
+        assertEquals("{SHA512}6eYzCXq5zrPkjsP3DuK+ukHQXVQg7+5dqF+X2XAFcnWH/aM+9P8jIgiPTHnoEzzJzZ81EvTTowPL21vFhUFaAA==",
                 user.get()
                     .getPassword()
         );
@@ -62,13 +60,11 @@ public class DatabaseBasedUserStoreTest
         Optional<User> user = userStore.findUser("testuser");
 
         assertTrue(user.isPresent());
-        assertEquals(
-                "testuser",
+        assertEquals("testuser",
                 user.get()
                     .getUsername()
         );
-        assertEquals(
-                "{SHA512}6eYzCXq5zrPkjsP3DuK+ukHQXVQg7+5dqF+X2XAFcnWH/aM+9P8jIgiPTHnoEzzJzZ81EvTTowPL21vFhUFaAA==",
+        assertEquals("{SHA512}6eYzCXq5zrPkjsP3DuK+ukHQXVQg7+5dqF+X2XAFcnWH/aM+9P8jIgiPTHnoEzzJzZ81EvTTowPL21vFhUFaAA==",
                 user.get()
                     .getPassword()
         );
@@ -81,7 +77,10 @@ public class DatabaseBasedUserStoreTest
 
         assertNotNull(user);
         assertEquals("newuser", user.getUsername());
-        assertEquals("newpassword", user.getPassword());
+        assertEquals(
+                "{SHA512}fdKanJZD/VJOG0NglkuJzlmRTmjR/RqwTdYfuqq8WOV53P+1t0VKsB5YbIrpjlOLXW4P86591ELeczNIbcnfGg==",
+                user.getPassword()
+        );
     }
 
     @Test
