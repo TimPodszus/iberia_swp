@@ -4,7 +4,6 @@ import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.City;
-import de.uol.swp.server.connection.Connection;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.Region;
 import lombok.AllArgsConstructor;
@@ -24,24 +23,19 @@ public class GameTurn
     @Setter
     private int actionsRemaining;
 
-    void placeWaterTreatment(Region region, int count) throws Exception
+    void placeWaterTreatment(Region region, int count) throws GameTurnException
     {
         int waterTreatmentsRemaining = board.getWaterTreatmentsLeft();
 
         if (waterTreatmentsRemaining < count) {
-            throw new Exception("Es sind nichtmehr genug Wasseraufbereitungsmarker vorhanden!");
+            throw new GameTurnException("Es sind nichtmehr genug Wasseraufbereitungsmarker vorhanden!");
         }
 
         region.increaseWaterTreatments(count);
         board.setWaterTreatmentsLeft(waterTreatmentsRemaining - count);
     }
 
-    void buildHospital(City city)
-    {
-        //not implemented
-    }
-
-    void buildHospital(City city, boolean cityCardRequired) throws Exception
+    void buildHospital(City city, boolean cityCardRequired) throws GameTurnException
     {
         List<City> cities = board.getCities();
 
@@ -53,7 +47,7 @@ public class GameTurn
                                                            .anyMatch(c -> c.equals(city));
 
         if (cityAlreadyHasHospital) {
-            throw new Exception("Die ausgewählte Stadt besitzt bereits ein Krankenhaus!");
+            throw new GameTurnException("Die ausgewählte Stadt besitzt bereits ein Krankenhaus!");
         }
 
         // Für die Aktion "Krankenhaus bauen"
@@ -63,7 +57,7 @@ public class GameTurn
         // Für die Ereigniskarte "Krankenhausgründung"
         else if (currentPlayer.getCity()
                               .getPlagueName() != city.getPlagueName()) {
-            throw new Exception("Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren");
+            throw new GameTurnException("Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren");
         }
 
         citiesWithHospital.stream()
@@ -74,7 +68,7 @@ public class GameTurn
         city.setHasHospital(true);
     }
 
-    private void buildHospitalAction(City city) throws Exception
+    private void buildHospitalAction(City city) throws GameTurnException
     {
         Optional<CityCard> card = currentPlayer.getCards()
                                                .stream()
@@ -85,7 +79,7 @@ public class GameTurn
                                                .findFirst();
 
         if (card.isEmpty()) {
-            throw new Exception(
+            throw new GameTurnException(
                     "Der Spieler muss auf der ausgewählten Stadt stehen und die zugehörige Stadtkarte besitzen");
         }
 
