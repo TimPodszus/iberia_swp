@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LobbyMessageSerializableTest {
 
-    private static final UserDTO defaultUser = new UserDTO("marco", "marco", "marco@grawunder.de");
+    private static final UserDTO defaultUser = new UserDTO("marco", "marco");
 
     @Test
     void testLobbyMessagesSerializable() {

@@ -4,16 +4,13 @@ import de.uol.swp.common.enums.Action;
 import de.uol.swp.common.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.game.GameController;
-
+import lombok.Getter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Getter
 public class GameManager {
     private Map<String, GameController> gameControllers = new ConcurrentHashMap<>();
-
-    public Map<String, GameController> getGameControllers() {
-        return gameControllers;
-    }
 
     public void createGameForLobby(Lobby lobby) {
         String lobbyId = lobby.getId();
