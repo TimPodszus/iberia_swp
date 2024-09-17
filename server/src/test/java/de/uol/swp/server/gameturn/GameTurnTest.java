@@ -4,6 +4,7 @@ import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.plague.PlagueName;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,8 @@ class GameTurnTest
 
     void createTestData(boolean addCityCardToPlayer, boolean addHospitalToCity1)
     {
-        city1 = new City(PlagueName.CHOLERA, "City1", 0, false, addHospitalToCity1);
-        city2 = new City(PlagueName.MALARIA, "City2", 0, false, false);
+        city1 = new City(PlagueName.CHOLERA, CityName.ALBACETE, 0, false, addHospitalToCity1);
+        city2 = new City(PlagueName.MALARIA, CityName.BARCELONA, 0, false, false);
         cityList = new ArrayList<>();
         cityList.add(city1);
         cityList.add(city2);
