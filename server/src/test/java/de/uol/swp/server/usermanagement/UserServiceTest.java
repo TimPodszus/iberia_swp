@@ -4,24 +4,22 @@ import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.common.user.request.RegisterUserRequest;
 import de.uol.swp.server.EventBusBasedTest;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
-import org.greenrobot.eventbus.Subscribe;
+import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 
-public class UserServiceTest extends EventBusBasedTest {
+ class UserServiceTest extends EventBusBasedTest {
 
-    static final User userToRegister = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
-    static final User userWithSameName = new UserDTO("Marco", "Marco2", "Marco2@Grawunder.com");
+    static final User userToRegister = new UserDTO("Marco", "Marco");
+    static final User userWithSameName = new UserDTO("Marco", "Marco2");
 
-    final UserManagement userManagement = new UserManagement(new MainMemoryBasedUserStore());
-    final UserService userService = new UserService(getBus(), userManagement);
+    final UserManagement userManagement = new UserManagement(new DatabaseBasedUserStore());
 
     @Test
-    void registerUserTest() throws InterruptedException {
+    void registerUserTest()  {
         final RegisterUserRequest request = new RegisterUserRequest(userToRegister);
 
         // The post will lead to a call of a UserService function
@@ -48,8 +46,7 @@ public class UserServiceTest extends EventBusBasedTest {
         assertNotNull(loggedInUser);
         assertEquals(userToRegister, loggedInUser);
 
-        // old user should not be overwritten!
-        assertNotEquals(loggedInUser.getEMail(), userWithSameName.getEMail());
+
 
     }
 

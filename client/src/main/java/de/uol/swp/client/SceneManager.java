@@ -1,6 +1,13 @@
 package de.uol.swp.client;
 
 import com.google.inject.Provider;
+import de.uol.swp.client.lobby.CurrentGamesPresenter;
+import de.uol.swp.client.lobby.LobbyOverviewPresenter;
+import de.uol.swp.client.lobby.LobbyScreenPresenter;
+import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
+import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
+import de.uol.swp.client.options.OptionsPresenter;
+import de.uol.swp.client.options.event.ShowOptionViewEvent;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -34,7 +41,6 @@ import java.net.URL;
  * @since 2019-09-03
  */
 public class SceneManager {
-
     static final Logger LOG = LogManager.getLogger(SceneManager.class);
     static final String STYLE_SHEET = "css/swp.css";
     static final String DIALOG_STYLE_SHEET = "css/myDialog.css";
@@ -43,6 +49,10 @@ public class SceneManager {
     private Scene loginScene;
     private String lastTitle;
     private Scene registrationScene;
+    private Scene lobbyOverviewScene;
+    private Scene lobbyScene;
+    private Scene currentGamesScene;
+    private Scene optionScene;
     private Scene mainScene;
     private Scene lastScene = null;
     private Scene currentScene = null;
@@ -50,7 +60,9 @@ public class SceneManager {
     private final Provider<FXMLLoader> loaderProvider;
 
     @Inject
-    public SceneManager(EventBus eventBus, Provider<FXMLLoader> loaderProvider, @Assisted Stage primaryStage) throws IOException {
+    public SceneManager(
+            EventBus eventBus, Provider<FXMLLoader> loaderProvider, @Assisted Stage primaryStage
+    ) throws IOException {
         eventBus.register(this);
         this.primaryStage = primaryStage;
         this.loaderProvider = loaderProvider;
@@ -59,19 +71,24 @@ public class SceneManager {
 
     /**
      * Subroutine to initialize all views
-     *
+     * <p>
      * This is a subroutine of the constructor to initialize all views
+     *
      * @since 2019-09-03
      */
     private void initViews() throws IOException {
         initLoginView();
         initMainView();
         initRegistrationView();
+        initLobbyOverviewView();
+        initLobbyScreen();
+        initCurrentGamesView();
+        initOptionView();
     }
 
     /**
      * Subroutine creating parent panes from FXML files
-     *
+     * <p>
      * This Method tries to create a parent pane from the FXML file specified by
      * the URL String given to it. If the LOG-Level is set to Debug or higher loading
      * is written to the LOG.
@@ -97,7 +114,7 @@ public class SceneManager {
 
     /**
      * Initializes the main menu view
-     *
+     * <p>
      * If the mainScene is null it gets set to a new scene containing the
      * a pane showing the main menu view as specified by the MainMenuView
      * FXML file.
@@ -108,14 +125,15 @@ public class SceneManager {
     private void initMainView() throws IOException {
         if (mainScene == null) {
             Parent rootPane = initPresenter(MainMenuPresenter.FXML);
-            mainScene = new Scene(rootPane, 800, 600);
-            mainScene.getStylesheets().add(STYLE_SHEET);
+            mainScene = new Scene(rootPane, 1280, 720);
+            mainScene.getStylesheets()
+                     .add(STYLE_SHEET);
         }
     }
 
     /**
      * Initializes the login view
-     *
+     * <p>
      * If the loginScene is null it gets set to a new scene containing the
      * a pane showing the login view as specified by the LoginView FXML file.
      *
@@ -125,14 +143,15 @@ public class SceneManager {
     private void initLoginView() throws IOException {
         if (loginScene == null) {
             Parent rootPane = initPresenter(LoginPresenter.FXML);
-            loginScene = new Scene(rootPane, 400, 200);
-            loginScene.getStylesheets().add(STYLE_SHEET);
+            loginScene = new Scene(rootPane, 1280, 720);
+            loginScene.getStylesheets()
+                      .add(STYLE_SHEET);
         }
     }
 
     /**
      * Initializes the registration view
-     *
+     * <p>
      * If the registrationScene is null it gets set to a new scene containing the
      * a pane showing the registration view as specified by the RegistrationView
      * FXML file.
@@ -141,16 +160,93 @@ public class SceneManager {
      * @since 2019-09-03
      */
     private void initRegistrationView() throws IOException {
-        if (registrationScene == null){
+        if (registrationScene == null) {
             Parent rootPane = initPresenter(RegistrationPresenter.FXML);
-            registrationScene = new Scene(rootPane, 400,200);
-            registrationScene.getStylesheets().add(STYLE_SHEET);
+            registrationScene = new Scene(rootPane, 1280, 720);
+            registrationScene.getStylesheets()
+                             .add(STYLE_SHEET);
+        }
+    }
+
+    /**
+     * Initializes the lobby overview view.
+     * <p>
+     * If the lobbyOverviewScene is null, it gets set to a new scene containing
+     * a pane showing the lobby overview view as specified by the LobbyOverviewPresenter
+     * FXML file.
+     *
+     * @throws IOException if the FXML file cannot be loaded
+     * @see de.uol.swp.client.lobby.LobbyOverviewPresenter
+     */
+    private void initLobbyOverviewView() throws IOException {
+        if (lobbyOverviewScene == null) {
+            Parent rootPane = initPresenter(LobbyOverviewPresenter.FXML);
+            lobbyOverviewScene = new Scene(rootPane, 1280, 720);
+            lobbyOverviewScene.getStylesheets()
+                              .add(STYLE_SHEET);
+        }
+    }
+
+    /**
+     * Initializes the lobby screen.
+     * <p>
+     * If the lobbyScene is null, it gets set to a new scene containing
+     * a pane showing the lobby screen as specified by the LobbyScreenPresenter
+     * FXML file.
+     *
+     * @throws IOException if the FXML file cannot be loaded
+     * @see de.uol.swp.client.lobby.LobbyScreenPresenter
+     */
+    private void initLobbyScreen() throws IOException {
+        if (lobbyScene == null) {
+            Parent rootPane = initPresenter(LobbyScreenPresenter.FXML);
+            lobbyScene = new Scene(rootPane, 1280, 720);
+            lobbyScene.getStylesheets()
+                      .add(STYLE_SHEET);
+        }
+    }
+
+    /**
+     * Initializes the current games view.
+     * <p>
+     * If the currentGamesScene is null, it gets set to a new scene containing
+     * a pane showing the current games view as specified by the CurrentGamesPresenter
+     * FXML file.
+     *
+     * @throws IOException if the FXML file cannot be loaded
+     * @see de.uol.swp.client.lobby.CurrentGamesPresenter
+     */
+    private void initCurrentGamesView() throws IOException {
+        if (currentGamesScene == null) {
+            Parent rootPane = initPresenter(CurrentGamesPresenter.FXML);
+            currentGamesScene = new Scene(rootPane, 1280, 720);
+            currentGamesScene.getStylesheets()
+                             .add(STYLE_SHEET);
+        }
+    }
+
+    /**
+     * Initializes the options view.
+     * <p>
+     * If the optionScene is null, it gets set to a new scene containing
+     * a pane showing the options view as specified by the OptionsPresenter
+     * FXML file.
+     *
+     * @throws IOException if the FXML file cannot be loaded
+     * @see de.uol.swp.client.options.OptionsPresenter
+     */
+    private void initOptionView() throws IOException {
+        if (optionScene == null) {
+            Parent rootPane = initPresenter(OptionsPresenter.FXML);
+            optionScene = new Scene(rootPane, 1280, 720);
+            optionScene.getStylesheets()
+                       .add(STYLE_SHEET);
         }
     }
 
     /**
      * Handles ShowRegistrationViewEvent detected on the EventBus
-     *
+     * <p>
      * If a ShowRegistrationViewEvent is detected on the EventBus, this method gets
      * called. It calls a method to switch the current screen to the registration
      * screen.
@@ -160,13 +256,13 @@ public class SceneManager {
      * @since 2019-09-03
      */
     @Subscribe
-    public void onShowRegistrationViewEvent(ShowRegistrationViewEvent event){
+    public void onShowRegistrationViewEvent(ShowRegistrationViewEvent event) {
         showRegistrationScreen();
     }
 
     /**
      * Handles ShowLoginViewEvent detected on the EventBus
-     *
+     * <p>
      * If a ShowLoginViewEvent is detected on the EventBus, this method gets
      * called. It calls a method to switch the current screen to the login screen.
      *
@@ -175,13 +271,56 @@ public class SceneManager {
      * @since 2019-09-03
      */
     @Subscribe
-    public void onShowLoginViewEvent(ShowLoginViewEvent event){
+    public void onShowLoginViewEvent(ShowLoginViewEvent event) {
         showLoginScreen();
     }
 
     /**
-     * Handles RegistrationCanceledEvent detected on the EventBus
+     * Handles ShowLobbyOverviewViewEvent detected on the EventBus.
+     * <p>
+     * If a ShowLobbyOverviewViewEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the lobby overview screen.
      *
+     * @param event The ShowLobbyOverviewViewEvent detected on the EventBus
+     * @see ShowLobbyOverviewViewEvent
+     */
+    @Subscribe
+    public void onShowLobbyOverviewViewEvent(ShowLobbyOverviewViewEvent event) {
+        showLobbyOverviewScreen();
+    }
+
+
+    /**
+     * Handles ShowCurrentGamesViewEvent detected on the EventBus.
+     * <p>
+     * If a ShowCurrentGamesViewEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the current games screen.
+     *
+     * @param event The ShowCurrentGamesViewEvent detected on the EventBus
+     * @see de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent
+     */
+    @Subscribe
+    public void onShowCurrentGamesViewEvent(ShowCurrentGamesViewEvent event) {
+        showCurrentGamesScreen();
+    }
+
+    /**
+     * Handles ShowOptionViewEvent detected on the EventBus.
+     * <p>
+     * If a ShowOptionViewEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the options screen.
+     *
+     * @param event The ShowOptionViewEvent detected on the EventBus
+     * @see de.uol.swp.client.options.event.ShowOptionViewEvent
+     */
+    @Subscribe
+    public void onShowOptionViewEvent(ShowOptionViewEvent event) {
+        showOptionScreen();
+    }
+
+    /**
+     * Handles RegistrationCanceledEvent detected on the EventBus
+     * <p>
      * If a RegistrationCanceledEvent is detected on the EventBus, this method gets
      * called. It calls a method to show the screen shown before registration.
      *
@@ -190,13 +329,13 @@ public class SceneManager {
      * @since 2019-09-03
      */
     @Subscribe
-    public void onRegistrationCanceledEvent(RegistrationCanceledEvent event){
+    public void onRegistrationCanceledEvent(RegistrationCanceledEvent event) {
         showScene(lastScene, lastTitle);
     }
 
     /**
      * Handles RegistrationErrorEvent detected on the EventBus
-     *
+     * <p>
      * If a RegistrationErrorEvent is detected on the EventBus, this method gets
      * called. It shows the error message of the event in a error alert.
      *
@@ -221,7 +360,8 @@ public class SceneManager {
             Alert a = new Alert(Alert.AlertType.ERROR, message + e);
             // based on: https://stackoverflow.com/questions/28417140/styling-default-javafx-dialogs/28421229#28421229
             DialogPane pane = a.getDialogPane();
-            pane.getStylesheets().add(DIALOG_STYLE_SHEET);
+            pane.getStylesheets()
+                .add(DIALOG_STYLE_SHEET);
             a.showAndWait();
         });
     }
@@ -233,7 +373,7 @@ public class SceneManager {
      * @since 2019-09-03
      */
     public void showServerError(String e) {
-        showError("Server returned an error:\n" , e);
+        showError("Server returned an error:\n", e);
     }
 
     /**
@@ -243,12 +383,12 @@ public class SceneManager {
      * @since 2019-09-03
      */
     public void showError(String e) {
-        showError("Error:\n" , e);
+        showError("Error:\n", e);
     }
 
     /**
      * Switches the current scene and title to the given ones
-     *
+     * <p>
      * The current scene and title are saved in the lastScene and lastTitle variables,
      * before the new scene and title are set and shown.
      *
@@ -269,7 +409,7 @@ public class SceneManager {
 
     /**
      * Shows the login error alert
-     *
+     * <p>
      * Opens an ErrorAlert popup saying "Error logging in to server"
      *
      * @since 2019-09-03
@@ -279,7 +419,8 @@ public class SceneManager {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Error logging in to server");
             // based on: https://stackoverflow.com/questions/28417140/styling-default-javafx-dialogs/28421229#28421229
             DialogPane pane = alert.getDialogPane();
-            pane.getStylesheets().add(DIALOG_STYLE_SHEET);
+            pane.getStylesheets()
+                .add(DIALOG_STYLE_SHEET);
             alert.showAndWait();
             showLoginScreen();
         });
@@ -287,7 +428,7 @@ public class SceneManager {
 
     /**
      * Shows the main menu
-     *
+     * <p>
      * Switches the current Scene to the mainScene and sets the title of
      * the window to "Welcome " and the username of the current user
      *
@@ -299,25 +440,63 @@ public class SceneManager {
 
     /**
      * Shows the login screen
-     *
+     * <p>
      * Switches the current Scene to the loginScene and sets the title of
      * the window to "Login"
      *
      * @since 2019-09-03
      */
     public void showLoginScreen() {
-        showScene(loginScene,"Login");
+        showScene(loginScene, "Login");
     }
 
     /**
      * Shows the registration screen
-     *
+     * <p>
      * Switches the current Scene to the registrationScene and sets the title of
      * the window to "Registration"
-     *
-     * @since 2019-09-03
      */
     public void showRegistrationScreen() {
-        showScene(registrationScene,"Registration");
+        showScene(registrationScene, "Registration");
+    }
+
+    /**
+     * Shows the lobby overview screen.
+     * <p>
+     * Switches the current Scene to the lobbyOverviewScene and sets the title of
+     * the window to "Lobbyübersicht".
+     */
+    public void showLobbyOverviewScreen() {
+        showScene(lobbyOverviewScene, "Lobbyübersicht");
+    }
+
+    /**
+     * Shows the lobby screen.
+     * <p>
+     * Switches the current Scene to the lobbyScene and sets the title of
+     * the window to "Lobby".
+     */
+    public void showLobbyScreen() {
+        showScene(lobbyScene, "Lobby");
+    }
+
+    /**
+     * Shows the current games screen.
+     * <p>
+     * Switches the current Scene to the currentGamesScene and sets the title of
+     * the window to "Aktuelle Spiele".
+     */
+    public void showCurrentGamesScreen() {
+        showScene(currentGamesScene, "Aktuelle Spiele");
+    }
+
+    /**
+     * Shows the options screen.
+     * <p>
+     * Switches the current Scene to the optionScene and sets the title of
+     * the window to "Einstellungen".
+     */
+    public void showOptionScreen() {
+        showScene(optionScene, "Einstellungen");
     }
 }

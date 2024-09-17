@@ -1,0 +1,37 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  MAVEN_CLI_OPTS: "--batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository
+
+build-job:
+  image: maven:3.8.6-openjdk-18
+  stage: build
+  script:
+    - echo "Starting Maven build for all modules..."
+    - mvn $MAVEN_CLI_OPTS clean install -DskipTests
+  artifacts:
+    paths:
+      - target/
+
+unit-test-job:
+  image: maven:3.8.6-openjdk-18
+  stage: test
+  script:
+    - echo "Running unit tests across all modules..."
+    - mvn $MAVEN_CLI_OPTS verify
+  artifacts:
+    when: always
+    paths:
+      - target/
+    reports:
+      junit: "**/target/surefire-reports/*.xml"
+  coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
+
