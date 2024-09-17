@@ -7,8 +7,8 @@ import de.uol.swp.server.role.Role;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
 import java.util.List;
+
 @RequiredArgsConstructor
 @Getter
 public class Player {
@@ -21,16 +21,14 @@ public class Player {
 
     public void addCard(Card card) {
         //not implemented
+    }
 
+    public void playCard(Card card) {
         //Für Unittest:
         cards.add(card);
     }
 
-    public void playCard(Card card) {
-        //not implemented
-    }
-    public void discardCard(Card card)
-    {
+    public void discardCard(Card card) {
         //not implemented
 
         //Für Unittest:
@@ -38,3 +36,4 @@ public class Player {
     }
 
 }
+

@@ -15,6 +15,9 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.List;
+import java.util.Optional;
+
 @AllArgsConstructor
 @Getter
 public class GameTurn {
@@ -190,10 +193,6 @@ public class GameTurn {
     }
 
     void drawPlayerCard() {
-        //not implemented
-    }
-
-    void infectCity(InfectionCard infectionCard) {
         //not implemented
     }
 
