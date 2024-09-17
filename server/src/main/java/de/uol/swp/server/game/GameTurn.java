@@ -129,11 +129,11 @@ public class GameTurn {
         }
 
         // Für die Aktion "Krankenhaus bauen"
-        if (cityCardRequired && currentPlayer.getCity() == city) {
+        if (cityCardRequired && currentPlayer.getCurrentPosition() == city) {
             buildHospitalAction(city);
         }
         // Für die Ereigniskarte "Krankenhausgründung"
-        else if (currentPlayer.getCity()
+        else if (currentPlayer.getCurrentPosition()
                               .getPlagueName() != city.getPlagueName()) {
             throw new Exception("Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren");
         }
