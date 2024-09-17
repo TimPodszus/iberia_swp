@@ -38,22 +38,26 @@ public interface UserStore {
      *
      * @param username username of the new user
      * @param password password the user wants to use
-     * @param eMail email address of the new user
+     *
      * @return The User without password information
+     *
      * @since 2019-08-13
      */
-    User createUser(String username, String password, String eMail);
+    User createUser(String username, String password);
+
+    User createUser(String username, byte[] password);
 
     /**
      * Update user. Update only given fields. Username cannot be changed
      *
      * @param username username of the user to be modified
      * @param password new password
-     * @param eMail new email address
      * @return The User without password information
      * @since 2019-08-13
      */
-    User updateUser(String username, String password, String eMail);
+    User updateUser(String username, String password);
+
+    User updateUser(String username, byte[] password);
 
     /**
      * Remove user from store

@@ -1,34 +1,24 @@
 package de.uol.swp.server.player;
 
+import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.role.Role;
-import de.uol.swp.server.user.User;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
 import java.util.List;
 
+@RequiredArgsConstructor
 @Getter
 public class Player {
-    private final String username;
-    private final Role role;
+    private Role role;
     @Setter
     private City currentPosition;
     @Setter
     private List<Card> cards;
     private final User user;
-
-    public Player(String username, Role role, List<Card> cards, User user)
-    {
-        this.username = username;
-        this.role = role;
-        this.cards = cards;
-        this.user = user;
-    }
 
     public void setStartingPosition(City city) throws Exception {
         boolean validRequest = false;
@@ -48,8 +38,21 @@ public class Player {
                     "auswählen!");
         }
     }
-    public void playCard(Card card) {
+    public void addCard(Card card) {
         //not implemented
     }
 
+    public void playCard(Card card) {
+        //Für Unittest:
+        cards.add(card);
+    }
+
+    public void discardCard(Card card) {
+        //not implemented
+
+        //Für Unittest:
+        cards.remove(card);
+    }
+
 }
+

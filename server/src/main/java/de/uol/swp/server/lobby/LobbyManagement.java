@@ -35,7 +35,7 @@ public class LobbyManagement {
         if (lobbies.containsKey(name)) {
             throw new IllegalArgumentException("Lobby name " + name + " already exists!");
         }
-        lobbies.put(name, new LobbyDTO(name, owner));
+        lobbies.put(name, new LobbyDTO(name, owner, "testcode"));
     }
 
     /**

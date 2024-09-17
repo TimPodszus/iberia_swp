@@ -1,5 +1,8 @@
 package de.uol.swp.client.user;
 
+import de.uol.swp.common.passwordHashing.PasswordHashing;
+import org.apache.directory.api.ldap.model.constants.LdapSecurityConstants;
+import org.apache.directory.api.ldap.model.password.PasswordUtil;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
 import de.uol.swp.common.user.User;
@@ -41,7 +44,7 @@ public class UserService implements ClientUserService {
 	 */
 	@Override
 	public void login(String username, String password){
-		LoginRequest msg = new LoginRequest(username, password);
+		LoginRequest msg = new LoginRequest(username, PasswordHashing.hashPassword(password));
 		bus.post(msg);
 	}
 
