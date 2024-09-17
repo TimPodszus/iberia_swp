@@ -4,7 +4,6 @@ import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.role.Role;
-import de.uol.swp.common.user.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -19,7 +18,7 @@ public class Player
     private City city;
     @Setter
     private List<Card> cards;
-    private final UserDTO user;
+    private final User user;
 
     public void addCard(Card card) {
         //not implemented
@@ -29,12 +28,6 @@ public class Player
         //Für Unittest:
         cards.add(card);
     }
-
-    public void playCard(Card card)
-    {
-        //not implemented
-    }
-
     public void discardCard(Card card)
     {
         //not implemented
