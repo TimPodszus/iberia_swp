@@ -1,8 +1,8 @@
 package de.uol.swp.server.role;
 
-public class Seemann extends Role
+public class Sailor extends Role
 {
-    public Seemann()
+    public Sailor()
     {
         super(
                 "Seemann",

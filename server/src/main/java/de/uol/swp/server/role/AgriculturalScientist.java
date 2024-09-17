@@ -1,8 +1,8 @@
 package de.uol.swp.server.role;
 
-public class Agrarwissenschaftlerin extends Role
+public class AgriculturalScientist extends Role
 {
-    public Agrarwissenschaftlerin()
+    public AgriculturalScientist()
     {
         super(
                 "Agrarwissenschaftlerin",

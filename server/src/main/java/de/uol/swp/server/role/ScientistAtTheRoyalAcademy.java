@@ -1,8 +1,8 @@
 package de.uol.swp.server.role;
 
-public class WissenschaftlerinDKA extends Role
+public class ScientistAtTheRoyalAcademy extends Role
 {
-    public WissenschaftlerinDKA()
+    public ScientistAtTheRoyalAcademy()
     {
         super(
                 "Wissenschaftlerin der königlichen Armee",

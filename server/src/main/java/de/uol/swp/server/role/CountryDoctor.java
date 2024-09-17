@@ -1,8 +1,8 @@
 package de.uol.swp.server.role;
 
-public class Landarzt extends Role
+public class CountryDoctor extends Role
 {
-    public Landarzt()
+    public CountryDoctor()
     {
         super(
                 "Landarzt",

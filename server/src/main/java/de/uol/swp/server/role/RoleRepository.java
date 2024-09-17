@@ -8,14 +8,14 @@ public class RoleRepository
     public static List<Role> getAllRoles()
     {
         List<Role> roles = new ArrayList<>();
-        
-        roles.add(new Agrarwissenschaftlerin());
-        roles.add(new Eisenbahner());
-        roles.add(new Krankenschwester());
-        roles.add(new Landarzt());
-        roles.add(new Politiker());
-        roles.add(new Seemann());
-        roles.add(new WissenschaftlerinDKA());
+
+        roles.add(new AgriculturalScientist());
+        roles.add(new CountryDoctor());
+        roles.add(new Nurse());
+        roles.add(new Politician());
+        roles.add(new RailwayWorker());
+        roles.add(new Sailor());
+        roles.add(new ScientistAtTheRoyalAcademy());
 
         return roles;
     }

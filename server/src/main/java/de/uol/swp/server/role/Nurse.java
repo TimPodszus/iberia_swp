@@ -1,8 +1,8 @@
 package de.uol.swp.server.role;
 
-public class Krankenschwester extends Role
+public class Nurse extends Role
 {
-    public Krankenschwester()
+    public Nurse()
     {
         super(
                 "Krankenschwester",

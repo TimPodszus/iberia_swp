@@ -1,8 +1,8 @@
 package de.uol.swp.server.role;
 
-public class Politiker extends Role
+public class Politician extends Role
 {
-    public Politiker()
+    public Politician()
     {
         super(
                 "Politiker",
