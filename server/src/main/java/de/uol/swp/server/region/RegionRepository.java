@@ -5,8 +5,9 @@ import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.city.CityRepository;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import static de.uol.swp.server.city.CityRepository.getCitiesByNames;
 
 public class RegionRepository
 {
@@ -177,13 +178,5 @@ public class RegionRepository
         ));
 
         return regions;
-    }
-
-    private static List<City> getCitiesByNames(List<City> allCities, CityName... names)
-    {
-        List<CityName> nameList = Arrays.asList(names);
-        return allCities.stream()
-                        .filter(city -> nameList.contains(city.getName()))
-                        .toList();
     }
 }

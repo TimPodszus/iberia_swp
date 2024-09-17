@@ -3,6 +3,7 @@ package de.uol.swp.server.city;
 import de.uol.swp.server.plague.PlagueName;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CityRepository
@@ -70,5 +71,13 @@ public class CityRepository
         cities.add(new City(PlagueName.TYPHUS, CityName.VALLADOLID, 1072, false));
 
         return cities;
+    }
+
+    public static List<City> getCitiesByNames(List<City> allCities, CityName... names)
+    {
+        List<CityName> nameList = Arrays.asList(names);
+        return allCities.stream()
+                        .filter(city -> nameList.contains(city.getName()))
+                        .toList();
     }
 }
