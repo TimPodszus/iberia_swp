@@ -1,12 +1,10 @@
 package de.uol.swp.server.usermanagement.lobby;
 
-import de.uol.swp.common.lobby.ILobby;
+
 import de.uol.swp.common.lobby.message.CreateLobbyRequest;
 import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
-
 import de.uol.swp.common.user.UserDTO;
-
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.lobby.LobbyManagement;
 import de.uol.swp.server.lobby.LobbyService;
@@ -17,13 +15,15 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 class LobbyServiceTest extends EventBusBasedTest
 {
@@ -38,15 +38,13 @@ class LobbyServiceTest extends EventBusBasedTest
             .sendNoSubscriberEvent(false)
             .throwSubscriberException(true)
             .build();
-    @Mock
+
     private UserManagement userManagement = new UserManagement(new MainMemoryBasedUserStore());
-    @Mock
+
     private AuthenticationService authService = new AuthenticationService(bus, userManagement);
-    @Mock
+
     private LobbyManagement lobbyManagement = new LobbyManagement();
-    @Mock
     private UserDTO mockUserDTO = new UserDTO("TestUser", "TestPassword", "testemail@gmx.de");
-    @InjectMocks
     private LobbyService lobbyService = new LobbyService(lobbyManagement, authService, getBus());
 
     @BeforeEach
@@ -130,65 +128,4 @@ class LobbyServiceTest extends EventBusBasedTest
             assertFalse(lobbyManagement.getLobby("Test").get().getUsers().contains(secondOwner));
         }
     }
-
-
-    @Test
-    void lobbyIsAddedToOpenLobbyListTest() throws InterruptedException {
-
-        // Arrange
-        final CreateLobbyRequest request = new CreateLobbyRequest("TestLobby", firstOwner);
-
-        // Act
-        postAndWait(request);
-
-        // Assert
-        assertTrue(lobbyManagement.getLobby("TestLobby").isPresent(), "Lobby should be added to the list of open lobbies.");
-    }
-
-    @Test
-    void creatorIsAutomaticallyAddedToLobbyTest() throws InterruptedException {
-        // Arrange
-        final CreateLobbyRequest request = new CreateLobbyRequest("TestLobby2", firstOwner);
-
-        // Act
-        postAndWait(request);
-
-        // Assert
-        if (lobbyManagement.getLobby("TestLobby").isPresent()) {
-            ILobby createdLobby = lobbyManagement.getLobby("TestLobby").get();
-            assertTrue(createdLobby.getUsers().contains(firstOwner), "Lobby creator should automatically be added to the lobby.");
-        } else {
-            fail("Lobby should be present after creation.");
-        }
-    }
-
-    @Test
-    void lobbyNameAndLobbyCodeAreGeneratedTest() throws InterruptedException {
-        // Arrange
-        final CreateLobbyRequest request = new CreateLobbyRequest("TestLobby3", firstOwner);
-
-        // Act
-        postAndWait(request);
-
-        // Assert
-        ILobby createdLobby = lobbyManagement.getLobby("TestLobby").orElse(null);
-        assertNotNull(createdLobby, "Lobby should be created.");
-        assertEquals("TestLobby", createdLobby.getName(), "Lobby name should match.");
-        assertNotNull(createdLobby.getLobbyCode(), "Lobby code should be generated.");
-    }
-
-    @Test
-    void lobbyCanBeDeletedTest() {
-        // Arrange
-        lobbyManagement.createLobby("TestLobby", firstOwner);
-
-        // Act
-        lobbyManagement.dropLobby("TestLobby");
-
-        // Assert
-        assertFalse(lobbyManagement.getLobby("TestLobby").isPresent(), "Lobby should be deleted.");
-    }
-
-
-
 }

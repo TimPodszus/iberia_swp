@@ -5,7 +5,7 @@ import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.database.DatabaseConnection;
-
+import de.uol.swp.server.lobby.store.LobbyStore;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
 /**
  * Manages creation, deletion and storing of lobbies
  *
@@ -26,14 +25,12 @@ import java.util.UUID;
  * @see LobbyDTO
  * @since 2019-10-08
  */
-public class LobbyManagement {
-
+public class LobbyManagement extends LobbyStore {
     private final Map<String, Lobby> lobbies = new HashMap<>();
-
     private static final String INSERT_LOBBY_SQL = "INSERT INTO Lobby (id, difficulty, owner, users) VALUES (?, ?, ?," + " ?)";
     private static final String INSERT_LOBBY_USER_SQL = "INSERT INTO User (userID, username, password) VALUES (?, ?," + " ?)";
 
-
+    private LobbyStore lobbyStore = new LobbyStore();
     /**
      * Creates a new lobby and adds it to the list
      *
@@ -46,7 +43,6 @@ public class LobbyManagement {
      * @since 2019-10-08
      */
     public void createLobby(String name, User owner) {
-
         if (lobbies.containsKey(name)) {
             throw new IllegalArgumentException("Lobby name " + name + " already exists!");
         }
@@ -54,20 +50,16 @@ public class LobbyManagement {
         List<User> users = new ArrayList<>();
         UserDTO ownerUser = new UserDTO(owner.getUsername(), owner.getPassword(), owner.getEMail());
         users.add(ownerUser);
-
         Lobby newLobby = new Lobby(name, lobbyCode, users, 4);
         lobbies.put(name, newLobby);
-
         try {
             LobbyDTO lobbyDTO = new LobbyDTO(name, owner, lobbyCode, 4);
-            saveLobby(lobbyDTO);
+            lobbyStore.saveLobby(lobbyDTO);
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to save lobby to the database");
         }
     }
-
-
     /**
      * Generates a unique lobby code.
      *
@@ -85,8 +77,6 @@ public class LobbyManagement {
                         .equals(code[0])));
         return code[0];
     }
-
-
     /**
      * Deletes lobby with requested name
      *
@@ -101,7 +91,6 @@ public class LobbyManagement {
         }
         lobbies.remove(name);
     }
-
     /**
      * Searches for the lobby with the requested name
      *
@@ -120,10 +109,8 @@ public class LobbyManagement {
 
     public void saveLobby(LobbyDTO lobby) throws SQLException {
         DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-
         try (Connection connection = dbConnection.getConnection()) {
             connection.setAutoCommit(false);
-
             try {
                 try (
                         PreparedStatement psLobby = connection.prepareStatement(
@@ -135,11 +122,8 @@ public class LobbyManagement {
                     psLobby.setInt(2, lobby.getDifficulty());
                     psLobby.setObject(2, lobby.getOwner());
                     psLobby.setObject(3, lobby.getUsers());
-
                     psLobby.executeUpdate();
-
                 }
-
                 for (User user : lobby.getUsers()) {
                     try (
                             PreparedStatement psUser = connection.prepareStatement(
@@ -150,22 +134,16 @@ public class LobbyManagement {
                         psUser.setString(1, user.getEMail());
                         psUser.setString(2, user.getPassword());
                         psUser.executeUpdate();
-
                     }
-
                 }
-
                 connection.commit();
-
             } catch (SQLException e) {
                 connection.rollback();
                 throw e;
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
         }
-
     }
 }
