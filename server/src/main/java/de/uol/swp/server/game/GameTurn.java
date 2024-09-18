@@ -8,19 +8,18 @@ import de.uol.swp.server.city.City;
 import de.uol.swp.server.connection.Connection;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.Region;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Optional;
 
-import java.util.List;
-import java.util.Optional;
-
 @AllArgsConstructor
 @Getter
-public class GameTurn {
+public class GameTurn
+{
     private static final Logger LOG = LogManager.getLogger(GameTurn.class);
     private Player currentPlayer;
     private Board board;
@@ -29,7 +28,8 @@ public class GameTurn {
     private boolean isInfectionPhase;
     private boolean isTurnOver;
 
-    public GameTurn(Player currentPlayer, Board board) {
+    public GameTurn(Player currentPlayer, Board board)
+    {
         this.currentPlayer = currentPlayer;
         this.board = board;
         this.actionsRemaining = 4;
@@ -38,15 +38,17 @@ public class GameTurn {
         this.isTurnOver = false;
     }
 
-    public void startTurn() throws InterruptedException {
+    public void startTurn() throws InterruptedException
+    {
         LOG.info("Starte Zug für " + currentPlayer.getUser()
-                                                            .getUsername());
+                                                  .getUsername());
         while (!isTurnOver) {
             wait();
         }
     }
 
-    public void processAction(Action action) {
+    public void processAction(Action action)
+    {
         switch (action.getActionType()) {
             case MOVE:
                 // Handle movement logic
@@ -81,13 +83,15 @@ public class GameTurn {
         checkTurnEnd();
     }
 
-    private void checkTurnEnd() {
+    private void checkTurnEnd()
+    {
         if (actionsRemaining <= 0) {
             startDrawPhase();
         }
     }
 
-    private void startDrawPhase() {
+    private void startDrawPhase()
+    {
         isDrawPhase = true;
         drawPlayerCard();
         drawPlayerCard();
@@ -95,7 +99,8 @@ public class GameTurn {
         startInfectionPhase();
     }
 
-    private void startInfectionPhase() {
+    private void startInfectionPhase()
+    {
         isInfectionPhase = true;
         int infectionCounter = board.getInfectionCounter();
         for (int i = 1; i <= infectionCounter; i++) {
@@ -104,17 +109,44 @@ public class GameTurn {
         endTurn();
     }
 
-    public void endTurn() {
+    public void endTurn()
+    {
         LOG.info("Turn ended for player: " + currentPlayer.getUser()
-                                                                    .getUsername());
+                                                          .getUsername());
         isTurnOver = true;
     }
 
-    void placeWaterTreatment(Region region) {
+    /**
+     * Places water treatment markers in the specified region.
+     *
+     * @param region the region where water treatment markers will be placed
+     * @param count  the number of water treatment markers to place
+     *
+     * @throws GameTurnException if there are not enough water treatment markers remaining
+     */
+    public void placeWaterTreatment(Region region, int count) throws GameTurnException
+    {
         //not implemented
+        int waterTreatmentsRemaining = board.getWaterTreatmentsLeft();
+
+        if (waterTreatmentsRemaining < count) {
+            throw new GameTurnException("Es sind nicht mehr genug Wasseraufbereitungsmarker vorhanden!");
+        }
+
+        region.increaseWaterTreatments(count);
+        board.setWaterTreatmentsLeft(waterTreatmentsRemaining - count);
     }
 
-    public void buildHospital(City city, boolean cityCardRequired) throws Exception {
+    /**
+     * Builds a hospital in the specified city.
+     *
+     * @param city             the city where the hospital will be built
+     * @param cityCardRequired whether a city card is required to build the hospital
+     *
+     * @throws GameTurnException if the city already has a hospital or if the player cannot build a hospital in the specified city
+     */
+    public void buildHospital(City city, boolean cityCardRequired) throws GameTurnException
+    {
         List<City> cities = board.getCities();
 
         List<City> citiesWithHospital = cities.stream()
@@ -125,7 +157,7 @@ public class GameTurn {
                                                            .anyMatch(c -> c.equals(city));
 
         if (cityAlreadyHasHospital) {
-            throw new Exception("Die ausgewählte Stadt besitzt bereits ein Krankenhaus!");
+            throw new GameTurnException("Die ausgewählte Stadt besitzt bereits ein Krankenhaus!");
         }
 
         // Für die Aktion "Krankenhaus bauen"
@@ -135,7 +167,7 @@ public class GameTurn {
         // Für die Ereigniskarte "Krankenhausgründung"
         else if (currentPlayer.getCurrentPosition()
                               .getPlagueName() != city.getPlagueName()) {
-            throw new Exception("Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren");
+            throw new GameTurnException("Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren");
         }
 
         citiesWithHospital.stream()
@@ -146,7 +178,15 @@ public class GameTurn {
         city.setHasHospital(true);
     }
 
-    public void buildHospitalAction(City city) throws Exception {
+    /**
+     * Performs the action of building a hospital in the specified city.
+     *
+     * @param city the city where the hospital will be built
+     *
+     * @throws GameTurnException if the player does not have the required city card
+     */
+    public void buildHospitalAction(City city) throws GameTurnException
+    {
         Optional<CityCard> card = currentPlayer.getCards()
                                                .stream()
                                                .filter(CityCard.class::isInstance)
@@ -156,47 +196,56 @@ public class GameTurn {
                                                .findFirst();
 
         if (card.isEmpty()) {
-            throw new Exception(
+            throw new GameTurnException(
                     "Der Spieler muss auf der ausgewählten Stadt stehen und die zugehörige Stadtkarte besitzen");
         }
 
         currentPlayer.discardCard(card.get());
     }
 
-    void buildTrainTracks(Connection connection) {
+    void buildTrainTracks(Connection connection)
+    {
         //not implemented
     }
 
-    void tradeCards(Player tradingPartner) {
+    void tradeCards(Player tradingPartner)
+    {
         //not implemented
     }
 
-    void treatInfection(City city) {
+    void treatInfection(City city)
+    {
         //not implemented
     }
 
-    void researchPlague() {
+    void researchPlague()
+    {
         //not implemented
     }
 
-    void useRoleAbility() {
+    void useRoleAbility()
+    {
         //not implemented
     }
 
-    void move(City destination) {
+    void move(City destination)
+    {
         //not implemented
     }
 
-    InfectionCard drawInfectionCard() {
+    InfectionCard drawInfectionCard()
+    {
         //not implemented
         return null;
     }
 
-    void drawPlayerCard() {
+    void drawPlayerCard()
+    {
         //not implemented
     }
 
-    void infectCity(InfectionCard infectionCard, int amount) {
+    void infectCity(InfectionCard infectionCard, int amount)
+    {
         //not implemented
     }
 

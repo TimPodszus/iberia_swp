@@ -1,4 +1,4 @@
-package de.uol.swp.server.gameturn;
+package de.uol.swp.server.game;
 
 public class GameTurnException extends Exception
 {
