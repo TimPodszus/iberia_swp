@@ -39,7 +39,7 @@ public class Player
         if (validRequest || cityCardCount == 0) {
             setCurrentPosition(city);
         } else {
-            throw new Exception("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast " + "auswählen!");
+            throw new Exception("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast auswählen!");
         }
     }
 

@@ -126,7 +126,6 @@ public class GameTurn
      */
     public void placeWaterTreatment(Region region, int count) throws GameTurnException
     {
-        //not implemented
         int waterTreatmentsRemaining = board.getWaterTreatmentsLeft();
 
         if (waterTreatmentsRemaining < count) {
@@ -185,7 +184,7 @@ public class GameTurn
      *
      * @throws GameTurnException if the player does not have the required city card
      */
-    public void buildHospitalAction(City city) throws GameTurnException
+    private void buildHospitalAction(City city) throws GameTurnException
     {
         Optional<CityCard> card = currentPlayer.getCards()
                                                .stream()
