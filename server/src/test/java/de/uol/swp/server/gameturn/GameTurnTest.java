@@ -1,7 +1,6 @@
 package de.uol.swp.server.gameturn;
 
 import de.uol.swp.server.board.Board;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.plague.PlagueName;
@@ -30,8 +29,8 @@ class GameTurnTest
         cityList = new ArrayList<>();
         cityList.add(city1);
         cityList.add(city2);
-        board = new Board(cityList, 0, 0, null, null, null, null);
-        player = new Player(null, null, city1, new ArrayList<Card>(), null);
+        board = new Board(cityList, 0, 0, null, null, null, null, 0, 0);
+        player = new Player(null, null, city1, new ArrayList<>(), null);
         if (addCityCardToPlayer) {
             cityCard = new CityCard(0, "", "", city1);
             player.addCard(cityCard);
@@ -47,16 +46,14 @@ class GameTurnTest
         createTestData(false, true);
 
         //when
-        Exception exception = assertThrows(Exception.class, () -> {
-            gameTurn.buildHospital(city1, false);
-        });
+        Exception exception = assertThrows(Exception.class, () -> gameTurn.buildHospital(city1, false));
 
         //then
         assertEquals("Die ausgewählte Stadt besitzt bereits ein Krankenhaus!", exception.getMessage());
     }
 
     @Test
-    void testBuildHospital_cityCardRequiredAndPlayerHasCard_buildsHospital() throws Exception
+    void testBuildHospital_cityCardRequiredAndPlayerHasCard_buildsHospital() throws GameTurnException
     {
         //given
         createTestData(true, false);
@@ -77,9 +74,7 @@ class GameTurnTest
         createTestData(false, false);
 
         //when
-        Exception exception = assertThrows(Exception.class, () -> {
-            gameTurn.buildHospital(city1, true);
-        });
+        Exception exception = assertThrows(GameTurnException.class, () -> gameTurn.buildHospital(city1, true));
 
         //then
         assertEquals(
@@ -95,9 +90,7 @@ class GameTurnTest
         createTestData(false, false);
 
         //when
-        Exception exception = assertThrows(Exception.class, () -> {
-            gameTurn.buildHospital(city2, false);
-        });
+        Exception exception = assertThrows(GameTurnException.class, () -> gameTurn.buildHospital(city2, false));
 
         //then
         assertEquals(
