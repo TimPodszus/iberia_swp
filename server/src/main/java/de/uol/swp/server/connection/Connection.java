@@ -16,6 +16,6 @@ public class Connection
     private final int id;
     private final List<City> cities;
     @Setter
-    private boolean hasTrainTrack;
-    private final boolean canBuildTrainTracks;
+    private boolean trainTrack;
+    private final boolean trainTrackBuildable;
 }
