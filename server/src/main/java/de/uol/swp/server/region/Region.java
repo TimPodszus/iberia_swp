@@ -1,6 +1,7 @@
 package de.uol.swp.server.region;
 
 import de.uol.swp.server.city.City;
+import de.uol.swp.server.game.GameTurnException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +23,12 @@ public class Region
         waterTreatments += count;
     }
 
-    public void decreaseWaterTreatments(int count) throws Exception
+    public void decreaseWaterTreatments(int count) throws GameTurnException
     {
         if (waterTreatments >= count) {
             waterTreatments -= count;
         } else {
-            throw new Exception("Nicht genug Wasseraufbereitungsmarker in dieser Region verfügbar");
+            throw new GameTurnException("Nicht genug Wasseraufbereitungsmarker in dieser Region verfügbar");
         }
     }
 }
