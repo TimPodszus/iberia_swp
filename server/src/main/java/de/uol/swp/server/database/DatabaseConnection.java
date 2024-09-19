@@ -12,7 +12,7 @@ public class DatabaseConnection {
     // Datenbankverbindungsinformationen
     private final String jdbcUrl = "jdbc:mysql://localhost:3306/iberia";
     private final String username = "root";
-    private final String password = "IberiaSWP";
+    private final String password = "iberia2024";
 
     // Privater Konstruktor, um eine Instanz zu verhindern
     private DatabaseConnection() throws SQLException {

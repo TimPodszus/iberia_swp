@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SuppressWarnings("UnstableApiUsage")
 public class UUIDSessionTest {
 
-    final User user = new UserDTO("name", "password", "email@test.de");
+    final User user = new UserDTO("name", "password");
 
     @Test
     void createSessionTest() {

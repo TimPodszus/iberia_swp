@@ -5,7 +5,6 @@ import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test for the register user request
@@ -15,11 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class RegisterUserRequestTest {
 
-    final User user = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
+    final User user = new UserDTO("Marco", "Marco");
 
     /**
      * Test for creation of the RegisterUserRequests
-     *
      * This test checks if the user of the RegisterUserRequest gets
      * set correctly during the creation of the request
      *

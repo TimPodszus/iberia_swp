@@ -1,9 +1,6 @@
 package de.uol.swp.server.usermanagement;
 
 
-import de.uol.swp.server.EventBusBasedTest;
-import org.greenrobot.eventbus.Subscribe;
-
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
@@ -12,23 +9,32 @@ import de.uol.swp.common.user.request.LoginRequest;
 import de.uol.swp.common.user.request.LogoutRequest;
 import de.uol.swp.common.user.request.RetrieveAllOnlineUsersRequest;
 import de.uol.swp.common.user.response.AllOnlineUsersResponse;
+import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.message.ClientAuthorizedMessage;
 import de.uol.swp.server.message.ServerExceptionMessage;
 import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import de.uol.swp.server.usermanagement.store.UserStore;
+import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 
 public class AuthenticationServiceTest extends EventBusBasedTest {
 
-    final User user = new UserDTO("name", "password", "email@test.de");
-    final User user2 = new UserDTO("name2", "password2", "email@test.de2");
-    final User user3 = new UserDTO("name3", "password3", "email@test.de3");
+    final User user = new UserDTO("name", "password");
+    final User user2 = new UserDTO("name2", "password2");
+    final User user3 = new UserDTO("name3", "password3");
 
     final UserStore userStore = new MainMemoryBasedUserStore();
     final UserManagement userManagement = new UserManagement(userStore);

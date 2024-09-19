@@ -16,21 +16,18 @@ public class UserDTO implements User {
 
     private final String username;
     private final String password;
-    private final String eMail;
 
     /**
      * Constructor
      *
      * @param username username of the user
      * @param password password the user uses
-     * @param eMail email address the user is registered to
      * @since 2019-08-13
      */
-    public UserDTO(String username, String password, String eMail) {
+    public UserDTO(String username, String password) {
         if (Objects.nonNull(username) && Objects.nonNull(password)) {
             this.username = username;
             this.password = password;
-            this.eMail = eMail;
         }else{
             throw new IllegalArgumentException("Username and password cannot be null");
         }
@@ -44,12 +41,11 @@ public class UserDTO implements User {
      * @since 2019-08-13
      */
     public static UserDTO create(User user) {
-        return new UserDTO(user.getUsername(), user.getPassword(), user.getEMail());
+        return new UserDTO(user.getUsername(), user.getPassword());
     }
 
     /**
      * Copy constructor leaving password variable empty
-     *
      * This constructor is used for the user list, because it would be a major security
      * flaw to send all user data including passwords to everyone connected.
      *
@@ -58,7 +54,7 @@ public class UserDTO implements User {
      * @since 2019-08-13
      */
     public static UserDTO createWithoutPassword(User user) {
-        return new UserDTO(user.getUsername(), "", user.getEMail());
+        return new UserDTO(user.getUsername(), "");
     }
 
 
@@ -73,13 +69,8 @@ public class UserDTO implements User {
     }
 
     @Override
-    public String getEMail() {
-        return eMail;
-    }
-
-    @Override
     public User getWithoutPassword() {
-        return new UserDTO(username, "", eMail);
+        return new UserDTO(username, "");
     }
 
     @Override

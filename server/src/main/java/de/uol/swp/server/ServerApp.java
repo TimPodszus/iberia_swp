@@ -30,7 +30,6 @@ class ServerApp {
 
 	/**
 	 * Main Method
-	 *
 	 * This method handles the creation of the server components and the start of
 	 * the server
 	 *
@@ -73,7 +72,7 @@ class ServerApp {
 
 		// TODO: Remove after registration is implemented
 		for (int i = 0; i < 5; i++) {
-			userManagement.createUser(new UserDTO("test" + i, "test" + i, "test" + i + "@test.de"));
+			userManagement.createUser(new UserDTO("test" + i, "test"));
 		}
 
 		// Remark: As these services are not referenced by any other class

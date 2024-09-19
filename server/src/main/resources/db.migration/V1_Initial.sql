@@ -1,6 +1,5 @@
 CREATE TABLE User (
-    userID INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(255) NOT NULL,
+    username VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255) NOT NULL
 );
 
@@ -32,10 +31,18 @@ CREATE TABLE Plague (
 );
 
 CREATE TABLE Lobby (
-    lobbyID INT PRIMARY KEY AUTO_INCREMENT,
+    lobbyID VARCHAR(12) PRIMARY KEY,
     difficulty INT NOT NULL,
-    owner VARCHAR(255),
-    users VARCHAR(255)
+    owner VARCHAR(255) NOT NULL,
+    FOREIGN KEY (owner) REFERENCES User(username)
+);
+
+CREATE TABLE LobbyUsers (
+    lobbyID VARCHAR(12),
+    username VARCHAR(255),
+    PRIMARY KEY (lobbyID, username),
+    FOREIGN KEY (lobbyID) REFERENCES Lobby(lobbyID),
+    FOREIGN KEY (username) REFERENCES User(username)
 );
 
 CREATE TABLE Player (
@@ -43,11 +50,10 @@ CREATE TABLE Player (
     username VARCHAR(255) NOT NULL,
     roleID INT,
     currentPositionID INT,
-    userID INT,
-    lobbyID INT,
+    lobbyID VARCHAR(12),
     FOREIGN KEY (roleID) REFERENCES Role(roleID),
     FOREIGN KEY (currentPositionID) REFERENCES City(cityID),
-    FOREIGN KEY (userID) REFERENCES User(userID),
+    FOREIGN KEY (username) REFERENCES User(username),
     FOREIGN KEY (lobbyID) REFERENCES Lobby(lobbyID)
 );
 

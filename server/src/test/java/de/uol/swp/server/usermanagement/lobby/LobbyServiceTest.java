@@ -28,8 +28,8 @@ import static org.mockito.Mockito.when;
 class LobbyServiceTest extends EventBusBasedTest
 {
 
-    static final UserDTO firstOwner = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
-    static final UserDTO secondOwner = new UserDTO("Marco2", "Marco2", "Marco2@Grawunder.com");
+    static final UserDTO firstOwner = new UserDTO("Marco", "Marco");
+    static final UserDTO secondOwner = new UserDTO("Marco2", "Marco2");
 
 
     // Special version of event bus for testing
@@ -44,7 +44,7 @@ class LobbyServiceTest extends EventBusBasedTest
     private AuthenticationService authService = new AuthenticationService(bus, userManagement);
 
     private LobbyManagement lobbyManagement = new LobbyManagement();
-    private UserDTO mockUserDTO = new UserDTO("TestUser", "TestPassword", "testemail@gmx.de");
+    private UserDTO mockUserDTO = new UserDTO("TestUser", "TestPassword");
     private LobbyService lobbyService = new LobbyService(lobbyManagement, authService, getBus());
 
     @BeforeEach

@@ -1,7 +1,11 @@
 package de.uol.swp.common.lobby;
 
 import de.uol.swp.common.SerializationTestHelper;
-import de.uol.swp.common.lobby.message.*;
+import de.uol.swp.common.lobby.message.CreateLobbyRequest;
+import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
+import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
+import de.uol.swp.common.lobby.message.UserJoinedLobbyMessage;
+import de.uol.swp.common.lobby.message.UserLeftLobbyMessage;
 import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class LobbyMessageSerializableTest
 {
 
-    private static final UserDTO defaultUser = new UserDTO("marco", "marco", "marco@grawunder.de");
+    private static final UserDTO defaultUser = new UserDTO("marco", "marco");
 
     @Test
     void testLobbyMessagesSerializable() {

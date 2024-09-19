@@ -16,6 +16,8 @@ public class Lobby implements ILobby
     private final String name;
     private final String lobbyCode;
     private final List<User> users;
+
+    private User owner;
     @Setter
     private int difficulty;
 
@@ -32,13 +34,13 @@ public class Lobby implements ILobby
     @Override
     public void updateOwner(User user)
     {
-        // TODO document why this method is empty
+        this.owner = user;
     }
 
     @Override
     public User getOwner()
     {
-        return null;
+        return owner;
     }
 
     @Override

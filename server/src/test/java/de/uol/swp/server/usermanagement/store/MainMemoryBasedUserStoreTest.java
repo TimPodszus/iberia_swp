@@ -9,7 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MainMemoryBasedUserStoreTest {
 
@@ -19,7 +22,7 @@ class MainMemoryBasedUserStoreTest {
     static {
         users = new ArrayList<>();
         for (int i = 0; i < NO_USERS; i++) {
-            users.add(new UserDTO("marco" + i, "marco" + i, "marco" + i + "@grawunder.de"));
+            users.add(new UserDTO("marco" + i, "marco" + i));
         }
         Collections.sort(users);
     }
@@ -31,7 +34,7 @@ class MainMemoryBasedUserStoreTest {
     MainMemoryBasedUserStore getDefaultStore() {
         MainMemoryBasedUserStore store = new MainMemoryBasedUserStore();
         List<UserDTO> users = getDefaultUsers();
-        users.forEach(u -> store.createUser(u.getUsername(), u.getPassword(), u.getEMail()));
+        users.forEach(u -> store.createUser(u.getUsername(), u.getPassword()));
         return store;
     }
 
@@ -64,7 +67,7 @@ class MainMemoryBasedUserStoreTest {
     void findUserByNameAndPassword() {
         UserStore store = getDefaultStore();
         User userToCreate = getDefaultUsers().get(1);
-        store.createUser(userToCreate.getUsername(), userToCreate.getPassword(), userToCreate.getEMail());
+        store.createUser(userToCreate.getUsername(), userToCreate.getPassword());
 
         Optional<User> userFound = store.findUser(userToCreate.getUsername(), userToCreate.getPassword());
 
@@ -97,8 +100,8 @@ class MainMemoryBasedUserStoreTest {
     void overwriteUser() {
         UserStore store = getDefaultStore();
         User userToCreate = getDefaultUsers().get(1);
-        store.createUser(userToCreate.getUsername(), userToCreate.getPassword(), userToCreate.getEMail());
-        store.createUser(userToCreate.getUsername(), userToCreate.getPassword(), userToCreate.getEMail());
+        store.createUser(userToCreate.getUsername(), userToCreate.getPassword());
+        store.createUser(userToCreate.getUsername(), userToCreate.getPassword());
 
         Optional<User> userFound = store.findUser(userToCreate.getUsername(), userToCreate.getPassword());
 
@@ -114,12 +117,12 @@ class MainMemoryBasedUserStoreTest {
         UserStore store = getDefaultStore();
         User userToUpdate = getDefaultUsers().get(2);
 
-        store.updateUser(userToUpdate.getUsername(), userToUpdate.getPassword() , userToUpdate.getEMail()+"@TESTING");
+        store.updateUser(userToUpdate.getUsername(), userToUpdate.getPassword());
 
         Optional<User> userFound = store.findUser(userToUpdate.getUsername());
 
         assertTrue(userFound.isPresent());
-        assertEquals(userFound.get().getEMail(), userToUpdate.getEMail() + "@TESTING");
+
 
     }
 
@@ -128,12 +131,11 @@ class MainMemoryBasedUserStoreTest {
         UserStore store = getDefaultStore();
         User userToUpdate = getDefaultUsers().get(2);
 
-        store.updateUser(userToUpdate.getUsername(), userToUpdate.getPassword() +"_NEWPASS", userToUpdate.getEMail());
+        store.updateUser(userToUpdate.getUsername(), userToUpdate.getPassword() +"_NEWPASS");
 
         Optional<User> userFound = store.findUser(userToUpdate.getUsername(), userToUpdate.getPassword() +"_NEWPASS");
 
         assertTrue(userFound.isPresent());
-        assertEquals(userFound.get().getEMail(), userToUpdate.getEMail() );
 
     }
 
@@ -154,7 +156,7 @@ class MainMemoryBasedUserStoreTest {
         UserStore store = getDefaultStore();
 
         assertThrows(IllegalArgumentException.class,
-                () -> store.createUser("","","")
+                () -> store.createUser("","")
                 );
     }
 

@@ -1,17 +1,21 @@
 package de.uol.swp.server.lobby;
 
-import de.uol.swp.common.lobby.ILobby;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.lobby.message.*;
+import de.uol.swp.common.lobby.ILobby;
+import de.uol.swp.common.lobby.message.CreateLobbyRequest;
+import de.uol.swp.common.lobby.message.LobbyCreatedMessage;
+import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
+import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
+import de.uol.swp.common.lobby.message.UserJoinedLobbyMessage;
+import de.uol.swp.common.lobby.message.UserLeftLobbyMessage;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -49,7 +53,6 @@ public class LobbyService extends AbstractService {
 
     /**
      * Handles CreateLobbyRequests found on the EventBus
-     *
      * If a CreateLobbyRequest is detected on the EventBus, this method is called.
      * It creates a new ILobby via the LobbyManagement using the parameters from the
      * request and sends a LobbyCreatedMessage to every connected user
@@ -69,7 +72,6 @@ public class LobbyService extends AbstractService {
 
     /**
      * Handles LobbyJoinUserRequests found on the EventBus
-     *
      * If a LobbyJoinUserRequest is detected on the EventBus, this method is called.
      * It adds a user to a ILobby stored in the LobbyManagement and sends a UserJoinedLobbyMessage
      * to every user in the lobby.
@@ -81,7 +83,7 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getName());
+        Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getName());
 
         if (lobby.isPresent()) {
             lobby.get().joinUser(lobbyJoinUserRequest.getUser());
@@ -92,7 +94,6 @@ public class LobbyService extends AbstractService {
 
     /**
      * Handles LobbyLeaveUserRequests found on the EventBus
-     *
      * If a LobbyLeaveUserRequest is detected on the EventBus, this method is called.
      * It removes a user from a Lobby stored in the LobbyManagement and sends a
      * UserLeftLobbyMessage to every user in the lobby.
@@ -104,7 +105,7 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getName());
+        Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getName());
 
         if (lobby.isPresent()) {
             lobby.get().leaveUser(lobbyLeaveUserRequest.getUser());
@@ -123,7 +124,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     public void sendToAllInLobby(String lobbyName, ServerMessage message) {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyName);
+        Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyName);
 
         if (lobby.isPresent()) {
             message.setReceiver(authenticationService.getSessions(lobby.get().getUsers()));

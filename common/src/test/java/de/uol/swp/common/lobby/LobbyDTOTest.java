@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test Class for the UserDTO
@@ -20,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class LobbyDTOTest
 {
 
-    private static final User defaultUser = new UserDTO("marco", "marco", "marco@grawunder.de");
-    private static final User notInLobbyUser = new UserDTO("no", "marco", "no@grawunder.de");
+    private static final User defaultUser = new UserDTO("marco", "marco");
+    private static final User notInLobbyUser = new UserDTO("no", "marco");
 
     private static final int NO_USERS = 10;
     private static final List<UserDTO> users;
@@ -29,7 +33,7 @@ class LobbyDTOTest
     static {
         users = new ArrayList<>();
         for (int i = 0; i < NO_USERS; i++) {
-            users.add(new UserDTO("marco" + i, "marco" + i, "marco" + i + "@grawunder.de"));
+            users.add(new UserDTO("marco" + i, "marco" + i));
         }
         Collections.sort(users);
     }

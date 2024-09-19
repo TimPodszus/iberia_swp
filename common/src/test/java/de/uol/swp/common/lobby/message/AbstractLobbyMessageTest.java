@@ -15,13 +15,12 @@ public class AbstractLobbyMessageTest
 {
 
     final String lobbyName = "Test";
-    final UserDTO user = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
-    final UserDTO user1 = new UserDTO("Marco1", "Marco1", "Marco1@Grawunder.com");
+    final UserDTO user = new UserDTO("Marco", "Marco");
+    final UserDTO user1 = new UserDTO("Marco1", "Marco1");
 
 
     /**
      * Test for creation of the AbstractLobbyMessages
-     *
      * This test checks if the lobbyName and the user of the AbstractLobbyMessage gets
      * set correctly during the creation of the message
      *
@@ -37,7 +36,6 @@ public class AbstractLobbyMessageTest
 
     /**
      * Test for set new lobbyName and new user of the AbstractLobbyMessages
-     *
      * This test checks if the lobbyName and the user of the AbstractLobbyMessage gets
      * set correctly during setting new lobbyName and user of the message
      *

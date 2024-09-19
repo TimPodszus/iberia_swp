@@ -9,18 +9,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UserManagementTest {
 
     private static final int NO_USERS = 10;
     private static final List<UserDTO> users;
-    private static final User userNotInStore = new UserDTO("marco" + NO_USERS, "marco" + NO_USERS, "marco" + NO_USERS + "@grawunder.de");
+    private static final User userNotInStore = new UserDTO("marco" + NO_USERS, "marco" + NO_USERS);
 
     static {
         users = new ArrayList<>();
         for (int i = 0; i < NO_USERS; i++) {
-            users.add(new UserDTO("marco" + i, "marco" + i, "marco" + i + "@grawunder.de"));
+            users.add(new UserDTO("marco" + i, "marco" + i));
         }
         Collections.sort(users);
     }
@@ -32,7 +35,7 @@ class UserManagementTest {
     UserManagement getDefaultManagement() {
         MainMemoryBasedUserStore store = new MainMemoryBasedUserStore();
         List<UserDTO> users = getDefaultUsers();
-        users.forEach(u -> store.createUser(u.getUsername(), u.getPassword(), u.getEMail()));
+        users.forEach(u -> store.createUser(u.getUsername(), u.getPassword()));
         return new UserManagement(store);
     }
 
@@ -128,7 +131,7 @@ class UserManagementTest {
     void updateUserPassword_NotLoggedIn() {
         UserManagement management = getDefaultManagement();
         User userToUpdate = users.get(0);
-        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword", null);
+        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword");
 
         assertFalse(management.isLoggedIn(userToUpdate));
         management.updateUser(updatedUser);
@@ -138,23 +141,10 @@ class UserManagementTest {
     }
 
     @Test
-    void updateUser_Mail() {
-        UserManagement management = getDefaultManagement();
-        User userToUpdate = users.get(0);
-        User updatedUser = new UserDTO(userToUpdate.getUsername(), "", "newMail@mail.com");
-
-        management.updateUser(updatedUser);
-
-        User user = management.login(updatedUser.getUsername(), updatedUser.getPassword());
-        assertTrue(management.isLoggedIn(updatedUser));
-        assertEquals(user.getEMail(), updatedUser.getEMail());
-    }
-
-    @Test
     void updateUserPassword_LoggedIn() {
         UserManagement management = getDefaultManagement();
         User userToUpdate = users.get(0);
-        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword", null);
+        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword");
 
         management.login(userToUpdate.getUsername(), userToUpdate.getPassword());
         assertTrue(management.isLoggedIn(userToUpdate));

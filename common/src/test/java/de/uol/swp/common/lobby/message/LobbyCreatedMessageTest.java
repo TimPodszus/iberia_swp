@@ -15,12 +15,11 @@ public class LobbyCreatedMessageTest
 {
 
     final String lobbyName = "Test";
-    final UserDTO user = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
+    final UserDTO user = new UserDTO("Marco", "Marco");
 
 
     /**
      * Test for creation of the LobbyCreatedMessages
-     *
      * This test checks if the lobbyName and the user of the LobbyCreatedMessage gets
      * set correctly during the creation of the message
      *

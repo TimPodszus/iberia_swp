@@ -14,11 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class UpdateUserRequestTest {
 
-    final User user = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
+    final User user = new UserDTO("Marco", "Marco");
 
     /**
      * Test for creation of the UpdateUserRequests
-     *
      * This test checks if the user of the UpdateUserRequest gets
      * set correctly during the creation of the request
      *

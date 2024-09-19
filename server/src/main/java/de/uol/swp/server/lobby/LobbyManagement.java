@@ -3,20 +3,16 @@ package de.uol.swp.server.lobby;
 import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
-import de.uol.swp.server.database.DatabaseConnection;
 import de.uol.swp.server.lobby.store.LobbyStore;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
 /**
  * Manages creation, deletion and storing of lobbies
  *
@@ -27,10 +23,8 @@ import java.util.UUID;
  */
 public class LobbyManagement extends LobbyStore {
     private final Map<String, Lobby> lobbies = new HashMap<>();
-    private static final String INSERT_LOBBY_SQL = "INSERT INTO Lobby (id, difficulty, owner, users) VALUES (?, ?, ?," + " ?)";
-    private static final String INSERT_LOBBY_USER_SQL = "INSERT INTO User (userID, username, password) VALUES (?, ?," + " ?)";
+    private final LobbyStore lobbyStore = new LobbyStore();
 
-    private LobbyStore lobbyStore = new LobbyStore();
     /**
      * Creates a new lobby and adds it to the list
      *
@@ -48,9 +42,8 @@ public class LobbyManagement extends LobbyStore {
         }
         String lobbyCode = generateLobbyCode();
         List<User> users = new ArrayList<>();
-        UserDTO ownerUser = new UserDTO(owner.getUsername(), owner.getPassword(), owner.getEMail());
-        users.add(ownerUser);
-        Lobby newLobby = new Lobby(name, lobbyCode, users, 4);
+        users.add(owner);
+        Lobby newLobby = new Lobby(name, lobbyCode, users, owner, 4);
         lobbies.put(name, newLobby);
         try {
             LobbyDTO lobbyDTO = new LobbyDTO(name, owner, lobbyCode, 4);
@@ -60,6 +53,7 @@ public class LobbyManagement extends LobbyStore {
             throw new RuntimeException("Failed to save lobby to the database");
         }
     }
+
     /**
      * Generates a unique lobby code.
      *
@@ -77,6 +71,7 @@ public class LobbyManagement extends LobbyStore {
                         .equals(code[0])));
         return code[0];
     }
+
     /**
      * Deletes lobby with requested name
      *
@@ -85,12 +80,15 @@ public class LobbyManagement extends LobbyStore {
      *                                  name
      * @since 2019-10-08
      */
+
+    // Datenbankseitig die Lobby löschen
     public void dropLobby(String name) {
         if (!lobbies.containsKey(name)) {
-            throw new IllegalArgumentException("ILobby name " + name + " not found!");
+            throw new IllegalArgumentException("Lobby name " + name + " not found!");
         }
         lobbies.remove(name);
     }
+
     /**
      * Searches for the lobby with the requested name
      *
@@ -99,51 +97,11 @@ public class LobbyManagement extends LobbyStore {
      * @see Optional
      * @since 2019-10-08
      */
-    public Optional<ILobby> getLobby(String name) {
+    public Optional<Lobby> getLobby(String name) {
         Lobby lobby = lobbies.get(name);
         if (lobby != null) {
             return Optional.of(lobby);
         }
         return Optional.empty();
-    }
-
-    public void saveLobby(LobbyDTO lobby) throws SQLException {
-        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-        try (Connection connection = dbConnection.getConnection()) {
-            connection.setAutoCommit(false);
-            try {
-                try (
-                        PreparedStatement psLobby = connection.prepareStatement(
-                                INSERT_LOBBY_SQL,
-                                Statement.RETURN_GENERATED_KEYS
-                        )
-                ) {
-                    psLobby.setString(1, lobby.getLobbyCode());
-                    psLobby.setInt(2, lobby.getDifficulty());
-                    psLobby.setObject(2, lobby.getOwner());
-                    psLobby.setObject(3, lobby.getUsers());
-                    psLobby.executeUpdate();
-                }
-                for (User user : lobby.getUsers()) {
-                    try (
-                            PreparedStatement psUser = connection.prepareStatement(
-                                    INSERT_LOBBY_USER_SQL,
-                                    Statement.RETURN_GENERATED_KEYS
-                            )
-                    ) {
-                        psUser.setString(1, user.getEMail());
-                        psUser.setString(2, user.getPassword());
-                        psUser.executeUpdate();
-                    }
-                }
-                connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
-                throw e;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw e;
-        }
     }
 }
