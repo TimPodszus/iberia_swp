@@ -202,9 +202,31 @@ public class GameTurn
         currentPlayer.discardCard(card.get());
     }
 
-    void buildTrainTracks(Connection connection)
+    /**
+     * Builds train tracks on the specified connection.
+     *
+     * @param connection the connection where the train tracks will be built
+     *
+     * @throws GameTurnException if the train tracks cannot be built on the connection,
+     *                           if the connection already has train tracks,
+     *                           or if there are not enough tracks left to build
+     */
+    public void buildTrainTracks(Connection connection) throws GameTurnException
     {
-        //not implemented
+        if (!connection.isTrainTrackBuildable()) {
+            throw new GameTurnException("Auf dieser Verbindung kann keine Zugstrecke gebaut werden");
+        }
+
+        if (connection.isTrainTrack()) {
+            throw new GameTurnException("Auf dieser Verbindung existiert bereits eine Zugstrecke");
+        }
+
+        if (board.getTracksLeft() < 1) {
+            throw new GameTurnException("Es sind nichtmehr genug Schienen vorhanden!");
+        }
+
+        connection.setTrainTrack(true);
+        board.setTracksLeft(board.getTracksLeft() - 1);
     }
 
     void tradeCards(Player tradingPartner)
