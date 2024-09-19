@@ -11,16 +11,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.lobby.message.AbstractLobbyRequest
  * @since 2023-05-14
  */
-public class AbstractLobbyRequestTest {
+ class AbstractLobbyRequestTest {
 
     final String lobbyName = "Test";
-    final UserDTO user = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
-    final UserDTO user1 = new UserDTO("Marco1", "Marco1", "Marco1@Grawunder.com");
+    final UserDTO user = new UserDTO("Marco", "Marco");
+    final UserDTO user1 = new UserDTO("Marco1", "Marco1");
 
 
     /**
      * Test for creation of the AbstractLobbyRequests
-     *
      * This test checks if the lobbyName and the user of the AbstractLobbyRequest gets
      * set correctly during the creation of the request
      *
@@ -36,7 +35,6 @@ public class AbstractLobbyRequestTest {
 
     /**
      * Test for set new lobbyName and new user of the AbstractLobbyRequests
-     *
      * This test checks if the lobbyName and the user of the AbstractLobbyRequest gets
      * set correctly during setting new lobbyName and user of the request
      *
