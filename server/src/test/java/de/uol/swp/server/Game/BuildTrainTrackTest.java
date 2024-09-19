@@ -21,7 +21,7 @@ class BuildTrainTrackTest
     {
         Player player = new Player(null, null, null, null);
         board = new Board(null, 0, 0, null, null, null, null, 1, 1);
-        connection = new Connection(null, null, false, false, true, false);
+        connection = new Connection(0, null, false, true);
         gameTurn = new GameTurn(player, board);
     }
 
@@ -37,10 +37,9 @@ class BuildTrainTrackTest
     @Test
     void testBuildTrainTracks_NotBuildable_ThrowsException()
     {
-        connection = new Connection(null, null, false, false, false, false);
+        connection = new Connection(0, null, false, false);
 
-        GameTurnException exception = assertThrows(
-                GameTurnException.class,
+        GameTurnException exception = assertThrows(GameTurnException.class,
                 () -> gameTurn.buildTrainTracks(connection)
         );
         assertEquals("Auf dieser Verbindung kann keine Zugstrecke gebaut werden", exception.getMessage());
@@ -51,8 +50,7 @@ class BuildTrainTrackTest
     {
         connection.setTrainTrack(true);
 
-        GameTurnException exception = assertThrows(
-                GameTurnException.class,
+        GameTurnException exception = assertThrows(GameTurnException.class,
                 () -> gameTurn.buildTrainTracks(connection)
         );
         assertEquals("Auf dieser Verbindung existiert bereits eine Zugstrecke", exception.getMessage());
@@ -63,8 +61,7 @@ class BuildTrainTrackTest
     {
         board.setTracksLeft(0);
 
-        GameTurnException exception = assertThrows(
-                GameTurnException.class,
+        GameTurnException exception = assertThrows(GameTurnException.class,
                 () -> gameTurn.buildTrainTracks(connection)
         );
         assertEquals("Es sind nichtmehr genug Schienen vorhanden!", exception.getMessage());
