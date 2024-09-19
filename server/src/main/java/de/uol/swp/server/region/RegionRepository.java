@@ -60,9 +60,18 @@ public class RegionRepository
                         CityName.CACERES
                 )
         ));
-        regions.add(new Region(8, getCitiesByNames(allCities, CityName.LISBOA, CityName.ALBUFEIRA, CityName.EVORA)));
+        regions.add(new Region(
+                8,
+                getCitiesByNames(allCities, CityName.LISBOA, CityName.ALBUFEIRA, CityName.EVORA, CityName.HUELVA)
+        ));
         regions.add(new Region(9,
-                getCitiesByNames(allCities, CityName.EVORA, CityName.SEVILLA, CityName.CORDOBA, CityName.BADAJOZ)
+                getCitiesByNames(allCities,
+                        CityName.EVORA,
+                        CityName.SEVILLA,
+                        CityName.CORDOBA,
+                        CityName.BADAJOZ,
+                        CityName.HUELVA
+                )
         ));
         regions.add(new Region(10,
                 getCitiesByNames(allCities, CityName.SEVILLA, CityName.CADIZ, CityName.GIBRALTAR, CityName.MALAGA)
