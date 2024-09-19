@@ -22,6 +22,7 @@ public class LobbyDTO implements Lobby {
     private final String name;
     private User owner;
     private final Set<User> users = new TreeSet<>();
+    private final String id;
 
     /**
      * Constructor
@@ -31,15 +32,21 @@ public class LobbyDTO implements Lobby {
      *                owner
      * @since 2019-10-08
      */
-    public LobbyDTO(String name, User creator) {
+    public LobbyDTO(String name, User creator, String id) {
         this.name = name;
         this.owner = creator;
         this.users.add(creator);
+        this.id = id;
     }
 
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override
