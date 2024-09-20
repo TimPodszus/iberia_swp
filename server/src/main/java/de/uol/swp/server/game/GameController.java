@@ -1,9 +1,9 @@
 package de.uol.swp.server.game;
 
 import de.uol.swp.common.enums.Action;
-import de.uol.swp.common.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
+import de.uol.swp.server.lobby.Lobby;
 import de.uol.swp.server.player.Player;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;

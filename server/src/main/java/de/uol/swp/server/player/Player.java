@@ -7,6 +7,7 @@ import de.uol.swp.server.city.City;
 import de.uol.swp.server.role.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;

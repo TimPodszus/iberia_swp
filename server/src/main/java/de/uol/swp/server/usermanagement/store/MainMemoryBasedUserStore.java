@@ -1,4 +1,8 @@
+package de.uol.swp.server.usermanagement.store;
+
+import com.google.common.base.Strings;
 import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.UserDTO;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,8 +58,18 @@ public class MainMemoryBasedUserStore extends AbstractUserStore implements UserS
     }
 
     @Override
+    public User createUser(String username, byte[] password) {
+        return null;
+    }
+
+    @Override
     public User updateUser(String username, String password) {
         return createUser(username, password);
+    }
+
+    @Override
+    public User updateUser(String username, byte[] password) {
+        return null;
     }
 
     @Override
