@@ -5,9 +5,8 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 
 public class EventBusBasedTest {
 
@@ -16,10 +15,10 @@ public class EventBusBasedTest {
 
     // Special version of event bus for testing
     private final EventBus bus = EventBus.builder()
-            .logNoSubscriberMessages(false)
-            .sendNoSubscriberEvent(false)
-            .throwSubscriberException(true)
-            .build();
+                                         .logNoSubscriberMessages(false)
+                                         .sendNoSubscriberEvent(false)
+                                         .throwSubscriberException(true)
+                                         .build();
 
     protected Object event;
 

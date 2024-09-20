@@ -7,7 +7,8 @@ import de.uol.swp.server.lobby.LobbyManagement;
 import de.uol.swp.server.lobby.store.LobbyStore;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserManagement;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
+import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
+
 import org.greenrobot.eventbus.EventBus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,15 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("UnstableApiUsage")
-class LobbyManagementTest
-{
+class LobbyManagementTest {
 
     static final UserDTO firstOwner = new UserDTO("Marco", "Marco");
     static final UserDTO user1 = new UserDTO("Lasse", "Klasse");
     static final UserDTO user2 = new UserDTO("UserZwei", "zwei");
     final EventBus bus = EventBus.getDefault();
-    final UserManagement userManagement = new UserManagement(new MainMemoryBasedUserStore());
+    final UserManagement userManagement = new UserManagement(new DatabaseBasedUserStore());
     final AuthenticationService authService = new AuthenticationService(bus, userManagement);
 
     final LobbyManagement lobbyManagement = new LobbyManagement();

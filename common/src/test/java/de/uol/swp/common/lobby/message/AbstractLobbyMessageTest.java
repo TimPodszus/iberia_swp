@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.lobby.message.AbstractLobbyMessage
  * @since 2023-05-14
  */
-public class AbstractLobbyMessageTest
+ class AbstractLobbyMessageTest
 {
 
     final String lobbyName = "Test";

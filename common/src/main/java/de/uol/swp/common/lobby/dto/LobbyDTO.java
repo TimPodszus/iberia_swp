@@ -23,6 +23,7 @@ public class LobbyDTO implements ILobby
     private final String name;
     private User owner;
     private final Set<User> users = new TreeSet<>();
+    private final String id;
 
     private final String lobbyCode;
 
@@ -48,6 +49,11 @@ public class LobbyDTO implements ILobby
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override

@@ -38,10 +38,14 @@ public interface UserStore {
      *
      * @param username username of the new user
      * @param password password the user wants to use
+     *
      * @return The User without password information
+     *
      * @since 2019-08-13
      */
     User createUser(String username, String password);
+
+    User createUser(String username, byte[] password);
 
     /**
      * Update user. Update only given fields. Username cannot be changed
@@ -52,6 +56,8 @@ public interface UserStore {
      * @since 2019-08-13
      */
     User updateUser(String username, String password);
+
+    User updateUser(String username, byte[] password);
 
     /**
      * Remove user from store

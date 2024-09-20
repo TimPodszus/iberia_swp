@@ -12,16 +12,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 
-public class UserServiceTest extends EventBusBasedTest {
+ class UserServiceTest extends EventBusBasedTest {
 
     static final User userToRegister = new UserDTO("Marco", "Marco");
     static final User userWithSameName = new UserDTO("Marco", "Marco2");
 
-    final UserManagement userManagement = new UserManagement(new MainMemoryBasedUserStore());
-    final UserService userService = new UserService(getBus(), userManagement);
+    final UserManagement userManagement = new UserManagement(new DatabaseBasedUserStore());
 
     @Test
-    void registerUserTest() {
+    void registerUserTest()  {
         final RegisterUserRequest request = new RegisterUserRequest(userToRegister);
 
         // The post will lead to a call of a UserService function

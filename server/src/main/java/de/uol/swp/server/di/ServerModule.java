@@ -1,8 +1,8 @@
 package de.uol.swp.server.di;
 
+import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.AbstractModule;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import de.uol.swp.server.usermanagement.store.UserStore;
 
 /**
@@ -17,7 +17,7 @@ import de.uol.swp.server.usermanagement.store.UserStore;
 public class ServerModule extends AbstractModule {
 
     private final EventBus bus = EventBus.getDefault();
-    private final UserStore store = new MainMemoryBasedUserStore();
+    private final UserStore store = new DatabaseBasedUserStore();
 
     @Override
     protected void configure() {

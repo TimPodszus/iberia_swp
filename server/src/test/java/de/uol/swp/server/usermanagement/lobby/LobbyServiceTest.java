@@ -7,10 +7,9 @@ import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.lobby.LobbyManagement;
-import de.uol.swp.server.lobby.LobbyService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserManagement;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
+import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +29,6 @@ class LobbyServiceTest extends EventBusBasedTest
 
     static final UserDTO firstOwner = new UserDTO("Marco", "Marco");
     static final UserDTO secondOwner = new UserDTO("Marco2", "Marco2");
-
 
     // Special version of event bus for testing
     final EventBus bus = EventBus.builder()
@@ -65,7 +63,10 @@ class LobbyServiceTest extends EventBusBasedTest
         assertNotNull(lobbyManagement.getLobby("Test"));
         // Checks whether it is also the correct owner
         if (lobbyManagement.getLobby("Test").isPresent()) {
-            assertEquals(lobbyManagement.getLobby("Test").get().getOwner(), firstOwner);
+            assertEquals(firstOwner,
+                    lobbyManagement.getLobby("Test")
+                                   .get()
+                                   .getOwner());
         }
     }
 
@@ -81,14 +82,17 @@ class LobbyServiceTest extends EventBusBasedTest
                 () -> bus.post(request2)
         );
         // Check if the nested exception is the right exception
-        assertTrue(e.getCause() instanceof IllegalArgumentException);
+        assertInstanceOf(IllegalArgumentException.class, e.getCause());
 
         // old lobby should be still in the LobbyManagement
         assertNotNull(lobbyManagement.getLobby("Test"));
 
         // old lobby should not be overwritten!
         if (lobbyManagement.getLobby("Test").isPresent()) {
-            assertNotEquals(lobbyManagement.getLobby("Test").get().getOwner(), secondOwner);
+            assertNotEquals(secondOwner,
+                    lobbyManagement.getLobby("Test")
+                                   .get()
+                                   .getOwner());
         }
     }
 

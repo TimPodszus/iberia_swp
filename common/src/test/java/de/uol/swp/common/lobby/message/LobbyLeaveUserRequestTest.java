@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.lobby.message.LobbyLeaveUserRequest
  * @since 2023-05-14
  */
-public class LobbyLeaveUserRequestTest
+ class LobbyLeaveUserRequestTest
 {
 
     final String lobbyName = "Test";

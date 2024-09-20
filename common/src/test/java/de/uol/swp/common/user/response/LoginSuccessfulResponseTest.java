@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.user.response.LoginSuccessfulResponse
  * @since 2023-05-14
  */
-public class LoginSuccessfulResponseTest {
+ class LoginSuccessfulResponseTest {
 
     final User user = new UserDTO("Marco", "Marco");
 

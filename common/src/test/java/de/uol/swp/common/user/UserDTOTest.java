@@ -20,7 +20,6 @@ class UserDTOTest {
     /**
      * This test check whether the username can be null
      * If the constructor does not throw an Exception the test fails
-     *
      * @since 2019-09-04
      */
     @Test
@@ -31,7 +30,6 @@ class UserDTOTest {
     /**
      * This test check whether the password can be null
      * If the constructor does not throw an Exception the test fails
-     *
      * @since 2019-09-04
      */
     @Test
@@ -42,7 +40,6 @@ class UserDTOTest {
     /**
      * This test checks if the copy constructor works correctly
      * This test fails if any of the fields mismatch or the objects are not considered equal
-     *
      * @since 2019-09-04
      */
     @Test
@@ -56,12 +53,12 @@ class UserDTOTest {
         // Test every attribute
         assertEquals(defaultUser.getUsername(), newUser.getUsername());
         assertEquals(defaultUser.getPassword(), newUser.getPassword());
+
     }
 
     /**
      * This test checks if the createWithoutPassword function generates the Object correctly
      * This test fails if the usernames or emails do not match or the password is not empty.
-     *
      * @since 2019-09-04
      */
     @Test
@@ -72,15 +69,14 @@ class UserDTOTest {
         assertEquals(defaultUser.getUsername(), newUser.getUsername());
         assertEquals("", newUser.getPassword());
 
+
         // Test with equals method
         assertEquals(defaultUser, newUser);
     }
 
     /**
      * This test checks if the getWithoutPassword function generates the Object correctly
-     *
      * This test fails if the usernames do not match or the password is not empty.
-     *
      * @since 2019-09-04
      */
     @Test
@@ -93,9 +89,7 @@ class UserDTOTest {
 
     /**
      * Test if two different users are equal
-     *
      * This test fails if they are considered equal
-     *
      * @since 2019-09-04
      */
     @Test
@@ -105,10 +99,8 @@ class UserDTOTest {
 
      /**
      * Test of compare function
-     *
      * This test compares two different users. It fails if the function returns
      * that both of them are equal.
-     *
      * @since 2019-09-04
      */
     @Test
@@ -118,9 +110,7 @@ class UserDTOTest {
 
     /**
      * Test if the HashCode of a copied object matches the one of the original
-     *
      * This test fails if the codes do not match
-     *
      * @since 2019-09-04
      */
     @Test

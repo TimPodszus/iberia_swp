@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.user.request.UpdateUserRequest
  * @since 2023-05-14
  */
-public class UpdateUserRequestTest {
+ class UpdateUserRequestTest {
 
     final User user = new UserDTO("Marco", "Marco");
 

@@ -30,6 +30,7 @@ class ServerApp {
 
 	/**
 	 * Main Method
+	 *
 	 * This method handles the creation of the server components and the start of
 	 * the server
 	 *

@@ -7,19 +7,22 @@ package de.uol.swp.server.usermanagement;
  * is already taken or someone tries to modify or remove a user that does not (yet)
  * exist within the UserStore.
  *
- * @see de.uol.swp.server.usermanagement.UserManagement
  * @author Marco Grawunder
+ * @see de.uol.swp.server.usermanagement.UserManagement
  * @since 2019-07-08
  */
-class UserManagementException extends RuntimeException {
+public class UserManagementException extends RuntimeException
+{
 
     /**
      * Constructor
      *
      * @param s String containing the cause for the exception.
+     *
      * @since 2019-07-08
      */
-    UserManagementException(String s) {
+    public UserManagementException(String s)
+    {
         super(s);
     }
 }

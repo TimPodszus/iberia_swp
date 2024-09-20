@@ -1,5 +1,8 @@
 package de.uol.swp.common.user;
 
+import de.uol.swp.common.passwordHashing.PasswordHashing;
+import lombok.Getter;
+
 import java.util.Objects;
 
 /**
@@ -12,7 +15,11 @@ import java.util.Objects;
  * @see de.uol.swp.common.user.response.AllOnlineUsersResponse
  * @since 2019-08-13
  */
-public class UserDTO implements User {
+@Getter
+public class UserDTO implements User
+{
+    private String username;
+    private String password;
 
     private final String username;
     private final String password;
@@ -22,25 +29,35 @@ public class UserDTO implements User {
      *
      * @param username username of the user
      * @param password password the user uses
+     *
      * @since 2019-08-13
      */
-    public UserDTO(String username, String password) {
+    public UserDTO(String username, String password)
+    {
         if (Objects.nonNull(username) && Objects.nonNull(password)) {
             this.username = username;
-            this.password = password;
+            this.password = PasswordHashing.hashPassword(password);
         }else{
             throw new IllegalArgumentException("Username and password cannot be null");
         }
+    }
+
+    public UserDTO(String username)
+    {
+        createWithoutPassword(new UserDTO(username, ""));
     }
 
     /**
      * Copy constructor
      *
      * @param user User object to copy the values of
+     *
      * @return UserDTO copy of User object
+     *
      * @since 2019-08-13
      */
-    public static UserDTO create(User user) {
+    public static UserDTO create(User user)
+    {
         return new UserDTO(user.getUsername(), user.getPassword());
     }
 
@@ -50,7 +67,9 @@ public class UserDTO implements User {
      * flaw to send all user data including passwords to everyone connected.
      *
      * @param user User object to copy the values of
+     *
      * @return UserDTO copy of User object having the password variable left empty
+     *
      * @since 2019-08-13
      */
     public static UserDTO createWithoutPassword(User user) {
@@ -63,10 +82,6 @@ public class UserDTO implements User {
         return username;
     }
 
-    @Override
-    public String getPassword() {
-        return password;
-    }
 
     @Override
     public User getWithoutPassword() {
@@ -79,15 +94,21 @@ public class UserDTO implements User {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         UserDTO userDTO = (UserDTO) o;
         return Objects.equals(username, userDTO.username);
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(username);
     }
 }

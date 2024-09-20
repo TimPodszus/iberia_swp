@@ -21,8 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-class LobbyDTOTest
-{
+class LobbyDTOTest {
 
     private static final User defaultUser = new UserDTO("marco", "marco");
     private static final User notInLobbyUser = new UserDTO("no", "marco");
