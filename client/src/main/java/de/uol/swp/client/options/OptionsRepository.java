@@ -33,16 +33,11 @@ public class OptionsRepository {
      */
     public OptionsRepository() {
         try {
-            // Load properties from the options file
             loadProperties();
-
-            // Parse and set the chatEnabled property
             this.chatEnabled = Boolean.parseBoolean(properties.getProperty(CHAT_ENABLED_IDENTIFIER));
-
-            // Parse and set the volume property
             this.volume = Double.parseDouble(properties.getProperty(VOLUME_IDENTIFIER));
         } catch (IOException e) {
-            // Set default values if an IOException occurs
+            LOG.debug("Failed to load properties from file. Using default values for options: {}", e.getMessage());
             this.chatEnabled = DEFAULT_CHAT_ENABLED;
             this.volume = DEFAULT_VOLUME;
         }
@@ -86,35 +81,31 @@ public class OptionsRepository {
      * @throws IOException if an I/O error occurs when reading from the input stream.
      */
     private void loadProperties() throws IOException {
-        // Initialize the properties object
         properties = new Properties();
 
-        // Get the path to the resource directory
         String resourcePath = Objects.requireNonNull(Thread.currentThread()
                                                            .getContextClassLoader()
                                                            .getResource(""))
                                      .getPath();
 
-        // Construct the full path to the options file
         String path = resourcePath + OPTIONS_FILE;
 
-        // Load the properties from the file input stream
         try (FileInputStream fis = new FileInputStream(path)) {
             properties.load(fis);
         }
     }
 
+    /**
+     * Saves the properties to the options file.
+     *
+     * @throws IOException if an I/O error occurs when writing to the output stream.
+     */
     private void saveProperties() throws IOException {
-        // Get the path to the resource directory
         String resourcePath = Objects.requireNonNull(Thread.currentThread()
                                                            .getContextClassLoader()
                                                            .getResource(""))
                                      .getPath();
-
-        // Construct the full path to the options file
         String path = resourcePath + OPTIONS_FILE;
-
-        // Save the properties to the file output stream
         try (FileOutputStream fos = new FileOutputStream(path)) {
             properties.store(fos, null);
         }

@@ -3,7 +3,6 @@ package de.uol.swp.client.options;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -22,18 +21,6 @@ public class OptionsPresenter extends AbstractPresenter {
 
     @FXML
     private CheckBox chatEnabledCheckbox;
-
-    @FXML
-    private Button backButton;
-
-    /**
-     * Default Constructor
-     *
-     * @since 2024-09-11
-     */
-    public OptionsPresenter() {
-        // necessary for javafx
-    }
 
     /**
      * Initializes the options presenter.
