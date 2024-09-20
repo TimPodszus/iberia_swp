@@ -11,7 +11,7 @@ public class DatabaseConnection {
     private Connection connection;
 
     // Datenbankverbindungsinformationen
-    private final String jdbcUrl = "jdbc:mysql://localhost:3306/iberia_db";
+    private final String jdbcUrl = "jdbc:mysql://localhost:3306/";
     private final String username = "root";
     private final String password = "iberia2024";
 
