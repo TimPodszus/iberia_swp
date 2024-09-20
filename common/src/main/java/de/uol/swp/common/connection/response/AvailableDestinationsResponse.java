@@ -4,6 +4,7 @@ import de.uol.swp.common.city.CityDTO;
 
 import java.util.List;
 
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.message.AbstractResponseMessage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,5 +15,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AvailableDestinationsResponse extends AbstractResponseMessage {
-    private final List<CityDTO> cities;
+    private final List<ICityDTO> cities;
 }
