@@ -3,6 +3,9 @@ package de.uol.swp.common.city;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Data Transfer Object for City.
+ */
 @AllArgsConstructor
 @Getter
 public class CityDTO implements ICityDTO {
