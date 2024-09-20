@@ -1,0 +1,28 @@
+package de.uol.swp.server.connection;
+
+import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.server.city.City;
+import lombok.AllArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Manages connections and provides available destinations.
+ */
+@AllArgsConstructor
+public class ConnectionManagement implements IConnectionManagement {
+
+    @Override
+    public List<ICityDTO> getAvailableDestinations(ICityDTO cityDTO) {
+        City city = City.fromDto(cityDTO);
+        List<ICityDTO> availableDestinations = new ArrayList<>();
+        for (Connection connection : ConnectionRepository.getAllConnections()) {
+            if (connection.getCities()
+                          .contains(city)) {
+                availableDestinations.add(city.toDto());
+            }
+        }
+        return availableDestinations;
+    }
+}
