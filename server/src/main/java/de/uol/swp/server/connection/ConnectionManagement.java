@@ -20,7 +20,11 @@ public class ConnectionManagement implements IConnectionManagement {
         for (Connection connection : ConnectionRepository.getAllConnections()) {
             if (connection.getCities()
                           .contains(city)) {
-                availableDestinations.add(city.toDto());
+                for (City connectedCity : connection.getCities()) {
+                    if (!connectedCity.equals(city)) {
+                        availableDestinations.add(connectedCity.toDto());
+                    }
+                }
             }
         }
         return availableDestinations;
