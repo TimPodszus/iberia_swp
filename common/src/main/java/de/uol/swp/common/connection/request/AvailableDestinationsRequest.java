@@ -1,6 +1,6 @@
 package de.uol.swp.common.connection.request;
 
-import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.message.AbstractRequestMessage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,5 +11,5 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class AvailableDestinationsRequest extends AbstractRequestMessage {
-    private final CityDTO city;
+    private final ICityDTO city;
 }
