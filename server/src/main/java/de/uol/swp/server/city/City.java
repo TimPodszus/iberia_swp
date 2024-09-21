@@ -25,7 +25,7 @@ public class City {
      * @return an instance of ICityDTO representing this City.
      */
     public ICityDTO toDto() {
-        return new CityDTO(name.getDisplayName(), plagueName.name(), foundationDate, isHarbourCity, hasHospital);
+        return new CityDTO(plagueName.name(), name.getDisplayName(), foundationDate, isHarbourCity, hasHospital);
     }
 
     /**
@@ -43,4 +43,19 @@ public class City {
                 dto.isHospitalBuild()
         );
     }
+
+    @Override
+    public boolean equals(Object object) {
+        boolean equals = false;
+        if (object instanceof City city) {
+            equals = this.plagueName.equals(city.plagueName) && this.name.equals(city.name) && this.foundationDate == city.foundationDate && this.isHarbourCity == city.isHarbourCity && this.hasHospital == city.hasHospital;
+        }
+        return equals;
+    }
+
+    @Override
+    public int hashCode() {
+        return plagueName.hashCode() + name.hashCode() + foundationDate + (isHarbourCity ? 1 : 0) + (hasHospital ? 1 : 0);
+    }
+
 }
