@@ -7,6 +7,7 @@ import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.lobby.LobbyManagement;
+import de.uol.swp.server.lobby.LobbyManagementException;
 import de.uol.swp.server.lobby.LobbyService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserManagement;
@@ -48,7 +49,7 @@ class LobbyServiceTest extends EventBusBasedTest
     private LobbyService lobbyService = new LobbyService(lobbyManagement, authService, getBus());
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws LobbyManagementException {
         MockitoAnnotations.openMocks(this);
         when(mockUserDTO.getUsername()).thenReturn("TestUser");
         lobbyManagement.createLobby("TestLobby", mockUserDTO);
@@ -99,7 +100,7 @@ class LobbyServiceTest extends EventBusBasedTest
     }
 
     @Test
-    void lobbyJoinUserTest() {
+    void lobbyJoinUserTest() throws LobbyManagementException {
         // Create the lobby
         lobbyManagement.createLobby("Test", firstOwner);
 
@@ -116,7 +117,7 @@ class LobbyServiceTest extends EventBusBasedTest
     }
 
     @Test
-    void lobbyLeaveUserTest() {
+    void lobbyLeaveUserTest() throws LobbyManagementException {
         // Create the lobby
         lobbyManagement.createLobby("Test", firstOwner);
         // Join User

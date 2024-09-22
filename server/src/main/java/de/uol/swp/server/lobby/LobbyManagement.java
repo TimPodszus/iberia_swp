@@ -36,9 +36,9 @@ public class LobbyManagement extends LobbyStore {
      * @see de.uol.swp.common.user.User
      * @since 2019-10-08
      */
-    public void createLobby(String name, User owner) {
+    public void createLobby(String name, User owner) throws LobbyManagementException {
         if (lobbies.containsKey(name)) {
-            throw new IllegalArgumentException("Lobby name " + name + " already exists!");
+            throw new LobbyManagementException("Lobby name " + name + " already exists!");
         }
         String lobbyCode = generateLobbyCode();
         List<User> users = new ArrayList<>();
@@ -49,8 +49,7 @@ public class LobbyManagement extends LobbyStore {
             LobbyDTO lobbyDTO = new LobbyDTO(name, owner, lobbyCode, 4);
             lobbyStore.saveLobby(lobbyDTO);
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to save lobby to the database");
+            throw new LobbyManagementException("Failed to save lobby to the database");
         }
     }
 
@@ -67,7 +66,7 @@ public class LobbyManagement extends LobbyStore {
                     .substring(0, 8);
         } while (lobbies.values()
                 .stream()
-                .anyMatch(iLobby -> iLobby.getLobbyCode()
+                .anyMatch(lobby -> lobby.getLobbyCode()
                         .equals(code[0])));
         return code[0];
     }
@@ -81,12 +80,12 @@ public class LobbyManagement extends LobbyStore {
      * @since 2019-10-08
      */
 
-    // Datenbankseitig die Lobby löschen
     public void dropLobby(String name) {
         if (!lobbies.containsKey(name)) {
             throw new IllegalArgumentException("Lobby name " + name + " not found!");
         }
         lobbies.remove(name);
+        lobbyStore.removeLobby(name);
     }
 
     /**

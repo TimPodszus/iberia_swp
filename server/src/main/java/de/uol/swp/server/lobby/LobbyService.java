@@ -54,7 +54,7 @@ public class LobbyService extends AbstractService {
     /**
      * Handles CreateLobbyRequests found on the EventBus
      * If a CreateLobbyRequest is detected on the EventBus, this method is called.
-     * It creates a new ILobby via the LobbyManagement using the parameters from the
+     * It creates a new Lobby via the LobbyManagement using the parameters from the
      * request and sends a LobbyCreatedMessage to every connected user
      *
      * @param createLobbyRequest The CreateLobbyRequest found on the EventBus
@@ -63,7 +63,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) {
+    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
         lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
         ILobby createdLobby = lobbyManagement.getLobby(createLobbyRequest.getName())
                                              .orElseThrow(() -> new NoSuchElementException("Lobby not found: " + createLobbyRequest.getName()));
@@ -73,11 +73,11 @@ public class LobbyService extends AbstractService {
     /**
      * Handles LobbyJoinUserRequests found on the EventBus
      * If a LobbyJoinUserRequest is detected on the EventBus, this method is called.
-     * It adds a user to a ILobby stored in the LobbyManagement and sends a UserJoinedLobbyMessage
+     * It adds a user to a Lobby stored in the LobbyManagement and sends a UserJoinedLobbyMessage
      * to every user in the lobby.
      *
      * @param lobbyJoinUserRequest The LobbyJoinUserRequest found on the EventBus
-     * @see ILobby
+     * @see de.uol.swp.common.lobby.ILobby
      * @see de.uol.swp.common.lobby.message.UserJoinedLobbyMessage
      * @since 2019-10-08
      */
@@ -99,7 +99,7 @@ public class LobbyService extends AbstractService {
      * UserLeftLobbyMessage to every user in the lobby.
      *
      * @param lobbyLeaveUserRequest The LobbyJoinUserRequest found on the EventBus
-     * @see ILobby
+     * @see de.uol.swp.common.lobby.ILobby
      * @see de.uol.swp.common.lobby.message.UserLeftLobbyMessage
      * @since 2019-10-08
      */

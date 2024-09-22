@@ -23,7 +23,6 @@ public class LobbyDTO implements ILobby
     private final String name;
     private User owner;
     private final Set<User> users = new TreeSet<>();
-    private final String id;
 
     private final String lobbyCode;
 
@@ -52,11 +51,6 @@ public class LobbyDTO implements ILobby
     }
 
     @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
     public void joinUser(User user) {
         this.users.add(user);
     }
@@ -64,7 +58,7 @@ public class LobbyDTO implements ILobby
     @Override
     public void leaveUser(User user) {
         if (users.size() == 1) {
-            throw new IllegalArgumentException("ILobby must contain at least one user!");
+            throw new IllegalArgumentException("Lobby must contain at least one user!");
         }
         if (users.contains(user)) {
             this.users.remove(user);

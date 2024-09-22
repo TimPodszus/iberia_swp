@@ -18,13 +18,6 @@ public interface ILobby
 {
 
     /**
-     * Getter for the lobby's id
-     *
-     * @return A String containing the id of the lobby
-     */
-    String getId();
-
-    /**
      * Getter for the lobby's name
      *
      * @return A String containing the name of the lobby
@@ -71,6 +64,10 @@ public interface ILobby
      * @since 2019-10-08
      */
     Set<User> getUsers();
-
+    /**
+     * Getter for the lobby's id
+     *
+     * @return A String containing the id of the lobby
+     */
     String getLobbyCode();
 }

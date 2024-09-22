@@ -45,11 +45,11 @@ class LobbyDTOTest {
      */
     @Test
     void createLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
 
-        assertEquals("test", iLobby.getName());
-        assertEquals(1, iLobby.getUsers().size());
-        assertEquals(defaultUser, iLobby.getUsers().iterator().next());
+        assertEquals("test", lobby.getName());
+        assertEquals(1, lobby.getUsers().size());
+        assertEquals(defaultUser, lobby.getUsers().iterator().next());
 
     }
 
@@ -62,20 +62,20 @@ class LobbyDTOTest {
      */
     @Test
     void joinUserLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
 
-        iLobby.joinUser(users.get(0));
+        lobby.joinUser(users.get(0));
         assertEquals(2,
-                iLobby.getUsers().size());
-        assertTrue(iLobby.getUsers().contains(users.get(0)));
+                lobby.getUsers().size());
+        assertTrue(lobby.getUsers().contains(users.get(0)));
 
-        iLobby.joinUser(users.get(0));
-        assertEquals(2, iLobby.getUsers().size());
+        lobby.joinUser(users.get(0));
+        assertEquals(2, lobby.getUsers().size());
 
-        iLobby.joinUser(users.get(1));
+        lobby.joinUser(users.get(1));
         assertEquals(3,
-                iLobby.getUsers().size());
-        assertTrue(iLobby.getUsers().contains(users.get(1)));
+                lobby.getUsers().size());
+        assertTrue(lobby.getUsers().contains(users.get(1)));
     }
 
     /**
@@ -87,14 +87,14 @@ class LobbyDTOTest {
      */
     @Test
     void leaveUserLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser,"testcode", 4);
-        users.forEach(iLobby::joinUser);
+        ILobby lobby = new LobbyDTO("test", defaultUser,"testcode", 4);
+        users.forEach(lobby::joinUser);
 
-        assertEquals(iLobby.getUsers().size(), users.size() + 1);
-        iLobby.leaveUser(users.get(5));
+        assertEquals(lobby.getUsers().size(), users.size() + 1);
+        lobby.leaveUser(users.get(5));
 
-        assertEquals(iLobby.getUsers().size(), users.size() + 1 - 1);
-        assertFalse(iLobby.getUsers().contains(users.get(5)));
+        assertEquals(lobby.getUsers().size(), users.size() + 1 - 1);
+        assertFalse(lobby.getUsers().contains(users.get(5)));
     }
 
     /**
@@ -106,13 +106,13 @@ class LobbyDTOTest {
      */
     @Test
     void removeOwnerFromLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
-        users.forEach(iLobby::joinUser);
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+        users.forEach(lobby::joinUser);
 
-        iLobby.leaveUser(defaultUser);
+        lobby.leaveUser(defaultUser);
 
-        assertNotEquals(defaultUser, iLobby.getOwner() );
-        assertTrue(users.contains(iLobby.getOwner()));
+        assertNotEquals(defaultUser, lobby.getOwner() );
+        assertTrue(users.contains(lobby.getOwner()));
 
     }
 
@@ -125,13 +125,13 @@ class LobbyDTOTest {
      */
     @Test
     void updateOwnerTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
-        users.forEach(iLobby::joinUser);
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+        users.forEach(lobby::joinUser);
 
-        iLobby.updateOwner(users.get(6));
-        assertEquals(iLobby.getOwner(), users.get(6));
+        lobby.updateOwner(users.get(6));
+        assertEquals(lobby.getOwner(), users.get(6));
 
-        assertThrows(IllegalArgumentException.class, () -> iLobby.updateOwner(notInLobbyUser));
+        assertThrows(IllegalArgumentException.class, () -> lobby.updateOwner(notInLobbyUser));
     }
 
     /**
@@ -142,9 +142,9 @@ class LobbyDTOTest {
      */
     @Test
     void assureNonEmptyLobbyTest() {
-        ILobby iLobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
 
-        assertThrows(IllegalArgumentException.class, () -> iLobby.leaveUser(defaultUser));
+        assertThrows(IllegalArgumentException.class, () -> lobby.leaveUser(defaultUser));
     }
 
 

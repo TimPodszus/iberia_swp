@@ -4,17 +4,14 @@ import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.lobby.Lobby;
 import de.uol.swp.server.lobby.LobbyManagement;
+import de.uol.swp.server.lobby.LobbyManagementException;
 import de.uol.swp.server.lobby.store.LobbyStore;
-import de.uol.swp.server.usermanagement.AuthenticationService;
-import de.uol.swp.server.usermanagement.UserManagement;
-import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
-
-import org.greenrobot.eventbus.EventBus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,17 +27,13 @@ class LobbyManagementTest {
     static final UserDTO firstOwner = new UserDTO("Marco", "Marco");
     static final UserDTO user1 = new UserDTO("Lasse", "Klasse");
     static final UserDTO user2 = new UserDTO("UserZwei", "zwei");
-    final EventBus bus = EventBus.getDefault();
-    final UserManagement userManagement = new UserManagement(new DatabaseBasedUserStore());
-    final AuthenticationService authService = new AuthenticationService(bus, userManagement);
-
     final LobbyManagement lobbyManagement = new LobbyManagement();
     List<User> userList = new ArrayList<>();
     @Mock
     LobbyStore lobbyStore = new LobbyStore();
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws SQLException {
         MockitoAnnotations.openMocks(this);
         lobbyStore = mock(LobbyStore.class);
         userList.add(firstOwner);
@@ -52,7 +45,7 @@ class LobbyManagementTest {
 
 
     @Test
-    void getLobbyTest() {
+    void getLobbyTest() throws LobbyManagementException {
         lobbyManagement.createLobby("Test2", user1);
         if(lobbyManagement.getLobby("Test2").isPresent()){
             assertEquals(user1.getUsername(), lobbyManagement.getLobby("Test2").get().getOwner().getUsername());
@@ -61,7 +54,7 @@ class LobbyManagementTest {
 
 
     @Test
-    void createLobbyWithExistingNameThrowsExceptionTest() { //funktioniert
+    void createLobbyWithExistingNameThrowsExceptionTest() throws LobbyManagementException {
         // Arrange
         lobbyManagement.createLobby("Test1", user2);
 
@@ -71,14 +64,14 @@ class LobbyManagementTest {
     }
 
     @Test
-    void dropNonExistentLobbyThrowsExceptionTest() { //funktioniert
+    void dropNonExistentLobbyThrowsExceptionTest() {
         // Act & Assert
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> lobbyManagement.dropLobby("NonExistentLobby"), "Should throw an exception when trying to delete a non-existent lobby.");
         assertEquals("Lobby name NonExistentLobby not found!", thrown.getMessage());
     }
 
     @Test
-    void dropLobbyTest() {
+    void dropLobbyTest() throws LobbyManagementException {
         lobbyManagement.createLobby("Test2", firstOwner);
         lobbyManagement.dropLobby("Test2");
         assertTrue(lobbyManagement.getLobby("Test2").isEmpty());

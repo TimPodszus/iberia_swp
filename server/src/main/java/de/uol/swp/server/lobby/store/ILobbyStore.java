@@ -12,9 +12,9 @@ import java.util.Optional;
 public interface ILobbyStore {
     Optional<ILobby> findLobby(String lobbycode);
 
-    Lobby createLobby(String name, String lobbycode, List<User> users, User owner, int difficulty);
+    Lobby createLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException;
 
-    Lobby updateLobby(String name, String lobbycode, List<User> users, User owner, int difficulty);
+    Lobby updateLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException;
 
     void removeLobby(String name);
 

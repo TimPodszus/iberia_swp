@@ -33,18 +33,22 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public Lobby createLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) {
-        return new Lobby(name, lobbycode, users, owner, difficulty);
+    public Lobby createLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException {
+        Lobby newLobby = new Lobby(name, lobbycode, users, owner, difficulty);
+        lobbies.put(name, newLobby);
+        saveLobby(new LobbyDTO(name, owner, lobbycode, difficulty));
+        return newLobby;
     }
 
     @Override
-    public Lobby updateLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) {
+    public Lobby updateLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException {
         return createLobby(name, lobbycode, users, owner, difficulty);
     }
 
     @Override
     public void removeLobby(String name) {
         lobbies.remove(name);
+        // Datenbankaufruf um eine bestehende Lobby zu löschen fehlt noch
     }
 
     @Override
