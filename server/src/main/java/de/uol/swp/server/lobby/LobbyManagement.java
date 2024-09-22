@@ -21,7 +21,7 @@ import java.util.UUID;
  * @see LobbyDTO
  * @since 2019-10-08
  */
-public class LobbyManagement extends LobbyStore {
+public class LobbyManagement {
     private final Map<String, Lobby> lobbies = new HashMap<>();
     private final LobbyStore lobbyStore = new LobbyStore();
 
