@@ -2,10 +2,10 @@ package de.uol.swp.server.Game;
 
 import de.uol.swp.common.enums.Action;
 import de.uol.swp.common.enums.ActionType;
-import de.uol.swp.common.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.GameManager;
 import de.uol.swp.server.game.GameController;
+import de.uol.swp.server.lobby.Lobby;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +28,7 @@ class GameManagerTest {
         mockLobby = mock(Lobby.class);
         mockUser = mock(User.class);
 
-        when(mockLobby.getId()).thenReturn("lobby123");
+        when(mockLobby.getLobbyCode()).thenReturn("lobby123");
     }
 
     @Test
@@ -42,8 +42,11 @@ class GameManagerTest {
     void createGameForLobby_DoesNotCreateNewGameIfAlreadyExists() {
         gameManager.createGameForLobby(mockLobby);
         gameManager.createGameForLobby(mockLobby);
-        assertEquals(1, gameManager.getGameControllers()
-                                   .size());
+        assertEquals(
+                1,
+                gameManager.getGameControllers()
+                           .size()
+        );
     }
 
     @Test
