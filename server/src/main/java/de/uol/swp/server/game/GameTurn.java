@@ -1,6 +1,6 @@
 package de.uol.swp.server.game;
 
-import de.uol.swp.common.enums.Action;
+import de.uol.swp.common.game.action.Action;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
@@ -18,8 +18,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Getter
-public class GameTurn
-{
+public class GameTurn {
     private static final Logger LOG = LogManager.getLogger(GameTurn.class);
     private Player currentPlayer;
     private Board board;
@@ -28,8 +27,7 @@ public class GameTurn
     private boolean isInfectionPhase;
     private boolean isTurnOver;
 
-    public GameTurn(Player currentPlayer, Board board)
-    {
+    public GameTurn(Player currentPlayer, Board board) {
         this.currentPlayer = currentPlayer;
         this.board = board;
         this.actionsRemaining = 4;
@@ -38,8 +36,7 @@ public class GameTurn
         this.isTurnOver = false;
     }
 
-    public void startTurn() throws InterruptedException
-    {
+    public void startTurn() throws InterruptedException {
         LOG.info("Starte Zug für " + currentPlayer.getUser()
                                                   .getUsername());
         while (!isTurnOver) {
@@ -47,8 +44,7 @@ public class GameTurn
         }
     }
 
-    public void processAction(Action action)
-    {
+    public void processAction(Action action) {
         switch (action.getActionType()) {
             case MOVE:
                 // Handle movement logic
@@ -83,15 +79,13 @@ public class GameTurn
         checkTurnEnd();
     }
 
-    private void checkTurnEnd()
-    {
+    private void checkTurnEnd() {
         if (actionsRemaining <= 0) {
             startDrawPhase();
         }
     }
 
-    private void startDrawPhase()
-    {
+    private void startDrawPhase() {
         isDrawPhase = true;
         drawPlayerCard();
         drawPlayerCard();
@@ -99,8 +93,7 @@ public class GameTurn
         startInfectionPhase();
     }
 
-    private void startInfectionPhase()
-    {
+    private void startInfectionPhase() {
         isInfectionPhase = true;
         int infectionCounter = board.getInfectionCounter();
         for (int i = 1; i <= infectionCounter; i++) {
@@ -109,8 +102,7 @@ public class GameTurn
         endTurn();
     }
 
-    public void endTurn()
-    {
+    public void endTurn() {
         LOG.info("Turn ended for player: " + currentPlayer.getUser()
                                                           .getUsername());
         isTurnOver = true;
@@ -121,11 +113,9 @@ public class GameTurn
      *
      * @param region the region where water treatment markers will be placed
      * @param count  the number of water treatment markers to place
-     *
      * @throws GameTurnException if there are not enough water treatment markers remaining
      */
-    public void placeWaterTreatment(Region region, int count) throws GameTurnException
-    {
+    public void placeWaterTreatment(Region region, int count) throws GameTurnException {
         int waterTreatmentsRemaining = board.getWaterTreatmentsLeft();
 
         if (waterTreatmentsRemaining < count) {
@@ -141,11 +131,9 @@ public class GameTurn
      *
      * @param city             the city where the hospital will be built
      * @param cityCardRequired whether a city card is required to build the hospital
-     *
      * @throws GameTurnException if the city already has a hospital or if the player cannot build a hospital in the specified city
      */
-    public void buildHospital(City city, boolean cityCardRequired) throws GameTurnException
-    {
+    public void buildHospital(City city, boolean cityCardRequired) throws GameTurnException {
         List<City> cities = board.getCities();
 
         List<City> citiesWithHospital = cities.stream()
@@ -181,11 +169,9 @@ public class GameTurn
      * Performs the action of building a hospital in the specified city.
      *
      * @param city the city where the hospital will be built
-     *
      * @throws GameTurnException if the player does not have the required city card
      */
-    private void buildHospitalAction(City city) throws GameTurnException
-    {
+    private void buildHospitalAction(City city) throws GameTurnException {
         Optional<CityCard> card = currentPlayer.getCards()
                                                .stream()
                                                .filter(CityCard.class::isInstance)
@@ -206,13 +192,11 @@ public class GameTurn
      * Builds train tracks on the specified connection.
      *
      * @param connection the connection where the train tracks will be built
-     *
      * @throws GameTurnException if the train tracks cannot be built on the connection,
      *                           if the connection already has train tracks,
      *                           or if there are not enough tracks left to build
      */
-    public void buildTrainTracks(Connection connection) throws GameTurnException
-    {
+    public void buildTrainTracks(Connection connection) throws GameTurnException {
         if (!connection.isTrainTrackBuildable()) {
             throw new GameTurnException("Auf dieser Verbindung kann keine Zugstrecke gebaut werden");
         }
@@ -229,44 +213,36 @@ public class GameTurn
         board.setTracksLeft(board.getTracksLeft() - 1);
     }
 
-    void tradeCards(Player tradingPartner)
-    {
+    void tradeCards(Player tradingPartner) {
         //not implemented
     }
 
-    void treatInfection(City city)
-    {
+    void treatInfection(City city) {
         //not implemented
     }
 
-    void researchPlague()
-    {
+    void researchPlague() {
         //not implemented
     }
 
-    void useRoleAbility()
-    {
+    void useRoleAbility() {
         //not implemented
     }
 
-    void move(City destination)
-    {
+    void move(City destination) {
         //not implemented
     }
 
-    InfectionCard drawInfectionCard()
-    {
+    InfectionCard drawInfectionCard() {
         //not implemented
         return null;
     }
 
-    void drawPlayerCard()
-    {
+    void drawPlayerCard() {
         //not implemented
     }
 
-    void infectCity(InfectionCard infectionCard, int amount)
-    {
+    void infectCity(InfectionCard infectionCard, int amount) {
         //not implemented
     }
 

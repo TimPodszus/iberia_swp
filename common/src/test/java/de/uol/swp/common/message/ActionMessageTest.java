@@ -1,11 +1,13 @@
 package de.uol.swp.common.message;
 
-import de.uol.swp.common.enums.Action;
-import de.uol.swp.common.enums.ActionType;
+import de.uol.swp.common.game.action.Action;
+import de.uol.swp.common.game.action.ActionType;
+import de.uol.swp.common.game.message.ActionMessage;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Test for the action message
  *
- * @see de.uol.swp.common.message.ActionMessage
+ * @see ActionMessage
  * @since 2023-05-14
  */
 @ExtendWith(MockitoExtension.class)
@@ -33,9 +35,20 @@ public class ActionMessageTest {
         Action testAction = new Action(ActionType.MOVE);
         ActionMessage message = new ActionMessage(testAction, "testcode", mockContext);
 
-        assertEquals(testAction.getActionType(), message.getAction().getActionType(), "The action type should match the one passed in constructor");
-        assertTrue(message.getMessageContext().isPresent(), "The message context should be present");
-        assertEquals(mockContext, message.getMessageContext().get(), "The message context should be the mocked instance");
+        assertEquals(
+                testAction.getActionType(),
+                message.getAction()
+                       .getActionType(),
+                "The action type should match the one passed in constructor"
+        );
+        assertTrue(message.getMessageContext()
+                          .isPresent(), "The message context should be present");
+        assertEquals(
+                mockContext,
+                message.getMessageContext()
+                       .get(),
+                "The message context should be the mocked instance"
+        );
     }
 
     /**
@@ -48,10 +61,12 @@ public class ActionMessageTest {
         Action testAction = new Action(ActionType.MOVE);
         ActionMessage message = new ActionMessage(testAction, "testcode", mockContext);
 
-        assertTrue(message.getMessageContext().isPresent(), "Message context should be present");
+        assertTrue(message.getMessageContext()
+                          .isPresent(), "Message context should be present");
         assertEquals(
                 mockContext,
-                message.getMessageContext().get(),
+                message.getMessageContext()
+                       .get(),
                 "The message context should be correctly set and retrievable"
         );
     }

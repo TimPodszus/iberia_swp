@@ -1,7 +1,7 @@
 package de.uol.swp.server.Game;
 
-import de.uol.swp.common.enums.Action;
-import de.uol.swp.common.enums.ActionType;
+import de.uol.swp.common.game.action.Action;
+import de.uol.swp.common.game.action.ActionType;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.player.Player;
@@ -11,23 +11,20 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-class GameTurnTest
-{
+class GameTurnTest {
     private GameTurn gameTurn;
     private Player player;
     private Board board;
 
     @BeforeEach
-    void setUp()
-    {
+    void setUp() {
         player = mock(Player.class);
         board = mock(Board.class);
         gameTurn = new GameTurn(player, board);
     }
 
     @Test
-    void testConstructorInitializesValuesCorrectly()
-    {
+    void testConstructorInitializesValuesCorrectly() {
         assertEquals(player, gameTurn.getCurrentPlayer());
         assertEquals(board, gameTurn.getBoard());
         assertEquals(4, gameTurn.getActionsRemaining());
@@ -37,21 +34,18 @@ class GameTurnTest
     }
 
     @Test
-    void testProcessActionDecrementsActions()
-    {
+    void testProcessActionDecrementsActions() {
         gameTurn.processAction(new Action(ActionType.MOVE));
         assertEquals(3, gameTurn.getActionsRemaining());
     }
 
     @Test
-    void testProcessActionWithInvalidActionThrowsException()
-    {
+    void testProcessActionWithInvalidActionThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> gameTurn.processAction(new Action(null)));
     }
 
     @Test
-    void testCheckTurnEndStartsDrawPhaseIfActionsZero()
-    {
+    void testCheckTurnEndStartsDrawPhaseIfActionsZero() {
         gameTurn.processAction(new Action(ActionType.MOVE));
         gameTurn.processAction(new Action(ActionType.MOVE));
         gameTurn.processAction(new Action(ActionType.MOVE));
@@ -61,8 +55,7 @@ class GameTurnTest
     }
 
     @Test
-    void testEndTurnSetsTurnOver()
-    {
+    void testEndTurnSetsTurnOver() {
         gameTurn.endTurn();
         assertTrue(gameTurn.isTurnOver());
     }

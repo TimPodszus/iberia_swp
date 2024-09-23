@@ -1,15 +1,13 @@
 package de.uol.swp.server.Game;
 
-import de.uol.swp.common.enums.Action;
-import de.uol.swp.common.enums.ActionType;
+import de.uol.swp.common.game.action.Action;
+import de.uol.swp.common.game.action.ActionType;
 import de.uol.swp.common.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.GameManager;
 import de.uol.swp.server.game.GameController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,8 +40,11 @@ class GameManagerTest {
     void createGameForLobby_DoesNotCreateNewGameIfAlreadyExists() {
         gameManager.createGameForLobby(mockLobby);
         gameManager.createGameForLobby(mockLobby);
-        assertEquals(1, gameManager.getGameControllers()
-                                   .size());
+        assertEquals(
+                1,
+                gameManager.getGameControllers()
+                           .size()
+        );
     }
 
     @Test

@@ -1,6 +1,7 @@
 package de.uol.swp.server.communication;
 
 
+import de.uol.swp.common.game.message.ActionMessage;
 import de.uol.swp.server.GameManager;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -86,8 +87,7 @@ public class ServerHandler implements ServerHandlerDelegate {
                 eventBus.post(msg);
             }
         } catch (Exception e) {
-            LOG.error(
-                    "ServerException {} {}",
+            LOG.error("ServerException {} {}",
                     e.getClass()
                      .getName(),
                     e.getMessage()
@@ -129,8 +129,7 @@ public class ServerHandler implements ServerHandlerDelegate {
     public void onServerExceptionMessage(ServerExceptionMessage msg) {
         Optional<MessageContext> ctx = getCtx(msg);
         LOG.error(msg.getException());
-        ctx.ifPresent(channelHandlerContext -> sendToClient(
-                channelHandlerContext,
+        ctx.ifPresent(channelHandlerContext -> sendToClient(channelHandlerContext,
                 new ExceptionMessage(msg.getException()
                                         .getMessage())
         ));
@@ -255,8 +254,7 @@ public class ServerHandler implements ServerHandlerDelegate {
         msg.setSession(null);
         msg.setMessageContext(null);
         if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                    "Send {} to {}",
+            LOG.debug("Send {} to {}",
                     msg,
                     (msg.getReceiver()
                         .isEmpty() || msg.getReceiver() == null ? "all" : msg.getReceiver())
@@ -424,8 +422,10 @@ public class ServerHandler implements ServerHandlerDelegate {
         Optional<MessageContext> context = actionMessage.getMessageContext();
         if (context.isPresent()) {
             Session session = getSession(context.get()).orElseThrow(() -> new SecurityException("Client not logged in"));
-            gameManager.receiveAndForwardActionMessage(session.getUser(), actionMessage.getAction(),
-                    actionMessage.getLobbyId() );
+            gameManager.receiveAndForwardActionMessage(session.getUser(),
+                    actionMessage.getAction(),
+                    actionMessage.getLobbyId()
+            );
         } else {
             LOG.error("ActionMessage received without a valid context");
         }

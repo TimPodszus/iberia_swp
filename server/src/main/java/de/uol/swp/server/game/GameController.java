@@ -1,6 +1,6 @@
 package de.uol.swp.server.game;
 
-import de.uol.swp.common.enums.Action;
+import de.uol.swp.common.game.action.Action;
 import de.uol.swp.common.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Set;
+
 @Getter
 public class GameController {
     private static final Logger LOG = LogManager.getLogger(GameController.class);
@@ -48,7 +49,7 @@ public class GameController {
 
         Player currentPlayer = players.get(currentPlayerIndex);
         LOG.info(currentPlayer.getUser()
-                                        .getUsername() + " ist nun am Zug!");
+                              .getUsername() + " ist nun am Zug!");
 
         currentTurn = new GameTurn(currentPlayer, board);
         currentTurn.startTurn();
@@ -57,7 +58,7 @@ public class GameController {
 
     public void finishTurn(Player currentPlayer) throws InterruptedException {
         LOG.info(currentPlayer.getUser()
-                                        .getUsername() + " hat seinen Zug beendet.");
+                              .getUsername() + " hat seinen Zug beendet.");
 
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         nextTurn();
