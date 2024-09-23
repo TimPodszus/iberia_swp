@@ -1,17 +1,15 @@
 package de.uol.swp.server.lobby;
 
-import de.uol.swp.common.lobby.Lobby;
+import de.uol.swp.server.lobby.Lobby;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Manages creation, deletion and storing of lobbies
  *
- * @see de.uol.swp.common.lobby.Lobby
+ * @see de.uol.swp.server.lobby.Lobby
  * @see de.uol.swp.common.lobby.dto.LobbyDTO
  * @author Marco Grawunder
  * @since 2019-10-08
@@ -35,7 +33,7 @@ public class LobbyManagement {
         if (lobbies.containsKey(name)) {
             throw new IllegalArgumentException("Lobby name " + name + " already exists!");
         }
-        lobbies.put(name, new LobbyDTO(name, owner, "testcode"));
+        lobbies.put(name, new Lobby(name, "testcode", new ArrayList<>() ,owner,4));
     }
 
     /**

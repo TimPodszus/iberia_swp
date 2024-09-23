@@ -5,7 +5,7 @@ import org.greenrobot.eventbus.Subscribe;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.lobby.Lobby;
+import de.uol.swp.server.lobby.Lobby;
 import de.uol.swp.common.lobby.message.*;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
