@@ -1,11 +1,14 @@
 package de.uol.swp.server.game;
 
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.action.Action;
+import de.uol.swp.common.game.action.MoveAction;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.connection.Connection;
+import de.uol.swp.server.connection.ConnectionManagement;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.Region;
 import lombok.AllArgsConstructor;
@@ -22,6 +25,7 @@ public class GameTurn {
     private static final Logger LOG = LogManager.getLogger(GameTurn.class);
     private Player currentPlayer;
     private Board board;
+    private ConnectionManagement connectionManagement;
     private int actionsRemaining;
     private boolean isDrawPhase;
     private boolean isInfectionPhase;
@@ -30,6 +34,7 @@ public class GameTurn {
     public GameTurn(Player currentPlayer, Board board) {
         this.currentPlayer = currentPlayer;
         this.board = board;
+        this.connectionManagement = new ConnectionManagement();
         this.actionsRemaining = 4;
         this.isDrawPhase = false;
         this.isInfectionPhase = false;
@@ -44,10 +49,10 @@ public class GameTurn {
         }
     }
 
-    public void processAction(Action action) {
+    public void processAction(Action action) throws GameTurnException {
         switch (action.getActionType()) {
             case MOVE:
-                // Handle movement logic
+                move(((MoveAction) action).getDestination());
                 break;
             case BUILD_HOSPITAL:
                 // Handle building a hospital
@@ -229,8 +234,23 @@ public class GameTurn {
         //not implemented
     }
 
-    void move(City destination) {
-        //not implemented
+    void move(ICityDTO destination) throws GameTurnException {
+        boolean isCityReachable = connectionManagement.getAvailableDestinations(currentPlayer.getCurrentPosition()
+                                                                                             .toDto())
+                                                      .contains(destination);
+        if (!isCityReachable) {
+            LOG.error("Destination {} is not reachable from current position", destination.getName());
+            throw new GameTurnException("Destination " + destination.getName() + " is not reachable from current position");
+        }
+
+        City city = City.fromDto(destination);
+        currentPlayer.setCurrentPosition(city);
+        LOG.debug(
+                "Player {} moved to {}",
+                currentPlayer.getUser()
+                             .getUsername(),
+                city.getName()
+        );
     }
 
     InfectionCard drawInfectionCard() {
