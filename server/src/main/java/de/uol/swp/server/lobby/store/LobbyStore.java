@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import java.util.Optional;
 
 public class LobbyStore implements ILobbyStore {
     private final Map<String, Lobby> lobbies = new HashMap<>();
-    private static final String INSERT_LOBBY_USER_SQL = "INSERT INTO User (username, password) VALUES (?, ?)";
     private static final String INSERT_LOBBY_SQL = "INSERT INTO Lobby (lobbyID, difficulty, owner, lobbyname) VALUES (?, ?, ?, ?)";
     private static final String INSERT_LOBBYUSERS_SQL ="INSERT INTO LobbyUsers (lobbyID, username) VALUES (?, ?)";
 
@@ -42,6 +40,9 @@ public class LobbyStore implements ILobbyStore {
 
     @Override
     public Lobby updateLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException {
+        Lobby newLobby = new Lobby(name, lobbycode, users, owner, difficulty);
+        lobbies.put(name, newLobby);
+        saveLobby(new LobbyDTO(name, owner, lobbycode, difficulty));
         return createLobby(name, lobbycode, users, owner, difficulty);
     }
 
@@ -52,8 +53,8 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public List<Lobby> getAllLobbies() {
-        return new ArrayList<>(lobbies.values());
+    public Map<String, Lobby> getAllLobbies() {
+        return lobbies;
     }
 
     @Override
@@ -63,14 +64,6 @@ public class LobbyStore implements ILobbyStore {
             connection.setAutoCommit(false);
             try {
 
-                for (User user : lobbyDTO.getUsers()) {
-                    try (PreparedStatement psUser = connection.prepareStatement(
-                            INSERT_LOBBY_USER_SQL, Statement.RETURN_GENERATED_KEYS)) {
-                        psUser.setString(1, user.getUsername());
-                        psUser.setString(2, user.getPassword());
-                        psUser.executeUpdate();
-                    }
-                }
 
                 try (PreparedStatement psLobby = connection.prepareStatement(
                         INSERT_LOBBY_SQL, Statement.RETURN_GENERATED_KEYS)) {

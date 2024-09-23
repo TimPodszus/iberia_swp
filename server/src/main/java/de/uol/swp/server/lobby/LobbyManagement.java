@@ -7,7 +7,6 @@ import de.uol.swp.server.lobby.store.LobbyStore;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,8 +21,8 @@ import java.util.UUID;
  * @since 2019-10-08
  */
 public class LobbyManagement {
-    private final Map<String, Lobby> lobbies = new HashMap<>();
     private final LobbyStore lobbyStore = new LobbyStore();
+    private final Map<String, Lobby> lobbies = lobbyStore.getAllLobbies();
 
     /**
      * Creates a new lobby and adds it to the list

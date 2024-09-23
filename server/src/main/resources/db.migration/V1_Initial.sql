@@ -37,6 +37,7 @@ CREATE TABLE Lobby (
     lobbyID VARCHAR(12) PRIMARY KEY,
     difficulty INT NOT NULL,
     owner VARCHAR(255) NOT NULL,
+    lobbyname VARCHAR(255) NOT NULL,
     FOREIGN KEY (owner) REFERENCES User(username)
 );
 
