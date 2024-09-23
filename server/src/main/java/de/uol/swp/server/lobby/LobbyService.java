@@ -5,7 +5,7 @@ import org.greenrobot.eventbus.Subscribe;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.lobby.Lobby;
+import de.uol.swp.server.lobby.Lobby;
 import de.uol.swp.common.lobby.message.*;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
@@ -71,7 +71,7 @@ public class LobbyService extends AbstractService {
      * to every user in the lobby.
      *
      * @param lobbyJoinUserRequest The LobbyJoinUserRequest found on the EventBus
-     * @see de.uol.swp.common.lobby.Lobby
+     * @see de.uol.swp.common.lobby.ILobby
      * @see de.uol.swp.common.lobby.message.UserJoinedLobbyMessage
      * @since 2019-10-08
      */
@@ -94,7 +94,7 @@ public class LobbyService extends AbstractService {
      * UserLeftLobbyMessage to every user in the lobby.
      *
      * @param lobbyLeaveUserRequest The LobbyJoinUserRequest found on the EventBus
-     * @see de.uol.swp.common.lobby.Lobby
+     * @see de.uol.swp.common.lobby.ILobby
      * @see de.uol.swp.common.lobby.message.UserLeftLobbyMessage
      * @since 2019-10-08
      */

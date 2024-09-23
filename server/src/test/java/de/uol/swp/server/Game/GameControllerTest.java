@@ -1,24 +1,22 @@
 package de.uol.swp.server.Game;
 
+
 import de.uol.swp.common.enums.Action;
-import de.uol.swp.common.lobby.Lobby;
+import de.uol.swp.server.game.GameController;
+import de.uol.swp.server.lobby.Lobby;
+import org.junit.jupiter.api.BeforeEach;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
-import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.player.Player;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,11 +47,8 @@ class GameControllerTest {
         Set<User> users = new HashSet<>();
         users.add(mockUser);
 
-        when(mockLobby.getUsers()).thenReturn(users);
         when(mockUser.getUsername()).thenReturn("TestUser");
         when(mockPlayer.getUser()).thenReturn(mockUser);
-
-        this.gameController = new GameController(mockLobby);
         List<Player> playerList = new ArrayList<>();
         playerList.add(mockPlayer);
         gameController.setPlayers(playerList);
