@@ -1,8 +1,9 @@
-package de.uol.swp.common.message;
+package de.uol.swp.common.game.message;
 
 import de.uol.swp.common.game.action.Action;
 import de.uol.swp.common.game.action.ActionType;
 import de.uol.swp.common.game.message.ActionMessage;
+import de.uol.swp.common.message.MessageContext;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;

@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public abstract class Action {
+public class Action {
     private ActionType actionType;
 }
 
