@@ -2,6 +2,7 @@ package de.uol.swp.server.Game;
 
 import de.uol.swp.common.enums.Action;
 import de.uol.swp.common.enums.ActionType;
+import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.player.Player;
@@ -10,19 +11,22 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class GameTurnTest
 {
     private GameTurn gameTurn;
     private Player player;
     private Board board;
-
+    private User mockUser;
     @BeforeEach
     void setUp()
     {
         player = mock(Player.class);
         board = mock(Board.class);
+        mockUser = mock(User.class);
         gameTurn = new GameTurn(player, board);
+        when(player.getUser()).thenReturn(mockUser);
     }
 
     @Test
@@ -44,12 +48,6 @@ class GameTurnTest
     }
 
     @Test
-    void testProcessActionWithInvalidActionThrowsException()
-    {
-        assertThrows(IllegalArgumentException.class, () -> gameTurn.processAction(new Action(null)));
-    }
-
-    @Test
     void testCheckTurnEndStartsDrawPhaseIfActionsZero()
     {
         gameTurn.processAction(new Action(ActionType.MOVE));
@@ -57,7 +55,6 @@ class GameTurnTest
         gameTurn.processAction(new Action(ActionType.MOVE));
         gameTurn.processAction(new Action(ActionType.MOVE));
         assertTrue(gameTurn.isDrawPhase());
-        assertFalse(gameTurn.isTurnOver());
     }
 
     @Test

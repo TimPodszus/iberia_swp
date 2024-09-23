@@ -10,6 +10,7 @@ import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.Region;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Getter
+@Setter
 public class GameTurn
 {
     private static final Logger LOG = LogManager.getLogger(GameTurn.class);
