@@ -21,8 +21,6 @@ public class UserDTO implements User
     private String username;
     private String password;
 
-    private final String username;
-    private final String password;
 
     /**
      * Constructor
@@ -82,6 +80,9 @@ public class UserDTO implements User
         return username;
     }
 
+    public String getPassword() {
+        return password;
+    }
 
     @Override
     public User getWithoutPassword() {
@@ -105,6 +106,7 @@ public class UserDTO implements User
         UserDTO userDTO = (UserDTO) o;
         return Objects.equals(username, userDTO.username);
     }
+
 
     @Override
     public int hashCode()
