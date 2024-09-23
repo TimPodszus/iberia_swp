@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.directory.api.ldap.model.password.PasswordUtil;
 
+import java.io.Serial;
 import java.util.Objects;
 
 /**
@@ -18,6 +19,7 @@ import java.util.Objects;
 @Getter
 public class LoginRequest extends AbstractRequestMessage {
 
+	@Serial
 	private static final long serialVersionUID = 7793454958390539421L;
 
     @Setter
