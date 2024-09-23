@@ -1,7 +1,6 @@
 package de.uol.swp.common.user;
 
 import de.uol.swp.common.SerializationTestHelper;
-import de.uol.swp.common.passwordHashing.PasswordHashing;
 import de.uol.swp.common.user.exception.RegistrationExceptionMessage;
 import de.uol.swp.common.user.message.UserLoggedInMessage;
 import de.uol.swp.common.user.message.UserLoggedOutMessage;
@@ -43,7 +42,7 @@ class UserMessageSerializableTest {
                 RegistrationExceptionMessage.class));
         assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new LoginSuccessfulResponse(defaultUser),
                 LoginSuccessfulResponse.class));
-        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new LoginRequest("name", PasswordHashing.hashPassword("password")),
+        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new LoginRequest("name","test"),
                 LoginRequest.class));
         assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new LogoutRequest(), LogoutRequest.class));
         assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new RegisterUserRequest(defaultUser),

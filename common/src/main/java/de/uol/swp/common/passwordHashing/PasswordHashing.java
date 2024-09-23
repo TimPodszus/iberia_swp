@@ -3,9 +3,10 @@ package de.uol.swp.common.passwordHashing;
 import org.apache.directory.api.ldap.model.constants.LdapSecurityConstants;
 import org.apache.directory.api.ldap.model.password.PasswordUtil;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
-public class PasswordHashing
+public class PasswordHashing implements Serializable
 {
     public static String hashPassword(String password)
     {
