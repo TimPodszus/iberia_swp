@@ -31,7 +31,7 @@ class GameManagerTest {
         mockLobby = mock(Lobby.class);
         mockUser = mock(User.class);
 
-        when(mockLobby.getId()).thenReturn("lobby123");
+        when(mockLobby.getLobbyCode()).thenReturn("lobby123");
     }
 
     @Test

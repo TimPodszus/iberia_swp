@@ -14,7 +14,7 @@ public class GameManager {
     private Map<String, GameController> gameControllers = new ConcurrentHashMap<>();
 
     public void createGameForLobby(Lobby lobby) {
-        String lobbyId = lobby.getId();
+        String lobbyId = lobby.getLobbyCode();
         if (!gameControllers.containsKey(lobbyId)) {
             GameController gameController = new GameController(lobby);
             gameControllers.put(lobbyId, gameController);
