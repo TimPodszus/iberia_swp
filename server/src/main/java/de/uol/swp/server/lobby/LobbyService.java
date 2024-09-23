@@ -17,6 +17,7 @@ import de.uol.swp.server.usermanagement.AuthenticationService;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -63,7 +64,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
+    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException, SQLException {
         lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
         ILobby createdLobby = lobbyManagement.getLobby(createLobbyRequest.getName())
                                              .orElseThrow(() -> new NoSuchElementException("Lobby not found: " + createLobbyRequest.getName()));
@@ -82,7 +83,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) {
+    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws SQLException {
         Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getName());
 
         if (lobby.isPresent()) {
@@ -104,7 +105,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) {
+    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) throws SQLException {
         Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getName());
 
         if (lobby.isPresent()) {
@@ -123,7 +124,7 @@ public class LobbyService extends AbstractService {
      * @see de.uol.swp.common.message.ServerMessage
      * @since 2019-10-08
      */
-    public void sendToAllInLobby(String lobbyName, ServerMessage message) {
+    public void sendToAllInLobby(String lobbyName, ServerMessage message) throws SQLException {
         Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyName);
 
         if (lobby.isPresent()) {

@@ -8,7 +8,6 @@ import de.uol.swp.server.lobby.store.LobbyStore;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,7 +21,7 @@ import java.util.UUID;
  */
 public class LobbyManagement {
     private final LobbyStore lobbyStore = new LobbyStore();
-    private final Map<String, Lobby> lobbies = lobbyStore.getAllLobbies();
+
 
     /**
      * Creates a new lobby and adds it to the list
@@ -35,21 +34,20 @@ public class LobbyManagement {
      * @see de.uol.swp.common.user.User
      * @since 2019-10-08
      */
-    public void createLobby(String name, User owner) throws LobbyManagementException {
-        if (lobbies.containsKey(name)) {
+    public Lobby createLobby(String name, User owner) throws LobbyManagementException, SQLException {
+        if (lobbyStore.findLobby(name) == null) {
             throw new LobbyManagementException("Lobby name " + name + " already exists!");
         }
         String lobbyCode = generateLobbyCode();
         List<User> users = new ArrayList<>();
         users.add(owner);
-        Lobby newLobby = new Lobby(name, lobbyCode, users, owner, 4);
-        lobbies.put(name, newLobby);
         try {
             LobbyDTO lobbyDTO = new LobbyDTO(name, owner, lobbyCode, 4);
             lobbyStore.saveLobby(lobbyDTO);
         } catch (SQLException e) {
             throw new LobbyManagementException("Failed to save lobby to the database");
         }
+        return new Lobby(name, lobbyCode, users, owner, 4);
     }
 
     /**
@@ -57,13 +55,13 @@ public class LobbyManagement {
      *
      * @return a unique lobby code
      */
-    private String generateLobbyCode() {
+    private String generateLobbyCode() throws SQLException {
         final String[] code = new String[1];
         do {
             code[0] = UUID.randomUUID()
                     .toString()
                     .substring(0, 8);
-        } while (lobbies.values()
+        } while (lobbyStore.getAllLobbies().values()
                 .stream()
                 .anyMatch(lobby -> lobby.getLobbyCode()
                         .equals(code[0])));
@@ -79,11 +77,10 @@ public class LobbyManagement {
      * @since 2019-10-08
      */
 
-    public void dropLobby(String name) {
-        if (!lobbies.containsKey(name)) {
+    public void dropLobby(String name) throws SQLException {
+        if (lobbyStore.findLobby(name) == null) {
             throw new IllegalArgumentException("Lobby name " + name + " not found!");
         }
-        lobbies.remove(name);
         lobbyStore.removeLobby(name);
     }
 
@@ -95,8 +92,8 @@ public class LobbyManagement {
      * @see Optional
      * @since 2019-10-08
      */
-    public Optional<Lobby> getLobby(String name) {
-        Lobby lobby = lobbies.get(name);
+    public Optional<Lobby> getLobby(String name) throws SQLException {
+        Lobby lobby = lobbyStore.findLobby(name);
         if (lobby != null) {
             return Optional.of(lobby);
         }

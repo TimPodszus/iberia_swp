@@ -18,6 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 
+import java.sql.SQLException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -49,14 +51,14 @@ class LobbyServiceTest extends EventBusBasedTest
     private LobbyService lobbyService = new LobbyService(lobbyManagement, authService, getBus());
 
     @BeforeEach
-    public void setUp() throws LobbyManagementException {
+    public void setUp() throws LobbyManagementException, SQLException {
         MockitoAnnotations.openMocks(this);
         when(mockUserDTO.getUsername()).thenReturn("TestUser");
         lobbyManagement.createLobby("TestLobby", mockUserDTO);
     }
 
     @Test
-    void createLobbyTest() {
+    void createLobbyTest() throws SQLException {
         final CreateLobbyRequest request = new CreateLobbyRequest("Test", firstOwner);
 
         // The post will lead to a call of a LobbyService function
@@ -74,7 +76,7 @@ class LobbyServiceTest extends EventBusBasedTest
     }
 
     @Test
-    void createSecondLobbyWithSameName() {
+    void createSecondLobbyWithSameName() throws SQLException {
         final CreateLobbyRequest request = new CreateLobbyRequest("Test", firstOwner);
         final CreateLobbyRequest request2 = new CreateLobbyRequest("Test", secondOwner);
 
@@ -100,7 +102,7 @@ class LobbyServiceTest extends EventBusBasedTest
     }
 
     @Test
-    void lobbyJoinUserTest() throws LobbyManagementException {
+    void lobbyJoinUserTest() throws LobbyManagementException, SQLException {
         // Create the lobby
         lobbyManagement.createLobby("Test", firstOwner);
 
@@ -117,7 +119,7 @@ class LobbyServiceTest extends EventBusBasedTest
     }
 
     @Test
-    void lobbyLeaveUserTest() throws LobbyManagementException {
+    void lobbyLeaveUserTest() throws LobbyManagementException, SQLException {
         // Create the lobby
         lobbyManagement.createLobby("Test", firstOwner);
         // Join User

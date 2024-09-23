@@ -1,6 +1,5 @@
 package de.uol.swp.server.lobby.store;
 
-import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.Lobby;
@@ -8,7 +7,7 @@ import de.uol.swp.server.lobby.Lobby;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
 
 /**
  * The {@code ILobbyStore} interface defines the contract for managing lobbies in the system.
@@ -23,7 +22,7 @@ public interface ILobbyStore {
      * @param lobbycode the unique code identifying the lobby
      * @return an {@code Optional} containing the lobby if found, or an empty {@code Optional} if no lobby is found
      */
-    Optional<ILobby> findLobby(String lobbycode);
+    Lobby findLobby(String lobbycode) throws SQLException;
 
     /**
      * Creates a new lobby with the specified name, code, users, owner, and difficulty level.
@@ -63,7 +62,7 @@ public interface ILobbyStore {
      *
      * @return a {@code Map} containing all lobbies, where the key is the lobby name and the value is the {@code Lobby} object
      */
-    Map<String, Lobby> getAllLobbies();
+    Map<String, Lobby> getAllLobbies() throws SQLException;
 
     /**
      * Saves the specified lobby to the system.

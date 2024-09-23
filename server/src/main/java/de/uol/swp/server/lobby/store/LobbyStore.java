@@ -1,59 +1,138 @@
 package de.uol.swp.server.lobby.store;
 
-import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.database.DatabaseConnection;
 import de.uol.swp.server.lobby.Lobby;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 public class LobbyStore implements ILobbyStore {
-    private final Map<String, Lobby> lobbies = new HashMap<>();
     private static final String INSERT_LOBBY_SQL = "INSERT INTO Lobby (lobbyID, difficulty, owner, lobbyname) VALUES (?, ?, ?, ?)";
     private static final String INSERT_LOBBYUSERS_SQL ="INSERT INTO LobbyUsers (lobbyID, username) VALUES (?, ?)";
 
     @Override
-    public Optional<ILobby> findLobby(String lobbycode) {
-        ILobby lobby = lobbies.get(lobbycode);
-        if (lobby != null && Objects.equals(lobby.getLobbyCode(), lobbycode)) {
-            return Optional.of(lobby);
+    public Lobby findLobby(String name) throws SQLException {
+        String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby WHERE lobbyname = ?";
+
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, name);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String lobbyCode = rs.getString("lobbyID");
+                    int difficulty = rs.getInt("difficulty");
+                    String ownerUsername = rs.getString("owner");
+                    String lobbyName = rs.getString("lobbyname");
+
+                    User owner = findUserByUsername(ownerUsername);
+
+                    List<User> users = findUsersByLobbyCode(lobbyCode);
+
+                    return new Lobby(lobbyName, lobbyCode, users, owner, difficulty);
+                } else {
+                    return null;
+                }
+            }
         }
-        return Optional.empty();
+    }
+
+    private User findUserByUsername(String username) throws SQLException {
+        String sql = "SELECT username, password FROM User WHERE username = ?";
+
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String password = rs.getString("password");
+                    UserDTO userDTO = new UserDTO(username, password);
+                    return userDTO.getWithoutPassword();
+                }
+            }
+        }
+        return null;
+    }
+
+    private List<User> findUsersByLobbyCode(String lobbyCode) throws SQLException {
+        String sql = "SELECT username FROM LobbyUsers WHERE lobbyID = ?";
+        List<User> users = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, lobbyCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String username = rs.getString("username");
+                    User user = findUserByUsername(username);
+                    if (user != null) {
+                        users.add(user);
+                    }
+                }
+            }
+        }
+        return users;
     }
 
     @Override
-    public Lobby createLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException {
-        Lobby newLobby = new Lobby(name, lobbycode, users, owner, difficulty);
-        lobbies.put(name, newLobby);
-        saveLobby(new LobbyDTO(name, owner, lobbycode, difficulty));
+    public Lobby createLobby(String lobbyName, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException {
+        Lobby newLobby = new Lobby(lobbyName, lobbycode, users, owner, difficulty);
+        saveLobby(new LobbyDTO(lobbyName, owner, lobbycode, difficulty));
         return newLobby;
     }
 
     @Override
-    public Lobby updateLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException {
-        Lobby newLobby = new Lobby(name, lobbycode, users, owner, difficulty);
-        lobbies.put(name, newLobby);
-        saveLobby(new LobbyDTO(name, owner, lobbycode, difficulty));
-        return createLobby(name, lobbycode, users, owner, difficulty);
+    public Lobby updateLobby(String lobbyName, String lobbycode, List<User> users, User owner, int difficulty) {
+        // not implemented
+        return null;
     }
 
     @Override
-    public void removeLobby(String name) {
-        lobbies.remove(name);
-        // Datenbankaufruf um eine bestehende Lobby zu löschen fehlt noch
+    public void removeLobby(String lobbyName) {
+        // not implemented
     }
 
     @Override
-    public Map<String, Lobby> getAllLobbies() {
+    public Map<String, Lobby> getAllLobbies() throws SQLException {
+        String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby";
+
+        Map<String, Lobby> lobbies = new HashMap<>();
+
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String lobbyCode = rs.getString("lobbyID");
+                int difficulty = rs.getInt("difficulty");
+                String ownerUsername = rs.getString("owner");
+                String lobbyName = rs.getString("lobbyname");
+
+                User owner = findUserByUsername(ownerUsername);
+
+                List<User> users = findUsersByLobbyCode(lobbyCode);
+
+                Lobby lobby = new Lobby(lobbyName, lobbyCode, users, owner, difficulty);
+
+                lobbies.put(lobbyName, lobby);
+            }
+        }
+
         return lobbies;
     }
 

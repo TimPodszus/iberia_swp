@@ -23,8 +23,6 @@ public class Lobby implements ILobby
     private int difficulty;
 
 
-
-
     public void addUser(User user) {
         users.add(user);
     }

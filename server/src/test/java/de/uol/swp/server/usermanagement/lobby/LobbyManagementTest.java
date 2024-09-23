@@ -2,7 +2,6 @@ package de.uol.swp.server.usermanagement.lobby;
 
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
-import de.uol.swp.server.lobby.Lobby;
 import de.uol.swp.server.lobby.LobbyManagement;
 import de.uol.swp.server.lobby.LobbyManagementException;
 import de.uol.swp.server.lobby.store.LobbyStore;
@@ -14,13 +13,11 @@ import org.mockito.MockitoAnnotations;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class LobbyManagementTest {
 
@@ -33,19 +30,17 @@ class LobbyManagementTest {
     LobbyStore lobbyStore = new LobbyStore();
 
     @BeforeEach
-    public void setUp() throws SQLException {
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
         lobbyStore = mock(LobbyStore.class);
         userList.add(firstOwner);
         userList.add(user1);
-        when(lobbyStore.createLobby("Test", "testcode", userList, firstOwner, 4)).thenReturn(new Lobby("Test", "testcode", userList, firstOwner,4));
-        when(lobbyStore.findLobby("testcode")).thenReturn(Optional.of(new Lobby("Test", "testcode", userList, firstOwner,4)));
     }
 
 
 
     @Test
-    void getLobbyTest() throws LobbyManagementException {
+    void getLobbyTest() throws LobbyManagementException, SQLException {
         lobbyManagement.createLobby("Test2", user1);
         if(lobbyManagement.getLobby("Test2").isPresent()){
             assertEquals(user1.getUsername(), lobbyManagement.getLobby("Test2").get().getOwner().getUsername());
@@ -54,7 +49,7 @@ class LobbyManagementTest {
 
 
     @Test
-    void createLobbyWithExistingNameThrowsExceptionTest() throws LobbyManagementException {
+    void createLobbyWithExistingNameThrowsExceptionTest() throws LobbyManagementException, SQLException {
         // Arrange
         lobbyManagement.createLobby("Test1", user2);
 
@@ -71,7 +66,7 @@ class LobbyManagementTest {
     }
 
     @Test
-    void dropLobbyTest() throws LobbyManagementException {
+    void dropLobbyTest() throws LobbyManagementException, SQLException {
         lobbyManagement.createLobby("Test2", firstOwner);
         lobbyManagement.dropLobby("Test2");
         assertTrue(lobbyManagement.getLobby("Test2").isEmpty());
