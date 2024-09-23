@@ -6,6 +6,7 @@ import de.uol.swp.common.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.GameManager;
 import de.uol.swp.server.game.GameController;
+import de.uol.swp.server.game.GameTurnException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +56,7 @@ class GameManagerTest {
     }
 
     @Test
-    void receiveAndForwardActionMessage_ForwardsCorrectly() {
+    void receiveAndForwardActionMessage_ForwardsCorrectly() throws GameTurnException {
         gameManager.createGameForLobby(mockLobby);
         gameManager.receiveAndForwardActionMessage(mockUser, new Action(ActionType.MOVE), "lobby123");
         verify(mockGameController).receiveActionMessage(mockUser, new Action(ActionType.MOVE));
