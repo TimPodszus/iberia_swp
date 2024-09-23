@@ -6,16 +6,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class CityRepository
-{
+public class CityRepository {
     // Private constructor to hide the implicit public one
-    private CityRepository()
-    {
+    private CityRepository() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 
-    public static List<City> getAllCities()
-    {
+    public static List<City> getAllCities() {
         List<City> cities = new ArrayList<>();
 
         cities.add(new City(PlagueName.YELLOW_FEVER, CityName.ALBACETE, 1100, false));
@@ -73,11 +70,24 @@ public class CityRepository
         return cities;
     }
 
-    public static List<City> getCitiesByNames(List<City> allCities, CityName... names)
-    {
+    public static List<City> getCitiesByNames(List<City> allCities, CityName... names) {
         List<CityName> nameList = Arrays.asList(names);
         return allCities.stream()
                         .filter(city -> nameList.contains(city.getName()))
                         .toList();
+    }
+
+    /**
+     * Retrieves a city by its name.
+     *
+     * @param cityName the name of the city to retrieve
+     * @return the city with the specified name, or null if no such city exists
+     */
+    public static City getCityByName(CityName cityName) {
+        return getAllCities().stream()
+                             .filter(city -> city.getName()
+                                                 .equals(cityName))
+                             .findFirst()
+                             .orElse(null);
     }
 }
