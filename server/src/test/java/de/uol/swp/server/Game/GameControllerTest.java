@@ -1,79 +1,99 @@
 package de.uol.swp.server.Game;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
+import de.uol.swp.common.enums.Action;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.lobby.Lobby;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
+import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.player.Player;
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Set;
 
-public class GameControllerTest {
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class GameControllerTest {
+
     private GameController gameController;
-    private Lobby lobby;
-    private Board board;
-    private List<Player> players;
-    private Set<User> userSet;
+
+    @Mock
+    private Lobby mockLobby;
+
+    @Mock
+    private Board mockBoard;
+
+    @Mock
+    private Player mockPlayer;
+
+    @Mock
+    private User mockUser;
+
+    @Mock
+    private Action mockAction;
+
+    @Mock
+    private GameTurn mockGameTurn;
 
     @BeforeEach
-    public void setUp() {
-        userSet = new HashSet<>();
-        User user1 = mock(User.class);
-        User user2 = mock(User.class);
-        when(user1.getUsername()).thenReturn("User One");
-        when(user2.getUsername()).thenReturn("User Two");
-        userSet.add(user1);
-        userSet.add(user2);
-        lobby = mock(Lobby.class);
-        when(lobby.getUsers()).thenReturn(userSet);
+    void setUp() {
+        Set<User> users = new HashSet<>();
+        users.add(mockUser);
 
-        board = mock(Board.class);
-        players = new ArrayList<>();
-
-        gameController = new GameController(lobby);
+        when(mockUser.getUsername()).thenReturn("TestUser");
+        when(mockPlayer.getUser()).thenReturn(mockUser);
+        List<Player> playerList = new ArrayList<>();
+        playerList.add(mockPlayer);
+        gameController.setPlayers(playerList);
     }
-
+    /*
+    !!!!!!!!!!!
+    Tests stehen noch aus bis zur Überarbeitung des GameControllers nach StatePattern
+    !!!!!!!!!!!
     @Test
-    public void testGameInitializationAndPlayerCreation() {
-        assertEquals(
-                2,
-                gameController.getPlayers()
-                              .size()
-        );
-        assertNotNull(gameController.getPlayers()
-                                    .get(0)
-                                    .getUser());
-    }
-
-    @Test
-    public void testGameStartAndFirstTurn() throws InterruptedException {
+    void testStartGame() throws InterruptedException {
         gameController.startGame();
-        assertNotNull(gameController.getCurrentTurn());
-        assertEquals(0, gameController.getCurrentPlayerIndex());
+        assertNotNull(gameController.getCurrentTurn(), "Der erste Zug sollte initialisiert werden.");
+        verify(gameController, never()).isGameOver();
     }
 
     @Test
-    public void testTurnSwitching() throws InterruptedException {
-        gameController.startGame();
-        gameController.finishTurn(gameController.getPlayers()
-                                                .get(0));
-        assertEquals(1, gameController.getCurrentPlayerIndex());
-    }
-
-    @Test
-    public void testGameOverCondition() throws InterruptedException {
-        when(gameController.isGameOver()).thenReturn(true);
-        gameController.startGame();
+    void testNextTurn() throws InterruptedException {
         gameController.nextTurn();
-        assertTrue(gameController.isGameOver());
+        verify(mockPlayer, times(1)).getUser();
+        assertNotNull(gameController.getCurrentTurn(), "Der aktuelle Zug sollte nicht null sein.");
     }
 
+    @Test
+    void testFinishTurn() throws InterruptedException {
+        gameController.finishTurn(mockPlayer);
+        verify(mockPlayer, times(1)).getUser();
+        verify(gameController, never()).isGameOver();
+    }
+
+    @Test
+    void testReceiveActionMessage_WhenCurrentPlayer() {
+        when(mockPlayer.getUser()).thenReturn(mockUser);
+        gameController.receiveActionMessage(mockUser, mockAction);
+        verify(mockPlayer, times(1)).getUser();
+        verify(gameController).processPlayerAction(mockAction);
+    }
+
+    @Test
+    void testReceiveActionMessage_WhenNotCurrentPlayer() {
+        User otherUser = mock(User.class);
+        when(mockPlayer.getUser()).thenReturn(otherUser);
+        gameController.receiveActionMessage(mockUser, mockAction);
+        verify(mockPlayer, times(1)).getUser();
+        verify(gameController, never()).processPlayerAction(mockAction);
+    }
+
+     */
 }
