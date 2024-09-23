@@ -74,7 +74,7 @@ public class GameController {
         // Logik zum Beenden des Spiels, z. B. Spieler benachrichtigen, Ergebnisse speichern, etc.
     }
 
-    public void receiveActionMessage(User user, Action action) {
+    public void receiveActionMessage(User user, Action action) throws GameTurnException {
         if (players.get(currentPlayerIndex)
                    .getUser()
                    .equals(user)) {
@@ -83,7 +83,7 @@ public class GameController {
         }
     }
 
-    public void processPlayerAction(Action action) {
+    public void processPlayerAction(Action action) throws GameTurnException {
         currentTurn.processAction(action);
     }
 }

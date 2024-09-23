@@ -3,6 +3,7 @@ package de.uol.swp.server.communication;
 
 import de.uol.swp.common.game.message.ActionMessage;
 import de.uol.swp.server.GameManager;
+import de.uol.swp.server.game.GameTurnException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -418,7 +419,7 @@ public class ServerHandler implements ServerHandlerDelegate {
         }
     }
 
-    private void handleMessageAction(ActionMessage actionMessage) {
+    private void handleMessageAction(ActionMessage actionMessage) throws GameTurnException {
         Optional<MessageContext> context = actionMessage.getMessageContext();
         if (context.isPresent()) {
             Session session = getSession(context.get()).orElseThrow(() -> new SecurityException("Client not logged in"));

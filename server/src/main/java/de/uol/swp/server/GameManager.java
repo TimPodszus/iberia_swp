@@ -4,6 +4,7 @@ import de.uol.swp.common.game.action.Action;
 import de.uol.swp.common.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.game.GameController;
+import de.uol.swp.server.game.GameTurnException;
 import lombok.Getter;
 
 import java.util.Map;
@@ -30,7 +31,7 @@ public class GameManager {
         GameController gameController = gameControllers.remove(lobbyId);
     }
 
-    public void receiveAndForwardActionMessage(User user, Action action, String lobbyId) {
+    public void receiveAndForwardActionMessage(User user, Action action, String lobbyId) throws GameTurnException {
         GameController gameController = getGameController(lobbyId);
         if (gameController != null) {
             gameController.receiveActionMessage(user, action);
