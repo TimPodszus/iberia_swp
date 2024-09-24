@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.*;
+import java.util.Optional;
 
 /**
  * This is a user store.
@@ -83,21 +83,9 @@ public class MainMemoryBasedUserStore extends AbstractUserStore implements UserS
     }
 
 
-
-
-    @Override
-    public User createUser(String username, byte[] password) {
-        return null;
-    }
-
     @Override
     public User updateUser(String username, String password) {
         return createUser(username, password);
-    }
-
-    @Override
-    public User updateUser(String username, byte[] password) {
-        return null;
     }
 
 
