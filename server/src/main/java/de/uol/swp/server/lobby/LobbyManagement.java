@@ -69,31 +69,31 @@ public class LobbyManagement {
     }
 
     /**
-     * Deletes lobby with requested name
+     * Deletes lobby with requested lobbycode
      *
-     * @param name String containing the name of the lobby to delete
+     * @param lobbycode String containing the name of the lobby to delete
      * @throws IllegalArgumentException there exists no lobby with the  requested
      *                                  name
      * @since 2019-10-08
      */
 
-    public void dropLobby(String name) throws SQLException {
-        if (lobbyStore.findLobby(name) == null) {
-            throw new IllegalArgumentException("Lobby name " + name + " not found!");
+    public void dropLobby(String lobbycode) throws SQLException, LobbyManagementException {
+        if (lobbyStore.findLobby(lobbycode) == null) {
+            throw new LobbyManagementException("Lobbycode " + lobbycode + " not found!");
         }
-        lobbyStore.removeLobby(name);
+        lobbyStore.removeLobby(lobbycode);
     }
 
     /**
-     * Searches for the lobby with the requested name
+     * Searches for the lobby with the requested lobbycode
      *
-     * @param name String containing the name of the lobby to search for
+     * @param lobbycode String containing the lobbycode of the lobby to search for
      * @return either empty Optional or Optional containing the lobby
      * @see Optional
      * @since 2019-10-08
      */
-    public Optional<Lobby> getLobby(String name) throws SQLException {
-        Lobby lobby = lobbyStore.findLobby(name);
+    public Optional<Lobby> getLobby(String lobbycode) throws SQLException {
+        Lobby lobby = lobbyStore.findLobby(lobbycode);
         if (lobby != null) {
             return Optional.of(lobby);
         }

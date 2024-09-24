@@ -21,14 +21,14 @@ public class LobbyStore implements ILobbyStore {
     private static final String INSERT_LOBBYUSERS_SQL ="INSERT INTO LobbyUsers (lobbyID, username) VALUES (?, ?)";
 
     @Override
-    public Lobby findLobby(String name) throws SQLException {
-        String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby WHERE lobbyname = ?";
+    public Lobby findLobby(String lobbyID) throws SQLException {
+        String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby WHERE lobbyID = ?";
 
         DatabaseConnection dbConnection = DatabaseConnection.getInstance();
         try (Connection connection = dbConnection.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            ps.setString(1, name);
+            ps.setString(1, lobbyID);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
