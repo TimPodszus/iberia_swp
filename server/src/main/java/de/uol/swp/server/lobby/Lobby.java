@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +20,7 @@ public class Lobby implements ILobby
     private User owner;
     @Setter
     private int difficulty;
+
 
 
     public void addUser(User user) {
@@ -59,6 +59,6 @@ public class Lobby implements ILobby
     public Set<User> getUsers()
     {
 
-        return Collections.emptySet();
+        return null;
     }
 }

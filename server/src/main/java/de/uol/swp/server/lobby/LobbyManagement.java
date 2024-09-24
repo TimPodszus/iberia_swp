@@ -1,21 +1,19 @@
 package de.uol.swp.server.lobby;
 
-import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.store.LobbyStore;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Manages creation, deletion and storing of lobbies
  *
+ * @see de.uol.swp.server.lobby.Lobby
+ * @see de.uol.swp.common.lobby.dto.LobbyDTO
  * @author Marco Grawunder
- * @see ILobby
+ * @see Lobby
  * @see LobbyDTO
  * @since 2019-10-08
  */
@@ -34,7 +32,7 @@ public class LobbyManagement {
      * @see de.uol.swp.common.user.User
      * @since 2019-10-08
      */
-    public Lobby createLobby(String name, User owner) throws LobbyManagementException, SQLException {
+    public Lobby createLobby(String name, User owner) throws LobbyManagementException, SQLException, SQLException {
         if (lobbyStore.findLobby(name) == null) {
             throw new LobbyManagementException("Lobby name " + name + " already exists!");
         }

@@ -45,19 +45,6 @@ public class UserDTO implements User
         createWithoutPassword(new UserDTO(username, ""));
     }
 
-    /**
-     * Copy constructor
-     *
-     * @param user User object to copy the values of
-     *
-     * @return UserDTO copy of User object
-     *
-     * @since 2019-08-13
-     */
-    public static UserDTO create(User user)
-    {
-        return new UserDTO(user.getUsername(), user.getPassword());
-    }
 
     /**
      * Copy constructor leaving password variable empty

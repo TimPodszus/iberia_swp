@@ -1,6 +1,9 @@
 package de.uol.swp.server.usermanagement;
 
 
+import de.uol.swp.server.EventBusBasedTest;
+import org.greenrobot.eventbus.Subscribe;
+
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
@@ -9,12 +12,10 @@ import de.uol.swp.common.user.request.LoginRequest;
 import de.uol.swp.common.user.request.LogoutRequest;
 import de.uol.swp.common.user.request.RetrieveAllOnlineUsersRequest;
 import de.uol.swp.common.user.response.AllOnlineUsersResponse;
-import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.message.ClientAuthorizedMessage;
 import de.uol.swp.server.message.ServerExceptionMessage;
-import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
+import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import de.uol.swp.server.usermanagement.store.UserStore;
-import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -31,36 +32,32 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 
- class AuthenticationServiceTest extends EventBusBasedTest {
+public class AuthenticationServiceTest extends EventBusBasedTest {
 
-    final User user = new UserDTO("name", "password");
-    final User user2 = new UserDTO("name2", "password2");
-    final User user3 = new UserDTO("name3", "password3");
+        final User user = new UserDTO("name", "password");
+        final User user2 = new UserDTO("name2", "password2");
+        final User user3 = new UserDTO("name3", "password3");
 
-    final UserStore userStore = new DatabaseBasedUserStore();
-    final UserManagement userManagement = new UserManagement(userStore);
-    final AuthenticationService authService = new AuthenticationService(getBus(), userManagement);
+        final UserStore userStore = new MainMemoryBasedUserStore();
+        final UserManagement userManagement = new UserManagement(userStore);
+        final AuthenticationService authService = new AuthenticationService(getBus(), userManagement);
 
-    // for any expected event, there needs to be a subscriber
-    @Subscribe
-    public void onEvent(ClientAuthorizedMessage e) {
-        handleEvent(e);
-    }
+        // for any expected event, there needs to be a subscriber
+        @Subscribe public void onEvent (ClientAuthorizedMessage e){
+            handleEvent(e);
+        }
 
-    @Subscribe
-    public void onEvent(ServerExceptionMessage e) {
-        handleEvent(e);
-    }
+        @Subscribe public void onEvent (ServerExceptionMessage e){
+            handleEvent(e);
+        }
 
-    @Subscribe
-    public void onEvent(UserLoggedOutMessage e) {
-        handleEvent(e);
-    }
+        @Subscribe public void onEvent (UserLoggedOutMessage e){
+            handleEvent(e);
+        }
 
-    @Subscribe
-    public void onEvent(AllOnlineUsersResponse e) {
-        handleEvent(e);
-    }
+        @Subscribe public void onEvent (AllOnlineUsersResponse e){
+            handleEvent(e);
+        }
 
     @Test
     void loginTest() throws InterruptedException {

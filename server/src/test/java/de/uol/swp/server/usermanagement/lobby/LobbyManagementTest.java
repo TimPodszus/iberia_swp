@@ -40,7 +40,7 @@ class LobbyManagementTest {
 
 
     @Test
-    void getLobbyTest() throws LobbyManagementException, SQLException {
+    void getLobbyTest() throws SQLException, LobbyManagementException {
         lobbyManagement.createLobby("Test2", user1);
         if(lobbyManagement.getLobby("Test2").isPresent()){
             assertEquals(user1.getUsername(), lobbyManagement.getLobby("Test2").get().getOwner().getUsername());

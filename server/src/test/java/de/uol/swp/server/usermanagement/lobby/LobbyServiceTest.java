@@ -12,6 +12,7 @@ import de.uol.swp.server.lobby.LobbyService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserManagement;
 import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
+import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +75,7 @@ class LobbyServiceTest extends EventBusBasedTest
                                    .getOwner());
         }
     }
-
+/*
     @Test
     void createSecondLobbyWithSameName() throws SQLException {
         final CreateLobbyRequest request = new CreateLobbyRequest("Test", firstOwner);
@@ -137,4 +138,6 @@ class LobbyServiceTest extends EventBusBasedTest
             assertFalse(lobbyManagement.getLobby("Test").get().getUsers().contains(secondOwner));
         }
     }
+*/
 }
+

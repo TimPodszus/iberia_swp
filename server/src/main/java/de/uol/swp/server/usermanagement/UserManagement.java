@@ -53,13 +53,13 @@ public class UserManagement extends AbstractUserManagement {
         if (user.isPresent()){
             throw new UserManagementException("Username already used!");
         }
-        return userStore.createUser(userToCreate.getUsername(), userToCreate.getPassword());
+        return userStore.createUser(userToCreate);
     }
 
     @Override
     public User updateUser(User userToUpdate){
         Optional<User> user = userStore.findUser(userToUpdate.getUsername());
-        if (!user.isPresent()){
+        if (user.isEmpty()){
             throw new UserManagementException("Username unknown!");
         }
         // Only update if there are new values
@@ -71,7 +71,7 @@ public class UserManagement extends AbstractUserManagement {
     @Override
     public void dropUser(User userToDrop) {
         Optional<User> user = userStore.findUser(userToDrop.getUsername());
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             throw new UserManagementException("Username unknown!");
         }
         userStore.removeUser(userToDrop.getUsername());
