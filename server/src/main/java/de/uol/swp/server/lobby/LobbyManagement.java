@@ -5,7 +5,10 @@ import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.store.LobbyStore;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Manages creation, deletion and storing of lobbies
@@ -32,7 +35,7 @@ public class LobbyManagement {
      * @see de.uol.swp.common.user.User
      * @since 2019-10-08
      */
-    public Lobby createLobby(String name, User owner) throws LobbyManagementException, SQLException, SQLException {
+    public Lobby createLobby(String name, User owner) throws LobbyManagementException, SQLException {
         if (lobbyStore.findLobby(name) == null) {
             throw new LobbyManagementException("Lobby name " + name + " already exists!");
         }
@@ -53,17 +56,15 @@ public class LobbyManagement {
      *
      * @return a unique lobby code
      */
+
     private String generateLobbyCode() throws SQLException {
-        final String[] code = new String[1];
+        String code;
         do {
-            code[0] = UUID.randomUUID()
+            code = UUID.randomUUID()
                     .toString()
                     .substring(0, 8);
-        } while (lobbyStore.getAllLobbies().values()
-                .stream()
-                .anyMatch(lobby -> lobby.getLobbyCode()
-                        .equals(code[0])));
-        return code[0];
+        } while (lobbyStore.getAllLobbies().containsKey(code));
+        return code;
     }
 
     /**
