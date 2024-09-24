@@ -1,17 +1,20 @@
 package de.uol.swp.server.game;
 
 import de.uol.swp.common.enums.Action;
-import de.uol.swp.common.lobby.Lobby;
+import de.uol.swp.server.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.player.Player;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 @Getter
+@Setter
 public class GameController {
     private static final Logger LOG = LogManager.getLogger(GameController.class);
     private Board board;
@@ -22,6 +25,7 @@ public class GameController {
     public GameController(Lobby lobby) {
         createPlayers(lobby.getUsers());
         this.currentPlayerIndex = 0;
+        this.players = new ArrayList<>();
     }
 
     public void initializeGame() {

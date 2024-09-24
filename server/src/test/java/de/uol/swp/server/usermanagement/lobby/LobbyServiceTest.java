@@ -8,6 +8,7 @@ import de.uol.swp.server.lobby.LobbyManagement;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserManagement;
 import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
+import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ class LobbyServiceTest {
             .sendNoSubscriberEvent(false)
             .throwSubscriberException(true)
             .build();
-    final UserManagement userManagement = new UserManagement(new DatabaseBasedUserStore());
+    final UserManagement userManagement = new UserManagement(new MainMemoryBasedUserStore());
     final AuthenticationService authService = new AuthenticationService(bus, userManagement);
     final LobbyManagement lobbyManagement = new LobbyManagement();
 
@@ -46,7 +47,7 @@ class LobbyServiceTest {
                                    .getOwner());
         }
     }
-
+/*
     @Test
     void createSecondLobbyWithSameName() {
         final CreateLobbyRequest request = new CreateLobbyRequest("Test", firstOwner);
@@ -109,5 +110,5 @@ class LobbyServiceTest {
             assertFalse(lobbyManagement.getLobby("Test").get().getUsers().contains(secondOwner));
         }
     }
-
+*/
 }

@@ -49,7 +49,6 @@ public class UserService extends AbstractService {
 
     /**
      * Handles RegisterUserRequests found on the EventBus
-     *
      * If a RegisterUserRequest is detected on the EventBus, this method is called.
      * It tries to create a new user via the UserManagement. If this succeeds a
      * RegistrationSuccessfulResponse is posted on the EventBus otherwise a RegistrationExceptionMessage

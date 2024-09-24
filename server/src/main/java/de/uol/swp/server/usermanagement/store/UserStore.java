@@ -45,7 +45,7 @@ public interface UserStore {
      */
     User createUser(String username, String password);
 
-    User createUser(String username, byte[] password);
+    User createUser(User user);
 
     /**
      * Update user. Update only given fields. Username cannot be changed
@@ -57,7 +57,7 @@ public interface UserStore {
      */
     User updateUser(String username, String password);
 
-    User updateUser(String username, byte[] password);
+
 
     /**
      * Remove user from store
@@ -73,7 +73,6 @@ public interface UserStore {
      * @return A list of all users without password information
      * @since 2019-08-13
      */
-    List<User> getAllUsers();
+    List<User> getAllUsers();}
 
 
-}
