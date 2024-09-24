@@ -1,4 +1,5 @@
 package de.uol.swp.server.database;
+
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
 
