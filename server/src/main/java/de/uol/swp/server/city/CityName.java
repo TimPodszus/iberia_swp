@@ -8,24 +8,64 @@ import lombok.Getter;
 public enum CityName
 {
     // Yellow Fever
-    ALBACETE("Albacete"), ZARAGOZA("Zaragoza"), ALICANTE("Alicante"), CUENCA("Cuenca"), BARCELONA("Barcelona"), ANDORRA_LA_VELLA(
-        "Andorra la Vella"), TARRAGONA("Tarragona"), VALENCIA("Valencia"), CARTAGENA("Cartagena"), PALMA_DE_MALLORCA(
-        "Palma de Mallorca"), TERUEL("Teruel"), GIRONA("Girona"),
+    ALBACETE("Albacete", 34),
+    ZARAGOZA("Zaragoza", 25),
+    ALICANTE("Alicante", 32),
+    CUENCA("Cuenca", 35),
+    BARCELONA("Barcelona", 27),
+    ANDORRA_LA_VELLA("Andorra la Vella", 26),
+    TARRAGONA("Tarragona", 30),
+    VALENCIA("Valencia", 31),
+    CARTAGENA("Cartagena", 33),
+    PALMA_DE_MALLORCA("Palma de Mallorca", 29),
+    TERUEL("Teruel", 36),
+    GIRONA("Girona", 28),
+
 
     // Cholera
-    EVORA("Evora"), LISBOA("Lisboa"), COIMBRA("Coimbra"), CACERES("Caceres"), ALBUFEIRA("Albufeira"), BRAGA("Braga"), OURENSE(
-        "Ourense"), SALAMANCA("Salamanca"), VIGO("Vigo"), PORTO("Porto"), A_CORUNA("A Coruna"), SANTIAGO_DE_COMPOSTELA(
-        "Santiago de Compostela"),
+    EVORA("Evora", 5),
+    LISBOA("Lisboa", 3),
+    COIMBRA("Coimbra", 2),
+    CACERES("Caceres", 6),
+    ALBUFEIRA("Albufeira", 4),
+    BRAGA("Braga", 8),
+    OURENSE("Ourense", 11),
+    SALAMANCA("Salamanca", 7),
+    VIGO("Vigo", 9),
+    PORTO("Porto", 1),
+    A_CORUNA("A Coruna", 12),
+    SANTIAGO_DE_COMPOSTELA("Santiago de Compostela", 10),
+
 
     // Malaria
-    ALMERIA("Almeria"), HUELVA("Huelva"), GRANADA("Granada"), BADAJOZ("Badajoz"), GIBRALTAR("Gibraltar"), MALAGA(
-        "Malaga"), TOLEDO("Toledo"), CADIZ("Cadiz"), CORDOBA("Cordoba"), SEVILLA("Sevilla"), JAEN("Jaen"), CIUDAD_REAL(
-        "Ciudad Real"),
+    ALMERIA("Almeria", 43),
+    HUELVA("Huelva", 48),
+    GRANADA("Granada", 42),
+    BADAJOZ("Badajoz", 39),
+    GIBRALTAR("Gibraltar", 45),
+    MALAGA("Malaga", 44),
+    TOLEDO("Toledo", 37),
+    CADIZ("Cadiz", 46),
+    CORDOBA("Cordoba", 40),
+    SEVILLA("Sevilla", 47),
+    JAEN("Jaen", 41),
+    CIUDAD_REAL("Ciudad Real", 38),
 
     // Typhus
-    SAN_SEBASTIAN_DONOSTIA("San Sebastian-Donostia"), SANTANDER("Santander"), GIJON("Gijon"), SORIA("Soria"), BURGOS(
-        "Burgos"), VICTORIA_GASTEIZ("Victoria-Gasteiz"), PAMPLONA("Pamplona"), MADRID("Madrid"), HUESCA("Huesca"), LEON(
-        "Leon"), BILBAO_BILBO("Bilbao-Bilbo"), VALLADOLID("Valladolid");
+    SAN_SEBASTIAN_DONOSTIA("San Sebastian-Donostia", 22),
+    SANTANDER("Santander", 15),
+    GIJON("Gijon", 14),
+    SORIA("Soria", 18),
+    BURGOS("Burgos", 19),
+    VICTORIA_GASTEIZ("Victoria-Gasteiz", 20),
+    PAMPLONA("Pamplona", 23),
+    MADRID("Madrid", 17),
+    HUESCA("Huesca", 24),
+    LEON("Leon", 13),
+    BILBAO_BILBO("Bilbao-Bilbo", 21),
+    VALLADOLID("Valladolid", 16);
 
     private final String displayName;
+
+    private final Integer id;
 }
