@@ -18,7 +18,7 @@ import java.util.TreeSet;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-public class LobbyDTO implements ILobby, Serializable {
+public class LobbyDTO implements ILobby {
 
     private final String name;
     private User owner;

@@ -3,6 +3,7 @@ package de.uol.swp.common.lobby;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -14,8 +15,7 @@ import java.util.Set;
  * @see LobbyDTO
  * @since 2019-10-08
  */
-public interface ILobby
-{
+public interface ILobby extends Serializable {
 
     /**
      * Getter for the lobby's name
@@ -64,6 +64,7 @@ public interface ILobby
      * @since 2019-10-08
      */
     Set<User> getUsers();
+
     /**
      * Getter for the lobby's id
      *
