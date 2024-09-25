@@ -6,7 +6,7 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.game.GameTurn;
-import de.uol.swp.server.plague.PlagueName;
+import de.uol.swp.common.enums.PlagueName;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +16,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-class GameTurnPlaceHospitalTest
-{
+class GameTurnPlaceHospitalTest {
     private GameTurn gameTurn;
     private Player player;
     City city1;
@@ -26,10 +25,15 @@ class GameTurnPlaceHospitalTest
     CityCard cityCard;
     User user;
 
-    void createTestData(boolean addCityCardToPlayer, boolean addHospitalToCity1)
-    {
-        city1 = new City(PlagueName.CHOLERA, CityName.ALBACETE, 0, false, addHospitalToCity1);
-        city2 = new City(PlagueName.MALARIA, CityName.BARCELONA, 0, false, false);
+    void createTestData(boolean addCityCardToPlayer, boolean addHospitalToCity1) {
+        city1 = new City(CityName.ALBACETE.getId(),
+                PlagueName.CHOLERA,
+                CityName.ALBACETE,
+                0,
+                false,
+                addHospitalToCity1
+        );
+        city2 = new City(CityName.BARCELONA.getId(), PlagueName.MALARIA, CityName.BARCELONA, 0, false, false);
         cityList = new ArrayList<>();
         cityList.add(city1);
         cityList.add(city2);
@@ -44,8 +48,7 @@ class GameTurnPlaceHospitalTest
     }
 
     @Test
-    void testBuildHospital_cityAlreadyHasHospital_throwsException()
-    {
+    void testBuildHospital_cityAlreadyHasHospital_throwsException() {
         //given
         createTestData(false, true);
 
@@ -57,8 +60,7 @@ class GameTurnPlaceHospitalTest
     }
 
     @Test
-    void testBuildHospital_cityCardRequiredAndPlayerHasCard_buildsHospital() throws Exception
-    {
+    void testBuildHospital_cityCardRequiredAndPlayerHasCard_buildsHospital() throws Exception {
         //given
         createTestData(true, false);
 
@@ -72,8 +74,7 @@ class GameTurnPlaceHospitalTest
     }
 
     @Test
-    void testBuildHospital_cityCardRequiredButPlayerHasNoCard_throwsException()
-    {
+    void testBuildHospital_cityCardRequiredButPlayerHasNoCard_throwsException() {
         //given
         createTestData(false, false);
 
@@ -81,15 +82,13 @@ class GameTurnPlaceHospitalTest
         Exception exception = assertThrows(Exception.class, () -> gameTurn.buildHospital(city1, true));
 
         //then
-        assertEquals(
-                "Der Spieler muss auf der ausgewählten Stadt stehen und die zugehörige Stadtkarte besitzen",
+        assertEquals("Der Spieler muss auf der ausgewählten Stadt stehen und die zugehörige Stadtkarte besitzen",
                 exception.getMessage()
         );
     }
 
     @Test
-    void testBuildHospital_cityCardNotRequiredButDifferentPlague_throwsException()
-    {
+    void testBuildHospital_cityCardNotRequiredButDifferentPlague_throwsException() {
         //given
         createTestData(false, false);
 
@@ -97,8 +96,7 @@ class GameTurnPlaceHospitalTest
         Exception exception = assertThrows(Exception.class, () -> gameTurn.buildHospital(city2, false));
 
         //then
-        assertEquals(
-                "Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren",
+        assertEquals("Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren",
                 exception.getMessage()
         );
     }
