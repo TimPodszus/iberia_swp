@@ -49,7 +49,7 @@ public class LobbyStore implements ILobbyStore {
         }
     }
 
-    private User findUserByUsername(String username) throws SQLException {
+    public User findUserByUsername(String username) throws SQLException {
         String sql = "SELECT username, password FROM User WHERE username = ?";
 
         try (Connection connection = DatabaseConnection.getInstance().getConnection();

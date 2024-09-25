@@ -21,7 +21,7 @@ import java.util.UUID;
  * @since 2019-10-08
  */
 public class LobbyManagement {
-    private final LobbyStore lobbyStore = new LobbyStore();
+    private LobbyStore lobbyStore = new LobbyStore();
 
 
     /**
@@ -36,20 +36,22 @@ public class LobbyManagement {
      * @since 2019-10-08
      */
     public Lobby createLobby(String name, User owner) throws LobbyManagementException, SQLException {
-        if (lobbyStore.findLobby(name) == null) {
+        if (lobbyStore.findLobby(name) != null) {
             throw new LobbyManagementException("Lobby name " + name + " already exists!");
         }
-        String lobbyCode = generateLobbyCode();
+        String lobbyID = generateLobbyID();
         List<User> users = new ArrayList<>();
         users.add(owner);
         try {
-            LobbyDTO lobbyDTO = new LobbyDTO(name, owner, lobbyCode, 4);
+            LobbyDTO lobbyDTO = new LobbyDTO(name, owner, lobbyID, 4);
             lobbyStore.saveLobby(lobbyDTO);
         } catch (SQLException e) {
             throw new LobbyManagementException("Failed to save lobby to the database");
         }
-        return new Lobby(name, lobbyCode, users, owner, 4);
+        return new Lobby(name, lobbyID, users, owner, 4);
     }
+
+
 
     /**
      * Generates a unique lobby code.
@@ -57,7 +59,7 @@ public class LobbyManagement {
      * @return a unique lobby code
      */
 
-    private String generateLobbyCode() throws SQLException {
+    private String generateLobbyID() throws SQLException {
         String code;
         do {
             code = UUID.randomUUID()
@@ -70,32 +72,36 @@ public class LobbyManagement {
     /**
      * Deletes lobby with requested lobbycode
      *
-     * @param lobbycode String containing the name of the lobby to delete
-     * @throws IllegalArgumentException there exists no lobby with the  requested
-     *                                  name
+     * @param lobbyID String containing the ID of the lobby to delete
+     * @throws LobbyManagementException there exists no lobby with the requested
+     *                                  ID
      * @since 2019-10-08
      */
 
-    public void dropLobby(String lobbycode) throws SQLException, LobbyManagementException {
-        if (lobbyStore.findLobby(lobbycode) == null) {
-            throw new LobbyManagementException("Lobbycode " + lobbycode + " not found!");
+    public void dropLobby(String lobbyID) throws SQLException, LobbyManagementException {
+        if (lobbyStore.findLobby(lobbyID) == null) {
+            throw new LobbyManagementException("LobbyID " + lobbyID + " not found!");
         }
-        lobbyStore.removeLobby(lobbycode);
+        lobbyStore.removeLobby(lobbyID);
     }
 
     /**
      * Searches for the lobby with the requested lobbycode
      *
-     * @param lobbycode String containing the lobbycode of the lobby to search for
+     * @param lobbyID String containing the ID of the lobby to search for
      * @return either empty Optional or Optional containing the lobby
      * @see Optional
      * @since 2019-10-08
      */
-    public Optional<Lobby> getLobby(String lobbycode) throws SQLException {
-        Lobby lobby = lobbyStore.findLobby(lobbycode);
+    public Optional<Lobby> getLobby(String lobbyID) throws SQLException {
+        Lobby lobby = lobbyStore.findLobby(lobbyID);
         if (lobby != null) {
             return Optional.of(lobby);
         }
         return Optional.empty();
+    }
+
+    public void setLobbyStore(LobbyStore lobbyStore) {
+        this.lobbyStore = lobbyStore;
     }
 }

@@ -2,33 +2,29 @@ package de.uol.swp.server.usermanagement.lobby;
 
 
 import de.uol.swp.common.lobby.message.CreateLobbyRequest;
-import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
-import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
+import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.lobby.LobbyManagement;
 import de.uol.swp.server.lobby.LobbyManagementException;
 import de.uol.swp.server.lobby.LobbyService;
+import de.uol.swp.server.lobby.store.LobbyStore;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserManagement;
 import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.EventBusException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 class LobbyServiceTest extends EventBusBasedTest
 {
@@ -50,12 +46,15 @@ class LobbyServiceTest extends EventBusBasedTest
     private LobbyManagement lobbyManagement = new LobbyManagement();
     private UserDTO mockUserDTO = new UserDTO("TestUser", "TestPassword");
     private LobbyService lobbyService = new LobbyService(lobbyManagement, authService, getBus());
-
+    List<User> userList = new ArrayList<>();
+    @Mock
+    LobbyStore lobbyStore = new LobbyStore();
     @BeforeEach
     public void setUp() throws LobbyManagementException, SQLException {
         MockitoAnnotations.openMocks(this);
-        when(mockUserDTO.getUsername()).thenReturn("TestUser");
-        lobbyManagement.createLobby("TestLobby", mockUserDTO);
+        userList.add(firstOwner);
+        lobbyStore = mock(LobbyStore.class);
+        lobbyManagement.setLobbyStore(lobbyStore);
     }
 
     @Test
