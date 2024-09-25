@@ -1,10 +1,11 @@
-package de.uol.swp.client.lobby;
+package de.uol.swp.client.lobby.overview;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
+import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.common.lobby.ILobby;
-import de.uol.swp.common.lobby.message.LobbyListMessage;
+import de.uol.swp.common.lobby.response.LobbyListResponse;
 import de.uol.swp.common.user.UserDTO;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableRow;
@@ -28,7 +29,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
     private TextField searchInput;
 
     @FXML
-    private TableView<ILobby> lobbyTable;
+    private TableView<LobbyListItem> lobbyTable;
 
     public LobbyOverviewPresenter() {
         //necessary for java fx
@@ -52,7 +53,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
      * @param message the LobbyListMessage containing the list of lobbies
      */
     @Subscribe
-    public void onLobbyListMessage(LobbyListMessage message) {
+    public void onLobbyListMessage(LobbyListResponse message) {
         setLobbyList(message.getLobbies()
                             .values()
                             .stream()
@@ -99,16 +100,25 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
      * @param lobbyList the list of lobbies to display
      */
     private void setLobbyList(List<ILobby> lobbyList) {
+        List<LobbyListItem> lobbyListItems = new ArrayList<>();
+        for (ILobby lobby : lobbyList) {
+            lobbyListItems.add(new LobbyListItem(
+                    lobby.getName(),
+                    lobby.getUsers()
+                         .size(),
+                    4
+            ));
+        }
         lobbyTable.getItems()
                   .clear();
         lobbyTable.getItems()
-                  .addAll(lobbyList);
+                  .addAll(lobbyListItems);
 
         lobbyTable.setRowFactory(tv -> {
-            TableRow<ILobby> row = new TableRow<>();
+            TableRow<LobbyListItem> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                    ILobby rowData = row.getItem();
+                    LobbyListItem rowData = row.getItem();
                     //TODO get user from login
                     lobbyService.joinLobby(rowData.getName(), new UserDTO("ich", ""));
                 }

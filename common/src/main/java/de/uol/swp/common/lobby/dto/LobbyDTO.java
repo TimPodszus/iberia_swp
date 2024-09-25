@@ -3,6 +3,7 @@ package de.uol.swp.common.lobby.dto;
 import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.user.User;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
@@ -17,8 +18,7 @@ import java.util.TreeSet;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-public class LobbyDTO implements ILobby
-{
+public class LobbyDTO implements ILobby, Serializable {
 
     private final String name;
     private User owner;
@@ -63,7 +63,8 @@ public class LobbyDTO implements ILobby
         if (users.contains(user)) {
             this.users.remove(user);
             if (this.owner.equals(user)) {
-                updateOwner(users.iterator().next());
+                updateOwner(users.iterator()
+                                 .next());
             }
         }
     }
@@ -87,13 +88,11 @@ public class LobbyDTO implements ILobby
     }
 
     @Override
-    public String getLobbyCode()
-    {
+    public String getLobbyCode() {
         return lobbyCode;
     }
 
-    public int getDifficulty()
-    {
+    public int getDifficulty() {
         return difficulty;
     }
 }

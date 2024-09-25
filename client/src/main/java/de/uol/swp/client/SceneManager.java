@@ -6,7 +6,7 @@ import com.google.inject.assistedinject.Assisted;
 import de.uol.swp.client.auth.LoginPresenter;
 import de.uol.swp.client.auth.events.ShowLoginViewEvent;
 import de.uol.swp.client.lobby.CurrentGamesPresenter;
-import de.uol.swp.client.lobby.LobbyOverviewPresenter;
+import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
 import de.uol.swp.client.lobby.LobbyScreenPresenter;
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
@@ -179,7 +179,7 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.lobby.LobbyOverviewPresenter
+     * @see LobbyOverviewPresenter
      */
     private void initLobbyOverviewView() throws IOException {
         if (lobbyOverviewScene == null) {
