@@ -3,6 +3,7 @@ package de.uol.swp.server.usermanagement.store;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.database.DatabaseConnection;
+import de.uol.swp.server.usermanagement.UserManagementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,6 +27,7 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
         }
     }
 
+
     public Optional<User> findUser(String username, String password) {
         try (PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM User WHERE username = ? and password = ?")) {
             ps.setString(1, username);
@@ -36,7 +38,8 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
                     return Optional.of(user);
                 }
             }
-        } catch (Exception e) {LOG.error(e);
+        } catch (Exception e) {
+            LOG.error(e);
         }
         return Optional.empty();
     }
@@ -57,16 +60,61 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
         return Optional.empty();
     }
 
+    /**
+     * Creates a new user with the specified username and password.
+     *
+     * @param username the username of the new user
+     * @param password the password of the new user
+     *
+     * @return the created User object, or null if the user could not be created
+     *
+     * @throws UserManagementException if the username or password is empty, or if a user with the specified username already exists
+     */
     @Override
-    public User createUser(String username, String password)
+    public User createUser(String username, String password) throws UserManagementException
     {
-        return null;
+
+        if (username.isEmpty() || password.isEmpty()) {
+            throw new UserManagementException("Password and username cannot be empty");
+        }
+
+        try (PreparedStatement ps = connection.prepareStatement("INSERT INTO User (username, password) VALUES (?, ?)")) {
+            ps.setString(1, username);
+            ps.setString(2, password);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOG.error(e);
+        }
+        Optional<User> user = findUser(username);
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            throw new UserManagementException("Failed to retrieve the created user");
+        }
     }
 
+
     @Override
-    public User createUser(String username, byte[] password)
-    {
-        return null;
+    public User createUser(User user) {
+        String username = user.getUsername();
+        String password = user.getPassword();
+        if (username.isEmpty() || password.isEmpty()) {
+            throw new UserManagementException("Password and username cannot be empty");
+        }
+
+        try (PreparedStatement ps = connection.prepareStatement("INSERT INTO User (username, password) VALUES (?, ?)")) {
+            ps.setString(1, username);
+            ps.setString(2, password);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOG.error(e);
+        }
+        Optional<User> returnuser = findUser(username);
+        if (returnuser.isPresent()) {
+            return returnuser.get();
+        } else {
+            throw new UserManagementException("Failed to retrieve the created user");
+        }
     }
 
     @Override
@@ -75,11 +123,6 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
         return null;
     }
 
-    @Override
-    public User updateUser(String username, byte[] password)
-    {
-        return null;
-    }
 
 
     @Override
@@ -93,6 +136,8 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
     {
         return List.of();
     }
+
+
 
 
 }

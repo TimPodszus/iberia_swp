@@ -3,7 +3,7 @@ package de.uol.swp.client.lobby;
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
-import de.uol.swp.common.lobby.Lobby;
+import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.lobby.message.LobbyListMessage;
 import de.uol.swp.common.user.UserDTO;
 import javafx.fxml.FXML;
@@ -19,7 +19,7 @@ import java.util.Map;
 public class LobbyOverviewPresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/LobbyOverviewView.fxml";
 
-    public static final Map<String, Lobby> lobbyList = Map.of();
+    public static final Map<String, ILobby> lobbyList = Map.of();
 
     @Inject
     private LobbyService lobbyService;
@@ -28,7 +28,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
     private TextField searchInput;
 
     @FXML
-    private TableView<Lobby> lobbyTable;
+    private TableView<ILobby> lobbyTable;
 
     public LobbyOverviewPresenter() {
         //necessary for java fx
@@ -82,10 +82,10 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
      * @param searchInputText the text to filter the lobbies by
      */
     private void filterLobbies(String searchInputText) {
-        List<Lobby> filteredLobbies = new ArrayList<>();
-        for (Lobby lobby : lobbyList.values()) {
+        List<ILobby> filteredLobbies = new ArrayList<>();
+        for (ILobby lobby : lobbyList.values()) {
             if (lobby.getName()
-                     .contains(searchInputText) || lobby.getId()
+                     .contains(searchInputText) || lobby.getLobbyCode()
                                                         .contains(searchInputText)) {
                 filteredLobbies.add(lobby);
             }
@@ -98,17 +98,17 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
      *
      * @param lobbyList the list of lobbies to display
      */
-    private void setLobbyList(List<Lobby> lobbyList) {
+    private void setLobbyList(List<ILobby> lobbyList) {
         lobbyTable.getItems()
                   .clear();
         lobbyTable.getItems()
                   .addAll(lobbyList);
 
         lobbyTable.setRowFactory(tv -> {
-            TableRow<Lobby> row = new TableRow<>();
+            TableRow<ILobby> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                    Lobby rowData = row.getItem();
+                    ILobby rowData = row.getItem();
                     //TODO get user from login
                     lobbyService.joinLobby(rowData.getName(), new UserDTO("ich", ""));
                 }

@@ -2,11 +2,6 @@ package de.uol.swp.server.usermanagement.lobby;
 
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.lobby.LobbyManagement;
-import de.uol.swp.server.usermanagement.AuthenticationService;
-import de.uol.swp.server.usermanagement.UserManagement;
-import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
-
-import org.greenrobot.eventbus.EventBus;
 import org.junit.jupiter.api.Test;
 
 
@@ -16,9 +11,6 @@ class LobbyManagementTest {
 
     static final UserDTO firstOwner = new UserDTO("Marco", "Marco");
 
-    final EventBus bus = EventBus.getDefault();
-    final UserManagement userManagement = new UserManagement(new DatabaseBasedUserStore());
-    final AuthenticationService authService = new AuthenticationService(bus, userManagement);
     final LobbyManagement lobbyManagement = new LobbyManagement();
 
     LobbyManagement getDefaultManagement() {
