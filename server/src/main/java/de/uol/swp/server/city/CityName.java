@@ -28,4 +28,14 @@ public enum CityName
         "Leon"), BILBAO_BILBO("Bilbao-Bilbo"), VALLADOLID("Valladolid");
 
     private final String displayName;
+
+    public static CityName fromDisplayName(String displayName) {
+        for (CityName cityName : CityName.values()) {
+            if (cityName.getDisplayName()
+                        .equals(displayName)) {
+                return cityName;
+            }
+        }
+        return null;
+    }
 }

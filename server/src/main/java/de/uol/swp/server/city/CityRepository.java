@@ -80,4 +80,11 @@ public class CityRepository
                         .filter(city -> nameList.contains(city.getName()))
                         .toList();
     }
+    public static City getCityByName(CityName cityName) {
+        return getAllCities().stream()
+                             .filter(city -> city.getName()
+                                                 .equals(cityName))
+                             .findFirst()
+                             .orElse(null);
+    }
 }

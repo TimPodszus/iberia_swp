@@ -1,6 +1,6 @@
 package de.uol.swp.server;
 
-import de.uol.swp.common.enums.Action;
+import de.uol.swp.common.game.action.Action;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.lobby.Lobby;

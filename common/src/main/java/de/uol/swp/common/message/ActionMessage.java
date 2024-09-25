@@ -1,6 +1,6 @@
 package de.uol.swp.common.message;
 
-import de.uol.swp.common.enums.Action;
+import de.uol.swp.common.game.action.Action;
 
 public class ActionMessage extends AbstractRequestMessage {
     private final Action action;

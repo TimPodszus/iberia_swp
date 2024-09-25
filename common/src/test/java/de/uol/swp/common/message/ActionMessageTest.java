@@ -1,7 +1,7 @@
 package de.uol.swp.common.message;
 
-import de.uol.swp.common.enums.Action;
-import de.uol.swp.common.enums.ActionType;
+import de.uol.swp.common.game.action.Action;
+import de.uol.swp.common.game.action.ActionType;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;

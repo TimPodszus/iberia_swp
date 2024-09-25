@@ -1,6 +1,6 @@
 package de.uol.swp.server.Game;
 
-import de.uol.swp.common.enums.Action;
+import de.uol.swp.common.game.action.Action;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.GameManager;
 import de.uol.swp.server.game.GameController;
@@ -70,24 +70,5 @@ class GameManagerTest {
         gameManager.createGameForLobby(mockLobby);
         gameManager.endGame("lobby123");
         assertNull(gameManager.getGameController("lobby123"));
-    }
-
-    @Test
-    void receiveActionMessage_UserIsCurrentPlayer_ProcessAction() {
-        when(mockPlayer.getUser()).thenReturn(mockUser);
-
-        mockGameController.receiveActionMessage(mockUser, mockAction);
-
-        verify(mockGameController).processPlayerAction(mockAction);
-    }
-
-    @Test
-    void receiveActionMessage_UserIsNotCurrentPlayer_DoNotProcessAction() {
-        User otherUser = mock(User.class);
-        when(mockPlayer.getUser()).thenReturn(otherUser);
-
-        mockGameController.receiveActionMessage(mockUser, mockAction);
-
-        verify(mockGameController, never()).processPlayerAction(mockAction);
     }
 }

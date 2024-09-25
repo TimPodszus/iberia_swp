@@ -1,6 +1,6 @@
 package de.uol.swp.server.game;
 
-import de.uol.swp.common.enums.Action;
+import de.uol.swp.common.game.action.Action;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
@@ -38,15 +38,6 @@ public class GameTurn
         this.isDrawPhase = false;
         this.isInfectionPhase = false;
         this.isTurnOver = false;
-    }
-
-    public void startTurn() throws InterruptedException
-    {
-        LOG.info("Starte Zug für " + currentPlayer.getUser()
-                                                  .getUsername());
-        while (!isTurnOver) {
-            wait();
-        }
     }
 
     public void processAction(Action action)
@@ -88,34 +79,8 @@ public class GameTurn
     private void checkTurnEnd()
     {
         if (actionsRemaining <= 0) {
-            startDrawPhase();
+            isTurnOver = true;
         }
-    }
-
-    private void startDrawPhase()
-    {
-        isDrawPhase = true;
-        drawPlayerCard();
-        drawPlayerCard();
-
-        startInfectionPhase();
-    }
-
-    private void startInfectionPhase()
-    {
-        isInfectionPhase = true;
-        int infectionCounter = board.getInfectionCounter();
-        for (int i = 1; i <= infectionCounter; i++) {
-            infectCity(drawInfectionCard(), 1);
-        }
-        endTurn();
-    }
-
-    public void endTurn()
-    {
-        LOG.info("Turn ended for player: " + currentPlayer.getUser()
-                                                          .getUsername());
-        isTurnOver = true;
     }
 
     /**
