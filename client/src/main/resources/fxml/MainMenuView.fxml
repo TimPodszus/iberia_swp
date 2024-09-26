@@ -17,12 +17,12 @@
             <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCurrentGamesButtonPressed"
                     style="-fx-margin: 12px;" styleClass="menu-button" text="Current games"/>
             <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onJoinLobbyButtonPressed"
-                    styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Join lobby"/>
-            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateLobbyButtonPressed"
-                    styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Create lobby"/>
-            <HBox alignment="CENTER" prefWidth="200.0" spacing="12.0">
-                <children>
-                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onOptionsButtonPressed"
+                   styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Join lobby" />
+         <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateLobbyButtonPressed"
+                 styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Create lobby" />
+         <HBox alignment="CENTER" prefWidth="200.0" spacing="12.0">
+            <children>
+               <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onOptionsButtonPressed"
                             styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Options"
                             HBox.hgrow="ALWAYS"/>
                     <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onRulesButtonPressed"

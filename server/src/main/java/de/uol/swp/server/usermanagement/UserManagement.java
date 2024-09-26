@@ -1,11 +1,9 @@
 package de.uol.swp.server.usermanagement;
 
 import com.google.common.base.Strings;
-
+import com.google.inject.Inject;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.usermanagement.store.UserStore;
-
-import com.google.inject.Inject;
 
 import java.util.*;
 
@@ -66,7 +64,7 @@ public class UserManagement extends AbstractUserManagement {
         }
         // Only update if there are new values
        String newPassword = firstNotNull(userToUpdate.getPassword(), user.get().getPassword());
-        return userStore.updateUser(userToUpdate.getUsername(), newPassword );
+        return userStore.updateUser(userToUpdate.getUsername(), newPassword);
 
     }
 

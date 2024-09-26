@@ -11,7 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.lobby.message.AbstractLobbyRequest
  * @since 2023-05-14
  */
- class AbstractLobbyRequestTest {
+ class AbstractLobbyRequestTest
+{
 
     final String lobbyName = "Test";
     final UserDTO user = new UserDTO("Marco", "Marco");
