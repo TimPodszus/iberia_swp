@@ -1,6 +1,5 @@
 package de.uol.swp.common.message;
 
-import de.uol.swp.common.message.servermessage.AbstractServerMessage;
 import de.uol.swp.common.user.Session;
 import org.junit.jupiter.api.Test;
 

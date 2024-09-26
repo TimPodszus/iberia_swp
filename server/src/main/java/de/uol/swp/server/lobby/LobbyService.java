@@ -9,7 +9,7 @@ import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
 import de.uol.swp.common.lobby.message.UserJoinedLobbyMessage;
 import de.uol.swp.common.lobby.message.UserLeftLobbyMessage;
-import de.uol.swp.common.message.servermessage.ServerMessage;
+import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.AbstractService;

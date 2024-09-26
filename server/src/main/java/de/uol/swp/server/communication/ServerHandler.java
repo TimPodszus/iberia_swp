@@ -5,7 +5,7 @@ import de.uol.swp.common.game.message.ActionRequest;
 import de.uol.swp.common.message.request.RequestMessage;
 import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.message.response.ResponseMessage;
-import de.uol.swp.common.message.servermessage.ServerMessage;
+import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.server.GameManager;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -77,14 +77,12 @@ public class ServerHandler implements ServerHandlerDelegate {
         final Optional<MessageContext> messageContext = msg.getMessageContext();
         if (messageContext.isEmpty()) {
             LOG.error("No message context for {}", msg);
-            return; // Beendet die Methode frühzeitig, wenn kein Kontext vorhanden ist.
+            return;
         }
 
         try {
-            // Überprüfe die Berechtigung für die Nachricht
             checkIfMessageNeedsAuthorization(messageContext.get(), msg);
 
-            // Poste die Nachricht im EventBus, wenn sie nicht speziell als ActionMessage behandelt werden muss
             if (msg instanceof ActionRequest actionRequest) {
                 handleMessageAction(actionRequest);
             } else {

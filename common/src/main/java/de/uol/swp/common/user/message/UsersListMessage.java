@@ -1,7 +1,8 @@
 package de.uol.swp.common.user.message;
 
-import de.uol.swp.common.message.servermessage.AbstractServerMessage;
+import de.uol.swp.common.message.AbstractServerMessage;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -13,7 +14,7 @@ import java.util.Objects;
  * @since 2017-03-17
  */
 public class UsersListMessage extends AbstractServerMessage {
-
+	
 	private static final long serialVersionUID = -7968574381977330152L;
 	private final ArrayList<String> users;
 

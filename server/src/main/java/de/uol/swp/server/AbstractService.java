@@ -2,7 +2,7 @@ package de.uol.swp.server;
 
 import org.greenrobot.eventbus.EventBus;
 import de.uol.swp.common.message.Message;
-import de.uol.swp.common.message.servermessage.ServerMessage;
+import de.uol.swp.common.message.ServerMessage;
 
 import java.util.Collections;
 
