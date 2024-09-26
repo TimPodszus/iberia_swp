@@ -1,7 +1,7 @@
 package de.uol.swp.server.communication.netty;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.message.RequestMessage;
+import de.uol.swp.common.message.request.RequestMessage;
 import de.uol.swp.server.communication.ServerHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;

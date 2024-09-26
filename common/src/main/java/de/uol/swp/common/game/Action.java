@@ -1,4 +1,4 @@
-package de.uol.swp.common.enums;
+package de.uol.swp.common.game;
 
 import lombok.AllArgsConstructor;
 

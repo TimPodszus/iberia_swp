@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Test for the abstract server message
  *
- * @see de.uol.swp.common.message.AbstractServerMessage
+ * @see AbstractServerMessage
  * @since 2023-05-14
  */
 public class AbstractServerMessageTest {
