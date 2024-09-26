@@ -17,10 +17,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.scene.text.Font;
@@ -48,6 +45,9 @@ public class GameScreenPresenter extends AbstractPresenter {
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final Logger LOG = LogManager.getLogger(GameScreenPresenter.class);
+
+    @FXML
+    private AnchorPane gameScreen;
 
     @FXML
     private StackPane mapPane;
@@ -350,14 +350,14 @@ public class GameScreenPresenter extends AbstractPresenter {
      * @param newGrade the new infection grade
      */
     public void setInfectionGrade(int oldGrade, int newGrade) {
-        if (mapPane.lookup(INFECTION_GRADE_ID + oldGrade) instanceof Circle) {
-            mapPane.lookup(INFECTION_GRADE_ID + oldGrade)
+        if (gameScreen.lookup(INFECTION_GRADE_ID + oldGrade) instanceof Circle) {
+            gameScreen.lookup(INFECTION_GRADE_ID + oldGrade)
                    .getStyleClass()
                    .remove("infection-grade-active");
         }
 
-        if (mapPane.lookup(INFECTION_GRADE_ID + newGrade) instanceof Circle) {
-            mapPane.lookup(INFECTION_GRADE_ID + newGrade)
+        if (gameScreen.lookup(INFECTION_GRADE_ID + newGrade) instanceof Circle) {
+            gameScreen.lookup(INFECTION_GRADE_ID + newGrade)
                    .getStyleClass()
                    .add("infection-grade-active");
         }
@@ -370,14 +370,14 @@ public class GameScreenPresenter extends AbstractPresenter {
      * @param newLevel the new outbreak level
      */
     public void setOutbreakLevel(int oldLevel, int newLevel) {
-        if (mapPane.lookup(OUTBREAK_LEVEL_ID + oldLevel) instanceof Circle) {
-            mapPane.lookup(OUTBREAK_LEVEL_ID + oldLevel)
+        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel) instanceof Circle) {
+            gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel)
                    .getStyleClass()
                    .remove("outbreak-level-active");
         }
 
-        if (mapPane.lookup(OUTBREAK_LEVEL_ID + newLevel) instanceof Circle) {
-            mapPane.lookup(OUTBREAK_LEVEL_ID + newLevel)
+        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel) instanceof Circle) {
+            gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel)
                    .getStyleClass()
                    .add("outbreak-level-active");
         }
