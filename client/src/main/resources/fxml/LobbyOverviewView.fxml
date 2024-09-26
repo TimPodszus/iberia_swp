@@ -8,7 +8,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-
 <AnchorPane prefHeight="720.0" prefWidth="1280.0" styleClass="background-pane" stylesheets="@../css/lobbyOverview.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.register.RegistrationPresenter">
    <children>
       <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="content-pane" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="20.0">
@@ -17,7 +16,7 @@
                <children>
                   <HBox prefWidth="200.0" spacing="6.0">
                      <children>
-                        <TextField maxHeight="1.7976931348623157E308" promptText="Search lobby" HBox.hgrow="ALWAYS" />
+                        <TextField maxHeight="1.7976931348623157E308" promptText="Search Lobby" HBox.hgrow="ALWAYS" />
                         <Button mnemonicParsing="false" styleClass="search-button" text="Search" />
                      </children>
                   </HBox>
