@@ -66,7 +66,7 @@ public class UserService extends AbstractService {
         ResponseMessage returnMessage;
         try {
             userManagement.createUser(msg.getUser());
-            returnMessage = new RegistrationSuccessfulResponse();
+            returnMessage = new RegistrationSuccessfulResponse(true, "Registrierung erfolgreich!");
         }catch (Exception e){
             LOG.error(e);
             returnMessage = new RegistrationExceptionMessage("Cannot create user "+msg.getUser()+" "+e.getMessage());

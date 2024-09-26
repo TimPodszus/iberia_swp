@@ -1,7 +1,7 @@
 package de.uol.swp.server.communication;
 
 
-import de.uol.swp.common.message.request.ActionMessage;
+import de.uol.swp.common.game.message.ActionRequest;
 import de.uol.swp.common.message.request.RequestMessage;
 import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.message.response.ResponseMessage;
@@ -85,8 +85,8 @@ public class ServerHandler implements ServerHandlerDelegate {
             checkIfMessageNeedsAuthorization(messageContext.get(), msg);
 
             // Poste die Nachricht im EventBus, wenn sie nicht speziell als ActionMessage behandelt werden muss
-            if (msg instanceof ActionMessage actionMessage) {
-                handleMessageAction(actionMessage);
+            if (msg instanceof ActionRequest actionRequest) {
+                handleMessageAction(actionRequest);
             } else {
                 eventBus.post(msg);
             }
@@ -425,12 +425,12 @@ public class ServerHandler implements ServerHandlerDelegate {
         }
     }
 
-    private void handleMessageAction(ActionMessage actionMessage) {
-        Optional<MessageContext> context = actionMessage.getMessageContext();
+    private void handleMessageAction(ActionRequest actionRequest) {
+        Optional<MessageContext> context = actionRequest.getMessageContext();
         if (context.isPresent()) {
             Session session = getSession(context.get()).orElseThrow(() -> new SecurityException("Client not logged in"));
-            gameManager.receiveAndForwardActionMessage(session.getUser(), actionMessage.getAction(),
-                    actionMessage.getLobbyId() );
+            gameManager.receiveAndForwardActionMessage(session.getUser(), actionRequest.getAction(),
+                    actionRequest.getLobbyCode() );
         } else {
             LOG.error("ActionMessage received without a valid context");
         }
