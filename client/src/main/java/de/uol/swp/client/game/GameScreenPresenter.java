@@ -12,7 +12,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -201,11 +200,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
-        Circle clickedCircle = (Circle) event.getSource();
-        String city = clickedCircle.getId();
-
-        //TODO: Implement logic on city clicked
-        System.out.println("City clicked: " + city);
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
     }
 
     /**
@@ -215,11 +210,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
-        Line clickedLine = (Line) event.getSource();
-        String connectionId = clickedLine.getId();
-
-        //TODO: Implement logic on connection clicked
-        System.out.println("Connection clicked: " + connectionId);
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
     }
 
     /**
@@ -229,11 +220,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onRegionClickedEvent(MouseEvent event) {
-        Polygon clickedPolygon = (Polygon) event.getSource();
-        String region = clickedPolygon.getId();
-
-        //TODO: Implement logic on region clicked
-        System.out.println("Region clicked: " + region);
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
     }
 
     /**
@@ -243,8 +230,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onBuildTrainTrack(ActionEvent event) {
-        //TODO: Implement logic on build train track
-        System.out.println("Build train track");
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
     }
 
     /**
@@ -254,8 +240,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onBuildHospital(ActionEvent event) {
-        //TODO: Implement logic on build hospital
-        System.out.println("Build hospital");
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
     }
 
     /**
@@ -265,8 +250,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onTreatCure(ActionEvent event) {
-        //TODO: Implement logic on treat cure
-        System.out.println("Treat cure");
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
     }
 
     /**
@@ -276,8 +260,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onShareKnowledge(ActionEvent event) {
-        //TODO: Implement logic on share knowledge
-        System.out.println("Share knowledge");
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/87
     }
 
     /**
@@ -287,8 +270,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onResearchCure(ActionEvent event) {
-        //TODO: Implement logic on research cure
-        System.out.println("Research cure");
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
     }
 
     /**
@@ -298,8 +280,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onPlaceWaterTreatment(ActionEvent event) {
-        //TODO: Implement logic on place water treatment
-        System.out.println("Place water treatment");
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
     }
 
     /**
@@ -320,11 +301,7 @@ public class GameScreenPresenter extends AbstractPresenter {
      */
     @FXML
     private void onPlayerButtonClickedEvent(ActionEvent event) {
-        Button clickedButton = (Button) event.getSource();
-        String playerNumber = (String) clickedButton.getUserData();
-
-        //TODO: Implement logic on player button clicked
-        System.out.println("Player button clicked: " + playerNumber);
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/146
     }
 
     /**
