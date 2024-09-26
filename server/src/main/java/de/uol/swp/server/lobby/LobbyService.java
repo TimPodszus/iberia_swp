@@ -3,7 +3,6 @@ package de.uol.swp.server.lobby;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.uol.swp.common.lobby.ILobby;
-import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.lobby.message.*;
 import de.uol.swp.common.lobby.request.LobbyListRequest;
 import de.uol.swp.common.lobby.response.LobbyListResponse;
@@ -16,7 +15,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -126,6 +125,28 @@ public class LobbyService extends AbstractService {
     }
 
     /**
+     * Handles LobbyListRequests found on the EventBus
+     * <p>
+     * If a LobbyListRequest is detected on the EventBus, this method is called.
+     * It retrieves the list of lobbies from the LobbyManagement and sends a
+     * LobbyListResponse to the requester.
+     *
+     * @param request The LobbyListRequest found on the EventBus
+     * @see de.uol.swp.common.lobby.response.LobbyListResponse
+     * @since 2024-09-25
+     */
+    @Subscribe
+    public void onLobbyListRequest(LobbyListRequest request) throws LobbyManagementException {
+        List<ILobby> lobbies = lobbyManagement.getLobbies();
+        LobbyListResponse response = new LobbyListResponse(lobbies);
+        request.getSession()
+               .ifPresent(response::setSession);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        post(response);
+    }
+
+    /**
      * Prepares a given ServerMessage to be send to all players in the lobby and
      * posts it on the EventBus
      *
@@ -145,27 +166,4 @@ public class LobbyService extends AbstractService {
 
         // TODO: error handling not existing lobby
     }
-
-    /**
-     * Handles LobbyListRequests found on the EventBus
-     * <p>
-     * If a LobbyListRequest is detected on the EventBus, this method is called.
-     * It retrieves the list of lobbies from the LobbyManagement and sends a
-     * LobbyListResponse to the requester.
-     *
-     * @param request The LobbyListRequest found on the EventBus
-     * @see de.uol.swp.common.lobby.response.LobbyListResponse
-     * @since 2024-09-25
-     */
-    @Subscribe
-    public void onLobbyListRequest(LobbyListRequest request) {
-        Map<String, ILobby> lobbies = Map.of("1", new LobbyDTO("1", new UserDTO("test1", "test1"), "1", 4));
-        LobbyListResponse response = new LobbyListResponse(lobbies);
-        request.getSession()
-               .ifPresent(response::setSession);
-        request.getMessageContext()
-               .ifPresent(response::setMessageContext);
-        post(response);
-    }
-
 }

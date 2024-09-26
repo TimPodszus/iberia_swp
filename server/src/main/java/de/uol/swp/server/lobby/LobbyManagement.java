@@ -1,14 +1,16 @@
 package de.uol.swp.server.lobby;
 
 import de.uol.swp.common.lobby.ILobby;
-import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.store.LobbyStore;
 import lombok.Getter;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Manages creation, deletion and storing of lobbies
@@ -22,10 +24,6 @@ import java.util.*;
 @Getter
 public class LobbyManagement {
     private LobbyStore lobbyStore = new LobbyStore();
-
-    private final Map<String, ILobby> lobbies = Map.of("test1",
-            new Lobby("test1", "testcode", new ArrayList<>(), new UserDTO("test1", "test1"), 4)
-    );
 
     /**
      * Creates a new lobby and adds it to the list
@@ -109,6 +107,24 @@ public class LobbyManagement {
             return Optional.of(lobby);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Retrieves all lobbies.
+     *
+     * @return a list of all lobbies
+     * @throws LobbyManagementException if there is an error retrieving the lobbies
+     * @since 2024-09-26
+     */
+    public List<ILobby> getLobbies() throws LobbyManagementException {
+        List<ILobby> lobbies;
+        try {
+            lobbies = new ArrayList<>(lobbyStore.getAllLobbies()
+                                                .values());
+        } catch (SQLException e) {
+            throw new LobbyManagementException("Failed to get all lobbies: " + e.getMessage());
+        }
+        return lobbies;
     }
 
     public void setLobbyStore(LobbyStore lobbyStore) {

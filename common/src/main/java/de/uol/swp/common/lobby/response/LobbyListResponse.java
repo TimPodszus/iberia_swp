@@ -2,16 +2,13 @@ package de.uol.swp.common.lobby.response;
 
 import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.message.AbstractResponseMessage;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Getter
+@AllArgsConstructor
 public class LobbyListResponse extends AbstractResponseMessage {
-    private final Map<String, ILobby> lobbies = new HashMap<>();
-
-    public LobbyListResponse(Map<String, ILobby> lobbies) {
-        this.lobbies.putAll(lobbies);
-    }
+    private final List<ILobby> lobbies;
 }
