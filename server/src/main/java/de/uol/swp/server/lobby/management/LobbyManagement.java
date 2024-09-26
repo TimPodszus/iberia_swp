@@ -1,5 +1,6 @@
 package de.uol.swp.server.lobby.management;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.data.ILobby;
@@ -28,23 +29,19 @@ public class LobbyManagement implements ILobbyManagement {
     /**
      * Constructs a new LobbyManagement instance and initializes the lobby store.
      */
+    @Inject
     public LobbyManagement(ILobbyStore lobbyStore) {
         this.lobbyStore = lobbyStore;
     }
 
     public ILobby createLobby(String name, User owner) throws LobbyManagementException {
         try {
-            if (lobbyStore.findLobby(name) != null) {
-                throw new LobbyManagementException("Lobby name " + name + " already exists!");
-            }
             String lobbyID = generateLobbyID();
             List<User> users = new ArrayList<>();
             users.add(owner);
-            ILobby lobby = lobbyStore.createLobby(name, lobbyID, users, owner, 4);
-            saveLobby(lobby);
-            return lobby;
+            return lobbyStore.createLobby(lobbyID, name, users, owner, 4);
         } catch (SQLException e) {
-            throw new LobbyManagementException("Failed to create lobby");
+            throw new LobbyManagementException("Failed to create lobby: " + e.getMessage());
         }
     }
 
@@ -68,20 +65,6 @@ public class LobbyManagement implements ILobbyManagement {
             return Optional.empty();
         } catch (SQLException e) {
             throw new LobbyManagementException("Failed to get lobby");
-        }
-    }
-
-    /**
-     * Saves the given lobby to the lobby store.
-     *
-     * @param lobby the lobby to be saved
-     * @throws LobbyManagementException if there is an error saving the lobby
-     */
-    private void saveLobby(ILobby lobby) throws LobbyManagementException {
-        try {
-            lobbyStore.saveLobby(lobby);
-        } catch (SQLException e) {
-            throw new LobbyManagementException("Failed to save lobby to the database");
         }
     }
 

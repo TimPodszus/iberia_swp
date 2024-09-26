@@ -1,5 +1,6 @@
 package de.uol.swp.server.lobby.store;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.database.DatabaseConnection;
@@ -27,6 +28,7 @@ public class LobbyStore implements ILobbyStore {
      *
      * @throws RuntimeException if a database access error occurs
      */
+    @Inject
     public LobbyStore() {
         try {
             this.connection = DatabaseConnection.getInstance()
@@ -106,9 +108,9 @@ public class LobbyStore implements ILobbyStore {
 
     @Override
     public ILobby createLobby(
-            String lobbyName, String lobbycode, List<User> users, User owner, int difficulty
+            String lobbyCode, String lobbyName, List<User> users, User owner, int difficulty
     ) throws SQLException {
-        ILobby newLobby = new Lobby(lobbyName, lobbycode, users, owner, difficulty);
+        ILobby newLobby = new Lobby(lobbyCode, lobbyName, users, owner, difficulty);
         saveLobby(newLobby);
         return newLobby;
     }
@@ -144,6 +146,7 @@ public class LobbyStore implements ILobbyStore {
 
     @Override
     public void saveLobby(ILobby lobby) throws SQLException {
+        connection.setAutoCommit(false);
         try {
             saveLobbyToDatabase(lobby);
             saveUsersInLobbyToDatabase(lobby);

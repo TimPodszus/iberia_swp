@@ -26,15 +26,15 @@ public interface ILobbyStore {
     /**
      * Creates a new lobby with the specified name, code, users, owner, and difficulty level.
      *
+     * @param lobbyCode  the unique code identifying the lobby
      * @param name       the name of the lobby to create
-     * @param lobbycode  the unique code identifying the lobby
      * @param users      the list of users who will be part of the lobby
      * @param owner      the user who owns the lobby
      * @param difficulty the difficulty level of the lobby
      * @return the newly created {@code Lobby}
      * @throws SQLException if an error occurs while saving the lobby to the database
      */
-    ILobby createLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException;
+    ILobby createLobby(String lobbyCode, String name, List<User> users, User owner, int difficulty) throws SQLException;
 
     /**
      * Updates an existing lobby with the specified name, code, users, owner, and difficulty level.
