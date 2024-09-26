@@ -6,7 +6,7 @@ import de.uol.swp.server.GameManager;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.player.Player;
-import de.uol.swp.server.lobby.Lobby;
+import de.uol.swp.server.lobby.data.Lobby;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,11 +1,10 @@
 package de.uol.swp.server.lobby.store;
 
-import de.uol.swp.common.lobby.ILobby;
-import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.database.DatabaseConnection;
-import de.uol.swp.server.lobby.Lobby;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.data.Lobby;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public Lobby findLobby(String lobbyID) throws SQLException {
+    public ILobby findLobby(String lobbyID) throws SQLException {
         String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby WHERE lobbyID = ?";
 
         try (
@@ -106,16 +105,16 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public Lobby createLobby(
+    public ILobby createLobby(
             String lobbyName, String lobbycode, List<User> users, User owner, int difficulty
     ) throws SQLException {
-        Lobby newLobby = new Lobby(lobbyName, lobbycode, users, owner, difficulty);
-        saveLobby(new LobbyDTO(lobbyName, owner, lobbycode, difficulty));
+        ILobby newLobby = new Lobby(lobbyName, lobbycode, users, owner, difficulty);
+        saveLobby(newLobby);
         return newLobby;
     }
 
     @Override
-    public Lobby updateLobby(String lobbyName, String lobbycode, List<User> users, User owner, int difficulty) {
+    public ILobby updateLobby(String lobbyName, String lobbycode, List<User> users, User owner, int difficulty) {
         // not implemented
         return null;
     }
@@ -144,10 +143,10 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public void saveLobby(ILobby lobbyDTO) throws SQLException {
+    public void saveLobby(ILobby lobby) throws SQLException {
         try {
-            saveLobbyToDatabase(lobbyDTO);
-            saveUsersInLobbyToDatabase(lobbyDTO);
+            saveLobbyToDatabase(lobby);
+            saveUsersInLobbyToDatabase(lobby);
             this.connection.commit();
         } catch (SQLException e) {
             this.connection.rollback();

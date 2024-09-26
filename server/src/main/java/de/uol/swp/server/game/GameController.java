@@ -1,7 +1,7 @@
 package de.uol.swp.server.game;
 
 import de.uol.swp.common.game.Action;
-import de.uol.swp.server.lobby.Lobby;
+import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.player.Player;
@@ -11,8 +11,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 @Getter
 @Setter
 public class GameController {
@@ -23,7 +25,7 @@ public class GameController {
     private GameTurn currentTurn;
 
     public GameController(Lobby lobby) {
-        createPlayers(lobby.getUsers());
+        createPlayers(new HashSet<>(lobby.getUsers()));
         this.currentPlayerIndex = 0;
         this.players = new ArrayList<>();
     }
@@ -52,7 +54,7 @@ public class GameController {
 
         Player currentPlayer = players.get(currentPlayerIndex);
         LOG.info(currentPlayer.getUser()
-                                        .getUsername() + " ist nun am Zug!");
+                              .getUsername() + " ist nun am Zug!");
 
         currentTurn = new GameTurn(currentPlayer, board);
         currentTurn.startTurn();
@@ -61,7 +63,7 @@ public class GameController {
 
     public void finishTurn(Player currentPlayer) throws InterruptedException {
         LOG.info(currentPlayer.getUser()
-                                        .getUsername() + " hat seinen Zug beendet.");
+                              .getUsername() + " hat seinen Zug beendet.");
 
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         nextTurn();

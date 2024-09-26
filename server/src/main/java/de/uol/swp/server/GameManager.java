@@ -3,7 +3,7 @@ package de.uol.swp.server;
 import de.uol.swp.common.game.Action;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.game.GameController;
-import de.uol.swp.server.lobby.Lobby;
+import de.uol.swp.server.lobby.data.Lobby;
 import lombok.Getter;
 
 import java.util.Map;
