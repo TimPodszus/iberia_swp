@@ -9,25 +9,29 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * Singleton class to manage the database connection.
+ */
 @Getter
 public class DatabaseConnection {
 
     private static final Logger LOG = LogManager.getLogger(DatabaseConnection.class);
 
-    // Singleton-Instanz
-    private static DatabaseConnection instance;
-
-    // Methode zum Abrufen der Datenbankverbindung
-    private final Connection connection;
     private static final Dotenv dotenv = Dotenv.configure()
                                                .directory("./")
                                                .load();
-    // Datenbankverbindungsinformationen
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/iberia_db";
     private static final String USERNAME = "root";
     private static final String PASSWORD = dotenv.get("MYSQL_ROOT_PASSWORD");
 
-    // Privater Konstruktor, um eine Instanz zu verhindern
+    private static DatabaseConnection instance;
+    private final Connection connection;
+
+    /**
+     * Private constructor to create a database connection.
+     *
+     * @throws SQLException if a database access error occurs
+     */
     private DatabaseConnection() throws SQLException {
         try {
             this.connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
@@ -37,7 +41,12 @@ public class DatabaseConnection {
         }
     }
 
-
+    /**
+     * Returns the singleton instance of the DatabaseConnection.
+     *
+     * @return the singleton instance
+     * @throws SQLException if a database access error occurs
+     */
     public static DatabaseConnection getInstance() throws SQLException {
         if (instance == null) {
             instance = createInstance();
@@ -45,6 +54,12 @@ public class DatabaseConnection {
         return instance;
     }
 
+    /**
+     * Creates the singleton instance of the DatabaseConnection in a thread-safe manner.
+     *
+     * @return the singleton instance
+     * @throws SQLException if a database access error occurs
+     */
     private static synchronized DatabaseConnection createInstance() throws SQLException {
         if (instance == null) {
             instance = new DatabaseConnection();
