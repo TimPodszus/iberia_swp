@@ -96,8 +96,15 @@ public class LobbyManagement {
      * @see Optional
      * @since 2019-10-08
      */
-    public Optional<ILobby> getLobby(String lobbyID) throws SQLException {
-        ILobby lobby = lobbyStore.findLobby(lobbyID);
+    public Optional<ILobby> getLobby(String lobbyID) throws LobbyManagementException {
+        ILobby lobby;
+
+        try {
+            lobby = lobbyStore.findLobby(lobbyID);
+        } catch (SQLException e) {
+            throw new LobbyManagementException("Failed to find lobby with ID " + lobbyID);
+        }
+
         if (lobby != null) {
             return Optional.of(lobby);
         }
