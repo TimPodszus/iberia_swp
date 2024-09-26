@@ -6,15 +6,37 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents a city in the game, with attributes such as plague name, city name, foundation date,
+ * whether it is a harbour city, and whether a hospital has been built.
+ */
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Getter
-public class City
-{
+public class City {
+    /**
+     * The name of the plague affecting the city.
+     */
     private final PlagueName plagueName;
+
+    /**
+     * The name of the city.
+     */
     private final CityName name;
+
+    /**
+     * The foundation date of the city.
+     */
     private final int foundationDate;
-    private final boolean isHarbourCity;
+
+    /**
+     * Indicates if the city is a harbour city.
+     */
+    private final boolean harbourCity;
+
+    /**
+     * Indicates if a hospital has been built in the city.
+     */
     @Setter
-    private boolean hasHospital;
+    private boolean hospitalBuilt;
 }
