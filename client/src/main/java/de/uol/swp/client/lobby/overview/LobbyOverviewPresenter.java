@@ -2,7 +2,6 @@ package de.uol.swp.client.lobby.overview;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
-import de.uol.swp.client.SceneManager;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.common.lobby.ILobby;
@@ -20,13 +19,12 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class LobbyOverviewPresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/LobbyOverviewView.fxml";
-    private static final Logger LOG = LogManager.getLogger(SceneManager.class);
+    private static final Logger LOG = LogManager.getLogger(LobbyOverviewPresenter.class);
 
-    private Map<String, ILobby> lobbyList = Map.of();
+    private List<ILobby> lobbyList = new ArrayList<>();
 
     @Inject
     private LobbyService lobbyService;
@@ -67,8 +65,11 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
             TableRow<LobbyListItem> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                    LOG.debug("Joining lobby: " + row.getItem()
-                                                     .getName());
+                    LOG.debug(
+                            "Joining lobby: {}",
+                            row.getItem()
+                               .getName()
+                    );
                     LobbyListItem rowData = row.getItem();
                     //TODO get user from login
                     lobbyService.joinLobby(rowData.getName(), new UserDTO("ich", ""));
@@ -89,7 +90,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
     @Subscribe
     public void onLobbyListMessage(LobbyListResponse message) {
         this.lobbyList = message.getLobbies();
-        setLobbyList(new ArrayList<>(this.lobbyList.values()));
+        setLobbyList(this.lobbyList);
     }
 
     /**
@@ -116,12 +117,12 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
      */
     private void filterLobbies(String searchInputText) {
         if (searchInputText == null || searchInputText.isEmpty()) {
-            setLobbyList(new ArrayList<>(this.lobbyList.values()));
+            setLobbyList(this.lobbyList);
             return;
         }
 
         List<ILobby> filteredLobbies = new ArrayList<>();
-        for (ILobby lobby : this.lobbyList.values()) {
+        for (ILobby lobby : this.lobbyList) {
             if (lobby.getName()
                      .contains(searchInputText) || lobby.getLobbyCode()
                                                         .contains(searchInputText)) {
