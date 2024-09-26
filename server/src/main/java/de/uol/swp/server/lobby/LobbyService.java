@@ -15,7 +15,9 @@ import de.uol.swp.server.usermanagement.AuthenticationService;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.sql.SQLException;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -31,6 +33,7 @@ public class LobbyService extends AbstractService {
 
     private final LobbyManagement lobbyManagement;
     private final AuthenticationService authenticationService;
+
 
     /**
      * Constructor
@@ -52,7 +55,6 @@ public class LobbyService extends AbstractService {
 
     /**
      * Handles CreateLobbyRequests found on the EventBus
-     *
      * If a CreateLobbyRequest is detected on the EventBus, this method is called.
      * It creates a new Lobby via the LobbyManagement using the parameters from the
      * request and sends a LobbyCreatedMessage to every connected user
@@ -63,14 +65,15 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) {
+    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException, SQLException {
         lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
-        sendToAll(new LobbyCreatedMessage(createLobbyRequest.getName(), (UserDTO) createLobbyRequest.getOwner()));
+        ILobby createdLobby = lobbyManagement.getLobby(createLobbyRequest.getName())
+                                             .orElseThrow(() -> new NoSuchElementException("Lobby not found: " + createLobbyRequest.getName()));
+        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), (UserDTO) createLobbyRequest.getOwner()));
     }
 
     /**
      * Handles LobbyJoinUserRequests found on the EventBus
-     *
      * If a LobbyJoinUserRequest is detected on the EventBus, this method is called.
      * It adds a user to a Lobby stored in the LobbyManagement and sends a UserJoinedLobbyMessage
      * to every user in the lobby.
@@ -97,7 +100,6 @@ public class LobbyService extends AbstractService {
 
     /**
      * Handles LobbyLeaveUserRequests found on the EventBus
-     *
      * If a LobbyLeaveUserRequest is detected on the EventBus, this method is called.
      * It removes a user from a Lobby stored in the LobbyManagement and sends a
      * UserLeftLobbyMessage to every user in the lobby.
@@ -157,7 +159,6 @@ public class LobbyService extends AbstractService {
     @Subscribe
     public void onLobbyListRequest(LobbyListRequest request) {
         Map<String, ILobby> lobbies = Map.of("1", new LobbyDTO("1", new UserDTO("test1", "test1"), "1", 4));
-        ;
         LobbyListResponse response = new LobbyListResponse(lobbies);
         request.getSession()
                .ifPresent(response::setSession);

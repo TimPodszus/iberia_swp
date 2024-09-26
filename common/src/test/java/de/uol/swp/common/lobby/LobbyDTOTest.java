@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test Class for the UserDTO
@@ -41,7 +45,11 @@ class LobbyDTOTest {
      */
     @Test
     void createLobbyTest() {
-        // not implemented
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+
+        assertEquals("test", lobby.getName());
+        assertEquals(1, lobby.getUsers().size());
+        assertEquals(defaultUser, lobby.getUsers().iterator().next());
 
     }
 
@@ -54,7 +62,20 @@ class LobbyDTOTest {
      */
     @Test
     void joinUserLobbyTest() {
-        // not implemented
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+
+        lobby.joinUser(users.get(0));
+        assertEquals(2,
+                lobby.getUsers().size());
+        assertTrue(lobby.getUsers().contains(users.get(0)));
+
+        lobby.joinUser(users.get(0));
+        assertEquals(2, lobby.getUsers().size());
+
+        lobby.joinUser(users.get(1));
+        assertEquals(3,
+                lobby.getUsers().size());
+        assertTrue(lobby.getUsers().contains(users.get(1)));
     }
 
     /**
@@ -66,7 +87,14 @@ class LobbyDTOTest {
      */
     @Test
     void leaveUserLobbyTest() {
-        // not implemented
+        ILobby lobby = new LobbyDTO("test", defaultUser,"testcode", 4);
+        users.forEach(lobby::joinUser);
+
+        assertEquals(lobby.getUsers().size(), users.size() + 1);
+        lobby.leaveUser(users.get(5));
+
+        assertEquals(lobby.getUsers().size(), users.size() + 1 - 1);
+        assertFalse(lobby.getUsers().contains(users.get(5)));
     }
 
     /**
@@ -78,7 +106,13 @@ class LobbyDTOTest {
      */
     @Test
     void removeOwnerFromLobbyTest() {
-        // not implemented
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+        users.forEach(lobby::joinUser);
+
+        lobby.leaveUser(defaultUser);
+
+        assertNotEquals(defaultUser, lobby.getOwner() );
+        assertTrue(users.contains(lobby.getOwner()));
 
     }
 
@@ -91,7 +125,13 @@ class LobbyDTOTest {
      */
     @Test
     void updateOwnerTest() {
-        // not implemented
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+        users.forEach(lobby::joinUser);
+
+        lobby.updateOwner(users.get(6));
+        assertEquals(lobby.getOwner(), users.get(6));
+
+        assertThrows(IllegalArgumentException.class, () -> lobby.updateOwner(notInLobbyUser));
     }
 
     /**
@@ -102,7 +142,9 @@ class LobbyDTOTest {
      */
     @Test
     void assureNonEmptyLobbyTest() {
-        // not implemented
+        ILobby lobby = new LobbyDTO("test", defaultUser, "testcode", 4);
+
+        assertThrows(IllegalArgumentException.class, () -> lobby.leaveUser(defaultUser));
     }
 
 
