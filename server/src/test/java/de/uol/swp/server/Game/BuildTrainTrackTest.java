@@ -7,22 +7,20 @@ import de.uol.swp.server.game.GameTurnException;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BuildTrainTrackTest {
-    @Mock
-    private Board mockBoard;
+    private Board board;
     private GameTurn gameTurn;
     private Connection connection;
 
     @BeforeEach
     void setUp() {
         Player player = new Player(null, null, null, null);
-        mockBoard.setWaterTreatmentsLeft(1);
+        board = new Board(null, null, null, 0, 0, null, null, null, null, 0, 1);
         connection = new Connection(0, null, false, true);
-        gameTurn = new GameTurn(player, mockBoard);
+        gameTurn = new GameTurn(player, board);
     }
 
     @Test
@@ -30,7 +28,7 @@ class BuildTrainTrackTest {
         gameTurn.buildTrainTracks(connection);
 
         assertTrue(connection.isTrainTrack());
-        assertEquals(0, mockBoard.getTracksLeft());
+        assertEquals(0, board.getTracksLeft());
     }
 
     @Test
@@ -55,7 +53,7 @@ class BuildTrainTrackTest {
 
     @Test
     void testBuildTrainTracks_NotEnoughTracksLeft_ThrowsException() {
-        mockBoard.setTracksLeft(0);
+        board.setTracksLeft(0);
 
         GameTurnException exception = assertThrows(GameTurnException.class,
                 () -> gameTurn.buildTrainTracks(connection)
