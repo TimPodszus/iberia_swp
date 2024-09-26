@@ -2,6 +2,8 @@ package de.uol.swp.server.usermanagement.lobby;
 
 
 import de.uol.swp.common.lobby.message.CreateLobbyRequest;
+import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
+import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
@@ -23,7 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 class LobbyServiceTest extends EventBusBasedTest
@@ -100,7 +104,7 @@ class LobbyServiceTest extends EventBusBasedTest
                                    .getOwner());
         }
     }
-
+*/
     @Test
     void lobbyJoinUserTest() throws LobbyManagementException, SQLException {
         // Create the lobby
@@ -137,6 +141,6 @@ class LobbyServiceTest extends EventBusBasedTest
             assertFalse(lobbyManagement.getLobby("Test").get().getUsers().contains(secondOwner));
         }
     }
-*/
+
 }
 

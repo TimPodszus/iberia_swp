@@ -51,6 +51,19 @@ public class LobbyManagement {
         return new Lobby(name, lobbyID, users, owner, 4);
     }
 
+    public void leaveLobby(String lobbyID, User user) throws SQLException {
+        Lobby lobbyToLeave = lobbyStore.findLobby(lobbyID);
+        lobbyToLeave.getUsers().remove(user);
+        if (user.equals(lobbyToLeave.getOwner()) && !lobbyToLeave.getUsers().isEmpty()) {
+            User newOwner = lobbyToLeave.getAllUsers().getFirst();
+            lobbyToLeave.setOwner(newOwner);
+
+
+        }
+        if (lobbyToLeave.getUsers().isEmpty()) {
+            lobbyStore.removeLobby(lobbyID);
+        }
+    }
 
 
     /**

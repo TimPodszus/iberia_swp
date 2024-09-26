@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -17,23 +18,17 @@ public class Lobby implements ILobby
     private final String lobbyCode;
     private final List<User> users;
 
+    @Setter
     private User owner;
     @Setter
     private int difficulty;
-
-
-
-    public void addUser(User user) {
-        users.add(user);
-    }
 
     @Override
     public String getLobbyCode() {
         return lobbyCode;
     }
     @Override
-    public void updateOwner(User user)
-    {
+    public void updateOwner(User user) {
         this.owner = user;
     }
 
@@ -44,21 +39,24 @@ public class Lobby implements ILobby
     }
 
     @Override
-    public void joinUser(User user)
-    {
-        // TODO document why this method is empty
+    public void joinUser(User user) {
+        users.add(user);
     }
 
     @Override
-    public void leaveUser(User user)
-    {
-        // TODO document why this method is empty
+    public void leaveUser(User user) {
+        users.remove(user);
+        if (user.equals(owner) && !users.isEmpty()) {
+            owner = users.get(0);
+        }
+    }
+
+    public List<User> getAllUsers() {
+        return users;
     }
 
     @Override
-    public Set<User> getUsers()
-    {
-
-        return null;
+    public Set<User> getUsers() {
+        return new HashSet<>(users);
     }
 }

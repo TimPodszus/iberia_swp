@@ -102,7 +102,7 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public void removeLobby(String lobbyName) {
+    public void removeLobby(String lobbyID) {
         // not implemented
     }
 
