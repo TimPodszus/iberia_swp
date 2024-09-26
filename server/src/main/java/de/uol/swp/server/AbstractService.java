@@ -1,11 +1,8 @@
 package de.uol.swp.server;
 
-import de.uol.swp.server.communication.ServerHandler;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import de.uol.swp.common.message.Message;
-import de.uol.swp.common.message.ServerMessage;
+import de.uol.swp.common.message.servermessage.ServerMessage;
 
 import java.util.Collections;
 
@@ -22,7 +19,6 @@ import java.util.Collections;
 
 public class AbstractService {
 
-    private static final Logger LOG = LogManager.getLogger(AbstractService.class);
 
     private final EventBus bus;
 
@@ -53,7 +49,7 @@ public class AbstractService {
      * EventBus.
      *
      * @param message the message to be send to every user
-     * @see de.uol.swp.common.message.ServerMessage
+     * @see ServerMessage
      * @since 2019-10-08
      */
     public void sendToAll(ServerMessage message) {

@@ -1,5 +1,6 @@
 package de.uol.swp.common.message;
 
+import de.uol.swp.common.message.servermessage.AbstractServerMessage;
 import de.uol.swp.common.user.Session;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Test for the abstract server message
  *
- * @see de.uol.swp.common.message.AbstractServerMessage
+ * @see AbstractServerMessage
  * @since 2023-05-14
  */
 public class AbstractServerMessageTest {

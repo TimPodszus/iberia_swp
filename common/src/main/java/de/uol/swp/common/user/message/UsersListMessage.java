@@ -1,6 +1,6 @@
 package de.uol.swp.common.user.message;
 
-import de.uol.swp.common.message.AbstractServerMessage;
+import de.uol.swp.common.message.servermessage.AbstractServerMessage;
 
 import java.util.ArrayList;
 import java.util.List;

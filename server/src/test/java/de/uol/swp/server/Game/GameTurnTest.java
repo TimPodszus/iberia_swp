@@ -1,7 +1,7 @@
 package de.uol.swp.server.Game;
 
-import de.uol.swp.common.enums.Action;
-import de.uol.swp.common.enums.ActionType;
+import de.uol.swp.common.game.Action;
+import de.uol.swp.common.game.ActionType;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.game.GameTurn;

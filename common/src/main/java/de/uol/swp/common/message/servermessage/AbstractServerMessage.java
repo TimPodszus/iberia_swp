@@ -1,5 +1,6 @@
-package de.uol.swp.common.message;
+package de.uol.swp.common.message.servermessage;
 
+import de.uol.swp.common.message.AbstractMessage;
 import de.uol.swp.common.user.Session;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.Objects;
  * to a group of clients
  *
  * @see de.uol.swp.common.message.AbstractMessage
- * @see de.uol.swp.common.message.ServerMessage
+ * @see ServerMessage
  * @author Marco Grawunder
  * @since 2019-08-07
  */

@@ -1,6 +1,11 @@
 package de.uol.swp.server.communication;
 
 
+import de.uol.swp.common.message.request.ActionMessage;
+import de.uol.swp.common.message.request.RequestMessage;
+import de.uol.swp.common.message.response.ExceptionMessage;
+import de.uol.swp.common.message.response.ResponseMessage;
+import de.uol.swp.common.message.servermessage.ServerMessage;
 import de.uol.swp.server.GameManager;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -375,7 +380,7 @@ public class ServerHandler implements ServerHandlerDelegate {
      *
      * @param ctx     The MessageContext containing the specified client
      * @param message The Message to send
-     * @see de.uol.swp.common.message.ResponseMessage
+     * @see ResponseMessage
      * @see de.uol.swp.common.message.MessageContext
      * @since 2019-11-20
      */
@@ -388,7 +393,7 @@ public class ServerHandler implements ServerHandlerDelegate {
      * Sends a ServerMessage to either a specified receiver or all connected clients
      *
      * @param msg ServerMessage to send
-     * @see de.uol.swp.common.message.ServerMessage
+     * @see ServerMessage
      * @since 2019-11-20
      */
     private void sendMessage(ServerMessage msg) {
@@ -406,7 +411,7 @@ public class ServerHandler implements ServerHandlerDelegate {
      * @param sendTo List of MessageContexts to send the message to
      * @param msg    message to send
      * @see de.uol.swp.common.message.MessageContext
-     * @see de.uol.swp.common.message.ServerMessage
+     * @see ServerMessage
      * @since 2019-11-20
      */
     private void sendToMany(List<MessageContext> sendTo, ServerMessage msg) {
