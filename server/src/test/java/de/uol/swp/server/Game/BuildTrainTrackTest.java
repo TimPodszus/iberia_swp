@@ -7,36 +7,34 @@ import de.uol.swp.server.game.GameTurnException;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BuildTrainTrackTest
-{
-    private Board board;
+class BuildTrainTrackTest {
+    @Mock
+    private Board mockBoard;
     private GameTurn gameTurn;
     private Connection connection;
 
     @BeforeEach
-    void setUp()
-    {
+    void setUp() {
         Player player = new Player(null, null, null, null);
-        board = new Board(null, 0, 0, null, null, null, null, 1, 1);
+        mockBoard.setWaterTreatmentsLeft(1);
         connection = new Connection(0, null, false, true);
-        gameTurn = new GameTurn(player, board);
+        gameTurn = new GameTurn(player, mockBoard);
     }
 
     @Test
-    void testBuildTrainTracks_Success() throws GameTurnException
-    {
+    void testBuildTrainTracks_Success() throws GameTurnException {
         gameTurn.buildTrainTracks(connection);
 
         assertTrue(connection.isTrainTrack());
-        assertEquals(0, board.getTracksLeft());
+        assertEquals(0, mockBoard.getTracksLeft());
     }
 
     @Test
-    void testBuildTrainTracks_NotBuildable_ThrowsException()
-    {
+    void testBuildTrainTracks_NotBuildable_ThrowsException() {
         connection = new Connection(0, null, false, false);
 
         GameTurnException exception = assertThrows(GameTurnException.class,
@@ -46,8 +44,7 @@ class BuildTrainTrackTest
     }
 
     @Test
-    void testBuildTrainTracks_AlreadyHasTrack_ThrowsException()
-    {
+    void testBuildTrainTracks_AlreadyHasTrack_ThrowsException() {
         connection.setTrainTrack(true);
 
         GameTurnException exception = assertThrows(GameTurnException.class,
@@ -57,9 +54,8 @@ class BuildTrainTrackTest
     }
 
     @Test
-    void testBuildTrainTracks_NotEnoughTracksLeft_ThrowsException()
-    {
-        board.setTracksLeft(0);
+    void testBuildTrainTracks_NotEnoughTracksLeft_ThrowsException() {
+        mockBoard.setTracksLeft(0);
 
         GameTurnException exception = assertThrows(GameTurnException.class,
                 () -> gameTurn.buildTrainTracks(connection)

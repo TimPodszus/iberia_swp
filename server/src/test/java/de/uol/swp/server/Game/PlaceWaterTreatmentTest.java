@@ -11,25 +11,22 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class PlaceWaterTreatmentTest
-{
+class PlaceWaterTreatmentTest {
     Player player;
     Board board;
     GameTurn gameTurn;
     Region region;
 
     @BeforeEach
-    void setUp()
-    {
+    void setUp() {
         player = new Player(null, null, null, null);
-        board = new Board(null, 0, 0, null, null, null, null, 2, 0);
+        board = new Board(null, null, null, 0, 0, null, null, null, null, 2, 0);
         gameTurn = new GameTurn(player, board);
         region = new Region(0, null);
     }
 
     @Test
-    void testPlaceWaterTreatment_Success() throws GameTurnException
-    {
+    void testPlaceWaterTreatment_Success() throws GameTurnException {
         gameTurn.placeWaterTreatment(region, 2);
 
         assertEquals(0, board.getWaterTreatmentsLeft());
@@ -37,8 +34,7 @@ class PlaceWaterTreatmentTest
     }
 
     @Test
-    void testPlaceWaterTreatment_NotEnoughMarkers_ThrowsException()
-    {
+    void testPlaceWaterTreatment_NotEnoughMarkers_ThrowsException() {
         GameTurnException exception = assertThrows(GameTurnException.class,
                 () -> gameTurn.placeWaterTreatment(region, 3)
         );
