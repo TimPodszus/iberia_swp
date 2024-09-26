@@ -14,7 +14,7 @@ import java.util.Objects;
  * @since 2017-03-17
  */
 public class UsersListMessage extends AbstractServerMessage {
-	
+
 	private static final long serialVersionUID = -7968574381977330152L;
 	private final ArrayList<String> users;
 
