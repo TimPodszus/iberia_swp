@@ -15,14 +15,7 @@ import lombok.Getter;
  */
 @Getter
 public abstract class AbstractRequestMessage extends AbstractMessage implements RequestMessage {
-    private String lobbyCode;
 
-    protected AbstractRequestMessage(){
-    }
-
-    protected AbstractRequestMessage(String lobbyCode){
-        this.lobbyCode = lobbyCode;
-    }
     @Override
     public boolean authorizationNeeded() {
         return true;
