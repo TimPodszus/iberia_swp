@@ -1,6 +1,9 @@
 package de.uol.swp.server.game;
 
 import de.uol.swp.common.game.action.Action;
+import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.GameState;
+import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
@@ -47,11 +50,6 @@ public class GameController {
     public boolean isGameOver() {
         //Verarbeiten wann das Spiel vorbei ist.
         return false;
-    }
-
-    public void endGame() {
-        LOG.info("Game over!");
-        // Logik zum Beenden des Spiels, z. B. Spieler benachrichtigen, Ergebnisse speichern, etc.
     }
 
     public void receiveActionMessage(User user, Action action) {

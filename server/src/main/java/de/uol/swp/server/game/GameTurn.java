@@ -221,18 +221,18 @@ public class GameTurn
         //not implemented
     }
 
-    InfectionCard drawInfectionCard()
+    public InfectionCard drawInfectionCard()
     {
         //not implemented
         return null;
     }
 
-    void drawPlayerCard()
+    public void drawPlayerCard()
     {
         //not implemented
     }
 
-    void infectCity(InfectionCard infectionCard, int amount)
+    public void infectCity(InfectionCard infectionCard, int amount)
     {
         //not implemented
     }
