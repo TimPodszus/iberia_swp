@@ -12,7 +12,6 @@ import de.uol.swp.common.message.response.AbstractResponseMessage;
  * @since 2019-09-02
  */
 public class RegistrationSuccessfulResponse extends AbstractResponseMessage {
-    public RegistrationSuccessfulResponse(boolean success, String description) {
-        super(success, description);
+    public RegistrationSuccessfulResponse() {
     }
 }
