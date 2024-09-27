@@ -121,7 +121,7 @@ public class LobbyService extends AbstractService {
      *
      * @param lobbyName Name of the lobby the players are in
      * @param message the message to be send to the users
-     * @see de.uol.swp.common.message.ServerMessage
+     * @see ServerMessage
      * @since 2019-10-08
      */
     public void sendToAllInLobby(String lobbyName, ServerMessage message) throws SQLException {

@@ -1,10 +1,9 @@
 package de.uol.swp.common.user.request;
 
-import de.uol.swp.common.message.AbstractRequestMessage;
+import de.uol.swp.common.message.request.AbstractRequestMessage;
 import de.uol.swp.common.passwordHashing.PasswordHashing;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.directory.api.ldap.model.password.PasswordUtil;
 
 import java.io.Serial;
 import java.util.Objects;
@@ -35,7 +34,7 @@ public class LoginRequest extends AbstractRequestMessage {
 	 * @since  2017-03-17
 	 */
 	public LoginRequest(String username, String password) {
-		this.username = username;
+        this.username = username;
 		this.password = password;
 	}
 

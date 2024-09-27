@@ -11,7 +11,7 @@ import java.util.Objects;
  * to a group of clients
  *
  * @see de.uol.swp.common.message.AbstractMessage
- * @see de.uol.swp.common.message.ServerMessage
+ * @see ServerMessage
  * @author Marco Grawunder
  * @since 2019-08-07
  */

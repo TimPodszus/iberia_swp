@@ -2,6 +2,7 @@ package de.uol.swp.common.user.message;
 
 import de.uol.swp.common.message.AbstractServerMessage;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

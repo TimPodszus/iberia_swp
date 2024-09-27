@@ -1,7 +1,7 @@
 package de.uol.swp.server.communication.netty;
 
 import de.uol.swp.common.message.MessageContext;
-import de.uol.swp.common.message.ResponseMessage;
+import de.uol.swp.common.message.response.ResponseMessage;
 import de.uol.swp.common.message.ServerMessage;
 import io.netty.channel.ChannelHandlerContext;
 
