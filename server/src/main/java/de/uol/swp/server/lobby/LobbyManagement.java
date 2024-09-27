@@ -3,6 +3,7 @@ package de.uol.swp.server.lobby;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.store.LobbyStore;
+import de.uol.swp.server.lobby.store.LobbyStoreException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -51,14 +52,16 @@ public class LobbyManagement {
         return new Lobby(name, lobbyID, users, owner, 4);
     }
 
-    public void leaveLobby(String lobbyID, User user) throws SQLException {
+    public void leaveLobby(String lobbyID, User user) throws SQLException, LobbyStoreException {
         Lobby lobbyToLeave = lobbyStore.findLobby(lobbyID);
         lobbyToLeave.getUsers().remove(user);
-        if (user.equals(lobbyToLeave.getOwner()) && !lobbyToLeave.getUsers().isEmpty()) {
-            User newOwner = lobbyToLeave.getAllUsers().getFirst();
-            lobbyToLeave.setOwner(newOwner);
-
-
+        lobbyStore.removeUser(lobbyID, user);
+        if (user.getUsername().equals(lobbyToLeave.getOwner().getUsername()) && !lobbyToLeave.getUsers().isEmpty()) {
+            List<User> remainingUsers = lobbyToLeave.getAllUsers();
+            if (!remainingUsers.isEmpty()) {
+                User newOwner = remainingUsers.get(0);
+                lobbyToLeave.setOwner(newOwner);
+            }
         }
         if (lobbyToLeave.getUsers().isEmpty()) {
             lobbyStore.removeLobby(lobbyID);
@@ -91,7 +94,7 @@ public class LobbyManagement {
      * @since 2019-10-08
      */
 
-    public void dropLobby(String lobbyID) throws SQLException, LobbyManagementException {
+    public void dropLobby(String lobbyID) throws SQLException, LobbyManagementException, LobbyStoreException {
         if (lobbyStore.findLobby(lobbyID) == null) {
             throw new LobbyManagementException("LobbyID " + lobbyID + " not found!");
         }

@@ -101,9 +101,36 @@ public class LobbyStore implements ILobbyStore {
         return null;
     }
 
+    public void removeUser(String lobbyID, User user) throws SQLException, LobbyStoreException {
+        String sql = "DELETE FROM LobbyUsers WHERE lobbyID = ? AND username = ?";
+
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, lobbyID);
+            ps.setString(2, user.getUsername());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new LobbyStoreException("User to remove does not exist in this lobby!");
+        }
+    }
+
+
+
     @Override
-    public void removeLobby(String lobbyID) {
-        // not implemented
+    public void removeLobby(String lobbyID) throws SQLException, LobbyStoreException {
+        String sql = "DELETE FROM Lobby WHERE lobbyID = ?";
+
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, lobbyID);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new LobbyStoreException("Lobby to remove does not exist!");
+        }
     }
 
     @Override
