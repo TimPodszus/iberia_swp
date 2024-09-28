@@ -1,6 +1,6 @@
 package de.uol.swp.common.message;
 
-import de.uol.swp.common.user.exception.RegistrationExceptionMessage;
+import de.uol.swp.common.message.response.ExceptionMessage;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Test for the exception message
  *
- * @see de.uol.swp.common.message.ExceptionMessage
+ * @see ExceptionMessage
  * @since 2023-05-14
  */
 public class ExceptionMessageTest {

@@ -2,7 +2,9 @@ package de.uol.swp.common.user;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Test Class for the UserDTO
@@ -35,29 +37,14 @@ class UserDTOTest {
         assertThrows(IllegalArgumentException.class, () -> new UserDTO("", null));
     }
 
-    /**
-     * This test checks if the copy constructor works correctly
-     * This test fails if any of the fields mismatch or the objects are not considered equal
-     * @since 2019-09-04
-     */
-    @Test
-    void createWithExistingUser() {
 
-        User newUser = UserDTO.create(defaultUser);
-
-        // Test with equals method
-        assertEquals(defaultUser, newUser);
-
-        // Test every attribute
-        assertEquals(defaultUser.getUsername(), newUser.getUsername());
-        assertEquals(defaultUser.getPassword(), newUser.getPassword());
-
-    }
 
     /**
      * This test checks if the createWithoutPassword function generates the Object correctly
      * This test fails if the usernames or emails do not match or the password is not empty.
      * @since 2019-09-04
+     * The Hash {SHA512}z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==
+     * equals an Empty String
      */
     @Test
     void createWithExistingUserWithoutPassword() {
@@ -65,7 +52,7 @@ class UserDTOTest {
 
         // Test every attribute
         assertEquals(defaultUser.getUsername(), newUser.getUsername());
-        assertEquals("", newUser.getPassword());
+        assertEquals("{SHA512}z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==", newUser.getPassword());
 
 
         // Test with equals method
@@ -76,12 +63,14 @@ class UserDTOTest {
      * This test checks if the getWithoutPassword function generates the Object correctly
      * This test fails if the usernames do not match or the password is not empty.
      * @since 2019-09-04
+     * The Hash {SHA512}z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==
+     * equals an Empty String
      */
     @Test
     void getWithoutPassword() {
         User userWithoutPassword = defaultUser.getWithoutPassword();
 
-        assertEquals("", userWithoutPassword.getPassword());
+        assertEquals("{SHA512}z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==", userWithoutPassword.getPassword());
         assertEquals(defaultUser.getUsername(), userWithoutPassword.getUsername());
     }
 
@@ -106,15 +95,5 @@ class UserDTOTest {
         assertEquals(defaultUser.compareTo(secondsUser), -1);
     }
 
-    /**
-     * Test if the HashCode of a copied object matches the one of the original
-     * This test fails if the codes do not match
-     * @since 2019-09-04
-     */
-    @Test
-    void testHashCode() {
-        User newUser = UserDTO.create(defaultUser);
-        assertEquals(newUser.hashCode(), defaultUser.hashCode());
 
-    }
 }

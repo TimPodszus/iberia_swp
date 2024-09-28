@@ -2,13 +2,12 @@ services:
   db:
     image: git.swp-ibs.de:5050/swp/2024/ga/iberia
     restart: always
-    env_file: database.env
+    env_file: .env
     ports:
       - '3306:3306'
     expose:
       - '3306'
     volumes:
-      - my-db:/var/lib/mysql
-
+      - my-db:/var/lib/mysqlvolumes
 volumes:
   my-db:

@@ -1,13 +1,18 @@
 package de.uol.swp.client;
 
 import com.google.inject.Provider;
+import de.uol.swp.client.game.GameScreenPresenter;
+import de.uol.swp.client.game.event.ShowGameScreenEvent;
 import de.uol.swp.client.lobby.CurrentGamesPresenter;
 import de.uol.swp.client.lobby.LobbyOverviewPresenter;
 import de.uol.swp.client.lobby.LobbyScreenPresenter;
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
+import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.options.OptionsPresenter;
-import de.uol.swp.client.options.event.ShowOptionViewEvent;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
+import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -45,6 +50,9 @@ public class SceneManager {
     static final String STYLE_SHEET = "css/swp.css";
     static final String DIALOG_STYLE_SHEET = "css/myDialog.css";
 
+    private static final int DEFAULT_WIDTH = 1280;
+    private static final int DEFAULT_HEIGHT = 720;
+
     private final Stage primaryStage;
     private Scene loginScene;
     private String lastTitle;
@@ -52,8 +60,9 @@ public class SceneManager {
     private Scene lobbyOverviewScene;
     private Scene lobbyScene;
     private Scene currentGamesScene;
-    private Scene optionScene;
+    private Scene gameScreenScene;
     private Scene mainScene;
+    private Scene optionsScene;
     private Scene lastScene = null;
     private Scene currentScene = null;
 
@@ -83,7 +92,8 @@ public class SceneManager {
         initLobbyOverviewView();
         initLobbyScreen();
         initCurrentGamesView();
-        initOptionView();
+        initOptionsView();
+        initGameScreenView();
     }
 
     /**
@@ -125,7 +135,7 @@ public class SceneManager {
     private void initMainView() throws IOException {
         if (mainScene == null) {
             Parent rootPane = initPresenter(MainMenuPresenter.FXML);
-            mainScene = new Scene(rootPane, 1280, 720);
+            mainScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             mainScene.getStylesheets()
                      .add(STYLE_SHEET);
         }
@@ -143,7 +153,7 @@ public class SceneManager {
     private void initLoginView() throws IOException {
         if (loginScene == null) {
             Parent rootPane = initPresenter(LoginPresenter.FXML);
-            loginScene = new Scene(rootPane, 1280, 720);
+            loginScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             loginScene.getStylesheets()
                       .add(STYLE_SHEET);
         }
@@ -162,7 +172,7 @@ public class SceneManager {
     private void initRegistrationView() throws IOException {
         if (registrationScene == null) {
             Parent rootPane = initPresenter(RegistrationPresenter.FXML);
-            registrationScene = new Scene(rootPane, 1280, 720);
+            registrationScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             registrationScene.getStylesheets()
                              .add(STYLE_SHEET);
         }
@@ -181,7 +191,7 @@ public class SceneManager {
     private void initLobbyOverviewView() throws IOException {
         if (lobbyOverviewScene == null) {
             Parent rootPane = initPresenter(LobbyOverviewPresenter.FXML);
-            lobbyOverviewScene = new Scene(rootPane, 1280, 720);
+            lobbyOverviewScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             lobbyOverviewScene.getStylesheets()
                               .add(STYLE_SHEET);
         }
@@ -200,7 +210,7 @@ public class SceneManager {
     private void initLobbyScreen() throws IOException {
         if (lobbyScene == null) {
             Parent rootPane = initPresenter(LobbyScreenPresenter.FXML);
-            lobbyScene = new Scene(rootPane, 1280, 720);
+            lobbyScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             lobbyScene.getStylesheets()
                       .add(STYLE_SHEET);
         }
@@ -219,28 +229,65 @@ public class SceneManager {
     private void initCurrentGamesView() throws IOException {
         if (currentGamesScene == null) {
             Parent rootPane = initPresenter(CurrentGamesPresenter.FXML);
-            currentGamesScene = new Scene(rootPane, 1280, 720);
+            currentGamesScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             currentGamesScene.getStylesheets()
                              .add(STYLE_SHEET);
         }
     }
 
     /**
-     * Initializes the options view.
+     * Initializes the options view
      * <p>
-     * If the optionScene is null, it gets set to a new scene containing
-     * a pane showing the options view as specified by the OptionsPresenter
+     * If the options scene is null it gets set to a new scene containing the
+     * a pane showing the options view as specified by the OptionsView
+     * FXML file.
+     *
+     * @see de.uol.swp.client.options.OptionsPresenter
+     * @since 2024-09-11
+     */
+    private void initOptionsView() throws IOException {
+        if (optionsScene != null) {
+            return;
+        }
+
+        Parent rootPane = initPresenter(OptionsPresenter.FXML);
+        optionsScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        optionsScene.getStylesheets()
+                    .add(STYLE_SHEET);
+    }
+
+    /**
+     * Handles ShowLastSceneEvent detected on the EventBus.
+     * <p>
+     * If a ShowLastSceneEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the last
+     * scene that was shown before the current one.
+     *
+     * @param event The ShowLastSceneEvent detected on the EventBus
+     * @see de.uol.swp.client.main.event.ShowLastSceneEvent
+     * @since 2019-09-03
+     */
+    @Subscribe
+    public void onShowLastSceneEvent(ShowLastSceneEvent event) {
+        showScene(lastScene, lastTitle);
+    }
+
+    /**
+     * Initializes the game screen view.
+     * <p>
+     * If the gameScreenScene is null, it gets set to a new scene containing
+     * a pane showing the game screen view as specified by the GameScreenPresenter
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.options.OptionsPresenter
+     * @see de.uol.swp.client.game.GameScreenPresenter
      */
-    private void initOptionView() throws IOException {
-        if (optionScene == null) {
-            Parent rootPane = initPresenter(OptionsPresenter.FXML);
-            optionScene = new Scene(rootPane, 1280, 720);
-            optionScene.getStylesheets()
-                       .add(STYLE_SHEET);
+    private void initGameScreenView() throws IOException {
+        if (gameScreenScene == null) {
+            Parent rootPane = initPresenter(GameScreenPresenter.FXML);
+            gameScreenScene = new Scene(rootPane, 1280, 720);
+            gameScreenScene.getStylesheets()
+                           .add(STYLE_SHEET);
         }
     }
 
@@ -305,17 +352,17 @@ public class SceneManager {
     }
 
     /**
-     * Handles ShowOptionViewEvent detected on the EventBus.
+     * Handles ShowGameScreenEvent detected on the EventBus.
      * <p>
-     * If a ShowOptionViewEvent is detected on the EventBus, this method gets
-     * called. It calls a method to switch the current screen to the options screen.
+     * If a ShowGameScreenEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the game screen.
      *
-     * @param event The ShowOptionViewEvent detected on the EventBus
-     * @see de.uol.swp.client.options.event.ShowOptionViewEvent
+     * @param event The ShowGameScreenEvent detected on the EventBus
+     * @see de.uol.swp.client.game.event.ShowGameScreenEvent
      */
     @Subscribe
-    public void onShowOptionViewEvent(ShowOptionViewEvent event) {
-        showOptionScreen();
+    public void onShowGameScreenEvent(ShowGameScreenEvent event) {
+        showGameScreen();
     }
 
     /**
@@ -364,6 +411,21 @@ public class SceneManager {
                 .add(DIALOG_STYLE_SHEET);
             a.showAndWait();
         });
+    }
+
+    /**
+     * Handles ShowOptionsViewEvent detected on the EventBus
+     * <p>
+     * If a ShowOptionsViewEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the options screen.
+     *
+     * @param event The ShowOptionsViewEvent detected on the EventBus
+     * @see ShowOptionsViewEvent
+     * @since 2024-09-11
+     */
+    @Subscribe
+    public void onOptionsViewEvent(ShowOptionsViewEvent event) {
+        showOptionsScreen();
     }
 
     /**
@@ -491,12 +553,36 @@ public class SceneManager {
     }
 
     /**
-     * Shows the options screen.
+     * Shows the options screen
      * <p>
-     * Switches the current Scene to the optionScene and sets the title of
-     * the window to "Einstellungen".
+     * Switches the current Scene to the optionsScene and sets the title of
+     * the window to "Options"
+     *
+     * @since 2024-09-11
      */
-    public void showOptionScreen() {
-        showScene(optionScene, "Einstellungen");
+    public void showOptionsScreen() {
+        showScene(optionsScene, "Optionen");
+    }
+
+    /**
+     * Shows the game screen.
+     * <p>
+     * Switches the current Scene to the gameScreenScene and sets the title of
+     * the window to "Iberia".
+     */
+    public void showGameScreen() {
+        showScene(gameScreenScene, "Iberia");
+
+        Platform.runLater(() -> {
+            Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+
+            primaryStage.setX(visualBounds.getMinX());
+            primaryStage.setY(visualBounds.getMinY());
+            primaryStage.setWidth(visualBounds.getWidth());
+            primaryStage.setHeight(visualBounds.getHeight());
+
+            primaryStage.setMaximized(true);
+            primaryStage.show();
+        });
     }
 }

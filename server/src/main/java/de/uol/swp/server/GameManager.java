@@ -1,10 +1,10 @@
 package de.uol.swp.server;
 
 import de.uol.swp.common.game.action.Action;
-import de.uol.swp.common.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.game.GameTurnException;
+import de.uol.swp.server.lobby.Lobby;
 import lombok.Getter;
 
 import java.util.Map;
@@ -15,7 +15,7 @@ public class GameManager {
     private Map<String, GameController> gameControllers = new ConcurrentHashMap<>();
 
     public void createGameForLobby(Lobby lobby) {
-        String lobbyId = lobby.getId();
+        String lobbyId = lobby.getLobbyCode();
         if (!gameControllers.containsKey(lobbyId)) {
             GameController gameController = new GameController(lobby);
             gameControllers.put(lobbyId, gameController);

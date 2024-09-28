@@ -1,27 +1,21 @@
 package de.uol.swp.common.lobby;
 
+import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 
 import java.util.Set;
 
 /**
  * Interface to unify lobby objects
- *
  * This is an Interface to allow for multiple types of lobby objects since it is
  * possible that not every client has to have every information of the lobby.
  *
  * @author Marco Grawunder
- * @see de.uol.swp.common.lobby.dto.LobbyDTO
+ * @see LobbyDTO
  * @since 2019-10-08
  */
-public interface Lobby {
-
-    /**
-     * Getter for the lobby's id
-     *
-     * @return A String containing the id of the lobby
-     */
-    String getId();
+public interface ILobby
+{
 
     /**
      * Getter for the lobby's name
@@ -70,5 +64,10 @@ public interface Lobby {
      * @since 2019-10-08
      */
     Set<User> getUsers();
-
+    /**
+     * Getter for the lobby's id
+     *
+     * @return A String containing the id of the lobby
+     */
+    String getLobbyCode();
 }

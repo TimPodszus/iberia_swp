@@ -6,10 +6,13 @@ import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.CityMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Singleton
 public class ConnectionService extends AbstractService {
@@ -36,7 +39,11 @@ public class ConnectionService extends AbstractService {
      */
     @Subscribe
     public void onAvailableDestinationsRequest(AvailableDestinationsRequest request) {
-        List<ICityDTO> availableDestinations = connectionManagement.getAvailableDestinations(request.getCity());
+        City city = CityMapper.fromDTO(request.getCity());
+        List<ICityDTO> availableDestinations = connectionManagement.getAvailableDestinations(city)
+                                                                   .stream()
+                                                                   .map(CityMapper::toDTO)
+                                                                   .collect(Collectors.toList());
         AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
 
         request.getMessageContext()

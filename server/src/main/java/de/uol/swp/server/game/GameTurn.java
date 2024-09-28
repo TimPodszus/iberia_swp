@@ -1,18 +1,19 @@
 package de.uol.swp.server.game;
 
-import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.action.Action;
 import de.uol.swp.common.game.action.MoveAction;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.connection.Connection;
 import de.uol.swp.server.connection.ConnectionManagement;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.Region;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Getter
+@Setter
 public class GameTurn {
     private static final Logger LOG = LogManager.getLogger(GameTurn.class);
     private Player currentPlayer;
@@ -42,8 +44,11 @@ public class GameTurn {
     }
 
     public void startTurn() throws InterruptedException {
-        LOG.info("Starte Zug für " + currentPlayer.getUser()
-                                                  .getUsername());
+        LOG.info(
+                "Starte Zug für {}",
+                currentPlayer.getUser()
+                             .getUsername()
+        );
         while (!isTurnOver) {
             wait();
         }
@@ -52,7 +57,8 @@ public class GameTurn {
     public void processAction(Action action) throws GameTurnException {
         switch (action.getActionType()) {
             case MOVE:
-                move(((MoveAction) action).getDestination());
+                City destination = CityMapper.fromDTO(((MoveAction) action).getDestination());
+                move(destination);
                 break;
             case BUILD_HOSPITAL:
                 // Handle building a hospital
@@ -108,8 +114,11 @@ public class GameTurn {
     }
 
     public void endTurn() {
-        LOG.info("Turn ended for player: " + currentPlayer.getUser()
-                                                          .getUsername());
+        LOG.info(
+                "Turn ended for player: {}",
+                currentPlayer.getUser()
+                             .getUsername()
+        );
         isTurnOver = true;
     }
 
@@ -234,22 +243,19 @@ public class GameTurn {
         //not implemented
     }
 
-    void move(ICityDTO destination) throws GameTurnException {
-        boolean isCityReachable = connectionManagement.getAvailableDestinations(currentPlayer.getCurrentPosition()
-                                                                                             .toDto())
+    void move(City destination) throws GameTurnException {
+        boolean isCityReachable = connectionManagement.getAvailableDestinations(currentPlayer.getCurrentPosition())
                                                       .contains(destination);
         if (!isCityReachable) {
             LOG.error("Destination {} is not reachable from current position", destination.getName());
             throw new GameTurnException("Destination " + destination.getName() + " is not reachable from current position");
         }
-
-        City city = City.fromDto(destination);
-        currentPlayer.setCurrentPosition(city);
+        currentPlayer.setCurrentPosition(destination);
         LOG.debug(
                 "Player {} moved to {}",
                 currentPlayer.getUser()
                              .getUsername(),
-                city.getName()
+                destination.getName()
         );
     }
 

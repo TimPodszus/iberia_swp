@@ -1,6 +1,6 @@
 package de.uol.swp.common.user.request;
 
-import de.uol.swp.common.message.AbstractRequestMessage;
+import de.uol.swp.common.message.request.AbstractRequestMessage;
 
 /**
  * Request for initialising the user list in the client
@@ -15,4 +15,6 @@ import de.uol.swp.common.message.AbstractRequestMessage;
 public class RetrieveAllOnlineUsersRequest extends AbstractRequestMessage {
 
 
+    public RetrieveAllOnlineUsersRequest() {
+    }
 }

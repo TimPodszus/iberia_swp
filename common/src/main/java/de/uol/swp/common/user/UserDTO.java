@@ -35,8 +35,7 @@ public class UserDTO implements User
         if (Objects.nonNull(username) && Objects.nonNull(password)) {
             this.username = username;
             this.password = PasswordHashing.hashPassword(password);
-
-        } else {
+        }else{
             throw new IllegalArgumentException("Username and password cannot be null");
         }
     }
@@ -46,19 +45,6 @@ public class UserDTO implements User
         createWithoutPassword(new UserDTO(username, ""));
     }
 
-    /**
-     * Copy constructor
-     *
-     * @param user User object to copy the values of
-     *
-     * @return UserDTO copy of User object
-     *
-     * @since 2019-08-13
-     */
-    public static UserDTO create(User user)
-    {
-        return new UserDTO(user.getUsername(), user.getPassword());
-    }
 
     /**
      * Copy constructor leaving password variable empty
@@ -71,20 +57,27 @@ public class UserDTO implements User
      *
      * @since 2019-08-13
      */
-    public static UserDTO createWithoutPassword(User user)
-    {
+    public static UserDTO createWithoutPassword(User user) {
         return new UserDTO(user.getUsername(), "");
     }
 
 
-    public User getWithoutPassword()
-    {
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public User getWithoutPassword() {
         return new UserDTO(username, "");
     }
 
     @Override
-    public int compareTo(User o)
-    {
+    public int compareTo(User o) {
         return username.compareTo(o.getUsername());
     }
 
@@ -100,6 +93,7 @@ public class UserDTO implements User
         UserDTO userDTO = (UserDTO) o;
         return Objects.equals(username, userDTO.username);
     }
+
 
     @Override
     public int hashCode()

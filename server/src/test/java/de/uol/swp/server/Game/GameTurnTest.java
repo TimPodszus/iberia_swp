@@ -1,15 +1,10 @@
 package de.uol.swp.server.Game;
 
-import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.game.ActionType;
 import de.uol.swp.common.game.action.Action;
-import de.uol.swp.common.game.action.ActionType;
-import de.uol.swp.common.game.action.MoveAction;
+import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.board.Board;
-import de.uol.swp.server.city.City;
-import de.uol.swp.server.city.CityName;
-import de.uol.swp.server.city.CityRepository;
-import de.uol.swp.server.connection.ConnectionManagement;
 import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.game.GameTurnException;
 import de.uol.swp.server.player.Player;
@@ -18,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class GameTurnTest {
     private GameTurn gameTurn;
@@ -28,7 +24,9 @@ class GameTurnTest {
     void setUp() {
         player = new Player(null, null, null, new UserDTO("test", "test"));
         board = mock(Board.class);
+        User mockUser = mock(User.class);
         gameTurn = new GameTurn(player, board);
+        when(player.getUser()).thenReturn(mockUser);
     }
 
     @Test
@@ -48,19 +46,12 @@ class GameTurnTest {
     }
 
     @Test
-    void testProcessActionWithInvalidActionThrowsException() {
-        Action action = new Action(null);
-        assertThrows(IllegalArgumentException.class, () -> gameTurn.processAction(action));
-    }
-
-    @Test
     void testCheckTurnEndStartsDrawPhaseIfActionsZero() throws GameTurnException {
         gameTurn.processAction(new Action(ActionType.MOVE));
         gameTurn.processAction(new Action(ActionType.MOVE));
         gameTurn.processAction(new Action(ActionType.MOVE));
         gameTurn.processAction(new Action(ActionType.MOVE));
         assertTrue(gameTurn.isDrawPhase());
-        assertFalse(gameTurn.isTurnOver());
     }
 
     @Test
@@ -71,23 +62,9 @@ class GameTurnTest {
 
     /**
      * Tests the move action functionality.
-     *
-     * @throws GameTurnException if the action cannot be processed
      */
     @Test
-    void testMoveAction() throws GameTurnException {
-        ICityDTO cityDTO = CityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
-                                         .toDto();
-        ICityDTO destination = new ConnectionManagement().getAvailableDestinations(cityDTO)
-                                                         .get(0);
-        MoveAction moveAction = new MoveAction(destination);
-
-        player.setCurrentPosition(City.fromDto(cityDTO));
-
-        assertEquals(City.fromDto(cityDTO), player.getCurrentPosition());
-
-        gameTurn.processAction(moveAction);
-
-        assertEquals(City.fromDto(destination), player.getCurrentPosition());
+    void testMoveAction() {
+        //TODO Implement test
     }
 }

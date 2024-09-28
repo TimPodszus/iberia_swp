@@ -1,15 +1,15 @@
 package de.uol.swp.common.lobby.dto;
 
-import de.uol.swp.common.lobby.Lobby;
+import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.user.User;
 
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
+
 /**
  * Object to transfer the information of a game lobby
- *
  * This object is used to communicate the current state of game lobbies between
  * the server and clients. It contains information about the Name of the lobby,
  * who owns the lobby and who joined the lobby.
@@ -17,12 +17,17 @@ import java.util.TreeSet;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-public class LobbyDTO implements Lobby {
+public class LobbyDTO implements ILobby
+{
 
     private final String name;
     private User owner;
     private final Set<User> users = new TreeSet<>();
-    private final String id;
+
+    private final String lobbyCode;
+
+    private final int difficulty;
+
 
     /**
      * Constructor
@@ -32,21 +37,17 @@ public class LobbyDTO implements Lobby {
      *                owner
      * @since 2019-10-08
      */
-    public LobbyDTO(String name, User creator, String id) {
+    public LobbyDTO(String name, User creator, String lobbyCode, int difficulty) {
         this.name = name;
         this.owner = creator;
         this.users.add(creator);
-        this.id = id;
+        this.lobbyCode = lobbyCode;
+        this.difficulty = difficulty;
     }
 
     @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public String getId() {
-        return id;
     }
 
     @Override
@@ -85,4 +86,14 @@ public class LobbyDTO implements Lobby {
         return Collections.unmodifiableSet(users);
     }
 
+    @Override
+    public String getLobbyCode()
+    {
+        return lobbyCode;
+    }
+
+    public int getDifficulty()
+    {
+        return difficulty;
+    }
 }

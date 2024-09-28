@@ -1,9 +1,8 @@
 package de.uol.swp.server.connection;
 
-import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.enums.PlagueName;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
-import de.uol.swp.server.plague.PlagueName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,9 +18,9 @@ class ConnectionManagementTest {
      */
     @Test
     void testAvailableDestinationsForPalmaDeMallorca() {
-        ICityDTO city = new City(PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true).toDto();
+        City city = new City(29, PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true);
 
-        List<ICityDTO> destinations = connectionManagement.getAvailableDestinations(city);
+        List<City> destinations = connectionManagement.getAvailableDestinations(city);
 
         assertEquals(2, destinations.size(), "Expected 2 available destinations for Palma de Mallorca");
     }

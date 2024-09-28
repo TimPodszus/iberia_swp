@@ -1,6 +1,5 @@
 package de.uol.swp.server.connection;
 
-import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.server.city.City;
 import lombok.AllArgsConstructor;
 
@@ -14,15 +13,15 @@ import java.util.List;
 public class ConnectionManagement implements IConnectionManagement {
 
     @Override
-    public List<ICityDTO> getAvailableDestinations(ICityDTO cityDTO) {
-        City city = City.fromDto(cityDTO);
-        List<ICityDTO> availableDestinations = new ArrayList<>();
+    public List<City> getAvailableDestinations(City city) {
+        List<City> availableDestinations = new ArrayList<>();
         for (Connection connection : ConnectionRepository.getAllConnections()) {
             if (connection.getCities()
                           .contains(city)) {
                 for (City connectedCity : connection.getCities()) {
                     if (!connectedCity.equals(city)) {
-                        availableDestinations.add(connectedCity.toDto());
+
+                        availableDestinations.add(connectedCity);
                     }
                 }
             }

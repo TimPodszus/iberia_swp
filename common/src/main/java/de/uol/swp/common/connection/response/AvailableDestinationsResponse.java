@@ -1,11 +1,10 @@
 package de.uol.swp.common.connection.response;
 
-import de.uol.swp.common.city.CityDTO;
 
 import java.util.List;
 
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.message.AbstractResponseMessage;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

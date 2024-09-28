@@ -4,10 +4,14 @@ import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.common.user.request.RegisterUserRequest;
 import de.uol.swp.server.EventBusBasedTest;
-import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
+
+import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
+import org.greenrobot.eventbus.EventBus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 
@@ -15,8 +19,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
     static final User userToRegister = new UserDTO("Marco", "Marco");
     static final User userWithSameName = new UserDTO("Marco", "Marco2");
+    final UserManagement userManagement = new UserManagement(new MainMemoryBasedUserStore());
+     UserService userService;
 
-    final UserManagement userManagement = new UserManagement(new DatabaseBasedUserStore());
+    @BeforeEach
+     void setUp() {
+         EventBus eventBus = getBus();
+         userService = new UserService(eventBus, userManagement);
+
+     }
 
     @Test
     void registerUserTest()  {
@@ -45,8 +56,6 @@ import static org.junit.jupiter.api.Assertions.*;
         // old user should be still in the store
         assertNotNull(loggedInUser);
         assertEquals(userToRegister, loggedInUser);
-
-
 
     }
 

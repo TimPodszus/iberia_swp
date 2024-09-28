@@ -2,7 +2,7 @@ package de.uol.swp.client.main;
 
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
-import de.uol.swp.client.options.event.ShowOptionViewEvent;
+import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.common.exception.UnsopportedMethodExeption;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -35,7 +35,6 @@ public class MainMenuPresenter extends AbstractPresenter {
 
     private static final ShowLobbyOverviewViewEvent showLobbyOverviewViewMessage = new ShowLobbyOverviewViewEvent();
     private static final ShowCurrentGamesViewEvent showCurrentGamesViewMessage = new ShowCurrentGamesViewEvent();
-    private static final ShowOptionViewEvent showOptionViewMessage = new ShowOptionViewEvent();
 
     private User loggedInUser;
 
@@ -158,11 +157,9 @@ public class MainMenuPresenter extends AbstractPresenter {
      * <p>
      * Posts a ShowOptionViewEvent to the EventBus to switch the current screen
      * to the options view.
-     *
-     * @param event The ActionEvent created by pressing the options button
      */
     @FXML
-    void onOptionsButtonPressed(ActionEvent event) {
-        eventBus.post(showOptionViewMessage);
+    void onOptionsButtonPressed() {
+        eventBus.post(new ShowOptionsViewEvent());
     }
 }

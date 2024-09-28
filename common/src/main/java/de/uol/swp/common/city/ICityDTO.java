@@ -1,9 +1,18 @@
 package de.uol.swp.common.city;
 
+import java.io.Serializable;
+
 /**
  * Interface representing a City Data Transfer Object (DTO).
  */
-public interface ICityDTO {
+public interface ICityDTO extends Serializable {
+
+    /**
+     * Gets the ID of the city.
+     *
+     * @return the ID of the city
+     */
+    int getId();
 
     /**
      * Gets the name of the city.

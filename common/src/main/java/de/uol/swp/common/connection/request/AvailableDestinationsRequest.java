@@ -1,7 +1,7 @@
 package de.uol.swp.common.connection.request;
 
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.message.AbstractRequestMessage;
+import de.uol.swp.common.message.request.AbstractRequestMessage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -1,5 +1,6 @@
 package de.uol.swp.server.plague;
 
+import de.uol.swp.common.enums.PlagueName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

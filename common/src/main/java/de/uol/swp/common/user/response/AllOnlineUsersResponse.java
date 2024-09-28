@@ -1,6 +1,6 @@
 package de.uol.swp.common.user.response;
 
-import de.uol.swp.common.message.AbstractResponseMessage;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 
@@ -17,7 +17,7 @@ import java.util.Objects;
  * server.
  *
  * @author Marco Grawunder
- * @see de.uol.swp.common.message.AbstractResponseMessage
+ * @see AbstractResponseMessage
  * @see de.uol.swp.common.user.request.RetrieveAllOnlineUsersRequest
  * @see de.uol.swp.common.user.User
  * @since 2019-08-13

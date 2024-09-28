@@ -10,6 +10,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javafx.version>21</javafx.version>
     </properties>
 
     <modules>
@@ -95,6 +96,13 @@
         </dependency>
 
         <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.10.0</version>
@@ -106,9 +114,6 @@
             <artifactId>api-all</artifactId>
             <version>2.1.7</version>
         </dependency>
-
-
-
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -162,6 +167,7 @@
             <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
+
         <!-- Datenbank -->
         <dependency>
             <groupId>mysql</groupId>
@@ -183,5 +189,11 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Javafx -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
     </dependencies>
 </project>

@@ -1,11 +1,9 @@
 package de.uol.swp.server.usermanagement;
 
 import com.google.common.base.Strings;
-
+import com.google.inject.Inject;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.usermanagement.store.UserStore;
-
-import com.google.inject.Inject;
 
 import java.util.*;
 
@@ -55,25 +53,25 @@ public class UserManagement extends AbstractUserManagement {
         if (user.isPresent()){
             throw new UserManagementException("Username already used!");
         }
-        return userStore.createUser(userToCreate.getUsername(), userToCreate.getPassword());
+        return userStore.createUser(userToCreate);
     }
 
     @Override
     public User updateUser(User userToUpdate){
         Optional<User> user = userStore.findUser(userToUpdate.getUsername());
-        if (!user.isPresent()){
+        if (user.isEmpty()){
             throw new UserManagementException("Username unknown!");
         }
         // Only update if there are new values
        String newPassword = firstNotNull(userToUpdate.getPassword(), user.get().getPassword());
-        return userStore.updateUser(userToUpdate.getUsername(), newPassword );
+        return userStore.updateUser(userToUpdate.getUsername(), newPassword);
 
     }
 
     @Override
     public void dropUser(User userToDrop) {
         Optional<User> user = userStore.findUser(userToDrop.getUsername());
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             throw new UserManagementException("Username unknown!");
         }
         userStore.removeUser(userToDrop.getUsername());

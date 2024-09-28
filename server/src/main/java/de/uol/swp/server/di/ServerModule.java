@@ -5,6 +5,8 @@ import org.greenrobot.eventbus.EventBus;
 import com.google.inject.AbstractModule;
 import de.uol.swp.server.usermanagement.store.UserStore;
 
+import java.sql.SQLException;
+
 /**
  * Module that provides classes needed by the Server.
  *
@@ -18,6 +20,8 @@ public class ServerModule extends AbstractModule {
 
     private final EventBus bus = EventBus.getDefault();
     private final UserStore store = new DatabaseBasedUserStore();
+
+
 
     @Override
     protected void configure() {

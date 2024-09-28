@@ -1,18 +1,24 @@
 package de.uol.swp.server.lobby;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.lobby.Lobby;
-import de.uol.swp.common.lobby.message.*;
+import de.uol.swp.common.lobby.ILobby;
+import de.uol.swp.common.lobby.message.CreateLobbyRequest;
+import de.uol.swp.common.lobby.message.LobbyCreatedMessage;
+import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
+import de.uol.swp.common.lobby.message.LobbyLeaveUserRequest;
+import de.uol.swp.common.lobby.message.UserJoinedLobbyMessage;
+import de.uol.swp.common.lobby.message.UserLeftLobbyMessage;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
+import java.sql.SQLException;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -28,6 +34,7 @@ public class LobbyService extends AbstractService {
 
     private final LobbyManagement lobbyManagement;
     private final AuthenticationService authenticationService;
+
 
     /**
      * Constructor
@@ -47,7 +54,6 @@ public class LobbyService extends AbstractService {
 
     /**
      * Handles CreateLobbyRequests found on the EventBus
-     *
      * If a CreateLobbyRequest is detected on the EventBus, this method is called.
      * It creates a new Lobby via the LobbyManagement using the parameters from the
      * request and sends a LobbyCreatedMessage to every connected user
@@ -58,25 +64,26 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) {
+    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException, SQLException {
         lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
-        sendToAll(new LobbyCreatedMessage(createLobbyRequest.getName(), (UserDTO) createLobbyRequest.getOwner()));
+        ILobby createdLobby = lobbyManagement.getLobby(createLobbyRequest.getName())
+                                             .orElseThrow(() -> new NoSuchElementException("Lobby not found: " + createLobbyRequest.getName()));
+        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), (UserDTO) createLobbyRequest.getOwner()));
     }
 
     /**
      * Handles LobbyJoinUserRequests found on the EventBus
-     *
      * If a LobbyJoinUserRequest is detected on the EventBus, this method is called.
      * It adds a user to a Lobby stored in the LobbyManagement and sends a UserJoinedLobbyMessage
      * to every user in the lobby.
      *
      * @param lobbyJoinUserRequest The LobbyJoinUserRequest found on the EventBus
-     * @see de.uol.swp.common.lobby.Lobby
+     * @see de.uol.swp.common.lobby.ILobby
      * @see de.uol.swp.common.lobby.message.UserJoinedLobbyMessage
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) {
+    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws SQLException {
         Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getName());
 
         if (lobby.isPresent()) {
@@ -88,18 +95,17 @@ public class LobbyService extends AbstractService {
 
     /**
      * Handles LobbyLeaveUserRequests found on the EventBus
-     *
      * If a LobbyLeaveUserRequest is detected on the EventBus, this method is called.
      * It removes a user from a Lobby stored in the LobbyManagement and sends a
      * UserLeftLobbyMessage to every user in the lobby.
      *
      * @param lobbyLeaveUserRequest The LobbyJoinUserRequest found on the EventBus
-     * @see de.uol.swp.common.lobby.Lobby
+     * @see de.uol.swp.common.lobby.ILobby
      * @see de.uol.swp.common.lobby.message.UserLeftLobbyMessage
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) {
+    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) throws SQLException {
         Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getName());
 
         if (lobby.isPresent()) {
@@ -115,10 +121,10 @@ public class LobbyService extends AbstractService {
      *
      * @param lobbyName Name of the lobby the players are in
      * @param message the message to be send to the users
-     * @see de.uol.swp.common.message.ServerMessage
+     * @see ServerMessage
      * @since 2019-10-08
      */
-    public void sendToAllInLobby(String lobbyName, ServerMessage message) {
+    public void sendToAllInLobby(String lobbyName, ServerMessage message) throws SQLException {
         Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyName);
 
         if (lobby.isPresent()) {

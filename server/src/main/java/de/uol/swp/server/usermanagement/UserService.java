@@ -5,8 +5,7 @@ import org.greenrobot.eventbus.Subscribe;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.message.MessageContext;
-import de.uol.swp.common.message.ResponseMessage;
+import de.uol.swp.common.message.response.ResponseMessage;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.exception.RegistrationExceptionMessage;
 import de.uol.swp.common.user.request.RegisterUserRequest;
@@ -14,8 +13,6 @@ import de.uol.swp.common.user.response.RegistrationSuccessfulResponse;
 import de.uol.swp.server.AbstractService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Optional;
 
 /**
  * Mapping vom event bus calls to user management calls
@@ -49,7 +46,6 @@ public class UserService extends AbstractService {
 
     /**
      * Handles RegisterUserRequests found on the EventBus
-     *
      * If a RegisterUserRequest is detected on the EventBus, this method is called.
      * It tries to create a new user via the UserManagement. If this succeeds a
      * RegistrationSuccessfulResponse is posted on the EventBus otherwise a RegistrationExceptionMessage

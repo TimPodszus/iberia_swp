@@ -1,14 +1,18 @@
 package de.uol.swp.server.Game;
 
 import de.uol.swp.common.game.action.Action;
-import de.uol.swp.common.game.action.ActionType;
-import de.uol.swp.common.lobby.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.GameManager;
 import de.uol.swp.server.game.GameController;
+import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.game.GameTurnException;
+import de.uol.swp.server.player.Player;
+import de.uol.swp.server.lobby.Lobby;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,15 +23,29 @@ class GameManagerTest {
     private GameController mockGameController;
     private Lobby mockLobby;
     private User mockUser;
+    private Player mockPlayer;
+    private Action mockAction;
+    private GameTurn mockCurrenturn;
 
     @BeforeEach
     void setUp() {
         gameManager = new GameManager();
-        mockGameController = mock(GameController.class);
+        mockGameController = spy(new GameController(mock(Lobby.class)));
         mockLobby = mock(Lobby.class);
         mockUser = mock(User.class);
+        mockPlayer = mock(Player.class);
+        mockAction = mock(Action.class);
+        mockCurrenturn = mock(GameTurn.class);
 
-        when(mockLobby.getId()).thenReturn("lobby123");
+        when(mockLobby.getLobbyCode()).thenReturn("lobby123");
+
+        List<Player> playerList = new ArrayList<>();
+        playerList.add(mockPlayer);
+        mockGameController.setPlayers(playerList);
+        mockGameController.setCurrentTurn(mockCurrenturn);
+
+        when(mockPlayer.getUser()).thenReturn(mockUser);
+        mockGameController.setCurrentPlayerIndex(0);
     }
 
     @Test
@@ -56,9 +74,21 @@ class GameManagerTest {
     }
 
     @Test
-    void receiveAndForwardActionMessage_ForwardsCorrectly() throws GameTurnException {
-        gameManager.createGameForLobby(mockLobby);
-        gameManager.receiveAndForwardActionMessage(mockUser, new Action(ActionType.MOVE), "lobby123");
-        verify(mockGameController).receiveActionMessage(mockUser, new Action(ActionType.MOVE));
+    void receiveActionMessage_UserIsCurrentPlayer_ProcessAction() throws GameTurnException {
+        when(mockPlayer.getUser()).thenReturn(mockUser);
+
+        mockGameController.receiveActionMessage(mockUser, mockAction);
+
+        verify(mockGameController).processPlayerAction(mockAction);
+    }
+
+    @Test
+    void receiveActionMessage_UserIsNotCurrentPlayer_DoNotProcessAction() throws GameTurnException {
+        User otherUser = mock(User.class);
+        when(mockPlayer.getUser()).thenReturn(otherUser);
+
+        mockGameController.receiveActionMessage(mockUser, mockAction);
+
+        verify(mockGameController, never()).processPlayerAction(mockAction);
     }
 }

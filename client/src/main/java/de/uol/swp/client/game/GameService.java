@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.game.action.MoveAction;
-import de.uol.swp.common.game.message.ActionMessage;
+import de.uol.swp.common.game.message.ActionRequest;
 import org.greenrobot.eventbus.EventBus;
 
 /**
@@ -39,7 +39,7 @@ public class GameService {
      * @param cityDTO the city to which the player is to be moved
      */
     public void movePlayerToCity(ICityDTO cityDTO) {
-        ActionMessage message = new ActionMessage(new MoveAction(cityDTO), null, null);
+        ActionRequest message = new ActionRequest(new MoveAction(cityDTO), null, null);
         eventBus.post(message);
     }
 }

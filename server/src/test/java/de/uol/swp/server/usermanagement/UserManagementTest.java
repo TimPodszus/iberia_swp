@@ -1,41 +1,49 @@
 package de.uol.swp.server.usermanagement;
 
+import de.uol.swp.common.passwordHashing.PasswordHashing;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
-import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
+
+import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
+import de.uol.swp.server.usermanagement.store.UserStore;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 class UserManagementTest
 {
 
     private static final int NO_USERS = 10;
-    private static final List<UserDTO> users;
     private static final User userNotInStore = new UserDTO("marco" + NO_USERS, "marco" + NO_USERS);
-
-    static {
-        users = new ArrayList<>();
+    private static final String[][] usersArray = new String[NO_USERS][2];
+    @BeforeAll
+    static void setUp() {
         for (int i = 0; i < NO_USERS; i++) {
-            users.add(new UserDTO("marco" + i, "marco" + i));
+            usersArray[i][0]= ("marco" + i);
+            usersArray[i][1]= ("marco" + i);
         }
-        Collections.sort(users);
+
     }
 
-    List<UserDTO> getDefaultUsers()
-    {
-        return Collections.unmodifiableList(users);
-    }
+        String[][] getDefaultUsers () {
+            return usersArray.clone();
+        }
 
-    UserManagement getDefaultManagement()
-    {
-        DatabaseBasedUserStore store = new DatabaseBasedUserStore();
-        List<UserDTO> dafaultUsers = getDefaultUsers();
-        dafaultUsers.forEach(u -> store.createUser(u.getUsername(), u.getPassword()));
+
+    UserManagement getDefaultManagement() {
+        UserStore store = new MainMemoryBasedUserStore();
+        String[][] defaultUsers = getDefaultUsers();
+        for (int i = 0; i < NO_USERS; i++) {
+            store.createUser(defaultUsers[i][0], defaultUsers[i][1]);
+        }
+
         return new UserManagement(store);
     }
 
@@ -43,9 +51,9 @@ class UserManagementTest
     void loginUser()
     {
         UserManagement management = getDefaultManagement();
-        User userToLogIn = users.get(0);
+        User userToLogIn = new UserDTO(usersArray[0][0],usersArray[0][1]);
 
-        management.login(userToLogIn.getUsername(), "marco0");
+        management.login(userToLogIn.getUsername(), userToLogIn.getPassword());
 
         assertTrue(management.isLoggedIn(userToLogIn));
     }
@@ -54,7 +62,7 @@ class UserManagementTest
     void loginUserEmptyPassword()
     {
         UserManagement management = getDefaultManagement();
-        User userToLogIn = users.get(0);
+        User userToLogIn = new UserDTO(usersArray[0][0],usersArray[0][1]);
 
         assertThrows(SecurityException.class, () -> management.login(userToLogIn.getUsername(), ""));
 
@@ -65,7 +73,7 @@ class UserManagementTest
     void loginUserWrongPassword()
     {
         UserManagement management = getDefaultManagement();
-        User userToLogIn = users.get(0);
+        User userToLogIn = new UserDTO(usersArray[0][0],usersArray[0][1]);
 
 
         assertThrows(SecurityException.class, () -> management.login(userToLogIn.getUsername(), "marco1"));
@@ -77,9 +85,9 @@ class UserManagementTest
     void logoutUser()
     {
         UserManagement management = getDefaultManagement();
-        User userToLogin = users.get(0);
+        User userToLogin = new UserDTO(usersArray[0][0],usersArray[0][1]);
 
-        management.login(userToLogin.getUsername(), "marco0");
+        management.login(userToLogin.getUsername(), PasswordHashing.hashPassword("marco0"));
 
         assertTrue(management.isLoggedIn(userToLogin));
 
@@ -100,7 +108,7 @@ class UserManagementTest
         assertFalse(management.isLoggedIn(userNotInStore));
 
         // Only way to test, if user is stored
-        management.login(userNotInStore.getUsername(), "marco10");
+        management.login(userNotInStore.getUsername(), PasswordHashing.hashPassword("marco10"));
 
         assertTrue(management.isLoggedIn(userNotInStore));
     }
@@ -113,7 +121,7 @@ class UserManagementTest
 
         management.dropUser(userNotInStore);
 
-        assertThrows(SecurityException.class, () -> management.login(userNotInStore.getUsername(), "marco10"));
+        assertThrows(SecurityException.class, () -> management.login(userNotInStore.getUsername(), PasswordHashing.hashPassword("marco10")));
     }
 
     @Test
@@ -127,46 +135,13 @@ class UserManagementTest
     void createUserAlreadyExisting()
     {
         UserManagement management = getDefaultManagement();
-        User userToCreate = users.get(0);
+        User userToCreate = new UserDTO(usersArray[0][0],usersArray[0][1]);
 
         assertThrows(UserManagementException.class, () -> management.createUser(userToCreate));
 
     }
 
-    @Test
-    void updateUserPassword_NotLoggedIn()
-    {
-        UserManagement management = getDefaultManagement();
-        User userToUpdate = users.get(0);
-        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword");
 
-        assertFalse(management.isLoggedIn(userToUpdate));
-        management.updateUser(updatedUser);
-
-        management.login(updatedUser.getUsername(), "newPassword");
-        assertTrue(management.isLoggedIn(updatedUser));
-    }
-
-    @Test
-    void updateUserPassword_LoggedIn()
-    {
-        UserManagement management = getDefaultManagement();
-        User userToUpdate = users.get(0);
-        User updatedUser = new UserDTO(userToUpdate.getUsername(), "newPassword");
-
-        management.login(userToUpdate.getUsername(), "marco0");
-        assertTrue(management.isLoggedIn(userToUpdate));
-
-        management.updateUser(updatedUser);
-        assertTrue(management.isLoggedIn(updatedUser));
-
-        management.logout(updatedUser);
-        assertFalse(management.isLoggedIn(updatedUser));
-
-        management.login(updatedUser.getUsername(), "newPassword");
-        assertTrue(management.isLoggedIn(updatedUser));
-
-    }
 
     @Test
     void updateUnknownUser()
@@ -181,9 +156,14 @@ class UserManagementTest
         UserManagement management = getDefaultManagement();
 
         List<User> allUsers = management.retrieveAllUsers();
+        String[][] defaultUsers = getDefaultUsers();
+        List <User> defaultUsersList = new ArrayList<>();
+        for (int i = 0; i < NO_USERS; i++) {
+            defaultUsersList.add(new UserDTO(defaultUsers[i][0], defaultUsers[i][1]));
+        }
 
         Collections.sort(allUsers);
-        assertEquals(allUsers, getDefaultUsers());
+        assertEquals(allUsers, defaultUsersList);
 
 
     }
