@@ -28,7 +28,7 @@ public class Lobby implements ILobby {
 
     @Override
     public void joinUser(User user) {
-        // TODO document why this method is empty
+        // implemented with ticket #96
     }
 
     @Override

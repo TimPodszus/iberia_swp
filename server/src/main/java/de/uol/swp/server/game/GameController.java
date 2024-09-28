@@ -1,9 +1,9 @@
 package de.uol.swp.server.game;
 
 import de.uol.swp.common.game.Action;
-import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
+import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.player.Player;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,9 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -25,7 +23,7 @@ public class GameController {
     private GameTurn currentTurn;
 
     public GameController(Lobby lobby) {
-        createPlayers(new HashSet<>(lobby.getUsers()));
+        createPlayers(lobby.getUsers());
         this.currentPlayerIndex = 0;
         this.players = new ArrayList<>();
     }
@@ -34,7 +32,7 @@ public class GameController {
         //Logik zur Initiallisierung des Spiels
     }
 
-    private void createPlayers(Set<User> users) {
+    private void createPlayers(List<User> users) {
         for (User user : users) {
             Player player = new Player(user);
             this.players.add(player);

@@ -116,7 +116,7 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public ILobby updateLobby(String lobbyName, String lobbycode, List<User> users, User owner, int difficulty) {
+    public ILobby updateLobby(String lobbycode, String lobbyName, List<User> users, User owner, int difficulty) {
         // not implemented
         return null;
     }
