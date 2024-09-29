@@ -11,20 +11,25 @@ public class LobbyListItem {
     private static final String PRIVATE_ACCESS = "Privat";
 
     @Getter
+    private final String lobbyCode;
+
+    @Getter
     private final String name;
     private final int players;
     private final int difficulty;
 
     private final boolean privateAccess;
 
-    public LobbyListItem(String name, int players, int difficulty, boolean privateAccess) {
+    public LobbyListItem(String lobbyCode, String name, int players, int difficulty, boolean privateAccess) {
+        this.lobbyCode = lobbyCode;
         this.name = name;
         this.players = players;
         this.difficulty = difficulty;
         this.privateAccess = privateAccess;
     }
 
-    public LobbyListItem(String name, int players, int difficulty) {
+    public LobbyListItem(String lobbyCode, String name, int players, int difficulty) {
+        this.lobbyCode = lobbyCode;
         this.name = name;
         this.players = players;
         this.difficulty = difficulty;

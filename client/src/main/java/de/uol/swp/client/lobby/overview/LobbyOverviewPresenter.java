@@ -4,9 +4,8 @@ import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
-import de.uol.swp.common.lobby.ILobby;
+import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.response.LobbyListResponse;
-import de.uol.swp.common.user.UserDTO;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableRow;
@@ -24,7 +23,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/LobbyOverviewView.fxml";
     private static final Logger LOG = LogManager.getLogger(LobbyOverviewPresenter.class);
 
-    private List<ILobby> lobbyList = new ArrayList<>();
+    private List<ILobbyDTO> lobbyList = new ArrayList<>();
 
     @Inject
     private LobbyService lobbyService;
@@ -61,22 +60,6 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
                   .get(3)
                   .setCellValueFactory(new PropertyValueFactory<>("access"));
         lobbyTable.setPlaceholder(new Label("Keine Lobby gefunden"));
-        lobbyTable.setRowFactory(tv -> {
-            TableRow<LobbyListItem> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                    LOG.debug(
-                            "Joining lobby: {}",
-                            row.getItem()
-                               .getName()
-                    );
-                    LobbyListItem rowData = row.getItem();
-                    //TODO get user from login
-                    lobbyService.joinLobby(rowData.getName(), new UserDTO("ich", ""));
-                }
-            });
-            return row;
-        });
 
         lobbyService.requestLobbyList();
     }
@@ -121,8 +104,8 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
             return;
         }
 
-        List<ILobby> filteredLobbies = new ArrayList<>();
-        for (ILobby lobby : this.lobbyList) {
+        List<ILobbyDTO> filteredLobbies = new ArrayList<>();
+        for (ILobbyDTO lobby : this.lobbyList) {
             if (lobby.getName()
                      .contains(searchInputText) || lobby.getLobbyCode()
                                                         .contains(searchInputText)) {
@@ -133,14 +116,15 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
     }
 
     /**
-     * Sets the list of lobbies in the lobby table.
+     * Sets the list of lobbies in the lobby table and adds a double click listener to join a lobby.
      *
      * @param lobbyList the list of lobbies to display
      */
-    private void setLobbyList(List<ILobby> lobbyList) {
+    private void setLobbyList(List<ILobbyDTO> lobbyList) {
         List<LobbyListItem> lobbyListItems = new ArrayList<>();
-        for (ILobby lobby : lobbyList) {
+        for (ILobbyDTO lobby : lobbyList) {
             lobbyListItems.add(new LobbyListItem(
+                    lobby.getLobbyCode(),
                     lobby.getName(),
                     lobby.getUsers()
                          .size(),
@@ -151,5 +135,31 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
                   .clear();
         lobbyTable.getItems()
                   .addAll(lobbyListItems);
+
+        // from https://stackoverflow.com/questions/26563390/detect-doubleclick-on-row-of-tableview-javafx
+        lobbyTable.setRowFactory(tv -> {
+            TableRow<LobbyListItem> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    LOG.debug(
+                            "Joining lobby: {}",
+                            row.getItem()
+                               .getName()
+                    );
+                    LobbyListItem rowData = row.getItem();
+                    onJoinLobby(rowData.getLobbyCode());
+                }
+            });
+            return row;
+        });
+    }
+
+    /**
+     * Handles the action when a lobby is joined.
+     *
+     * @param lobbyId the ID of the lobby to join
+     */
+    private void onJoinLobby(String lobbyId) {
+        //implemented in #96
     }
 }
