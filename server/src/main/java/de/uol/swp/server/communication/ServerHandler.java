@@ -1,6 +1,11 @@
 package de.uol.swp.server.communication;
 
 
+import de.uol.swp.common.game.message.ActionRequest;
+import de.uol.swp.common.message.request.RequestMessage;
+import de.uol.swp.common.message.response.ExceptionMessage;
+import de.uol.swp.common.message.response.ResponseMessage;
+import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.server.GameManager;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -72,16 +77,14 @@ public class ServerHandler implements ServerHandlerDelegate {
         final Optional<MessageContext> messageContext = msg.getMessageContext();
         if (messageContext.isEmpty()) {
             LOG.error("No message context for {}", msg);
-            return; // Beendet die Methode frühzeitig, wenn kein Kontext vorhanden ist.
+            return;
         }
 
         try {
-            // Überprüfe die Berechtigung für die Nachricht
             checkIfMessageNeedsAuthorization(messageContext.get(), msg);
 
-            // Poste die Nachricht im EventBus, wenn sie nicht speziell als ActionMessage behandelt werden muss
-            if (msg instanceof ActionMessage actionMessage) {
-                handleMessageAction(actionMessage);
+            if (msg instanceof ActionRequest actionRequest) {
+                handleMessageAction(actionRequest);
             } else {
                 eventBus.post(msg);
             }
@@ -375,7 +378,7 @@ public class ServerHandler implements ServerHandlerDelegate {
      *
      * @param ctx     The MessageContext containing the specified client
      * @param message The Message to send
-     * @see de.uol.swp.common.message.ResponseMessage
+     * @see ResponseMessage
      * @see de.uol.swp.common.message.MessageContext
      * @since 2019-11-20
      */
@@ -388,7 +391,7 @@ public class ServerHandler implements ServerHandlerDelegate {
      * Sends a ServerMessage to either a specified receiver or all connected clients
      *
      * @param msg ServerMessage to send
-     * @see de.uol.swp.common.message.ServerMessage
+     * @see ServerMessage
      * @since 2019-11-20
      */
     private void sendMessage(ServerMessage msg) {
@@ -406,7 +409,7 @@ public class ServerHandler implements ServerHandlerDelegate {
      * @param sendTo List of MessageContexts to send the message to
      * @param msg    message to send
      * @see de.uol.swp.common.message.MessageContext
-     * @see de.uol.swp.common.message.ServerMessage
+     * @see ServerMessage
      * @since 2019-11-20
      */
     private void sendToMany(List<MessageContext> sendTo, ServerMessage msg) {
@@ -420,12 +423,12 @@ public class ServerHandler implements ServerHandlerDelegate {
         }
     }
 
-    private void handleMessageAction(ActionMessage actionMessage) {
-        Optional<MessageContext> context = actionMessage.getMessageContext();
+    private void handleMessageAction(ActionRequest actionRequest) {
+        Optional<MessageContext> context = actionRequest.getMessageContext();
         if (context.isPresent()) {
             Session session = getSession(context.get()).orElseThrow(() -> new SecurityException("Client not logged in"));
-            gameManager.receiveAndForwardActionMessage(session.getUser(), actionMessage.getAction(),
-                    actionMessage.getLobbyId() );
+            gameManager.receiveAndForwardActionMessage(session.getUser(), actionRequest.getAction(),
+                    actionRequest.getLobbyCode() );
         } else {
             LOG.error("ActionMessage received without a valid context");
         }

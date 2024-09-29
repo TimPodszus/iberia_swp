@@ -1,4 +1,6 @@
-package de.uol.swp.common.message;
+package de.uol.swp.common.message.request;
+
+import de.uol.swp.common.message.Message;
 
 /**
  * A base interface for all messages from client to server

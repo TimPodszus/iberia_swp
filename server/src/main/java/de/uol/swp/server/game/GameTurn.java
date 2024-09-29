@@ -1,6 +1,6 @@
 package de.uol.swp.server.game;
 
-import de.uol.swp.common.enums.Action;
+import de.uol.swp.common.game.Action;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;

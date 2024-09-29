@@ -1,4 +1,4 @@
-package de.uol.swp.common.enums;
+package de.uol.swp.common.game;
 
 public enum ActionType {
     MOVE, BUILD_HOSPITAL, TRADE_CARDS, TREAT_INFECTION, RESEARCH_PLAGUE, USE_ROLE_ABILITY, PLACE_WATER_TREATMENT, BUILD_TRAIN_TRACKS
