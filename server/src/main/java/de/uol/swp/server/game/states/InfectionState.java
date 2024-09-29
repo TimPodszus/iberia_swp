@@ -10,7 +10,7 @@ import de.uol.swp.server.player.Player;
  * This state manages the infection process during a game, specifically managing the
  * distribution of infection across cities based on drawn infection cards.
  */
-public class InfectionState implements GameState {
+public class InfectionState implements IGameState {
     private int infectedCities = 0;
 
     /**

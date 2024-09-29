@@ -11,7 +11,7 @@ import de.uol.swp.server.player.Player;
  * This state manages the positioning of players based on their chosen locations and ensures that all players
  * are positioned before moving to the next game phase.
  */
-public class WaitForPositioning implements GameState {
+public class WaitForPositioning implements IGameState {
     private int positionedPlayersCount = 0;
 
     /**

@@ -4,7 +4,7 @@ import de.uol.swp.common.game.Action;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.player.Player;
 
-public class EndGameState implements GameState {
+public class EndGameState implements IGameState {
     public void handleAction(GameController controller, Action action, Player player) {
         // Implementiere das Spielende
     }

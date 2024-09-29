@@ -9,7 +9,7 @@ import de.uol.swp.server.player.Player;
  * This state manages the drawing of player cards during a game turn.
  * It transitions to the InfectionState after certain conditions are met.
  */
-public class DrawCardState implements GameState {
+public class DrawCardState implements IGameState {
     private int cardsDrawn = 0;
 
     /**

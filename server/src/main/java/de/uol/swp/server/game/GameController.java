@@ -2,7 +2,7 @@ package de.uol.swp.server.game;
 
 import de.uol.swp.common.game.Action;
 import de.uol.swp.server.game.states.EndGameState;
-import de.uol.swp.server.game.states.GameState;
+import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.common.user.User;
@@ -15,14 +15,13 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
 public class GameController {
     private static final Logger LOG = LogManager.getLogger(GameController.class);
-    private GameState state;
-    private GameState previousState;
+    private IGameState state;
+    private IGameState previousState;
     private Board board;
     private List<Player> players;
     private int currentPlayerIndex;

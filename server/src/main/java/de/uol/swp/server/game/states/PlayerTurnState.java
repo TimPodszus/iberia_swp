@@ -9,7 +9,7 @@ import de.uol.swp.server.player.Player;
  * This state manages the actions taken by a player during their turn and
  * transitions to the next state based on the actions' outcomes.
  */
-public class PlayerTurnState implements GameState {
+public class PlayerTurnState implements IGameState {
 
     /**
      * Handles player actions during their turn.

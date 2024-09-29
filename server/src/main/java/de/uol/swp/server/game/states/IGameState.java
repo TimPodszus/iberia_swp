@@ -10,7 +10,7 @@ import de.uol.swp.server.player.Player;
  * Implementing classes will represent specific states of the game, each with their own logic
  * for handling actions based on the current game context.
  */
-public interface GameState {
+public interface IGameState {
 
     /**
      * Handles the action taken by a player within the context of this specific game state.

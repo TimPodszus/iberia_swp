@@ -9,7 +9,7 @@ import de.uol.swp.server.player.Player;
  * This state is responsible for initializing the game setup and transitioning
  * the game state to WaitForPositioning, which typically handles player positioning at the start of the game.
  */
-public class StartState implements GameState {
+public class StartState implements IGameState {
 
     /**
      * Handles the initialization action when the game starts.
