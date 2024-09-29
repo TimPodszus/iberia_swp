@@ -12,7 +12,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -187,5 +189,33 @@ class LobbyManagementTest {
         );
 
         assertEquals("Failed to get lobby", thrown.getMessage());
+    }
+
+    @Test
+    void getLobbiesTest() throws SQLException {
+        Map<String, ILobby> lobbies = new HashMap<>();
+        ILobby lobby1 = new Lobby("Test1", "testcode1", userList, firstOwner, 4);
+        ILobby lobby2 = new Lobby("Test2", "testcode2", userList, user1, 3);
+        lobbies.put(lobby1.getLobbyCode(), lobby1);
+        lobbies.put(lobby2.getLobbyCode(), lobby2);
+
+        when(lobbyStore.getAllLobbies()).thenReturn(lobbies);
+
+        List<ILobby> foundLobbies = assertDoesNotThrow(() -> lobbyManagement.getLobbies());
+
+        assertNotNull(foundLobbies);
+        assertEquals(2, foundLobbies.size());
+    }
+
+    @Test
+    void failedGetLobbiesTest() throws SQLException {
+        when(lobbyStore.getAllLobbies()).thenThrow(new SQLException());
+
+        LobbyManagementException thrown = assertThrows(LobbyManagementException.class,
+                () -> lobbyManagement.getLobbies(),
+                "Should throw an exception when trying to get lobbies."
+        );
+
+        assertEquals("Failed to get lobbies", thrown.getMessage());
     }
 }
