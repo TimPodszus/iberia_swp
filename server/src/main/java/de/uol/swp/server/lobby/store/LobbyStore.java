@@ -214,7 +214,7 @@ public class LobbyStore implements ILobbyStore {
 
         List<User> users = findUsersByLobbyCode(lobbyCode);
 
-        return new Lobby(lobbyName, lobbyCode, users, owner, difficulty);
+        return new Lobby(lobbyCode, lobbyName, users, owner, difficulty);
     }
 
 }
