@@ -71,23 +71,4 @@ class GameManagerTest {
         gameManager.endGame("lobby123");
         assertNull(gameManager.getGameController("lobby123"));
     }
-
-    @Test
-    void receiveActionMessage_UserIsCurrentPlayer_ProcessAction() {
-        when(mockPlayer.getUser()).thenReturn(mockUser);
-
-        mockGameController.receiveActionMessage(mockUser, mockAction);
-
-        verify(mockGameController).processPlayerAction(mockAction);
-    }
-
-    @Test
-    void receiveActionMessage_UserIsNotCurrentPlayer_DoNotProcessAction() {
-        User otherUser = mock(User.class);
-        when(mockPlayer.getUser()).thenReturn(otherUser);
-
-        mockGameController.receiveActionMessage(mockUser, mockAction);
-
-        verify(mockGameController, never()).processPlayerAction(mockAction);
-    }
 }

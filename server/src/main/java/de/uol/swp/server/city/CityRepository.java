@@ -1,8 +1,7 @@
 package de.uol.swp.server.city;
 
-import de.uol.swp.common.enums.PlagueName;
+import de.uol.swp.common.game.PlagueName;
 import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

@@ -1,12 +1,13 @@
 package de.uol.swp.server.Game;
 
+import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.game.GameTurn;
-import de.uol.swp.common.enums.PlagueName;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +31,7 @@ class GameTurnPlaceHospitalTest {
         madrid = board.getCityRepository()
                       .getCitiesByNames(CityName.MADRID)
                       .get(0);
-        player = new Player(null, barcelona, new ArrayList<>(), null);
+        player = new Player(null, barcelona, new ArrayList<>(), null, null);
         if (addCityCardToPlayer) {
             cityCard = new CityCard(0, "", "", barcelona);
             player.addCard(cityCard);

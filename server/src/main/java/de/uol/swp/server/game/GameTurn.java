@@ -315,30 +315,19 @@ public class GameTurn {
         // not implemented
     }
 
-    /**
-     * Draws an infection card.
-     *
-     * @return the drawn infection card
-     */
-    InfectionCard drawInfectionCard() {
-        // not implemented
+    public InfectionCard drawInfectionCard()
+    {
+        //not implemented
         return null;
     }
 
-    /**
-     * Draws a player card.
-     */
-    void drawPlayerCard() {
-        // not implemented
+    public void drawPlayerCard()
+    {
+        //not implemented
     }
 
-    /**
-     * Infects the specified city with the given amount of infection.
-     *
-     * @param infectionCard the infection card representing the city to infect
-     * @param amount        the amount of infection to add
-     */
-    void infectCity(InfectionCard infectionCard, int amount) {
-        // not implemented
+    public void infectCity(InfectionCard infectionCard, int amount)
+    {
+        //not implemented
     }
 }

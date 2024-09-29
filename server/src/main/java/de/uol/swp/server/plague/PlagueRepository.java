@@ -1,6 +1,6 @@
 package de.uol.swp.server.plague;
 
-import de.uol.swp.common.enums.PlagueName;
+import de.uol.swp.common.game.PlagueName;
 
 import java.util.ArrayList;
 import java.util.List;
