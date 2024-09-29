@@ -1,22 +1,33 @@
 package de.uol.swp.server.city;
 
 import de.uol.swp.common.game.PlagueName;
-
+import lombok.Getter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class CityRepository
-{
-    // Private constructor to hide the implicit public one
-    private CityRepository()
-    {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+/**
+ * Repository class for managing city data.
+ */
+@Getter
+public class CityRepository {
+    /**
+     * List of all cities.
+     */
+    private List<City> cities;
+
+    /**
+     * Constructor that initializes the city repository by creating all cities.
+     */
+    public CityRepository() {
+        createAllCities();
     }
 
-    public static List<City> getAllCities()
-    {
-        List<City> cities = new ArrayList<>();
+    /**
+     * Creates and initializes the list of all cities with their respective attributes.
+     */
+    private void createAllCities() {
+        cities = new ArrayList<>();
 
         cities.add(new City(34, PlagueName.YELLOW_FEVER, CityName.ALBACETE, 1100, false));
         cities.add(new City(25, PlagueName.YELLOW_FEVER, CityName.ZARAGOZA, -24, false));
@@ -69,17 +80,21 @@ public class CityRepository
         cities.add(new City(13, PlagueName.TYPHUS, CityName.LEON, -29, false));
         cities.add(new City(21, PlagueName.TYPHUS, CityName.BILBAO_BILBO, 1300, false));
         cities.add(new City(16, PlagueName.TYPHUS, CityName.VALLADOLID, 1072, false));
-
-        return cities;
     }
 
-    public static List<City> getCitiesByNames(List<City> allCities, CityName... names)
-    {
+    /**
+     * Retrieves a list of cities by their names.
+     *
+     * @param names the names of the cities to retrieve
+     * @return a list of cities matching the given names
+     */
+    public List<City> getCitiesByNames(CityName... names) {
         List<CityName> nameList = Arrays.asList(names);
-        return allCities.stream()
-                        .filter(city -> nameList.contains(city.getName()))
-                        .toList();
+        return cities.stream()
+                     .filter(city -> nameList.contains(city.getName()))
+                     .toList();
     }
+<<<<<<< server/src/main/java/de/uol/swp/server/city/CityRepository.java
     public static City getCityByName(CityName cityName) {
         return getAllCities().stream()
                              .filter(city -> city.getName()
@@ -88,3 +103,6 @@ public class CityRepository
                              .orElse(null);
     }
 }
+=======
+}
+>>>>>>> server/src/main/java/de/uol/swp/server/city/CityRepository.java

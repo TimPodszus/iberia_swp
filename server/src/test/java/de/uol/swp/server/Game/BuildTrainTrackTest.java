@@ -10,24 +10,21 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BuildTrainTrackTest
-{
+class BuildTrainTrackTest {
     private Board board;
     private GameTurn gameTurn;
     private Connection connection;
 
     @BeforeEach
-    void setUp()
-    {
+    void setUp() {
         Player player = new Player(null, null, null, null);
-        board = new Board(null, 0, 0, null, null, null, null, 1, 1);
+        board = new Board(null, null, null, 0, 0, null, null, null, null, 0, 1);
         connection = new Connection(0, null, false, true);
         gameTurn = new GameTurn(player, board);
     }
 
     @Test
-    void testBuildTrainTracks_Success() throws GameTurnException
-    {
+    void testBuildTrainTracks_Success() throws GameTurnException {
         gameTurn.buildTrainTracks(connection);
 
         assertTrue(connection.isTrainTrack());
@@ -35,8 +32,7 @@ class BuildTrainTrackTest
     }
 
     @Test
-    void testBuildTrainTracks_NotBuildable_ThrowsException()
-    {
+    void testBuildTrainTracks_NotBuildable_ThrowsException() {
         connection = new Connection(0, null, false, false);
 
         GameTurnException exception = assertThrows(GameTurnException.class,
@@ -46,8 +42,7 @@ class BuildTrainTrackTest
     }
 
     @Test
-    void testBuildTrainTracks_AlreadyHasTrack_ThrowsException()
-    {
+    void testBuildTrainTracks_AlreadyHasTrack_ThrowsException() {
         connection.setTrainTrack(true);
 
         GameTurnException exception = assertThrows(GameTurnException.class,
@@ -57,8 +52,7 @@ class BuildTrainTrackTest
     }
 
     @Test
-    void testBuildTrainTracks_NotEnoughTracksLeft_ThrowsException()
-    {
+    void testBuildTrainTracks_NotEnoughTracksLeft_ThrowsException() {
         board.setTracksLeft(0);
 
         GameTurnException exception = assertThrows(GameTurnException.class,
