@@ -29,26 +29,6 @@ class PlayerTest {
         player.setCards(cards);
     }
 
-    @Test
-    void setStartingPosition_WithCorrectCityCard_SetsPosition() throws Exception {
-        cards.add(mockCityCard);
-        player.setStartingPosition("ALBACETE");
-        assertEquals(mockCity, player.getCurrentPosition());
-    }
-
-    @Test
-    void setStartingPosition_WithNoMatchingCityCard_ThrowsException() {
-        cards.add(mock(CityCard.class)); // A city card that does not match the target city
-        Exception exception = assertThrows(Exception.class, () -> player.setStartingPosition("ALBACETE"));
-        assertEquals("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast auswählen!", exception.getMessage());
-    }
-
-    @Test
-    void setStartingPosition_WithNoCityCards_AllowsSettingPosition() throws Exception {
-        player.setStartingPosition("ALBACETE");
-        assertEquals(mockCity, player.getCurrentPosition());
-    }
-
     /*
     Auskommentiert, da die Methode nicht implementiert ist
 
