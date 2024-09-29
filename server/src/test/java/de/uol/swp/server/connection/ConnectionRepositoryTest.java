@@ -1,4 +1,4 @@
-package de.uol.swp.server.Repositorys;
+package de.uol.swp.server.connection;
 
 import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.connection.Connection;

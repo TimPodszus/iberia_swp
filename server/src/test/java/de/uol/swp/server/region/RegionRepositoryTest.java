@@ -1,4 +1,4 @@
-package de.uol.swp.server.Repositorys;
+package de.uol.swp.server.region;
 
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.region.Region;
