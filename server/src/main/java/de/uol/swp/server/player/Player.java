@@ -40,7 +40,7 @@ public class Player {
             }
         }
         if (validRequest || cityCardCount == 0) {
-            City city = CityRepository.getCityByName(CityName.fromDisplayName(cityName));
+            City city = CityRepository.getCityByName(Enum.valueOf(CityName.class, cityName));
             setCurrentPosition(city);
         } else {
             throw new Exception("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast auswählen!");
