@@ -137,7 +137,7 @@ public class LobbyStore implements ILobbyStore {
         ) {
             while (rs.next()) {
                 Lobby lobby = createLobbyFromResultSet(rs);
-                lobbies.put(lobby.getName(), lobby);
+                lobbies.put(lobby.getLobbyCode(), lobby);
             }
         }
 
