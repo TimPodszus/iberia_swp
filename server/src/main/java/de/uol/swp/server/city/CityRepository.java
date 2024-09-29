@@ -94,15 +94,4 @@ public class CityRepository {
                      .filter(city -> nameList.contains(city.getName()))
                      .toList();
     }
-<<<<<<< server/src/main/java/de/uol/swp/server/city/CityRepository.java
-    public static City getCityByName(CityName cityName) {
-        return getAllCities().stream()
-                             .filter(city -> city.getName()
-                                                 .equals(cityName))
-                             .findFirst()
-                             .orElse(null);
-    }
 }
-=======
-}
->>>>>>> server/src/main/java/de/uol/swp/server/city/CityRepository.java

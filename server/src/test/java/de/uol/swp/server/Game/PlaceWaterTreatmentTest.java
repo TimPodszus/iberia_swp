@@ -19,7 +19,7 @@ class PlaceWaterTreatmentTest {
 
     @BeforeEach
     void setUp() {
-        player = new Player(null, null, null, null);
+        player = new Player(null, null, null, null, null);
         board = new Board(null, null, null, 0, 0, null, null, null, null, 2, 0);
         gameTurn = new GameTurn(player, board);
         region = new Region(0, null);

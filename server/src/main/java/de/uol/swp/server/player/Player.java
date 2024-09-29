@@ -25,6 +25,7 @@ public class Player {
     @Setter
     private List<Card> cards;
     private final User user;
+    CityRepository cityRepository;
 
     public void setStartingPosition(String cityName) throws Exception {
         boolean validRequest = false;
@@ -40,7 +41,7 @@ public class Player {
             }
         }
         if (validRequest || cityCardCount == 0) {
-            City city = CityRepository.getCityByName(Enum.valueOf(CityName.class, cityName));
+            City city = cityRepository.getCitiesByNames(Enum.valueOf(CityName.class, cityName)).get(0);
             setCurrentPosition(city);
         } else {
             throw new Exception("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast auswählen!");
