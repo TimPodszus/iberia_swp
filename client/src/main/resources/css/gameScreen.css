@@ -1,0 +1,136 @@
+.infection-grade {
+    -fx-fill: lightgrey;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+}
+
+.infection-grade-active {
+    -fx-stroke: red;
+    -fx-stroke-width: 2;
+}
+
+.pile {
+    -fx-border-color: black;
+    -fx-border-width: 1;
+    -fx-background-color: lightgrey;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+}
+
+.outbreak-level {
+    -fx-fill: lightgrey;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+}
+
+.outbreak-level-active {
+    -fx-stroke: red;
+    -fx-stroke-width: 2;
+}
+
+.cure-marker {
+    -fx-border-color: black;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+}
+
+.cure-marker-red {
+    -fx-background-color: red;
+}
+
+.cure-marker-blue {
+    -fx-background-color: blue;
+}
+
+.cure-marker-yellow {
+    -fx-background-color: yellow;
+}
+
+.cure-marker-black {
+    -fx-background-color: black;
+}
+
+.city {
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+}
+
+.city-blue {
+    -fx-background-color: blue;
+}
+
+.city-yellow {
+    -fx-background-color: yellow;
+}
+
+.city-black {
+    -fx-background-color: black;
+}
+
+.city-red {
+    -fx-background-color: red;
+}
+
+.train-connection {
+    -fx-stroke-dash-array: 12;
+    -fx-stroke-width: 10;
+    -fx-stroke: brown;
+}
+
+.action-button {
+    -fx-padding: 6 8 8 8;
+    -fx-background-insets: 0,0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #a34313 0%, #903b12 100%),
+            #9d4024,
+            #d86e3a,
+            radial-gradient(center 50% 50%, radius 100%, #d86e3a, #c54e2c);
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+}
+
+.action-buttons-box {
+    -fx-padding: 6 8 8 8;
+    -fx-background-radius: 8;
+    -fx-background-color: lightgrey;
+    -fx-border-color: black;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+}
+
+.hover-effect {
+    -fx-border-color: black;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, gray, 20, 0, 0, 0);
+}
+
+.hover-effect-polygon {
+    -fx-fill: rgb(155, 155, 155, 0.3);
+}
+
+.water-mark {
+    visibility: false;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+}
+
+.water-mark-visible {
+    visibility: true;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+}
+
+.cure-cubes-display {
+    -fx-background-color: rgb(255, 255, 255, 0.7);
+}
+
+.cure-cubes-display-warning {
+    -fx-background-color: rgb(255, 0, 0, 0.7);
+}
+
+.hospital {
+    -fx-background-color: rgb(255, 255, 255, 0.7);
+}

@@ -1,4 +1,4 @@
-package de.uol.swp.server.lobby;
+package de.uol.swp.server.lobby.management;
 
 
 public class LobbyManagementException extends Exception {

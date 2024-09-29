@@ -1,5 +1,7 @@
 package de.uol.swp.common.message;
 
+import de.uol.swp.common.message.response.ResponseMessage;
+
 import java.io.Serializable;
 
 /**

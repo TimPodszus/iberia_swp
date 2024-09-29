@@ -2,7 +2,7 @@ package de.uol.swp.server.lobby;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.lobby.ILobby;
+import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.*;
 import de.uol.swp.common.lobby.request.LobbyListRequest;
 import de.uol.swp.common.lobby.response.LobbyListResponse;
@@ -10,11 +10,15 @@ import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.lobby.management.LobbyManagement;
+import de.uol.swp.server.lobby.management.LobbyManagementException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +33,7 @@ import java.util.Optional;
 @Singleton
 public class LobbyService extends AbstractService {
 
-    private final LobbyManagement lobbyManagement;
+    private final ILobbyManagement lobbyManagement;
     private final AuthenticationService authenticationService;
 
 
@@ -44,7 +48,7 @@ public class LobbyService extends AbstractService {
      */
     @Inject
     public LobbyService(
-            LobbyManagement lobbyManagement, AuthenticationService authenticationService, EventBus eventBus
+            ILobbyManagement lobbyManagement, AuthenticationService authenticationService, EventBus eventBus
     ) {
         super(eventBus);
         this.lobbyManagement = lobbyManagement;
@@ -58,20 +62,14 @@ public class LobbyService extends AbstractService {
      * request and sends a LobbyCreatedMessage to every connected user
      *
      * @param createLobbyRequest The CreateLobbyRequest found on the EventBus
-     * @see de.uol.swp.server.lobby.LobbyManagement#createLobby(String, User)
+     * @see LobbyManagement#createLobby(String, User)
      * @see de.uol.swp.common.lobby.message.LobbyCreatedMessage
      * @since 2019-10-08
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
-        try {
-            ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getName(),
-                    createLobbyRequest.getOwner()
-            );
-            sendToAll(new LobbyCreatedMessage(createdLobby.getName(), (UserDTO) createLobbyRequest.getOwner()));
-        } catch (SQLException e) {
-            throw new LobbyManagementException("Failed to create lobby: " + e.getMessage());
-        }
+        ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
+        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), (UserDTO) createLobbyRequest.getOwner()));
     }
 
     /**
@@ -81,7 +79,7 @@ public class LobbyService extends AbstractService {
      * to every user in the lobby.
      *
      * @param lobbyJoinUserRequest The LobbyJoinUserRequest found on the EventBus
-     * @see de.uol.swp.common.lobby.ILobby
+     * @see ILobby
      * @see de.uol.swp.common.lobby.message.UserJoinedLobbyMessage
      * @since 2019-10-08
      */
@@ -92,7 +90,8 @@ public class LobbyService extends AbstractService {
         if (lobby.isPresent()) {
             lobby.get()
                  .joinUser(lobbyJoinUserRequest.getUser());
-            sendToAllInLobby(lobbyJoinUserRequest.getName(),
+            sendToAllInLobby(
+                    lobbyJoinUserRequest.getName(),
                     new UserJoinedLobbyMessage(lobbyJoinUserRequest.getName(), lobbyJoinUserRequest.getUser())
             );
         }
@@ -106,7 +105,7 @@ public class LobbyService extends AbstractService {
      * UserLeftLobbyMessage to every user in the lobby.
      *
      * @param lobbyLeaveUserRequest The LobbyJoinUserRequest found on the EventBus
-     * @see de.uol.swp.common.lobby.ILobby
+     * @see ILobby
      * @see de.uol.swp.common.lobby.message.UserLeftLobbyMessage
      * @since 2019-10-08
      */
@@ -117,7 +116,8 @@ public class LobbyService extends AbstractService {
         if (lobby.isPresent()) {
             lobby.get()
                  .leaveUser(lobbyLeaveUserRequest.getUser());
-            sendToAllInLobby(lobbyLeaveUserRequest.getName(),
+            sendToAllInLobby(
+                    lobbyLeaveUserRequest.getName(),
                     new UserLeftLobbyMessage(lobbyLeaveUserRequest.getName(), lobbyLeaveUserRequest.getUser())
             );
         }
@@ -137,7 +137,10 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onLobbyListRequest(LobbyListRequest request) throws LobbyManagementException {
-        List<ILobby> lobbies = lobbyManagement.getLobbies();
+        List<ILobbyDTO> lobbies = lobbyManagement.getLobbies()
+                                                 .stream()
+                                                 .map(LobbyMapper::toDTO)
+                                                 .toList();
         LobbyListResponse response = new LobbyListResponse(lobbies);
         request.getSession()
                .ifPresent(response::setSession);
@@ -152,15 +155,15 @@ public class LobbyService extends AbstractService {
      *
      * @param lobbyName Name of the lobby the players are in
      * @param message   the message to be send to the users
-     * @see de.uol.swp.common.message.ServerMessage
+     * @see ServerMessage
      * @since 2019-10-08
      */
     public void sendToAllInLobby(String lobbyName, ServerMessage message) throws LobbyManagementException {
         Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyName);
 
         if (lobby.isPresent()) {
-            message.setReceiver(authenticationService.getSessions(lobby.get()
-                                                                       .getUsers()));
+            message.setReceiver(authenticationService.getSessions(new HashSet<>(lobby.get()
+                                                                                     .getUsers())));
             post(message);
         }
 

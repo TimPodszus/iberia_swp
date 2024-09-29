@@ -1,7 +1,7 @@
 package de.uol.swp.server.communication;
 
 import de.uol.swp.common.message.MessageContext;
-import de.uol.swp.common.message.RequestMessage;
+import de.uol.swp.common.message.request.RequestMessage;
 
 /**
  * An interface used to decouple the concrete network application from

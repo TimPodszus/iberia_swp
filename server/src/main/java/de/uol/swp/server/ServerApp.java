@@ -3,7 +3,6 @@ package de.uol.swp.server;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import de.uol.swp.common.Configuration;
-import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.communication.ServerHandler;
 import de.uol.swp.server.communication.netty.NettyServerHandler;
 import de.uol.swp.server.communication.netty.Server;
@@ -70,9 +69,6 @@ class ServerApp {
      */
     private static void createServices(Injector injector) {
         UserManagement userManagement = injector.getInstance(UserManagement.class);
-
-        // TODO: Remove after registration is implemented
-        //
 
         // Remark: As these services are not referenced by any other class
         // we will need to create instances here (and inject dependencies)

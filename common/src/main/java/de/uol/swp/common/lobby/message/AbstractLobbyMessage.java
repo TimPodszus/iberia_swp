@@ -10,7 +10,7 @@ import java.util.Objects;
  * Base class of all lobby messages. Basic handling of lobby data.
  *
  * @see de.uol.swp.common.user.User
- * @see de.uol.swp.common.message.AbstractServerMessage
+ * @see AbstractServerMessage
  * @author Marco Grawunder
  * @since 2019-10-08
  */

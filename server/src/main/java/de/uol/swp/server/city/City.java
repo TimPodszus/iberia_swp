@@ -1,6 +1,6 @@
 package de.uol.swp.server.city;
 
-import de.uol.swp.server.plague.PlagueName;
+import de.uol.swp.common.enums.PlagueName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +11,7 @@ import lombok.Setter;
 @Getter
 public class City
 {
+    private final int id;
     private final PlagueName plagueName;
     private final CityName name;
     private final int foundationDate;

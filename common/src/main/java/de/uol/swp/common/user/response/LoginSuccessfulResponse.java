@@ -1,6 +1,6 @@
 package de.uol.swp.common.user.response;
 
-import de.uol.swp.common.message.AbstractResponseMessage;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.user.User;
 
 import java.util.Objects;

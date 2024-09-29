@@ -5,6 +5,8 @@ import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import de.uol.swp.client.auth.LoginPresenter;
 import de.uol.swp.client.auth.events.ShowLoginViewEvent;
+import de.uol.swp.client.game.GameScreenPresenter;
+import de.uol.swp.client.game.event.ShowGameScreenEvent;
 import de.uol.swp.client.lobby.CurrentGamesPresenter;
 import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
 import de.uol.swp.client.lobby.LobbyScreenPresenter;
@@ -13,6 +15,8 @@ import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.main.MainMenuPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.options.OptionsPresenter;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.register.RegistrationPresenter;
 import de.uol.swp.client.register.event.RegistrationCanceledEvent;
@@ -55,6 +59,7 @@ public class SceneManager {
     private Scene lobbyOverviewScene;
     private Scene lobbyScene;
     private Scene currentGamesScene;
+    private Scene gameScreenScene;
     private Scene mainScene;
     private Scene optionsScene;
     private Scene lastScene = null;
@@ -87,6 +92,7 @@ public class SceneManager {
         initLobbyScreen();
         initCurrentGamesView();
         initOptionsView();
+        initGameScreenView();
     }
 
     /**
@@ -266,6 +272,25 @@ public class SceneManager {
     }
 
     /**
+     * Initializes the game screen view.
+     * <p>
+     * If the gameScreenScene is null, it gets set to a new scene containing
+     * a pane showing the game screen view as specified by the GameScreenPresenter
+     * FXML file.
+     *
+     * @throws IOException if the FXML file cannot be loaded
+     * @see de.uol.swp.client.game.GameScreenPresenter
+     */
+    private void initGameScreenView() throws IOException {
+        if (gameScreenScene == null) {
+            Parent rootPane = initPresenter(GameScreenPresenter.FXML);
+            gameScreenScene = new Scene(rootPane, 1280, 720);
+            gameScreenScene.getStylesheets()
+                           .add(STYLE_SHEET);
+        }
+    }
+
+    /**
      * Handles ShowRegistrationViewEvent detected on the EventBus
      * <p>
      * If a ShowRegistrationViewEvent is detected on the EventBus, this method gets
@@ -323,6 +348,20 @@ public class SceneManager {
     @Subscribe
     public void onShowCurrentGamesViewEvent(ShowCurrentGamesViewEvent event) {
         showCurrentGamesScreen();
+    }
+
+    /**
+     * Handles ShowGameScreenEvent detected on the EventBus.
+     * <p>
+     * If a ShowGameScreenEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the game screen.
+     *
+     * @param event The ShowGameScreenEvent detected on the EventBus
+     * @see de.uol.swp.client.game.event.ShowGameScreenEvent
+     */
+    @Subscribe
+    public void onShowGameScreenEvent(ShowGameScreenEvent event) {
+        showGameScreen();
     }
 
     /**
@@ -522,5 +561,27 @@ public class SceneManager {
      */
     public void showOptionsScreen() {
         showScene(optionsScene, "Optionen");
+    }
+
+    /**
+     * Shows the game screen.
+     * <p>
+     * Switches the current Scene to the gameScreenScene and sets the title of
+     * the window to "Iberia".
+     */
+    public void showGameScreen() {
+        showScene(gameScreenScene, "Iberia");
+
+        Platform.runLater(() -> {
+            Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+
+            primaryStage.setX(visualBounds.getMinX());
+            primaryStage.setY(visualBounds.getMinY());
+            primaryStage.setWidth(visualBounds.getWidth());
+            primaryStage.setHeight(visualBounds.getHeight());
+
+            primaryStage.setMaximized(true);
+            primaryStage.show();
+        });
     }
 }
