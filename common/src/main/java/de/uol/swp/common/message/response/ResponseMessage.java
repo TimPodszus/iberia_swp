@@ -1,4 +1,6 @@
-package de.uol.swp.common.message;
+package de.uol.swp.common.message.response;
+
+import de.uol.swp.common.message.Message;
 
 /**
  * An interface for all messages that are a response from a server to

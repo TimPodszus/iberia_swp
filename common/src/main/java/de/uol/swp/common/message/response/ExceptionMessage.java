@@ -1,4 +1,4 @@
-package de.uol.swp.common.message;
+package de.uol.swp.common.message.response;
 
 import java.util.Objects;
 
@@ -8,7 +8,7 @@ import java.util.Objects;
  * @author Marco Grawunder
  * @since 2017-03-17
  */
-public class ExceptionMessage extends AbstractResponseMessage{
+public class ExceptionMessage extends AbstractResponseMessage {
 
 	private static final long serialVersionUID = -7739395567707525535L;
 	private final String exception;

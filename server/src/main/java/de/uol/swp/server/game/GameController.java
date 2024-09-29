@@ -1,10 +1,10 @@
 package de.uol.swp.server.game;
 
-import de.uol.swp.common.game.action.Action;
+import de.uol.swp.common.game.Action;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.GameState;
 import de.uol.swp.server.game.states.StartState;
-import de.uol.swp.server.lobby.Lobby;
+import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.player.Player;
@@ -39,7 +39,7 @@ public class GameController {
         //Logik zur Initiallisierung des Spiels
     }
 
-    private void createPlayers(Set<User> users) {
+    private void createPlayers(List<User> users) {
         this.players = new ArrayList<>();
         for (User user : users) {
             Player player = new Player(user);

@@ -3,9 +3,8 @@ package de.uol.swp.server.Game.States;
 import static org.mockito.Mockito.*;
 
 import de.uol.swp.common.city.CityDTO;
-import de.uol.swp.common.game.action.Action;
-import de.uol.swp.common.game.action.MoveAction;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.game.Action;
+import de.uol.swp.common.game.MoveAction;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;

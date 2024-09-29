@@ -2,7 +2,7 @@ package de.uol.swp.server.Game.States;
 
 import static org.mockito.Mockito.*;
 
-import de.uol.swp.common.game.action.Action;
+import de.uol.swp.common.game.Action;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.player.Player;

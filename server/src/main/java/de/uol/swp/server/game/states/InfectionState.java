@@ -1,6 +1,6 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.common.game.action.Action;
+import de.uol.swp.common.game.Action;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.player.Player;

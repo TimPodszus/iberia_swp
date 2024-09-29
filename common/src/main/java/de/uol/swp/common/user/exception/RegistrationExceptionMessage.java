@@ -1,6 +1,6 @@
 package de.uol.swp.common.user.exception;
 
-import de.uol.swp.common.message.AbstractResponseMessage;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 
 import java.util.Objects;
 

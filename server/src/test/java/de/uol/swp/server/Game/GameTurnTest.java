@@ -1,7 +1,7 @@
 package de.uol.swp.server.Game;
 
-import de.uol.swp.common.game.action.Action;
-import de.uol.swp.common.game.action.ActionType;
+import de.uol.swp.common.game.Action;
+import de.uol.swp.common.game.ActionType;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.game.GameTurn;
@@ -47,4 +47,20 @@ class GameTurnTest
         assertEquals(3, gameTurn.getActionsRemaining());
     }
 
+    @Test
+    void testCheckTurnEndStartsDrawPhaseIfActionsZero()
+    {
+        gameTurn.processAction(new Action(ActionType.MOVE));
+        gameTurn.processAction(new Action(ActionType.MOVE));
+        gameTurn.processAction(new Action(ActionType.MOVE));
+        gameTurn.processAction(new Action(ActionType.MOVE));
+        assertTrue(gameTurn.isDrawPhase());
+    }
+
+    @Test
+    void testEndTurnSetsTurnOver()
+    {
+        gameTurn.endTurn();
+        assertTrue(gameTurn.isTurnOver());
+    }
 }
