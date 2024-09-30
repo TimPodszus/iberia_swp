@@ -2,10 +2,9 @@ package de.uol.swp.common.lobby.dto;
 
 import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.user.User;
+import lombok.Getter;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 
 /**
@@ -17,15 +16,13 @@ import java.util.TreeSet;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
+@Getter
 public class LobbyDTO implements ILobby
 {
-
     private final String name;
     private User owner;
-    private final Set<User> users = new TreeSet<>();
-
+    private final List<User> users = new ArrayList<>();
     private final String lobbyCode;
-
     private final int difficulty;
 
 
@@ -45,10 +42,7 @@ public class LobbyDTO implements ILobby
         this.difficulty = difficulty;
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
+
 
     @Override
     public void joinUser(User user) {
@@ -76,24 +70,5 @@ public class LobbyDTO implements ILobby
         this.owner = user;
     }
 
-    @Override
-    public User getOwner() {
-        return owner;
-    }
 
-    @Override
-    public Set<User> getUsers() {
-        return Collections.unmodifiableSet(users);
-    }
-
-    @Override
-    public String getLobbyCode()
-    {
-        return lobbyCode;
-    }
-
-    public int getDifficulty()
-    {
-        return difficulty;
-    }
 }

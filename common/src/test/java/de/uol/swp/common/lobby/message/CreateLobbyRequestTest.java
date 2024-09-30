@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     void createCreateLobbyRequest() {
         CreateLobbyRequest request = new CreateLobbyRequest(lobbyName, user);
 
-        assertEquals(lobbyName, request.getName());
+        assertEquals(lobbyName, request.getLobbyCode());
         assertEquals(user, request.getUser());
     }
 

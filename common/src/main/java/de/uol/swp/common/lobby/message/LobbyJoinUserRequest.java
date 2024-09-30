@@ -23,12 +23,12 @@ public class LobbyJoinUserRequest extends AbstractLobbyRequest {
     /**
      * Constructor
      *
-     * @param lobbyName name of the lobby
+     * @param lobbyCode name of the lobby
      * @param user user who wants to join the lobby
      * @since 2019-10-08
      */
-    public LobbyJoinUserRequest(String lobbyName, UserDTO user) {
-        super(lobbyName, user);
+    public LobbyJoinUserRequest(String lobbyCode, UserDTO user) {
+        super(lobbyCode, user);
     }
 
 }

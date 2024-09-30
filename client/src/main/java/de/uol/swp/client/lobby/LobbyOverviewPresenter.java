@@ -4,9 +4,11 @@ import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.common.lobby.ILobby;
+import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.LobbyListMessage;
 import de.uol.swp.common.user.UserDTO;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -20,6 +22,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/LobbyOverviewView.fxml";
 
     public static final Map<String, ILobby> lobbyList = Map.of();
+    public Button searchButton;
 
     @Inject
     private LobbyService lobbyService;
@@ -74,6 +77,13 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
     public void onSearchButtonPressed() {
         String searchInputText = searchInput.getText();
         filterLobbies(searchInputText);
+    }
+
+    public void onLobbyTablePressed() {
+        ILobby rowData = lobbyTable.getSelectionModel()
+                                   .getSelectedItem();
+        lobbyService.joinLobby(rowData.getName(), new UserDTO("ich", ""));
+        eventBus.post(new LobbyJoinUserRequest());
     }
 
     /**

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Set;
+
 
 @Getter
 @AllArgsConstructor
@@ -15,17 +15,13 @@ public class Lobby implements ILobby
 {
     private final String name;
     private final String lobbyCode;
+
     private final List<User> users;
 
     private User owner;
     @Setter
     private int difficulty;
 
-
-
-    public void addUser(User user) {
-        users.add(user);
-    }
 
     @Override
     public String getLobbyCode() {
@@ -46,7 +42,7 @@ public class Lobby implements ILobby
     @Override
     public void joinUser(User user)
     {
-        // TODO document why this method is empty
+        users.add(user);
     }
 
     @Override
@@ -55,10 +51,4 @@ public class Lobby implements ILobby
         // TODO document why this method is empty
     }
 
-    @Override
-    public Set<User> getUsers()
-    {
-
-        return null;
-    }
 }

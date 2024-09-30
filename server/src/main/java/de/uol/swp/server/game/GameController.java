@@ -23,7 +23,7 @@ public class GameController {
     private GameTurn currentTurn;
 
     public GameController(Lobby lobby) {
-        createPlayers(lobby.getUsers());
+        createPlayers((Set<User>) lobby.getUsers());
         this.currentPlayerIndex = 0;
         this.players = new ArrayList<>();
     }

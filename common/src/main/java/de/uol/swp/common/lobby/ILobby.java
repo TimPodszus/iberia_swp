@@ -3,7 +3,9 @@ package de.uol.swp.common.lobby;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 
-import java.util.Set;
+
+import java.util.List;
+
 
 /**
  * Interface to unify lobby objects
@@ -58,16 +60,11 @@ public interface ILobby
     void leaveUser(User user);
 
     /**
-     * Getter for all users in the lobby
-     *
-     * @return A Set containing all user in this lobby
-     * @since 2019-10-08
-     */
-    Set<User> getUsers();
-    /**
      * Getter for the lobby's id
      *
      * @return A String containing the id of the lobby
      */
     String getLobbyCode();
+
+    List<User> getUsers();
 }

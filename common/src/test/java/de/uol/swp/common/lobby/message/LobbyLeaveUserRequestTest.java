@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     void createLobbyLeaveUserRequest() {
         LobbyLeaveUserRequest request = new LobbyLeaveUserRequest(lobbyName, user);
 
-        assertEquals(lobbyName, request.getName());
+        assertEquals(lobbyName, request.getLobbyCode());
         assertEquals(user, request.getUser());
     }
 

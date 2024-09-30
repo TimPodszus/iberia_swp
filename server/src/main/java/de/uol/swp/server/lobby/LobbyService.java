@@ -20,6 +20,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Handles the lobby requests send by the users
@@ -65,9 +66,9 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException, SQLException {
-        lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
-        ILobby createdLobby = lobbyManagement.getLobby(createLobbyRequest.getName())
-                                             .orElseThrow(() -> new NoSuchElementException("Lobby not found: " + createLobbyRequest.getName()));
+        lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(), createLobbyRequest.getOwner());
+        ILobby createdLobby = lobbyManagement.getLobby(createLobbyRequest.getLobbyCode())
+                                             .orElseThrow(() -> new NoSuchElementException("Lobby not found: " + createLobbyRequest.getLobbyCode()));
         sendToAll(new LobbyCreatedMessage(createdLobby.getName(), (UserDTO) createLobbyRequest.getOwner()));
     }
 
@@ -83,12 +84,12 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws SQLException {
-        Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getName());
-
+    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws SQLException, LobbyManagementException {
+        Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
         if (lobby.isPresent()) {
-            lobby.get().joinUser(lobbyJoinUserRequest.getUser());
-            sendToAllInLobby(lobbyJoinUserRequest.getName(), new UserJoinedLobbyMessage(lobbyJoinUserRequest.getName(), lobbyJoinUserRequest.getUser()));
+            lobbyManagement.joinLobby(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser());
+            sendToAllInLobby(lobbyJoinUserRequest.getLobbyCode(), new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(),
+                    lobbyJoinUserRequest.getUser()));
         }
         // TODO: error handling not existing lobby
     }
@@ -106,11 +107,12 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) throws SQLException {
-        Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getName());
+        Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getLobbyCode());
 
         if (lobby.isPresent()) {
             lobby.get().leaveUser(lobbyLeaveUserRequest.getUser());
-            sendToAllInLobby(lobbyLeaveUserRequest.getName(), new UserLeftLobbyMessage(lobbyLeaveUserRequest.getName(), lobbyLeaveUserRequest.getUser()));
+            sendToAllInLobby(lobbyLeaveUserRequest.getLobbyCode(), new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(),
+                    lobbyLeaveUserRequest.getUser()));
         }
         // TODO: error handling not existing lobby
     }
@@ -128,7 +130,7 @@ public class LobbyService extends AbstractService {
         Optional<Lobby> lobby = lobbyManagement.getLobby(lobbyName);
 
         if (lobby.isPresent()) {
-            message.setReceiver(authenticationService.getSessions(lobby.get().getUsers()));
+            message.setReceiver(authenticationService.getSessions((Set<User>) lobby.get().getUsers()));
             post(message);
         }
 

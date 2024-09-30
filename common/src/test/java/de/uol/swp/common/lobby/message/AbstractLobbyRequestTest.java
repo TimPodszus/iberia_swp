@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     void createAbstractLobbyRequest() {
         AbstractLobbyRequest request = new AbstractLobbyRequest(lobbyName, user);
 
-        assertEquals(lobbyName, request.getName());
+        assertEquals(lobbyName, request.getLobbyCode());
         assertEquals(user, request.getUser());
     }
 
@@ -45,13 +45,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     void setAbstractLobbyNameAndUser() {
         AbstractLobbyRequest request = new AbstractLobbyRequest(lobbyName, user);
 
-        assertEquals(lobbyName, request.getName());
+        assertEquals(lobbyName, request.getLobbyCode());
         assertEquals(user, request.getUser());
 
-        request.setName("Test1");
+        request.setLobbyCode("Test1");
         request.setUser(user1);
 
-        assertEquals("Test1", request.getName());
+        assertEquals("Test1", request.getLobbyCode());
         assertEquals(user1, request.getUser());
     }
 

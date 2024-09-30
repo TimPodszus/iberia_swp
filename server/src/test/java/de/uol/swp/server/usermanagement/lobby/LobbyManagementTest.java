@@ -12,15 +12,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class LobbyManagementTest {
 
@@ -30,7 +25,7 @@ class LobbyManagementTest {
     final LobbyManagement lobbyManagement = new LobbyManagement();
     List<User> userList = new ArrayList<>();
     @Mock
-    LobbyStore lobbyStore = new LobbyStore();
+    LobbyStore lobbyStore;
 
     @BeforeEach
     public void setUp() {
@@ -43,7 +38,6 @@ class LobbyManagementTest {
         lobbyManagement.setLobbyStore(lobbyStore);
     }
 
-
     @Test
     void getLobbyTest() throws SQLException {
         Lobby mockLobby = new Lobby("Test2", "testcode2", userList, user1, 3);
@@ -55,7 +49,6 @@ class LobbyManagementTest {
         assertNotNull(foundLobby);
         assertEquals(user1.getUsername(), foundLobby.getOwner().getUsername());
     }
-
 
     @Test
     void createLobbyWithExistingNameThrowsExceptionTest() throws SQLException {
@@ -94,4 +87,26 @@ class LobbyManagementTest {
         assertTrue(lobbyManagement.getLobby("Test3").isEmpty());
     }
 
+    @Test
+    void joinNonExistentLobbyThrowsExceptionTest() throws SQLException {
+        when(lobbyStore.findLobby("NonExistentLobby")).thenReturn(null);
+
+        LobbyManagementException thrown = assertThrows(LobbyManagementException.class,
+                () -> lobbyManagement.joinLobby("NonExistentLobby", user2),
+                "Should throw an exception when trying to join a non-existent lobby.");
+
+        assertEquals("LobbyID NonExistentLobby not found!", thrown.getMessage());
+    }
+
+    @Test
+    void joinLobbyTest() throws SQLException, LobbyManagementException {
+        Lobby mockLobby = new Lobby("Test4", "testcode4", userList, firstOwner, 3);
+        when(lobbyStore.findLobby("Test4")).thenReturn(mockLobby);
+
+
+        lobbyManagement.joinLobby("Test4", user2);
+
+        verify(lobbyStore).joinUser("Test4", user2);
+        assertTrue(mockLobby.getUsers().contains(user2));
+    }
 }

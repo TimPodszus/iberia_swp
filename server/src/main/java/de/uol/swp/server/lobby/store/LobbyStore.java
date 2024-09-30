@@ -106,6 +106,17 @@ public class LobbyStore implements ILobbyStore {
         // not implemented
     }
 
+    public void joinUser(String lobbyCode, User user) throws SQLException {
+
+
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(INSERT_LOBBY_SQL)) {
+
+            ps.setString(1, lobbyCode);
+            ps.setString(2, user.getUsername());
+            ps.executeUpdate();
+        }
+    }
     @Override
     public Map<String, Lobby> getAllLobbies() throws SQLException {
         String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby";

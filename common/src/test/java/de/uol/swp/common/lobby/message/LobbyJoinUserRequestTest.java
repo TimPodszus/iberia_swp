@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  class LobbyJoinUserRequestTest
 {
 
-    final String lobbyName = "Test";
+    final String lobbyCode = "Test";
     final UserDTO user = new UserDTO("Marco", "Marco");
 
 
@@ -27,9 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
      */
     @Test
     void createLobbyJoinUserRequest() {
-        LobbyJoinUserRequest request = new LobbyJoinUserRequest(lobbyName, user);
+        LobbyJoinUserRequest request = new LobbyJoinUserRequest(lobbyCode, user);
 
-        assertEquals(lobbyName, request.getName());
+        assertEquals(lobbyCode, request.getLobbyCode());
         assertEquals(user, request.getUser());
     }
 

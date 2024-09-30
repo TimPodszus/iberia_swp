@@ -3,6 +3,7 @@ package de.uol.swp.server.lobby;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.store.LobbyStore;
+import lombok.Setter;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import java.util.UUID;
  * @see LobbyDTO
  * @since 2019-10-08
  */
+@Setter
 public class LobbyManagement {
     private LobbyStore lobbyStore = new LobbyStore();
 
@@ -101,7 +103,13 @@ public class LobbyManagement {
         return Optional.empty();
     }
 
-    public void setLobbyStore(LobbyStore lobbyStore) {
-        this.lobbyStore = lobbyStore;
+    public void joinLobby(String lobbyID, User user) throws SQLException, LobbyManagementException {
+        Optional<Lobby> lobby = getLobby(lobbyID);
+        if (lobby.isPresent()) {
+            lobby.get().joinUser(user);
+            lobbyStore.joinUser(lobbyID, user);
+        } else {
+            throw new LobbyManagementException("LobbyID " + lobbyID + " not found!");
+        }
     }
 }
