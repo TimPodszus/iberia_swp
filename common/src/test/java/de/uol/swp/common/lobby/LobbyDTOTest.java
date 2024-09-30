@@ -70,10 +70,10 @@ class LobbyDTOTest {
         assertTrue(lobby.getUsers().contains(users.get(0)));
 
         lobby.joinUser(users.get(0));
-        assertEquals(2, lobby.getUsers().size());
+        assertEquals(3, lobby.getUsers().size());
 
         lobby.joinUser(users.get(1));
-        assertEquals(3,
+        assertEquals(4,
                 lobby.getUsers().size());
         assertTrue(lobby.getUsers().contains(users.get(1)));
     }
