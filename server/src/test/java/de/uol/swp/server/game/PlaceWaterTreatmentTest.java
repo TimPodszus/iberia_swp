@@ -1,8 +1,6 @@
-package de.uol.swp.server.Game;
+package de.uol.swp.server.game;
 
 import de.uol.swp.server.board.Board;
-import de.uol.swp.server.game.GameTurn;
-import de.uol.swp.server.game.GameTurnException;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.Region;
 import org.junit.jupiter.api.BeforeEach;

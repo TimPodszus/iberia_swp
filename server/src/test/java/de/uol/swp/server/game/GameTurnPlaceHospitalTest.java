@@ -1,13 +1,10 @@
-package de.uol.swp.server.Game;
+package de.uol.swp.server.game;
 
-import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.city.CityRepository;
-import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +63,8 @@ class GameTurnPlaceHospitalTest {
 
         Exception exception = assertThrows(Exception.class, () -> gameTurn.buildHospital(barcelona, true));
 
-        assertEquals("Der Spieler muss auf der ausgewählten Stadt stehen und die zugehörige Stadtkarte besitzen",
+        assertEquals(
+                "Der Spieler muss auf der ausgewählten Stadt stehen und die zugehörige Stadtkarte besitzen",
                 exception.getMessage()
         );
     }
@@ -77,7 +75,8 @@ class GameTurnPlaceHospitalTest {
 
         Exception exception = assertThrows(Exception.class, () -> gameTurn.buildHospital(madrid, false));
 
-        assertEquals("Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren",
+        assertEquals(
+                "Der Spieler kann nur auf einer gleichfarbigen Stadt ein Krankenhaus platzieren",
                 exception.getMessage()
         );
     }

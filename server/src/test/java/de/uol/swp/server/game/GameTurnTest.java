@@ -1,10 +1,9 @@
-package de.uol.swp.server.Game;
+package de.uol.swp.server.game;
 
 import de.uol.swp.common.game.Action;
 import de.uol.swp.common.game.ActionType;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.board.Board;
-import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,15 +12,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class GameTurnTest
-{
+class GameTurnTest {
     private GameTurn gameTurn;
     private Player player;
     private Board board;
     private User mockUser;
+
     @BeforeEach
-    void setUp()
-    {
+    void setUp() {
         player = mock(Player.class);
         board = mock(Board.class);
         mockUser = mock(User.class);
@@ -30,8 +28,7 @@ class GameTurnTest
     }
 
     @Test
-    void testConstructorInitializesValuesCorrectly()
-    {
+    void testConstructorInitializesValuesCorrectly() {
         assertEquals(player, gameTurn.getCurrentPlayer());
         assertEquals(board, gameTurn.getBoard());
         assertEquals(4, gameTurn.getActionsRemaining());
@@ -41,15 +38,13 @@ class GameTurnTest
     }
 
     @Test
-    void testProcessActionDecrementsActions()
-    {
+    void testProcessActionDecrementsActions() {
         gameTurn.processAction(new Action(ActionType.MOVE));
         assertEquals(3, gameTurn.getActionsRemaining());
     }
 
     @Test
-    void testCheckTurnEndStartsDrawPhaseIfActionsZero()
-    {
+    void testCheckTurnEndStartsDrawPhaseIfActionsZero() {
         gameTurn.processAction(new Action(ActionType.MOVE));
         gameTurn.processAction(new Action(ActionType.MOVE));
         gameTurn.processAction(new Action(ActionType.MOVE));
@@ -58,8 +53,7 @@ class GameTurnTest
     }
 
     @Test
-    void testEndTurnSetsTurnOver()
-    {
+    void testEndTurnSetsTurnOver() {
         gameTurn.endTurn();
         assertTrue(gameTurn.isTurnOver());
     }
