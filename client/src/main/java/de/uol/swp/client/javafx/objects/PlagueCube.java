@@ -1,6 +1,6 @@
 package de.uol.swp.client.javafx.objects;
 
-import de.uol.swp.common.enums.PlagueName;
+import de.uol.swp.common.game.PlagueName;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;

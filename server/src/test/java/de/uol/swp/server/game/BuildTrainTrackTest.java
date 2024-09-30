@@ -15,7 +15,7 @@ class BuildTrainTrackTest {
 
     @BeforeEach
     void setUp() {
-        Player player = new Player(null, null, null, null);
+        Player player = new Player(null, null, null, null, null);
         board = new Board(null, null, null, 0, 0, null, null, null, null, 0, 1);
         connection = new Connection(0, null, false, true);
         gameTurn = new GameTurn(player, board);

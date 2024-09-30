@@ -1,6 +1,6 @@
 package de.uol.swp.server.city;
 
-import de.uol.swp.common.enums.PlagueName;
+import de.uol.swp.common.game.PlagueName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

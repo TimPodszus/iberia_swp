@@ -28,7 +28,7 @@ class GameTurnPlaceHospitalTest {
         madrid = board.getCityRepository()
                       .getCitiesByNames(CityName.MADRID)
                       .get(0);
-        player = new Player(null, barcelona, new ArrayList<>(), null);
+        player = new Player(null, barcelona, new ArrayList<>(), null, null);
         if (addCityCardToPlayer) {
             cityCard = new CityCard(0, "", "", barcelona);
             player.addCard(cityCard);
