@@ -1,6 +1,4 @@
-package de.uol.swp.server.Game.States;
-
-import static org.mockito.Mockito.*;
+package de.uol.swp.server.game.states;
 
 import de.uol.swp.common.game.Action;
 import de.uol.swp.server.cards.Card;
@@ -8,13 +6,18 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.game.GameTurn;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class DrawCardStateTest {
     private GameController controller;

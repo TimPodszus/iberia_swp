@@ -7,7 +7,11 @@ import de.uol.swp.server.database.DatabaseConnection;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -121,6 +125,7 @@ public class LobbyStore implements ILobbyStore {
         return null;
     }
 
+    @Override
     public void removeUser(String lobbyID, User user) throws SQLException, LobbyStoreException {
         String sql = "DELETE FROM LobbyUsers WHERE lobbyID = ? AND username = ?";
 

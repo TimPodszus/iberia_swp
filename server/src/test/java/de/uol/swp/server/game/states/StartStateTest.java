@@ -1,12 +1,12 @@
-package de.uol.swp.server.Game.States;
-
-import static org.mockito.Mockito.*;
+package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.GameController;
-import de.uol.swp.server.game.states.StartState;
-import de.uol.swp.server.game.states.WaitForPositioning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class StartStateTest {
     private GameController controller;
