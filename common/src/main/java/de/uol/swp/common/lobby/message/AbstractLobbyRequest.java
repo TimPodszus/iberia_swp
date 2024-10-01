@@ -1,6 +1,6 @@
 package de.uol.swp.common.lobby.message;
 
-import de.uol.swp.common.message.AbstractRequestMessage;
+import de.uol.swp.common.message.request.AbstractRequestMessage;
 import de.uol.swp.common.user.UserDTO;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +11,7 @@ import java.util.Objects;
  * Base class of all lobby request messages. Basic handling of lobby data.
  *
  * @see de.uol.swp.common.user.User
- * @see de.uol.swp.common.message.AbstractRequestMessage
+ * @see AbstractRequestMessage
  * @author Marco Grawunder
  * @since 2019-10-08
  */

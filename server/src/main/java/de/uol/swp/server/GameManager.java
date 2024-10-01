@@ -1,9 +1,11 @@
 package de.uol.swp.server;
 
-import de.uol.swp.common.enums.Action;
+import de.uol.swp.common.game.Action;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.game.GameController;
-import de.uol.swp.server.lobby.Lobby;
+import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.data.Lobby;
 import lombok.Getter;
 
 import java.util.Map;
@@ -16,6 +18,8 @@ public class GameManager {
     public void createGameForLobby(Lobby lobby) {
         String lobbyId = lobby.getLobbyCode();
         if (!gameControllers.containsKey(lobbyId)) {
+            GameStore.getInstance()
+                     .addGame(lobbyId, new Game());
             GameController gameController = new GameController(lobby);
             gameControllers.put(lobbyId, gameController);
             gameController.initializeGame();

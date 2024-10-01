@@ -4,7 +4,7 @@ import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.common.exception.UnsopportedMethodExeption;
-import de.uol.swp.common.lobby.message.LobbyListRequest;
+import de.uol.swp.common.lobby.request.LobbyListRequest;
 import org.greenrobot.eventbus.Subscribe;
 
 import com.google.inject.Inject;
