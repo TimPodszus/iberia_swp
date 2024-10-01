@@ -6,7 +6,7 @@ import de.uol.swp.client.javafx.objects.HospitalSymbol;
 import de.uol.swp.client.javafx.objects.PlagueCube;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.RoleCard;
+import de.uol.swp.common.game.RoleCardEnum;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -521,11 +521,11 @@ public class GameScreenPresenter extends AbstractPresenter {
      * @param cityId      the ID of the city
      * @param playerRoles the roles of the players to be added to the city
      */
-    public void setPlayerInCity(int cityId, RoleCard... playerRoles) {
+    public void setPlayerInCity(int cityId, RoleCardEnum... playerRoles) {
         StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + cityId);
 
         List<Color> playerColors = new ArrayList<>();
-        for (RoleCard role : playerRoles) {
+        for (RoleCardEnum role : playerRoles) {
             playerColors.add(Color.web(role.getColorCode()));
         }
 
