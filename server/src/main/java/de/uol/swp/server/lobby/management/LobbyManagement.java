@@ -68,6 +68,15 @@ public class LobbyManagement implements ILobbyManagement {
         }
     }
 
+    public List<ILobby> getLobbies() throws LobbyManagementException {
+        try {
+            return new ArrayList<>(lobbyStore.getAllLobbies()
+                                             .values());
+        } catch (SQLException e) {
+            throw new LobbyManagementException("Failed to get lobbies");
+        }
+    }
+
 
     /**
      * Generates a unique lobby code.

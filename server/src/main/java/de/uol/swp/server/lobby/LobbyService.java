@@ -2,7 +2,10 @@ package de.uol.swp.server.lobby;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.*;
+import de.uol.swp.common.lobby.request.LobbyListRequest;
+import de.uol.swp.common.lobby.response.LobbyListResponse;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
@@ -16,7 +19,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.HashSet;
-import java.util.NoSuchElementException;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -65,9 +68,7 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
-        lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
-        ILobby createdLobby = lobbyManagement.getLobby(createLobbyRequest.getName())
-                                             .orElseThrow(() -> new NoSuchElementException("Lobby not found: " + createLobbyRequest.getName()));
+        ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
         sendToAll(new LobbyCreatedMessage(createdLobby.getName(), (UserDTO) createLobbyRequest.getOwner()));
     }
 
@@ -124,6 +125,31 @@ public class LobbyService extends AbstractService {
     }
 
     /**
+     * Handles LobbyListRequests found on the EventBus
+     * <p>
+     * If a LobbyListRequest is detected on the EventBus, this method is called.
+     * It retrieves the list of lobbies from the LobbyManagement and sends a
+     * LobbyListResponse to the requester.
+     *
+     * @param request The LobbyListRequest found on the EventBus
+     * @see de.uol.swp.common.lobby.response.LobbyListResponse
+     * @since 2024-09-25
+     */
+    @Subscribe
+    public void onLobbyListRequest(LobbyListRequest request) throws LobbyManagementException {
+        List<ILobbyDTO> lobbies = lobbyManagement.getLobbies()
+                                                 .stream()
+                                                 .map(LobbyMapper::toDTO)
+                                                 .toList();
+        LobbyListResponse response = new LobbyListResponse(lobbies);
+        request.getSession()
+               .ifPresent(response::setSession);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        post(response);
+    }
+
+    /**
      * Prepares a given ServerMessage to be send to all players in the lobby and
      * posts it on the EventBus
      *
@@ -143,5 +169,4 @@ public class LobbyService extends AbstractService {
 
         // TODO: error handling not existing lobby
     }
-
 }

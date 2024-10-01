@@ -1,26 +1,23 @@
 package de.uol.swp.client;
 
+import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.assistedinject.Assisted;
+import de.uol.swp.client.auth.LoginPresenter;
+import de.uol.swp.client.auth.events.ShowLoginViewEvent;
 import de.uol.swp.client.game.GameScreenPresenter;
 import de.uol.swp.client.game.event.ShowGameScreenEvent;
 import de.uol.swp.client.lobby.CurrentGamesPresenter;
-import de.uol.swp.client.lobby.LobbyOverviewPresenter;
+import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
 import de.uol.swp.client.lobby.LobbyScreenPresenter;
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
-import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
+import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
+import de.uol.swp.client.main.MainMenuPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.options.OptionsPresenter;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
-import de.uol.swp.client.auth.LoginPresenter;
-import de.uol.swp.client.auth.events.ShowLoginViewEvent;
-import de.uol.swp.client.main.MainMenuPresenter;
 import de.uol.swp.client.register.RegistrationPresenter;
 import de.uol.swp.client.register.event.RegistrationCanceledEvent;
 import de.uol.swp.client.register.event.RegistrationErrorEvent;
@@ -35,6 +32,8 @@ import javafx.scene.control.DialogPane;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.net.URL;
@@ -186,7 +185,7 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.lobby.LobbyOverviewPresenter
+     * @see LobbyOverviewPresenter
      */
     private void initLobbyOverviewView() throws IOException {
         if (lobbyOverviewScene == null) {
