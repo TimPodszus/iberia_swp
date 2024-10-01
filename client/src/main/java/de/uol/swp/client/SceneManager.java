@@ -10,6 +10,7 @@ import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.options.OptionsPresenter;
+import de.uol.swp.client.user.UserStore;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
@@ -496,8 +497,13 @@ public class SceneManager {
      *
      * @since 2019-09-03
      */
-    public void showMainScreen(User currentUser) {
-        showScene(mainScene, "Welcome " + currentUser.getUsername());
+    public void showMainScreen() {
+        showScene(
+                mainScene,
+                "Welcome " + UserStore.getInstance()
+                                      .getUser()
+                                      .getUsername()
+        );
     }
 
     /**
@@ -574,7 +580,8 @@ public class SceneManager {
         showScene(gameScreenScene, "Iberia");
 
         Platform.runLater(() -> {
-            Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+            Rectangle2D visualBounds = Screen.getPrimary()
+                                             .getVisualBounds();
 
             primaryStage.setX(visualBounds.getMinX());
             primaryStage.setY(visualBounds.getMinY());
