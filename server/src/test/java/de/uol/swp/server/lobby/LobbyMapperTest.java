@@ -17,7 +17,7 @@ public class LobbyMapperTest {
 
     @Test
     void toDtoTest() {
-        ILobby lobby = new Lobby("Test", "testcode", List.of(firstOwner), firstOwner, 4);
+        ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
         ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
 
         assertEquals(lobby.getName(), lobbyDTO.getName());
@@ -29,7 +29,7 @@ public class LobbyMapperTest {
 
     @Test
     void fromDtoTest() {
-        ILobbyDTO lobbyDTO = new LobbyDTO("Test", "testcode", List.of(firstOwner), firstOwner, 4);
+        ILobbyDTO lobbyDTO = new LobbyDTO("testcode", "Test", List.of(firstOwner), firstOwner, 4);
         ILobby lobby = LobbyMapper.toLobby(lobbyDTO);
 
         assertEquals(lobby.getName(), lobbyDTO.getName());

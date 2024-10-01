@@ -55,7 +55,7 @@ class LobbyManagementTest {
      */
     @Test
     void createLobbyTest() throws LobbyManagementException, SQLException {
-        ILobby lobby = new Lobby("Test", "testcode", List.of(firstOwner), firstOwner, 4);
+        ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
 
         when(lobbyStore.createLobby(anyString(), eq("Test"), anyList(), eq(firstOwner), eq(4))).thenReturn(lobby);
 
@@ -97,11 +97,11 @@ class LobbyManagementTest {
      */
     @Test
     void deleteLobbyTest() throws SQLException {
-        Lobby mockLobby = new Lobby("Test2", "testcode2", userList, user1, 3);
+        Lobby mockLobby = new Lobby("testcode2", "test2", userList, user1, 3);
 
-        when(lobbyStore.findLobby("Test2")).thenReturn(mockLobby);
+        when(lobbyStore.findLobby("testcode2")).thenReturn(mockLobby);
 
-        assertDoesNotThrow(() -> lobbyManagement.deleteLobby("Test2"));
+        assertDoesNotThrow(() -> lobbyManagement.deleteLobby("testcode2"));
     }
 
     /**
@@ -111,10 +111,10 @@ class LobbyManagementTest {
      */
     @Test
     void deleteLobbyTestFailed() throws SQLException {
-        when(lobbyStore.findLobby("Test2")).thenThrow(new SQLException());
+        when(lobbyStore.findLobby("testcode2")).thenThrow(new SQLException());
 
         LobbyManagementException thrown = assertThrows(LobbyManagementException.class,
-                () -> lobbyManagement.deleteLobby("Test2"),
+                () -> lobbyManagement.deleteLobby("testcode2"),
                 "Should throw an exception when trying to delete a lobby."
         );
 
@@ -146,11 +146,11 @@ class LobbyManagementTest {
      */
     @Test
     void getLobbyTest() throws SQLException, LobbyManagementException {
-        ILobby mockLobby = new Lobby("Test2", "testcode2", userList, user1, 3);
+        ILobby mockLobby = new Lobby("testcode2", "Test2", userList, user1, 3);
 
-        when(lobbyStore.findLobby("Test2")).thenReturn(mockLobby);
+        when(lobbyStore.findLobby("testcode2")).thenReturn(mockLobby);
 
-        ILobby foundLobby = lobbyManagement.getLobby("Test2")
+        ILobby foundLobby = lobbyManagement.getLobby("testcode2")
                                            .orElse(null);
 
         assertNotNull(foundLobby);
@@ -181,10 +181,10 @@ class LobbyManagementTest {
      */
     @Test
     void failedGetLobbyTest() throws SQLException {
-        when(lobbyStore.findLobby("Test2")).thenThrow(new SQLException());
+        when(lobbyStore.findLobby("testcode2")).thenThrow(new SQLException());
 
         LobbyManagementException thrown = assertThrows(LobbyManagementException.class,
-                () -> lobbyManagement.getLobby("Test2"),
+                () -> lobbyManagement.getLobby("testcode2"),
                 "Should throw an exception when trying to get a lobby."
         );
 
@@ -194,8 +194,8 @@ class LobbyManagementTest {
     @Test
     void getLobbiesTest() throws SQLException {
         Map<String, ILobby> lobbies = new HashMap<>();
-        ILobby lobby1 = new Lobby("Test1", "testcode1", userList, firstOwner, 4);
-        ILobby lobby2 = new Lobby("Test2", "testcode2", userList, user1, 3);
+        ILobby lobby1 = new Lobby("testcode1", "Test1", userList, firstOwner, 4);
+        ILobby lobby2 = new Lobby("testcode2", "Test2", userList, user1, 3);
         lobbies.put(lobby1.getLobbyCode(), lobby1);
         lobbies.put(lobby2.getLobbyCode(), lobby2);
 
