@@ -1,5 +1,6 @@
 package de.uol.swp.client.lobby;
 
+import de.uol.swp.common.lobby.request.LobbyListRequest;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.message.CreateLobbyRequest;
@@ -11,7 +12,6 @@ import de.uol.swp.common.user.UserDTO;
  *
  * @author Marco Grawunder
  * @since 2019-11-20
- *
  */
 
 
@@ -57,5 +57,9 @@ public class LobbyService {
     public void joinLobby(String name, UserDTO user) {
         LobbyJoinUserRequest joinUserRequest = new LobbyJoinUserRequest(name, user);
         eventBus.post(joinUserRequest);
+    }
+
+    public void requestLobbyList() {
+        eventBus.post(new LobbyListRequest());
     }
 }

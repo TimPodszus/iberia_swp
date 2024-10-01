@@ -17,21 +17,52 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Represents a game turn, managing the current player, board state, and phases of the turn.
+ */
 @AllArgsConstructor
 @Getter
 @Setter
-public class GameTurn
-{
+public class GameTurn {
     private static final Logger LOG = LogManager.getLogger(GameTurn.class);
+
+    /**
+     * The player whose turn it is.
+     */
     private Player currentPlayer;
+
+    /**
+     * The game board.
+     */
     private Board board;
+
+    /**
+     * The number of actions remaining for the current player.
+     */
     private int actionsRemaining;
+
+    /**
+     * Indicates if it is the draw phase.
+     */
     private boolean isDrawPhase;
+
+    /**
+     * Indicates if it is the infection phase.
+     */
     private boolean isInfectionPhase;
+
+    /**
+     * Indicates if the turn is over.
+     */
     private boolean isTurnOver;
 
-    public GameTurn(Player currentPlayer, Board board)
-    {
+    /**
+     * Constructor to initialize a new game turn with the specified player and board.
+     *
+     * @param currentPlayer the player whose turn it is
+     * @param board         the game board
+     */
+    public GameTurn(Player currentPlayer, Board board) {
         this.currentPlayer = currentPlayer;
         this.board = board;
         this.actionsRemaining = 4;
@@ -40,17 +71,28 @@ public class GameTurn
         this.isTurnOver = false;
     }
 
-    public void startTurn() throws InterruptedException
-    {
-        LOG.info("Starte Zug für " + currentPlayer.getUser()
-                                                  .getUsername());
+    /**
+     * Starts the turn for the current player.
+     *
+     * @throws InterruptedException if the thread is interrupted while waiting
+     */
+    public void startTurn() throws InterruptedException {
+        LOG.info(
+                "Starte Zug für {}",
+                currentPlayer.getUser()
+                             .getUsername()
+        );
         while (!isTurnOver) {
             wait();
         }
     }
 
-    public void processAction(Action action)
-    {
+    /**
+     * Processes the specified action for the current player.
+     *
+     * @param action the action to process
+     */
+    public void processAction(Action action) {
         switch (action.getActionType()) {
             case MOVE:
                 // Handle movement logic
@@ -76,7 +118,6 @@ public class GameTurn
             case BUILD_TRAIN_TRACKS:
                 // Handle building train tracks
                 break;
-            // Continue for other actions
             default:
                 // Handle unknown action
                 throw new IllegalArgumentException("Unknown action type: " + action.getActionType());
@@ -85,24 +126,29 @@ public class GameTurn
         checkTurnEnd();
     }
 
-    private void checkTurnEnd()
-    {
+    /**
+     * Checks if the turn should end and starts the draw phase if no actions remain.
+     */
+    private void checkTurnEnd() {
         if (actionsRemaining <= 0) {
             startDrawPhase();
         }
     }
 
-    private void startDrawPhase()
-    {
+    /**
+     * Starts the draw phase, drawing player cards and then starting the infection phase.
+     */
+    private void startDrawPhase() {
         isDrawPhase = true;
         drawPlayerCard();
         drawPlayerCard();
-
         startInfectionPhase();
     }
 
-    private void startInfectionPhase()
-    {
+    /**
+     * Starts the infection phase, infecting cities based on the infection counter.
+     */
+    private void startInfectionPhase() {
         isInfectionPhase = true;
         int infectionCounter = board.getInfectionCounter();
         for (int i = 1; i <= infectionCounter; i++) {
@@ -111,10 +157,14 @@ public class GameTurn
         endTurn();
     }
 
-    public void endTurn()
-    {
-        LOG.info("Turn ended for player: " + currentPlayer.getUser()
-                                                          .getUsername());
+    /**
+     * Ends the current turn.
+     */
+    public void endTurn() {
+        LOG.info("Turn ended for player: {}",
+                currentPlayer.getUser()
+                             .getUsername()
+        );
         isTurnOver = true;
     }
 
@@ -123,11 +173,9 @@ public class GameTurn
      *
      * @param region the region where water treatment markers will be placed
      * @param count  the number of water treatment markers to place
-     *
      * @throws GameTurnException if there are not enough water treatment markers remaining
      */
-    public void placeWaterTreatment(Region region, int count) throws GameTurnException
-    {
+    public void placeWaterTreatment(Region region, int count) throws GameTurnException {
         int waterTreatmentsRemaining = board.getWaterTreatmentsLeft();
 
         if (waterTreatmentsRemaining < count) {
@@ -143,15 +191,14 @@ public class GameTurn
      *
      * @param city             the city where the hospital will be built
      * @param cityCardRequired whether a city card is required to build the hospital
-     *
      * @throws GameTurnException if the city already has a hospital or if the player cannot build a hospital in the specified city
      */
-    public void buildHospital(City city, boolean cityCardRequired) throws GameTurnException
-    {
-        List<City> cities = board.getCities();
+    public void buildHospital(City city, boolean cityCardRequired) throws GameTurnException {
+        List<City> cities = board.getCityRepository()
+                                 .getCities();
 
         List<City> citiesWithHospital = cities.stream()
-                                              .filter(City::isHasHospital)
+                                              .filter(City::isHospitalBuilt)
                                               .toList();
 
         boolean cityAlreadyHasHospital = citiesWithHospital.stream()
@@ -174,20 +221,18 @@ public class GameTurn
         citiesWithHospital.stream()
                           .filter(c -> c.getPlagueName()
                                         .equals(city.getPlagueName()))
-                          .forEach(c -> c.setHasHospital(false));
+                          .forEach(c -> c.setHospitalBuilt(false));
 
-        city.setHasHospital(true);
+        city.setHospitalBuilt(true);
     }
 
     /**
      * Performs the action of building a hospital in the specified city.
      *
      * @param city the city where the hospital will be built
-     *
      * @throws GameTurnException if the player does not have the required city card
      */
-    private void buildHospitalAction(City city) throws GameTurnException
-    {
+    private void buildHospitalAction(City city) throws GameTurnException {
         Optional<CityCard> card = currentPlayer.getCards()
                                                .stream()
                                                .filter(CityCard.class::isInstance)
@@ -208,13 +253,11 @@ public class GameTurn
      * Builds train tracks on the specified connection.
      *
      * @param connection the connection where the train tracks will be built
-     *
      * @throws GameTurnException if the train tracks cannot be built on the connection,
      *                           if the connection already has train tracks,
      *                           or if there are not enough tracks left to build
      */
-    public void buildTrainTracks(Connection connection) throws GameTurnException
-    {
+    public void buildTrainTracks(Connection connection) throws GameTurnException {
         if (!connection.isTrainTrackBuildable()) {
             throw new GameTurnException("Auf dieser Verbindung kann keine Zugstrecke gebaut werden");
         }
@@ -231,47 +274,60 @@ public class GameTurn
         board.setTracksLeft(board.getTracksLeft() - 1);
     }
 
-    void tradeCards(Player tradingPartner)
-    {
-        //not implemented
+    /**
+     * Trades cards with the specified trading partner.
+     *
+     * @param tradingPartner the player to trade cards with
+     */
+    void tradeCards(Player tradingPartner) {
+        // not implemented
     }
 
-    void treatInfection(City city)
-    {
-        //not implemented
+    /**
+     * Treats infection in the specified city.
+     *
+     * @param city the city where the infection will be treated
+     */
+    void treatInfection(City city) {
+        // not implemented
     }
 
-    void researchPlague()
-    {
-        //not implemented
+    /**
+     * Researches a plague.
+     */
+    void researchPlague() {
+        // not implemented
     }
 
-    void useRoleAbility()
-    {
-        //not implemented
+    /**
+     * Uses the role ability of the current player.
+     */
+    void useRoleAbility() {
+        // not implemented
     }
 
-    void move(City destination)
-    {
-        //not implemented
+    /**
+     * Moves the current player to the specified destination city.
+     *
+     * @param destination the city to move to
+     */
+    void move(City destination) {
+        // not implemented
     }
 
-    InfectionCard drawInfectionCard()
+    public InfectionCard drawInfectionCard()
     {
         //not implemented
         return null;
     }
 
-    void drawPlayerCard()
+    public void drawPlayerCard()
     {
         //not implemented
     }
 
-    void infectCity(InfectionCard infectionCard, int amount)
+    public void infectCity(InfectionCard infectionCard, int amount)
     {
         //not implemented
     }
-
-
 }
-

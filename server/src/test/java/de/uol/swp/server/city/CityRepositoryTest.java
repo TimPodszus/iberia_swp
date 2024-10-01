@@ -1,0 +1,39 @@
+package de.uol.swp.server.city;
+
+import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.CityName;
+import de.uol.swp.server.city.CityRepository;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+class CityRepositoryTest {
+    static CityRepository repository;
+    static List<City> cities;
+
+    @BeforeAll
+    static void create() {
+        repository = new CityRepository();
+        cities = repository.getCities();
+    }
+
+    @Test
+    void testGetAllCities() {
+        assertEquals(48, cities.size());
+    }
+
+    @Test
+    void testGetCityByName() {
+        List<City> city = repository.getCitiesByNames(CityName.MADRID);
+        assertNotNull(city);
+        assertEquals(
+                CityName.MADRID,
+                city.get(0)
+                    .getName()
+        );
+    }
+}
