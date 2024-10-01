@@ -2,7 +2,10 @@ package de.uol.swp.server.lobby;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.*;
+import de.uol.swp.common.lobby.request.GetLobbyRequest;
+import de.uol.swp.common.lobby.response.GetLobbyResponse;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
@@ -121,6 +124,20 @@ public class LobbyService extends AbstractService {
             );
         }
         // TODO: error handling not existing lobby
+    }
+
+    @Subscribe
+    public void onGetLobbyRequest(GetLobbyRequest request) throws LobbyManagementException {
+        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getName());
+        if (lobby.isPresent()) {
+            ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby.get());
+            GetLobbyResponse response = new GetLobbyResponse(lobbyDTO);
+            request.getMessageContext()
+                   .ifPresent(response::setMessageContext);
+            request.getSession()
+                   .ifPresent(response::setSession);
+            post(response);
+        }
     }
 
     /**
