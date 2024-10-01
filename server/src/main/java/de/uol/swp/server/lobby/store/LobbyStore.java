@@ -3,9 +3,12 @@ package de.uol.swp.server.lobby.store;
 import com.google.inject.Inject;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
+
 import de.uol.swp.server.database.DatabaseConnection;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -21,8 +24,8 @@ public class LobbyStore implements ILobbyStore {
     private static final String INSERT_LOBBY_SQL = "INSERT INTO Lobby (lobbyID, difficulty, owner, lobbyname) VALUES (?, ?, ?, ?)";
     private static final String INSERT_LOBBYUSERS_SQL = "INSERT INTO LobbyUsers (lobbyID, username) VALUES (?, ?)";
 
-    private final Connection connection ;
-
+    private Connection connection ;
+    private static final Logger LOG = LogManager.getLogger(LobbyStore.class);
     /**
      * Constructs a new LobbyStore and initializes the database connection.
      *
@@ -40,6 +43,12 @@ public class LobbyStore implements ILobbyStore {
 
     @Override
     public ILobby findLobby(String lobbyID) throws SQLException {
+        LOG.info(connection.isClosed());
+
+         this.connection = DatabaseConnection.getInstance()
+                                                .getConnection();
+
+        LOG.info(connection.isClosed());
 
         String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby WHERE lobbyID = ?";
 
@@ -55,6 +64,9 @@ public class LobbyStore implements ILobbyStore {
                 } else {
                     return null;
                 }
+            }
+            finally {
+                this.connection.close();
             }
         }
     }
@@ -74,6 +86,7 @@ public class LobbyStore implements ILobbyStore {
         ) {
 
             ps.setString(1, username);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String password = rs.getString("password");
