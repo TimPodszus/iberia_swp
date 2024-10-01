@@ -68,7 +68,6 @@ class ServerApp {
      * @since 2019-09-18
      */
     private static void createServices(Injector injector) {
-        UserManagement userManagement = injector.getInstance(UserManagement.class);
 
         // Remark: As these services are not referenced by any other class
         // we will need to create instances here (and inject dependencies)

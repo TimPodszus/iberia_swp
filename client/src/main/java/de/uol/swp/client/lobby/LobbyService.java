@@ -29,8 +29,7 @@ public class LobbyService {
     @Inject
     public LobbyService(EventBus eventBus) {
         this.eventBus = eventBus;
-        // No @Subscribe, no need to register
-        // this.eventBus.register(this);
+
     }
 
     /**
@@ -62,4 +61,5 @@ public class LobbyService {
     public void requestLobbyList() {
         eventBus.post(new LobbyListRequest());
     }
+
 }

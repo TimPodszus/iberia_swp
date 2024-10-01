@@ -72,5 +72,8 @@ public interface ILobbyStore {
      * @throws SQLException if an error occurs while saving the lobby to the database
      */
     void saveLobby(ILobby lobby) throws SQLException;
+
+    void joinUser(String lobbyCode, User user) throws SQLException;
+
 }
 

@@ -5,6 +5,7 @@ import java.net.ConnectException;
 
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.lobby.message.LobbyCreatedMessage;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -13,7 +14,7 @@ import com.google.inject.Injector;
 import de.uol.swp.client.di.ClientModule;
 import de.uol.swp.client.user.ClientUserService;
 import de.uol.swp.common.Configuration;
-import de.uol.swp.common.user.User;
+
 import de.uol.swp.common.user.exception.RegistrationExceptionMessage;
 import de.uol.swp.common.user.response.LoginSuccessfulResponse;
 import de.uol.swp.common.user.response.RegistrationSuccessfulResponse;

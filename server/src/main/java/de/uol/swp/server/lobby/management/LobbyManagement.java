@@ -77,12 +77,24 @@ public class LobbyManagement implements ILobbyManagement {
         }
     }
 
+    @Override
+    public void joinLobby(String lobbyID, User user) throws LobbyManagementException, SQLException {
+        Optional<ILobby> lobby = getLobby(lobbyID);
+        if (lobby.isPresent()) {
+            lobby.get()
+                 .joinUser(user);
+            lobbyStore.joinUser(lobbyID, user);
+        } else {
+            throw new LobbyManagementException("LobbyID " + lobbyID + " not found!");
+        }
+    }
 
-    /**
-     * Generates a unique lobby code.
-     *
-     * @return a unique lobby code
-     */
+
+        /**
+         * Generates a unique lobby code.
+         *
+         * @return a unique lobby code
+         */
     private String generateLobbyID() throws SQLException {
         String code;
         do {

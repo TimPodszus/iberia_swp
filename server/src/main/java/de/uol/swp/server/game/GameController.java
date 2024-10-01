@@ -28,7 +28,7 @@ public class GameController {
     private GameTurn currentTurn;
 
     public GameController(Lobby lobby) {
-        createPlayers((Set<User>) lobby.getUsers());
+        createPlayers(lobby.getUsers());
         this.currentPlayerIndex = 0;
         this.state = new StartState();
         state.handleAction(this, null, null);

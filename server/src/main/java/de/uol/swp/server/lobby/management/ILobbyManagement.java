@@ -3,6 +3,7 @@ package de.uol.swp.server.lobby.management;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.data.ILobby;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,4 +46,13 @@ public interface ILobbyManagement {
      * @throws LobbyManagementException if an error occurs during lobby retrieval
      */
     List<ILobby> getLobbies() throws LobbyManagementException;
+
+    /**
+     * Adds a user to a lobby.
+     *
+     * @param lobbyId the ID of the lobby to add the user to
+     * @param user    the user to add to the lobby
+     * @throws LobbyManagementException if an error occurs during user addition
+     */
+    void joinLobby(String lobbyId, User user) throws LobbyManagementException, SQLException;
 }

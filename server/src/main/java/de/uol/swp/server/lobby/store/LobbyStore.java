@@ -21,7 +21,7 @@ public class LobbyStore implements ILobbyStore {
     private static final String INSERT_LOBBY_SQL = "INSERT INTO Lobby (lobbyID, difficulty, owner, lobbyname) VALUES (?, ?, ?, ?)";
     private static final String INSERT_LOBBYUSERS_SQL = "INSERT INTO LobbyUsers (lobbyID, username) VALUES (?, ?)";
 
-    private final Connection connection;
+    private final Connection connection ;
 
     /**
      * Constructs a new LobbyStore and initializes the database connection.
@@ -40,10 +40,11 @@ public class LobbyStore implements ILobbyStore {
 
     @Override
     public ILobby findLobby(String lobbyID) throws SQLException {
+
         String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby WHERE lobbyID = ?";
 
         try (
-                PreparedStatement ps = this.connection.prepareStatement(sql)
+                PreparedStatement ps = connection.prepareStatement(sql)
         ) {
 
             ps.setString(1, lobbyID);
@@ -130,7 +131,7 @@ public class LobbyStore implements ILobbyStore {
 
 
         try (Connection connection = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = connection.prepareStatement(INSERT_LOBBY_SQL)) {
+             PreparedStatement ps = connection.prepareStatement(INSERT_LOBBYUSERS_SQL)) {
 
             ps.setString(1, lobbyCode);
             ps.setString(2, user.getUsername());
