@@ -1,4 +1,4 @@
-package de.uol.swp.server.Game.States;
+package de.uol.swp.server.game.states;
 
 import static org.mockito.Mockito.*;
 
@@ -8,11 +8,10 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.game.GameController;
 import de.uol.swp.server.game.GameTurn;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,12 +39,18 @@ public class DrawCardStateTest {
     public void testHandleAction_DrawTwoCardsAndChangeState() {
         when(controller.getCurrentTurn()).thenReturn(mock(GameTurn.class));
 
-        player.getCards().add(new CityCard(1, "Test1", "CityCard", city));
-        player.getCards().add(new CityCard(2,"Test2", "CityCard", city));
-        player.getCards().add(new CityCard(3,"Test3", "CityCard", city));
-        player.getCards().add(new CityCard(4,"Test4", "CityCard", city));
-        player.getCards().add(new CityCard(5,"Test5", "CityCard", city));
-        player.getCards().add(new CityCard(6,"Test6", "CityCard", city));
+        player.getCards()
+              .add(new CityCard(1, "Test1", "CityCard", city));
+        player.getCards()
+              .add(new CityCard(2, "Test2", "CityCard", city));
+        player.getCards()
+              .add(new CityCard(3, "Test3", "CityCard", city));
+        player.getCards()
+              .add(new CityCard(4, "Test4", "CityCard", city));
+        player.getCards()
+              .add(new CityCard(5, "Test5", "CityCard", city));
+        player.getCards()
+              .add(new CityCard(6, "Test6", "CityCard", city));
 
         state.handleAction(controller, action, player);
         state.handleAction(controller, action, player);

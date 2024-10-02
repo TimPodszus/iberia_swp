@@ -1,10 +1,8 @@
-package de.uol.swp.server.Game.States;
+package de.uol.swp.server.game.states;
 
 import static org.mockito.Mockito.*;
 
 import de.uol.swp.server.game.GameController;
-import de.uol.swp.server.game.states.StartState;
-import de.uol.swp.server.game.states.WaitForPositioning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

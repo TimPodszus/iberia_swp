@@ -1,10 +1,9 @@
-package de.uol.swp.server.Game.States;
+package de.uol.swp.server.game.states;
 
 import static org.mockito.Mockito.*;
 
 import de.uol.swp.common.game.Action;
 import de.uol.swp.server.game.GameController;
-import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
