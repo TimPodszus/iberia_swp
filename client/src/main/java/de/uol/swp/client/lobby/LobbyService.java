@@ -1,10 +1,14 @@
 package de.uol.swp.client.lobby;
 
-import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
+import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.CreateLobbyRequest;
+import de.uol.swp.common.lobby.message.request.GetLobbyRequest;
 import de.uol.swp.common.lobby.message.request.LobbyJoinUserRequest;
+import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
+import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * Classes that manages lobbies
@@ -28,8 +32,6 @@ public class LobbyService {
     @Inject
     public LobbyService(EventBus eventBus) {
         this.eventBus = eventBus;
-        // No @Subscribe, no need to register
-        // this.eventBus.register(this);
     }
 
     /**
@@ -56,5 +58,31 @@ public class LobbyService {
     public void joinLobby(String name, UserDTO user) {
         LobbyJoinUserRequest joinUserRequest = new LobbyJoinUserRequest(name, user);
         eventBus.post(joinUserRequest);
+    }
+
+    /**
+     * Posts a request to update a specified lobby on the EventBus
+     *
+     * @param lobby The lobby to be updated
+     * @param user  The user requesting the update
+     * @see UpdateLobbyRequest
+     * @since 2019-11-20
+     */
+    public void updateLobby(ILobbyDTO lobby, User user) {
+        UpdateLobbyRequest updateLobbyRequest = new UpdateLobbyRequest(lobby, user);
+        eventBus.post(updateLobbyRequest);
+    }
+
+    /**
+     * Posts a request to get a specified lobby on the EventBus
+     *
+     * @param lobbyCode The code of the lobby to retrieve
+     * @param user      The user requesting the lobby information
+     * @see GetLobbyRequest
+     * @since 2019-11-20
+     */
+    public void getLobby(String lobbyCode, User user) {
+        GetLobbyRequest getLobbyRequest = new GetLobbyRequest(lobbyCode, user);
+        eventBus.post(getLobbyRequest);
     }
 }
