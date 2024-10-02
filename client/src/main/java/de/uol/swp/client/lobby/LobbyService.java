@@ -1,6 +1,6 @@
 package de.uol.swp.client.lobby;
 
-import de.uol.swp.common.lobby.request.LobbyListRequest;
+import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;

@@ -3,8 +3,8 @@ package de.uol.swp.server.lobby;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
-import de.uol.swp.common.lobby.request.LobbyListRequest;
-import de.uol.swp.common.lobby.response.LobbyListResponse;
+import de.uol.swp.common.lobby.message.request.LobbyListRequest;
+import de.uol.swp.common.lobby.message.response.LobbyListResponse;
 import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
 import de.uol.swp.common.lobby.message.response.LobbyCreatedMessage;
@@ -71,8 +71,7 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
-        ILobby createdLobby = lobbyManagement.createLobby(
-                createLobbyRequest.getLobbyCode(),
+        ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(),
                 createLobbyRequest.getOwner()
         );
         sendToAll(new LobbyCreatedMessage(createdLobby.getName(), createLobbyRequest.getOwner()));
@@ -136,7 +135,7 @@ public class LobbyService extends AbstractService {
      * LobbyListResponse to the requester.
      *
      * @param request The LobbyListRequest found on the EventBus
-     * @see de.uol.swp.common.lobby.response.LobbyListResponse
+     * @see LobbyListResponse
      * @since 2024-09-25
      */
     @Subscribe

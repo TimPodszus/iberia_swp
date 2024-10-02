@@ -1,4 +1,4 @@
-package de.uol.swp.common.lobby.message;
+package de.uol.swp.common.lobby.message.response;
 
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import de.uol.swp.common.user.UserDTO;

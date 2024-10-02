@@ -1,4 +1,4 @@
-package de.uol.swp.common.lobby;
+package de.uol.swp.common.lobby.dto;
 
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
