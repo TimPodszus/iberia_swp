@@ -71,8 +71,11 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
-        ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
-        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), (UserDTO) createLobbyRequest.getOwner()));
+        ILobby createdLobby = lobbyManagement.createLobby(
+                createLobbyRequest.getLobbyCode(),
+                createLobbyRequest.getOwner()
+        );
+        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), createLobbyRequest.getOwner()));
     }
 
     /**
@@ -93,8 +96,7 @@ public class LobbyService extends AbstractService {
         if (lobby.isPresent()) {
             lobby.get()
                  .joinUser(lobbyJoinUserRequest.getUser());
-            sendToAllInLobby(
-                    lobbyJoinUserRequest.getLobbyCode(),
+            sendToAllInLobby(lobbyJoinUserRequest.getLobbyCode(),
                     new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser())
             );
         }
@@ -119,8 +121,7 @@ public class LobbyService extends AbstractService {
         if (lobby.isPresent()) {
             lobby.get()
                  .leaveUser(lobbyLeaveUserRequest.getUser());
-            sendToAllInLobby(
-                    lobbyLeaveUserRequest.getLobbyCode(),
+            sendToAllInLobby(lobbyLeaveUserRequest.getLobbyCode(),
                     new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
             );
         }
