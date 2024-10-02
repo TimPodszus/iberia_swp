@@ -1,5 +1,7 @@
 package de.uol.swp.client.lobby;
 
+import de.uol.swp.common.lobby.request.LobbyListRequest;
+import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.CreateLobbyRequest;
@@ -8,7 +10,6 @@ import de.uol.swp.common.lobby.message.request.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
-import org.greenrobot.eventbus.EventBus;
 
 /**
  * Classes that manages lobbies
@@ -58,6 +59,10 @@ public class LobbyService {
     public void joinLobby(String name, UserDTO user) {
         LobbyJoinUserRequest joinUserRequest = new LobbyJoinUserRequest(name, user);
         eventBus.post(joinUserRequest);
+    }
+
+    public void requestLobbyList() {
+        eventBus.post(new LobbyListRequest());
     }
 
     /**

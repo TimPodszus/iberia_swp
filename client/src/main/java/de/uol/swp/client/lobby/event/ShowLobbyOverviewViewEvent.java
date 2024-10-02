@@ -1,4 +1,4 @@
-package de.uol.swp.client.main.event;
+package de.uol.swp.client.lobby.event;
 
 public class ShowLobbyOverviewViewEvent {
 }

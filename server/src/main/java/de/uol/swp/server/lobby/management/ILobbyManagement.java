@@ -3,6 +3,7 @@ package de.uol.swp.server.lobby.management;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.data.ILobby;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,6 +37,14 @@ public interface ILobbyManagement {
      * @throws LobbyManagementException if an error occurs during lobby retrieval
      */
     Optional<ILobby> getLobby(String lobbyId) throws LobbyManagementException;
+
+    /**
+     * Retrieves a list of all lobbies.
+     *
+     * @return a list of all lobbies
+     * @throws LobbyManagementException if an error occurs during lobby retrieval
+     */
+    List<ILobby> getLobbies() throws LobbyManagementException;
 
     /**
      * Updates an existing lobby.
