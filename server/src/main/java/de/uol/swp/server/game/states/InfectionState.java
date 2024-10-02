@@ -1,42 +1,37 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.common.game.Action;
-import de.uol.swp.server.game.GameController;
-import de.uol.swp.server.game.GameTurn;
+import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.player.Player;
 
 /**
- * Represents the state in a game where cities are infected.
- * This state manages the infection process during a game, specifically managing the
- * distribution of infection across cities based on drawn infection cards.
+ * Represents the state in the game where cities are infected based on drawn infection cards.
+ * This state manages the infection process, specifically overseeing the spread of infection
+ * to cities during a player's turn. It continues infecting cities until the number of infected
+ * cities matches the game's current infection rate, at which point it transitions the game state
+ * to the next player's turn.
  */
 public class InfectionState implements IGameState {
     private int infectedCities = 0;
 
     /**
-     * Handles the action of infecting cities during a game turn.
-     * Each call to this method results in a city being infected based on an infection card drawn.
-     * The state counts the number of infected cities and, once it matches the infection counter,
-     * transitions the game to the next player's turn and updates the game state accordingly.
+     * Executes the infection process for a single turn by infecting cities based on infection cards.
+     * This method draws an infection card, uses it to infect a city, and increments the count of infected cities.
+     * When the number of cities infected during the turn equals the game's infection rate (infectionCounter),
+     * the game transitions to the next player by updating the currentPlayerIndex and sets the game state to
+     * PlayerTurnState, preparing for the next player's actions.
      *
-     * @param controller the game controller that manages state transitions and game interactions
-     * @param action     the action that triggered this method, typically involving drawing an infection card
-     * @param player     the player whose turn triggered the infection process
+     * @param game   the game context in which the infection is being handled
+     * @param player the player whose turn initiated the infection process
      */
-    public void handleAction(GameController controller, Action action, Player player) {
-        int infectionCounter = controller.getBoard()
-                                         .getInfectionCounter();
-        GameTurn currentTurn = controller.getCurrentTurn();
+    public void handleAction(Game game, Player player) {
+        int infectionCounter = game.getInfectionCounter();
 
-        currentTurn.infectCity(currentTurn.drawInfectionCard(), 1);
+        game.getCityManagement().infectCity(game.getGameManagement().drawInfectionCard(), 1);
         infectedCities++;
 
         if (infectedCities == infectionCounter) {
-            controller.setCurrentTurn(new GameTurn(controller.getPlayers()
-                                                             .get(controller.getCurrentPlayerIndex()),
-                    controller.getBoard()
-            ));
-            controller.setState(new PlayerTurnState());
+            game.setCurrentPlayerIndex((game.getCurrentPlayerIndex() + 1) % game.getPlayers().size());
+            game.setState(new PlayerTurnState());
         }
     }
 }

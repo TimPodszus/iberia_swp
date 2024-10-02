@@ -10,7 +10,7 @@ import lombok.Getter;
 public class InfectionCard extends Card {
     private final City city;
 
-    protected InfectionCard(int id, String title, String type, City city)
+    public InfectionCard(int id, String title, String type, City city)
     {
         super(id, title, type);
         this.city = city;

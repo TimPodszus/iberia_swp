@@ -19,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 public class Player {
+    @Setter
     private Role role;
     @Setter
     private City currentPosition;
