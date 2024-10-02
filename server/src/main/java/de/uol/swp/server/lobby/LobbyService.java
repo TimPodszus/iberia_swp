@@ -3,12 +3,13 @@ package de.uol.swp.server.lobby;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
-import de.uol.swp.common.lobby.message.*;
-import de.uol.swp.common.lobby.request.GetLobbyRequest;
-import de.uol.swp.common.lobby.response.GetLobbyResponse;
+import de.uol.swp.common.lobby.message.request.*;
+import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
+import de.uol.swp.common.lobby.message.response.LobbyCreatedMessage;
+import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
+import de.uol.swp.common.lobby.message.response.UserLeftLobbyMessage;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -63,15 +64,15 @@ public class LobbyService extends AbstractService {
      *
      * @param createLobbyRequest The CreateLobbyRequest found on the EventBus
      * @see LobbyManagement#createLobby(String, User)
-     * @see de.uol.swp.common.lobby.message.LobbyCreatedMessage
+     * @see LobbyCreatedMessage
      * @since 2019-10-08
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
-        lobbyManagement.createLobby(createLobbyRequest.getName(), createLobbyRequest.getOwner());
-        ILobby createdLobby = lobbyManagement.getLobby(createLobbyRequest.getName())
-                                             .orElseThrow(() -> new NoSuchElementException("Lobby not found: " + createLobbyRequest.getName()));
-        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), (UserDTO) createLobbyRequest.getOwner()));
+        lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(), createLobbyRequest.getOwner());
+        ILobby createdLobby = lobbyManagement.getLobby(createLobbyRequest.getLobbyCode())
+                                             .orElseThrow(() -> new NoSuchElementException("Lobby not found: " + createLobbyRequest.getLobbyCode()));
+        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), createLobbyRequest.getOwner()));
     }
 
     /**
@@ -82,19 +83,19 @@ public class LobbyService extends AbstractService {
      *
      * @param lobbyJoinUserRequest The LobbyJoinUserRequest found on the EventBus
      * @see ILobby
-     * @see de.uol.swp.common.lobby.message.UserJoinedLobbyMessage
+     * @see UserJoinedLobbyMessage
      * @since 2019-10-08
      */
     @Subscribe
     public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws LobbyManagementException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getName());
+        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
 
         if (lobby.isPresent()) {
             lobby.get()
                  .joinUser(lobbyJoinUserRequest.getUser());
             sendToAllInLobby(
-                    lobbyJoinUserRequest.getName(),
-                    new UserJoinedLobbyMessage(lobbyJoinUserRequest.getName(), lobbyJoinUserRequest.getUser())
+                    lobbyJoinUserRequest.getLobbyCode(),
+                    new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser())
             );
         }
         // TODO: error handling not existing lobby
@@ -108,27 +109,37 @@ public class LobbyService extends AbstractService {
      *
      * @param lobbyLeaveUserRequest The LobbyJoinUserRequest found on the EventBus
      * @see ILobby
-     * @see de.uol.swp.common.lobby.message.UserLeftLobbyMessage
+     * @see UserLeftLobbyMessage
      * @since 2019-10-08
      */
     @Subscribe
     public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) throws LobbyManagementException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getName());
+        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getLobbyCode());
 
         if (lobby.isPresent()) {
             lobby.get()
                  .leaveUser(lobbyLeaveUserRequest.getUser());
             sendToAllInLobby(
-                    lobbyLeaveUserRequest.getName(),
-                    new UserLeftLobbyMessage(lobbyLeaveUserRequest.getName(), lobbyLeaveUserRequest.getUser())
+                    lobbyLeaveUserRequest.getLobbyCode(),
+                    new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
             );
         }
         // TODO: error handling not existing lobby
     }
 
+    /**
+     * Handles GetLobbyRequests found on the EventBus.
+     * If a GetLobbyRequest is detected on the EventBus, this method is called.
+     * It retrieves the lobby information from the LobbyManagement and sends a GetLobbyResponse.
+     *
+     * @param request The GetLobbyRequest found on the EventBus
+     * @see ILobby
+     * @see GetLobbyResponse
+     * @since 2019-10-08
+     */
     @Subscribe
     public void onGetLobbyRequest(GetLobbyRequest request) throws LobbyManagementException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getName());
+        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyCode());
         if (lobby.isPresent()) {
             ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby.get());
             GetLobbyResponse response = new GetLobbyResponse(lobbyDTO);
@@ -141,11 +152,28 @@ public class LobbyService extends AbstractService {
     }
 
     /**
-     * Prepares a given ServerMessage to be send to all players in the lobby and
+     * Handles UpdateLobbyRequests found on the EventBus.
+     * If an UpdateLobbyRequest is detected on the EventBus, this method is called.
+     * It updates the lobby information in the LobbyManagement using the parameters from the request.
+     *
+     * @param request The UpdateLobbyRequest found on the EventBus
+     * @see ILobby
+     * @see ILobbyDTO
+     * @since 2019-10-08
+     */
+    @Subscribe
+    public void onUpdateLobbyRequest(UpdateLobbyRequest request) throws LobbyManagementException {
+        ILobbyDTO lobbyDTO = request.getLobbyDTO();
+        ILobby lobby = LobbyMapper.toLobby(lobbyDTO);
+        lobbyManagement.updateLobby(lobby);
+    }
+
+    /**
+     * Prepares a given ServerMessage to be sent to all players in the lobby and
      * posts it on the EventBus
      *
      * @param lobbyName Name of the lobby the players are in
-     * @param message   the message to be send to the users
+     * @param message   the message to be sent to the users
      * @see ServerMessage
      * @since 2019-10-08
      */

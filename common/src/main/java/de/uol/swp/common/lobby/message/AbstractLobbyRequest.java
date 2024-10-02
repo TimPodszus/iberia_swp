@@ -3,6 +3,7 @@ package de.uol.swp.common.lobby.message;
 import de.uol.swp.common.message.request.AbstractRequestMessage;
 import de.uol.swp.common.user.User;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Objects;
 
@@ -15,6 +16,7 @@ import java.util.Objects;
  * @since 2019-10-08
  */
 @Getter
+@Setter
 public class AbstractLobbyRequest extends AbstractRequestMessage {
 
     String lobbyCode;

@@ -52,6 +52,7 @@ public class LobbyStore implements ILobbyStore {
                 if (rs.next()) {
                     return createLobbyFromResultSet(rs);
                 } else {
+                    rs.close();
                     return null;
                 }
             }

@@ -36,4 +36,12 @@ public interface ILobbyManagement {
      * @throws LobbyManagementException if an error occurs during lobby retrieval
      */
     Optional<ILobby> getLobby(String lobbyId) throws LobbyManagementException;
+
+    /**
+     * Updates an existing lobby.
+     *
+     * @param lobby the lobby to update
+     * @throws LobbyManagementException if an error occurs during lobby update
+     */
+    void updateLobby(ILobby lobby) throws LobbyManagementException;
 }

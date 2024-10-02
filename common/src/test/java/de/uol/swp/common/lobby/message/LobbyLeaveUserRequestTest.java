@@ -1,5 +1,6 @@
 package de.uol.swp.common.lobby.message;
 
+import de.uol.swp.common.lobby.message.request.LobbyLeaveUserRequest;
 import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
@@ -8,11 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Test for the lobby leave user request
  *
- * @see de.uol.swp.common.lobby.message.LobbyLeaveUserRequest
+ * @see LobbyLeaveUserRequest
  * @since 2023-05-14
  */
- class LobbyLeaveUserRequestTest
-{
+class LobbyLeaveUserRequestTest {
 
     final String lobbyName = "Test";
     final UserDTO user = new UserDTO("Marco", "Marco");
@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     void createLobbyLeaveUserRequest() {
         LobbyLeaveUserRequest request = new LobbyLeaveUserRequest(lobbyName, user);
 
-        assertEquals(lobbyName, request.getName());
+        assertEquals(lobbyName, request.getLobbyCode());
         assertEquals(user, request.getUser());
     }
 
