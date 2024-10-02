@@ -18,8 +18,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Test class for LobbyManagement.
@@ -217,5 +216,42 @@ class LobbyManagementTest {
         );
 
         assertEquals("Failed to get lobbies", thrown.getMessage());
+    }
+
+    /**
+     * Tests the update of a lobby.
+     *
+     * @throws LobbyManagementException if there is an error in lobby management
+     */
+    @Test
+    void updateLobbyTest() throws LobbyManagementException, SQLException {
+        ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
+
+        lobbyManagement.updateLobby(lobby);
+
+        verify(lobbyStore, atLeast(1)).updateLobby(eq("Test"), eq("testcode"), anyList(), eq(firstOwner), eq(4));
+    }
+
+    /**
+     * Tests the failure of lobby update.
+     */
+    @Test
+    void failedUpdateLobbyTest() throws SQLException {
+        ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
+
+        when(lobbyStore.updateLobby(
+                eq("Test"),
+                eq("testcode"),
+                anyList(),
+                eq(firstOwner),
+                eq(4)
+        )).thenThrow(new SQLException());
+
+        LobbyManagementException thrown = assertThrows(LobbyManagementException.class,
+                () -> lobbyManagement.updateLobby(lobby),
+                "Should throw an exception when trying to update a lobby."
+        );
+
+        assertEquals("Failed to update lobby", thrown.getMessage());
     }
 }
