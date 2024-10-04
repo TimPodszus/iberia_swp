@@ -1,4 +1,4 @@
-package de.uol.swp.client.javafx.objects.cards;
+package de.uol.swp.client.game.objects.cards;
 
 import de.uol.swp.common.game.RoleCardEnum;
 import javafx.scene.layout.AnchorPane;

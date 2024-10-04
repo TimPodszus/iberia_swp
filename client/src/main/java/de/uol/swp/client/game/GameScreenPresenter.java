@@ -1,11 +1,13 @@
 package de.uol.swp.client.game;
 
 import de.uol.swp.client.AbstractPresenter;
-import de.uol.swp.client.javafx.objects.GameFigure;
-import de.uol.swp.client.javafx.objects.HospitalSymbol;
-import de.uol.swp.client.javafx.objects.PlagueCube;
-import de.uol.swp.client.javafx.objects.cards.AbstractCard;
-import de.uol.swp.client.javafx.objects.cards.RoleCard;
+import de.uol.swp.client.game.objects.GameFigure;
+import de.uol.swp.client.game.objects.HospitalSymbol;
+import de.uol.swp.client.game.objects.PlagueCube;
+import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.CityCard;
+import de.uol.swp.client.game.objects.cards.InfectionCard;
+import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleCardEnum;
@@ -99,6 +101,14 @@ public class GameScreenPresenter extends AbstractPresenter {
     @FXML
     public void initialize() {
         loadSvgIntoWebView();
+
+        setInfectionCardDiscardPile(new InfectionCard(PlagueName.YELLOW_FEVER, "A Curuna"));
+        setPlayerCardDiscardPile(new CityCard("A Coruna", "1853", PlagueName.YELLOW_FEVER));
+        setPlayerCardDrawPileCounter(10);
+        setInfectionCardDrawPileCounter(15);
+        setRoleCard(new RoleCard(RoleCardEnum.POLITICIAN, "Politician", "The politician can build a hospital in a city with a plague cube."));
+        addPlayerHandCard(new CityCard("A Coruna", "1853", PlagueName.YELLOW_FEVER));
+        addPlayerHandCard(new CityCard("Test", "1234", PlagueName.MALARIA));
     }
 
     /**
