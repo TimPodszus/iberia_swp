@@ -6,6 +6,7 @@ import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.store.ILobbyStore;
+import de.uol.swp.server.lobby.store.LobbyStoreException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,13 +46,29 @@ public class LobbyManagement implements ILobbyManagement {
         }
     }
 
+    public void leaveLobby(String lobbyID, User user) throws SQLException, LobbyStoreException {
+        ILobby lobbyToLeave = lobbyStore.findLobby(lobbyID);
+        lobbyToLeave.getUsers().remove(user);
+        lobbyStore.removeUser(lobbyID, user);
+        if (user.getUsername().equals(lobbyToLeave.getOwner().getUsername()) && !lobbyToLeave.getUsers().isEmpty()) {
+            List<User> remainingUsers = lobbyToLeave.getUsers();
+            if (!remainingUsers.isEmpty()) {
+                User newOwner = remainingUsers.get(0);
+                lobbyToLeave.updateOwner(newOwner);
+            }
+        }
+        if (lobbyToLeave.getUsers().isEmpty()) {
+            lobbyStore.removeLobby(lobbyID);
+        }
+    }
+
     public void deleteLobby(String lobbyId) throws LobbyManagementException {
         try {
             if (lobbyStore.findLobby(lobbyId) == null) {
                 throw new LobbyManagementException("LobbyID " + lobbyId + " not found!");
             }
             lobbyStore.removeLobby(lobbyId);
-        } catch (SQLException e) {
+        } catch (SQLException | LobbyStoreException e) {
             throw new LobbyManagementException("Failed to delete lobby");
         }
     }

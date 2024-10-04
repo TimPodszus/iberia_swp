@@ -1,13 +1,13 @@
-package de.uol.swp.server.Game.States;
-
-import static org.mockito.Mockito.*;
+package de.uol.swp.server.game.states;
 
 import de.uol.swp.common.game.Action;
 import de.uol.swp.server.game.GameController;
-import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class EventStateTest {
     private GameController controller;

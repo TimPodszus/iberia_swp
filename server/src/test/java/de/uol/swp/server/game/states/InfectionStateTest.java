@@ -1,4 +1,4 @@
-package de.uol.swp.server.Game.States;
+package de.uol.swp.server.game.states;
 /*
 import static org.mockito.Mockito.*;
 

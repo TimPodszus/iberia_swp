@@ -1,19 +1,22 @@
-package de.uol.swp.server.Game.States;
-
-import static org.mockito.Mockito.*;
+package de.uol.swp.server.game.states;
 
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.Action;
 import de.uol.swp.common.game.MoveAction;
 import de.uol.swp.server.game.GameController;
-import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 public class WaitForPositioningTest {
