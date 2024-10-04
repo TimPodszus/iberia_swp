@@ -101,14 +101,6 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     public void initialize() {
         loadSvgIntoWebView();
-
-        setInfectionCardDiscardPile(new InfectionCard(PlagueName.YELLOW_FEVER, "A Curuna"));
-        setPlayerCardDiscardPile(new CityCard("A Coruna", "1853", PlagueName.YELLOW_FEVER));
-        setPlayerCardDrawPileCounter(10);
-        setInfectionCardDrawPileCounter(15);
-        setRoleCard(new RoleCard(RoleCardEnum.POLITICIAN, "Politician", "The politician can build a hospital in a city with a plague cube."));
-        addPlayerHandCard(new CityCard("A Coruna", "1853", PlagueName.YELLOW_FEVER));
-        addPlayerHandCard(new CityCard("Test", "1234", PlagueName.MALARIA));
     }
 
     /**
