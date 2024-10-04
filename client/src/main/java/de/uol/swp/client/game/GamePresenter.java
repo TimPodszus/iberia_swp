@@ -40,14 +40,14 @@ import java.util.List;
  * Presenter class for the game screen.
  * Handles user interactions and updates the game screen accordingly.
  */
-public class GameScreenPresenter extends AbstractPresenter {
+public class GamePresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/GameScreen.fxml";
     private static final String INFECTION_GRADE_ID = "#infectionGrade";
     private static final String OUTBREAK_LEVEL_ID = "#outbreakLevel";
     private static final String CURE_DISPLAY_CITY_ID = "#cureDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
-    private static final Logger LOG = LogManager.getLogger(GameScreenPresenter.class);
+    private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
 
     @FXML
     private AnchorPane gameScreen;

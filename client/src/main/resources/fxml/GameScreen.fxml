@@ -17,7 +17,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane fx:id="gameScreen" onMouseDragged="#onMouseDraggedEvent" onMousePressed="#onMousePressedEvent" onScroll="#onScrollEvent" stylesheets="@../css/gameScreen.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.game.GameScreenPresenter">
+<AnchorPane fx:id="gameScreen" onMouseDragged="#onMouseDraggedEvent" onMousePressed="#onMousePressedEvent" onScroll="#onScrollEvent" stylesheets="@../css/gameScreen.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.game.GamePresenter">
     <StackPane fx:id="mapPane" minWidth="1400.0" prefWidth="1400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1050.0" prefWidth="1300.0" style="-fx-background-color: #c6ecff;" />
         <AnchorPane id="zoomPane" fx:id="zoomPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" StackPane.alignment="TOP_CENTER">
