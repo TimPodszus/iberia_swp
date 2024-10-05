@@ -5,7 +5,6 @@ import de.uol.swp.common.message.request.RequestMessage;
 import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.message.response.ResponseMessage;
 import de.uol.swp.common.message.ServerMessage;
-import de.uol.swp.server.game.GameService;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -59,7 +58,7 @@ public class ServerHandler implements ServerHandlerDelegate {
      * @see EventBus
      */
     @Inject
-    public ServerHandler(EventBus eventBus, GameService gameService) {
+    public ServerHandler(EventBus eventBus) {
         this.eventBus = eventBus;
         eventBus.register(this);
     }

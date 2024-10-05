@@ -15,7 +15,6 @@ import org.greenrobot.eventbus.Subscribe;
  * and communicates the result back to the client through status responses.
  */
 public class GameService extends AbstractService {
-
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
      *
@@ -58,13 +57,13 @@ public class GameService extends AbstractService {
      *
      * @param success a boolean indicating whether the operation was successful
      */
-    public void sendStatusRespond(boolean success) {
+    private void sendStatusRespond(boolean success) {
         StatusResponse statusResponse;
         if (success) {
             statusResponse = new StatusResponse(true, "Game wurde erfolgreich erstellt!");
         } else {
             statusResponse = new StatusResponse(false, "Game konnte nicht erstellt werden!");
         }
-        bus.post(statusResponse);
+        post(statusResponse);
     }
 }

@@ -3,13 +3,18 @@ package de.uol.swp.server.game.management;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.user.User;
+import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.Player;
+import de.uol.swp.server.role.Role;
+import de.uol.swp.server.role.RoleRepository;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,7 +22,6 @@ import java.util.List;
  * setting player positions, and handling card draws.
  */
 public class GameManagement implements IGameManagement {
-
     /**
      * Constructs a new GameManagement object.
      */
@@ -33,9 +37,69 @@ public class GameManagement implements IGameManagement {
      * @return The newly created game
      */
     public Game createAndInitializeGame(CreateGameRequest request){
-        Game game = new Game(request.getUsers(), request.getDifficulty());
+        Game game = new Game(request.getDifficulty());
         GameStore.getInstance().addGame(request.getLobbyCode(), game);
+        initializing(game, request.getUsers());
         return game;
+    }
+
+    private void initializing(Game game, List<User> users) {
+        createPlayers(users, game);
+        assignRoles(game);
+        setStartingPlayer(game);
+        initiateInfections(game);
+    }
+
+    private void createPlayers(List<User> users, Game game) {
+        for (User user : users) {
+            Player player = new Player(user);
+            game.getPlayers().add(player);
+            int cardsToDraw = switch ( game.getPlayers().size()) {
+                case 2 -> 4;
+                case 3 -> 3;
+                default -> 2;
+            };
+            for (int i = 0; i < cardsToDraw; i++) {
+                drawPlayerCard();
+            }
+        }
+
+    }
+    private void setStartingPlayer(Game game) {
+        int foundingDate = Integer.MAX_VALUE;
+        Player startingPlayer = null;
+        for (Player player : game.getPlayers()) {
+            for (Card card : player.getCards()) {
+                if (card instanceof CityCard cityCard && cityCard.getCity()
+                                                                 .getFoundationDate() < foundingDate) {
+                    foundingDate = cityCard.getCity()
+                                           .getFoundationDate();
+                    startingPlayer = player;
+                }
+            }
+        }
+        if (startingPlayer != null) {
+            game.getPlayers().remove(startingPlayer);
+            game.getPlayers().add(0, startingPlayer);
+        }
+    }
+
+    private void assignRoles(Game game) {
+        List<Role> allRoles = RoleRepository.getAllRoles();
+        Collections.shuffle(allRoles);
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            game.getPlayers().get(i)
+                   .setRole(allRoles.get(i));
+        }
+    }
+    private void initiateInfections(Game game) {
+        int infectionAmount = 3;
+        for (int i = 1; i <= 9; i++) {
+            game.getCityManagement().infectCity(drawInfectionCard(), infectionAmount);
+            if (i % 3 == 0) {
+                infectionAmount--;
+            }
+        }
     }
 
     /**

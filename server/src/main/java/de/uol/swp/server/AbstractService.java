@@ -20,7 +20,7 @@ import java.util.Collections;
 public class AbstractService {
 
 
-    public final EventBus bus;
+    private final EventBus bus;
 
     /**
      * Constructor

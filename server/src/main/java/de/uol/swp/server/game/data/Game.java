@@ -107,7 +107,7 @@ public class Game implements IGame {
      * Constructs a new Game instance with default values.
      * Initializes repositories and sets initial game state.
      */
-    public Game(List<User> users, int difficulty) {
+    public Game(int difficulty) {
         this.cityRepository = new CityRepository();
         this.regionRepository = new RegionRepository(this.cityRepository);
         this.connectionRepository = new ConnectionRepository();
@@ -124,73 +124,15 @@ public class Game implements IGame {
         this.currentPlayerIndex = 0;
         this.gameManagement = new GameManagement();
         this.cityManagement = new CityManagement();
-        createPlayers(users);
         this.state = new StartState();
         state.handleAction(this, null);
-    }
-
-    private void createPlayers(List<User> users) {
-        for (User user : users) {
-            Player player = new Player(user);
-            this.players.add(player);
-            int cardsToDraw = switch (players.size()) {
-                case 2 -> 4;
-                case 3 -> 3;
-                default -> 2;
-            };
-            for (int i = 0; i < cardsToDraw; i++) {
-                gameManagement.drawPlayerCard();
-            }
-        }
-
     }
 
     public void initializeGame(int difficulty) {
         createInfectionCards(cityRepository.getCities());
         createPlayerCards(cityRepository.getCities());
         Collections.shuffle(getInfectionCardDrawPile());
-        initiateInfections();
-        assignRoles();
         gameStartShuffle(difficulty);
-        setStartingPlayer();
-    }
-
-    private void setStartingPlayer() {
-        int foundingDate = Integer.MAX_VALUE;
-        Player startingPlayer = null;
-        for (Player player : players) {
-            for (Card card : player.getCards()) {
-                if (card instanceof CityCard cityCard && cityCard.getCity()
-                                                                 .getFoundationDate() < foundingDate) {
-                    foundingDate = cityCard.getCity()
-                                           .getFoundationDate();
-                    startingPlayer = player;
-                }
-            }
-        }
-        if (startingPlayer != null) {
-            players.remove(startingPlayer);
-            players.add(0, startingPlayer);
-        }
-    }
-
-    private void assignRoles() {
-        List<Role> allRoles = RoleRepository.getAllRoles();
-        Collections.shuffle(allRoles);
-        for (int i = 0; i < players.size(); i++) {
-            players.get(i)
-                   .setRole(allRoles.get(i));
-        }
-    }
-
-    private void initiateInfections() {
-        int infectionAmount = 3;
-        for (int i = 1; i <= 9; i++) {
-            cityManagement.infectCity(gameManagement.drawInfectionCard(), infectionAmount);
-            if (i % 3 == 0) {
-                infectionAmount--;
-            }
-        }
     }
 
     public void createInfectionCards(List<City> cities) {
