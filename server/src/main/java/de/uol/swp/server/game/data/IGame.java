@@ -3,7 +3,11 @@ package de.uol.swp.server.game.data;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.RegionRepository;
 
 import java.util.List;
@@ -123,5 +127,24 @@ public interface IGame {
      *
      * @return the player card discard pile
      */
-    List<Card> getPlayerCardDiscardPile();
+
+    List<Player> getPlayers();
+
+    ICityManagement getCityManagement();
+
+    Object getState();
+
+    void setState(IGameState state);
+
+    IGameManagement getGameManagement();
+
+    IGameState getPreviousState();
+
+    void setCurrentPlayerIndex(int count);
+
+    int getCurrentPlayerIndex();
+
+    void initializeGame(int difficulty);
+
+    int getDifficulty();
 }

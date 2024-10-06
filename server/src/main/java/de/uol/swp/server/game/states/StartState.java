@@ -1,27 +1,30 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.common.game.Action;
-import de.uol.swp.server.game.GameController;
+import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.Player;
 
 /**
- * Represents the initial state of the game where setup actions are performed.
- * This state is responsible for initializing the game setup and transitioning
- * the game state to WaitForPositioning, which typically handles player positioning at the start of the game.
+ * Represents the initial state of the game where essential setup actions are performed.
+ * This state is specifically responsible for initializing all game components and settings,
+ * and it ensures that the game is ready for player interactions by transitioning to the
+ * WaitForPositioning state, which manages initial player placement on the game board.
  */
 public class StartState implements IGameState {
 
     /**
-     * Handles the initialization action when the game starts.
-     * This method initializes the game by calling the initializeGame method on the controller
-     * and then transitions the game state to WaitForPositioning to proceed with player positioning.
+     * Executes the initial setup actions for the game when the game instance is first started.
+     * This method calls the initializeGame method on the game object, setting up the game environment
+     * based on the selected difficulty and other initial parameters. After initialization, it transitions
+     * the game state to WaitForPositioning, which allows players to place their pawns on the designated
+     * starting cities. This method is typically the first action executed in the lifecycle of a game session.
      *
-     * @param controller the game controller that manages state transitions and interactions within the game
-     * @param action the action performed by the player that triggers the initialization (usually at game start)
-     * @param player the player involved in the action; typically not used directly in the initialization phase
+     * @param game   the game context in which the setup is executed
+     * @param player the player initiating the setup; typically this parameter is not used as setup
+     *               is generally independent of specific player actions
      */
-    public void handleAction(GameController controller, Action action, Player player) {
-        controller.initializeGame();
-        controller.setState(new WaitForPositioning());
+    public void handleAction(IGame game, Player player) {
+        game.initializeGame(game.getDifficulty());
+        game.setState(new WaitForPositioning());
     }
 }
