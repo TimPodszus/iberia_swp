@@ -35,4 +35,5 @@ public class Lobby implements ILobby {
     public void leaveUser(User user) {
         // TODO document why this method is empty
     }
+
 }

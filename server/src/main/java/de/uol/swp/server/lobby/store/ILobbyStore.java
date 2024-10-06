@@ -54,7 +54,7 @@ public interface ILobbyStore {
      *
      * @param name the name of the lobby to remove
      */
-    void removeLobby(String name);
+    void removeLobby(String name) throws SQLException, LobbyStoreException;
 
     /**
      * Retrieves all lobbies currently stored in the system.
@@ -72,5 +72,8 @@ public interface ILobbyStore {
      * @throws SQLException if an error occurs while saving the lobby to the database
      */
     void saveLobby(ILobby lobby) throws SQLException;
+
+
+    void removeUser(String lobbyID, User user) throws SQLException, LobbyStoreException;
 }
 

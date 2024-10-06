@@ -78,4 +78,5 @@ public interface ILobby extends Serializable {
      * @since 2019-10-08
      */
     void leaveUser(User user);
+
 }
