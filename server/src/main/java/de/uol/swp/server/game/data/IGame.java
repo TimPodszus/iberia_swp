@@ -5,6 +5,7 @@ import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.RegionRepository;
@@ -134,4 +135,16 @@ public interface IGame {
     Object getState();
 
     void setState(IGameState state);
+
+    IGameManagement getGameManagement();
+
+    IGameState getPreviousState();
+
+    void setCurrentPlayerIndex(int count);
+
+    int getCurrentPlayerIndex();
+
+    void initializeGame(int difficulty);
+
+    int getDifficulty();
 }

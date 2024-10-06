@@ -1,6 +1,7 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.Player;
 
 /**
@@ -22,7 +23,7 @@ public class PlayerTurnState implements IGameState {
      * @param game   the game context in which the player is acting
      * @param player the player who is taking actions
      */
-    public void handleAction(Game game, Player player) {
+    public void handleAction(IGame game, Player player) {
         actionsRemaining--; // Decrement the count each time an action is processed
         if (actionsRemaining == 0) {
             game.setState(new DrawCardState()); // Transition to card drawing phase

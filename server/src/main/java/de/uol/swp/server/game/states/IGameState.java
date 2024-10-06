@@ -1,6 +1,6 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.Player;
 
 /**
@@ -19,5 +19,5 @@ public interface IGameState {
      *
      * @param player the player who performed the action
      */
-    void handleAction(Game game, Player player);
+    void handleAction(IGame game, Player player);
 }

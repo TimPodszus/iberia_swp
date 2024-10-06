@@ -1,6 +1,6 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.Player;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +23,7 @@ public class WaitForPositioning implements IGameState {
      *
      * @param player the player who is taking the action and attempting to set their starting position
      */
-    public void handleAction(Game game, Player player) {
+    public void handleAction(IGame game, Player player) {
         //Todo: SpielInitialisierung
     }
 }

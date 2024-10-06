@@ -1,6 +1,6 @@
 package de.uol.swp.server.game.management;
 
-import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.role.Role;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 class GameManagementTest {
 
     @Mock
-    private Game game;
+    private IGame game;
 
     @InjectMocks
     private GameManagement gameManagement;

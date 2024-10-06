@@ -1,6 +1,7 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.Player;
 
 /**
@@ -22,8 +23,8 @@ public class StartState implements IGameState {
      * @param player the player initiating the setup; typically this parameter is not used as setup
      *               is generally independent of specific player actions
      */
-    public void handleAction(Game game, Player player) {
-        game.initializeGame(game.getDifficulty()); // Initializes game components and settings
-        game.setState(new WaitForPositioning());    // Transitions to player positioning state
+    public void handleAction(IGame game, Player player) {
+        game.initializeGame(game.getDifficulty());
+        game.setState(new WaitForPositioning());
     }
 }

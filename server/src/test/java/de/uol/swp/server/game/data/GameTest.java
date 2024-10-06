@@ -15,7 +15,7 @@ import java.util.List;
 
 class GameTest {
 
-    private Game game;
+    private IGame game;
     private CityRepository cityRepository;
     private List<City> mockCities;
 

@@ -1,6 +1,7 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.Player;
 
 /**
@@ -21,7 +22,7 @@ public class DrawCardState implements IGameState {
      * @param game the game in which this action is being processed
      * @param player the player who is drawing the card
      */
-    public void handleAction(Game game, Player player) {
+    public void handleAction(IGame game, Player player) {
         game.getGameManagement().drawPlayerCard();
         cardsDrawn++;
         if (cardsDrawn == 2 && player.getCards().size() <= 7) {
