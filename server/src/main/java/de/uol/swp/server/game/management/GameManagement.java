@@ -40,18 +40,18 @@ public class GameManagement implements IGameManagement {
     public IGame createAndInitializeGame(CreateGameRequest request){
         IGame game = new Game(request.getDifficulty());
         GameStore.getInstance().addGame(request.getLobbyCode(), game);
-        initializing((Game) game, request.getUsers());
+        initializing(game, request.getUsers());
         return game;
     }
 
-    void initializing(Game game, List<User> users) {
+    void initializing(IGame game, List<User> users) {
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
         initiateInfections(game);
     }
 
-    private void createPlayers(List<User> users, Game game) {
+    private void createPlayers(List<User> users, IGame game) {
         for (User user : users) {
             Player player = new Player(user);
             game.getPlayers().add(player);
@@ -66,7 +66,7 @@ public class GameManagement implements IGameManagement {
         }
 
     }
-    private void setStartingPlayer(Game game) {
+    private void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
         Player startingPlayer = null;
         for (Player player : game.getPlayers()) {
@@ -85,7 +85,7 @@ public class GameManagement implements IGameManagement {
         }
     }
 
-    void assignRoles(Game game) {
+    void assignRoles(IGame game) {
         List<Role> allRoles = RoleRepository.getAllRoles();
         Collections.shuffle(allRoles);
         for (int i = 0; i < game.getPlayers().size(); i++) {
@@ -93,7 +93,7 @@ public class GameManagement implements IGameManagement {
                    .setRole(allRoles.get(i));
         }
     }
-    void initiateInfections(Game game) {
+    void initiateInfections(IGame game) {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
             game.getCityManagement().infectCity(drawInfectionCard(), infectionAmount);
@@ -113,7 +113,7 @@ public class GameManagement implements IGameManagement {
      * @param cityDTO The city to position the player at
      */
     public void setPositioning(User user, String lobbyCode, CityDTO cityDTO) {
-        Game game = getGame(lobbyCode);
+        IGame game = getGame(lobbyCode);
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<Player> players = game.getPlayers();
             Player requestPlayer = null;
@@ -142,8 +142,8 @@ public class GameManagement implements IGameManagement {
      * @param lobbyCode The code of the lobby to retrieve the game from
      * @return The game associated with the given lobby code
      */
-    private Game getGame(String lobbyCode) {
-        return (Game) GameStore.getInstance().getGame(lobbyCode);
+    private IGame getGame(String lobbyCode) {
+        return GameStore.getInstance().getGame(lobbyCode);
     }
 
     /**
@@ -162,4 +162,5 @@ public class GameManagement implements IGameManagement {
     public InfectionCard drawInfectionCard() {
         return null; // This method needs proper implementation
     }
+
 }

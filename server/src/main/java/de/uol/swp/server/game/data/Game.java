@@ -1,6 +1,5 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
@@ -14,7 +13,6 @@ import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.RegionRepository;
-import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
