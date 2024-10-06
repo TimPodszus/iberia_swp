@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -15,6 +15,7 @@ import org.greenrobot.eventbus.Subscribe;
  * and communicates the result back to the client through status responses.
  */
 public class GameService extends AbstractService {
+    GameManagement gameManagement = new GameManagement();
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
      *
@@ -35,8 +36,7 @@ public class GameService extends AbstractService {
     @Subscribe
     public void onCreateGameRequest(CreateGameRequest request) {
         boolean success = false;
-        GameManagement gameManagement = new GameManagement();
-        Game game = gameManagement.createAndInitializeGame(request);
+        IGame game = gameManagement.createAndInitializeGame(request);
         if (game != null) {
             success = true;
         }

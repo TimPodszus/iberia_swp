@@ -4,7 +4,7 @@ import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.InfectionCard;
-import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 
 public interface IGameManagement {
     /**
@@ -13,7 +13,7 @@ public interface IGameManagement {
      * @param request the game creation request containing user and difficulty information
      * @return the newly created game
      */
-    Game createAndInitializeGame(CreateGameRequest request);
+    IGame createAndInitializeGame(CreateGameRequest request);
 
     /**
      * Sets the initial positioning of a player in the game based on the provided city.

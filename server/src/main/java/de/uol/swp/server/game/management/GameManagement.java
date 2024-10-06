@@ -7,6 +7,7 @@ import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
@@ -36,14 +37,14 @@ public class GameManagement implements IGameManagement {
      * @param request The request containing the necessary data to create the game
      * @return The newly created game
      */
-    public Game createAndInitializeGame(CreateGameRequest request){
-        Game game = new Game(request.getDifficulty());
+    public IGame createAndInitializeGame(CreateGameRequest request){
+        IGame game = new Game(request.getDifficulty());
         GameStore.getInstance().addGame(request.getLobbyCode(), game);
-        initializing(game, request.getUsers());
+        initializing((Game) game, request.getUsers());
         return game;
     }
 
-    private void initializing(Game game, List<User> users) {
+    void initializing(Game game, List<User> users) {
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
@@ -84,7 +85,7 @@ public class GameManagement implements IGameManagement {
         }
     }
 
-    private void assignRoles(Game game) {
+    void assignRoles(Game game) {
         List<Role> allRoles = RoleRepository.getAllRoles();
         Collections.shuffle(allRoles);
         for (int i = 0; i < game.getPlayers().size(); i++) {
@@ -92,7 +93,7 @@ public class GameManagement implements IGameManagement {
                    .setRole(allRoles.get(i));
         }
     }
-    private void initiateInfections(Game game) {
+    void initiateInfections(Game game) {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
             game.getCityManagement().infectCity(drawInfectionCard(), infectionAmount);
