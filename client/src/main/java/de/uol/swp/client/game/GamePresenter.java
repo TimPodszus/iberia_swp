@@ -1,12 +1,16 @@
 package de.uol.swp.client.game;
 
 import de.uol.swp.client.AbstractPresenter;
-import de.uol.swp.client.javafx.objects.GameFigure;
-import de.uol.swp.client.javafx.objects.HospitalSymbol;
-import de.uol.swp.client.javafx.objects.PlagueCube;
+import de.uol.swp.client.game.objects.GameFigure;
+import de.uol.swp.client.game.objects.HospitalSymbol;
+import de.uol.swp.client.game.objects.PlagueCube;
+import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.CityCard;
+import de.uol.swp.client.game.objects.cards.InfectionCard;
+import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.RoleCard;
+import de.uol.swp.common.game.RoleCardEnum;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -36,14 +40,14 @@ import java.util.List;
  * Presenter class for the game screen.
  * Handles user interactions and updates the game screen accordingly.
  */
-public class GameScreenPresenter extends AbstractPresenter {
+public class GamePresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/GameScreen.fxml";
     private static final String INFECTION_GRADE_ID = "#infectionGrade";
     private static final String OUTBREAK_LEVEL_ID = "#outbreakLevel";
     private static final String CURE_DISPLAY_CITY_ID = "#cureDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
-    private static final Logger LOG = LogManager.getLogger(GameScreenPresenter.class);
+    private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
 
     @FXML
     private AnchorPane gameScreen;
@@ -70,25 +74,22 @@ public class GameScreenPresenter extends AbstractPresenter {
     private ImageView cureMarkerBlackImage;
 
     @FXML
-    private Pane playerCardDrawPile;
-
-    @FXML
     private Pane playerCardDiscardPile;
 
     @FXML
-    private Pane infectionCardDrawPile;
+    private Text playerCardDrawPileCounter;
 
     @FXML
     private Pane infectionCardDiscardPile;
 
     @FXML
+    private Text infectionCardDrawPileCounter;
+
+    @FXML
+    private HBox playerCardsHBox;
+
+    @FXML
     private Pane roleCard;
-
-    @FXML
-    private Pane playerCityCardsPile;
-
-    @FXML
-    private Pane playerEventCardsPile;
 
     private double mouseX;
 
@@ -329,14 +330,14 @@ public class GameScreenPresenter extends AbstractPresenter {
     public void setInfectionGrade(int oldGrade, int newGrade) {
         if (gameScreen.lookup(INFECTION_GRADE_ID + oldGrade) instanceof Circle) {
             gameScreen.lookup(INFECTION_GRADE_ID + oldGrade)
-                   .getStyleClass()
-                   .remove("infection-grade-active");
+                      .getStyleClass()
+                      .remove("infection-grade-active");
         }
 
         if (gameScreen.lookup(INFECTION_GRADE_ID + newGrade) instanceof Circle) {
             gameScreen.lookup(INFECTION_GRADE_ID + newGrade)
-                   .getStyleClass()
-                   .add("infection-grade-active");
+                      .getStyleClass()
+                      .add("infection-grade-active");
         }
     }
 
@@ -349,14 +350,14 @@ public class GameScreenPresenter extends AbstractPresenter {
     public void setOutbreakLevel(int oldLevel, int newLevel) {
         if (gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel) instanceof Circle) {
             gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel)
-                   .getStyleClass()
-                   .remove("outbreak-level-active");
+                      .getStyleClass()
+                      .remove("outbreak-level-active");
         }
 
         if (gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel) instanceof Circle) {
             gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel)
-                   .getStyleClass()
-                   .add("outbreak-level-active");
+                      .getStyleClass()
+                      .add("outbreak-level-active");
         }
     }
 
@@ -521,11 +522,11 @@ public class GameScreenPresenter extends AbstractPresenter {
      * @param cityId      the ID of the city
      * @param playerRoles the roles of the players to be added to the city
      */
-    public void setPlayerInCity(int cityId, RoleCard... playerRoles) {
+    public void setPlayerInCity(int cityId, RoleCardEnum... playerRoles) {
         StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + cityId);
 
         List<Color> playerColors = new ArrayList<>();
-        for (RoleCard role : playerRoles) {
+        for (RoleCardEnum role : playerRoles) {
             playerColors.add(Color.web(role.getColorCode()));
         }
 
@@ -535,5 +536,93 @@ public class GameScreenPresenter extends AbstractPresenter {
 
         stackPaneCity.getChildren()
                      .addAll(gameFigure);
+    }
+
+    /**
+     * Sets the infection card discard pile with the specified card.
+     *
+     * @param card the infection card to be added to the discard pile
+     */
+    public void setInfectionCardDiscardPile(AbstractCard card) {
+        infectionCardDiscardPile.getChildren()
+                                .removeAll();
+        infectionCardDiscardPile.getChildren()
+                                .add(card);
+    }
+
+    /**
+     * Sets the player card discard pile with the specified card.
+     *
+     * @param card the player card to be added to the discard pile
+     */
+    public void setPlayerCardDiscardPile(AbstractCard card) {
+        playerCardDiscardPile.getChildren()
+                             .removeAll();
+        playerCardDiscardPile.getChildren()
+                             .add(card);
+    }
+
+    /**
+     * Adds a player hand card to the player's hand.
+     *
+     * @param card the card to be added to the player's hand
+     */
+    public void addPlayerHandCard(AbstractCard card) {
+        Pane cardSlot = new Pane();
+        cardSlot.getStyleClass()
+                .add("pile");
+        cardSlot.getChildren()
+                .add(card);
+        HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
+
+        playerCardsHBox.getChildren()
+                       .add(playerCardsHBox.getChildren()
+                                           .size() - 1, cardSlot);
+    }
+
+    /**
+     * Removes a player hand card from the player's hand.
+     *
+     * @param card the card to be removed from the player's hand
+     */
+    public void removePlayerHandCard(AbstractCard card) {
+        for (Node node : playerCardsHBox.getChildren()) {
+            if (node instanceof Pane cardSlot && cardSlot.getChildren()
+                                                         .contains(card)) {
+                playerCardsHBox.getChildren()
+                               .remove(cardSlot);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Sets the role card for the player.
+     *
+     * @param roleCard the role card to be set for the player
+     */
+    public void setRoleCard(RoleCard roleCard) {
+        this.roleCard.getChildren()
+                     .removeAll();
+        this.roleCard.getChildren()
+                     .add(roleCard);
+    }
+
+    /**
+     * Sets the counter for the infection card draw pile.
+     *
+     * @param count the number to set as the counter
+     */
+    public void setInfectionCardDrawPileCounter(int count) {
+        infectionCardDrawPileCounter.setText(String.valueOf(count));
+    }
+
+    /**
+     * Sets the counter for the player card draw pile.
+     *
+     * @param count the number to set as the counter
+     */
+    public void setPlayerCardDrawPileCounter(int count) {
+        playerCardDrawPileCounter.setText(String.valueOf(count));
     }
 }

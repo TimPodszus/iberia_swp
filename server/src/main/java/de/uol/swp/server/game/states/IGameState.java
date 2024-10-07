@@ -1,7 +1,6 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.common.game.Action;
-import de.uol.swp.server.game.GameController;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.Player;
 
 /**
@@ -18,9 +17,7 @@ public interface IGameState {
      * according to the rules and logic specific to that state, potentially triggering
      * transitions to other states within the game's state machine.
      *
-     * @param controller the game controller managing the state transitions and interactions within the game
-     * @param action the action performed by the player that needs to be processed
      * @param player the player who performed the action
      */
-    void handleAction(GameController controller, Action action, Player player);
+    void handleAction(IGame game, Player player);
 }

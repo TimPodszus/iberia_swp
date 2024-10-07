@@ -5,7 +5,7 @@ import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import de.uol.swp.client.auth.LoginPresenter;
 import de.uol.swp.client.auth.events.ShowLoginViewEvent;
-import de.uol.swp.client.game.GameScreenPresenter;
+import de.uol.swp.client.game.GamePresenter;
 import de.uol.swp.client.game.event.ShowGameScreenEvent;
 import de.uol.swp.client.lobby.CurrentGamesPresenter;
 import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
@@ -279,11 +279,11 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.game.GameScreenPresenter
+     * @see GamePresenter
      */
     private void initGameScreenView() throws IOException {
         if (gameScreenScene == null) {
-            Parent rootPane = initPresenter(GameScreenPresenter.FXML);
+            Parent rootPane = initPresenter(GamePresenter.FXML);
             gameScreenScene = new Scene(rootPane, 1280, 720);
             gameScreenScene.getStylesheets()
                            .add(STYLE_SHEET);

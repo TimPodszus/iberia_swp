@@ -1,4 +1,4 @@
-package de.uol.swp.client.javafx.objects;
+package de.uol.swp.client.game.objects;
 
 import de.uol.swp.common.game.PlagueName;
 import javafx.scene.paint.Color;

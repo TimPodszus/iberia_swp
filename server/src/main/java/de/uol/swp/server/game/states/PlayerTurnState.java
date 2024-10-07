@@ -1,33 +1,32 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.common.game.Action;
-import de.uol.swp.server.game.GameController;
+import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.Player;
 
 /**
- * Represents the state in a game where it is a player's turn to take actions.
- * This state manages the actions taken by a player during their turn and
- * transitions to the next state based on the actions' outcomes.
+ * Represents the state in the game where it is a player's turn to take actions.
+ * This state is responsible for managing the actions a player takes during their turn,
+ * tracking the number of actions remaining, and transitioning to the next state based
+ * on the completion of these actions.
  */
 public class PlayerTurnState implements IGameState {
+    int actionsRemaining = 4; // Tracks the number of actions a player has left in their turn
 
     /**
-     * Handles player actions during their turn.
-     * This method processes any action taken by the player and checks if the player's
-     * turn is over. If the turn is over, it transitions the game state to the
-     * DrawCardState to proceed with drawing cards.
+     * Processes actions taken by the player during their turn in the game.
+     * This method decrements the count of actions remaining after each action taken.
+     * If the player has completed all their actions (actionsRemaining reaches zero),
+     * the game state transitions to DrawCardState, where the player will proceed to
+     * draw cards as the next phase of their turn.
      *
-     * @param controller the game controller that manages state transitions and other game interactions
-     * @param action the player's action that needs to be processed
-     * @param player the player who is taking the action
+     * @param game   the game context in which the player is acting
+     * @param player the player who is taking actions
      */
-    public void handleAction(GameController controller, Action action, Player player) {
-        controller.getCurrentTurn()
-                  .processAction(action);
-
-        if (controller.getCurrentTurn()
-                      .isTurnOver()) {
-            controller.setState(new DrawCardState());
+    public void handleAction(IGame game, Player player) {
+        actionsRemaining--; // Decrement the count each time an action is processed
+        if (actionsRemaining == 0) {
+            game.setState(new DrawCardState()); // Transition to card drawing phase
         }
     }
 }
