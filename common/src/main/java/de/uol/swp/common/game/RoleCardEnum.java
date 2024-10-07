@@ -3,7 +3,7 @@ package de.uol.swp.common.game;
 import lombok.Getter;
 
 @Getter
-public enum RoleCard {
+public enum RoleCardEnum {
     AGRICULTURAL_SCIENTIST("#60BC46"),
     POLITICIAN("#F1D61B"),
     RAILWAY_PERSON("#FF0000"),
@@ -14,7 +14,7 @@ public enum RoleCard {
 
     private final String colorCode;
 
-    RoleCard(String colorCode) {
+    RoleCardEnum(String colorCode) {
         this.colorCode = colorCode;
     }
 }

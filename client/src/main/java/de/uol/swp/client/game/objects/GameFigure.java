@@ -1,4 +1,4 @@
-package de.uol.swp.client.javafx.objects;
+package de.uol.swp.client.game.objects;
 
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
@@ -7,6 +7,7 @@ import javafx.scene.shape.ArcType;
 
 import java.util.List;
 
+// created with help from chatGPT
 public class GameFigure extends Group {
     public GameFigure(List<Color> colors) {
         createStripedCircle(colors);
