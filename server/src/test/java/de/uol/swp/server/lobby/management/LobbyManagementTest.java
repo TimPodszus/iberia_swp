@@ -295,7 +295,7 @@ class LobbyManagementTest {
 
         lobbyManagement.updateLobby(lobby);
 
-        verify(lobbyStore, atLeast(1)).updateLobby(eq("Test"), eq("testcode"), anyList(), eq(firstOwner), eq(4));
+        verify(lobbyStore, atLeast(1)).updateLobby(eq("testcode"), eq("Test"), anyList(), eq(firstOwner), eq(4));
     }
 
     /**
@@ -305,8 +305,8 @@ class LobbyManagementTest {
     void failedUpdateLobbyTest() throws SQLException {
         ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
 
-        when(lobbyStore.updateLobby(eq("Test"),
-                eq("testcode"),
+        when(lobbyStore.updateLobby(eq("testcode"),
+                eq("Test"),
                 anyList(),
                 eq(firstOwner),
                 eq(4)

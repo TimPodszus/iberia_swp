@@ -148,6 +148,9 @@ public class LobbyServiceTest extends EventBusBasedTest {
     @Test
     void updateLobbyTest() throws LobbyManagementException {
         ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
+
+        when(lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO))).thenReturn(lobby);
+
         post(new UpdateLobbyRequest(lobbyDTO, firstOwner));
 
         ArgumentCaptor<ILobby> captor = ArgumentCaptor.forClass(ILobby.class);
