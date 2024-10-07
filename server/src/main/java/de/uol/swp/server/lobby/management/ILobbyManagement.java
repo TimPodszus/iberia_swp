@@ -50,7 +50,8 @@ public interface ILobbyManagement {
      * Updates an existing lobby.
      *
      * @param lobby the lobby to update
+     * @return the updated lobby
      * @throws LobbyManagementException if an error occurs during lobby update
      */
-    void updateLobby(ILobby lobby) throws LobbyManagementException;
+    ILobby updateLobby(ILobby lobby) throws LobbyManagementException;
 }

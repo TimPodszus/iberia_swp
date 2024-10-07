@@ -4,12 +4,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
-import de.uol.swp.common.lobby.message.response.LobbyListResponse;
+import de.uol.swp.common.lobby.message.response.*;
 import de.uol.swp.common.lobby.message.request.*;
-import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
-import de.uol.swp.common.lobby.message.response.LobbyCreatedMessage;
-import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
-import de.uol.swp.common.lobby.message.response.UserLeftLobbyMessage;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.AbstractService;
@@ -189,8 +185,8 @@ public class LobbyService extends AbstractService {
     @Subscribe
     public void onUpdateLobbyRequest(UpdateLobbyRequest request) throws LobbyManagementException {
         ILobbyDTO lobbyDTO = request.getLobbyDTO();
-        ILobby lobby = LobbyMapper.toLobby(lobbyDTO);
-        lobbyManagement.updateLobby(lobby);
+        ILobby updatedLobby = lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO));
+        sendToAllInLobby(updatedLobby.getLobbyCode(), new LobbyUpdatedEvent(LobbyMapper.toDTO(updatedLobby)));
     }
 
     /**

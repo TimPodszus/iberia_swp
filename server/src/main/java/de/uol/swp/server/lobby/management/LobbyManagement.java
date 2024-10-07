@@ -77,10 +77,10 @@ public class LobbyManagement implements ILobbyManagement {
         }
     }
 
-    public void updateLobby(ILobby lobby) throws LobbyManagementException {
+    public ILobby updateLobby(ILobby lobby) throws LobbyManagementException {
         try {
-            lobbyStore.updateLobby(lobby.getName(),
-                    lobby.getLobbyCode(),
+            return lobbyStore.updateLobby(lobby.getLobbyCode(),
+                    lobby.getName(),
                     lobby.getUsers(),
                     lobby.getOwner(),
                     lobby.getDifficulty()

@@ -9,7 +9,7 @@ import de.uol.swp.client.game.GameScreenPresenter;
 import de.uol.swp.client.game.event.ShowGameScreenEvent;
 import de.uol.swp.client.lobby.CurrentGamesPresenter;
 import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
-import de.uol.swp.client.lobby.LobbyScreenPresenter;
+import de.uol.swp.client.lobby.detail.LobbyDetailPresenter;
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.main.MainMenuPresenter;
@@ -23,7 +23,6 @@ import de.uol.swp.client.register.RegistrationPresenter;
 import de.uol.swp.client.register.event.RegistrationCanceledEvent;
 import de.uol.swp.client.register.event.RegistrationErrorEvent;
 import de.uol.swp.client.register.event.ShowRegistrationViewEvent;
-import de.uol.swp.common.user.User;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -205,11 +204,11 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.lobby.LobbyScreenPresenter
+     * @see LobbyDetailPresenter
      */
     private void initLobbyScreen() throws IOException {
         if (lobbyScene == null) {
-            Parent rootPane = initPresenter(LobbyScreenPresenter.FXML);
+            Parent rootPane = initPresenter(LobbyDetailPresenter.FXML);
             lobbyScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             lobbyScene.getStylesheets()
                       .add(STYLE_SHEET);
@@ -348,7 +347,7 @@ public class SceneManager {
      */
     @Subscribe
     public void onShowCurrentGamesViewEvent(ShowCurrentGamesViewEvent event) {
-        showCurrentGamesScreen();
+        showLobbyScreen();
     }
 
     /**
