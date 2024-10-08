@@ -5,11 +5,11 @@ import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import de.uol.swp.client.auth.LoginPresenter;
 import de.uol.swp.client.auth.events.ShowLoginViewEvent;
-import de.uol.swp.client.game.GameScreenPresenter;
+import de.uol.swp.client.game.GamePresenter;
 import de.uol.swp.client.game.event.ShowGameScreenEvent;
 import de.uol.swp.client.lobby.CurrentGamesPresenter;
 import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
-import de.uol.swp.client.lobby.LobbyScreenPresenter;
+import de.uol.swp.client.lobby.detail.LobbyDetailPresenter;
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.main.MainMenuPresenter;
@@ -206,11 +206,11 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.lobby.LobbyScreenPresenter
+     * @see LobbyDetailPresenter
      */
     private void initLobbyScreen() throws IOException {
         if (lobbyScene == null) {
-            Parent rootPane = initPresenter(LobbyScreenPresenter.FXML);
+            Parent rootPane = initPresenter(LobbyDetailPresenter.FXML);
             lobbyScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             lobbyScene.getStylesheets()
                       .add(STYLE_SHEET);
@@ -281,11 +281,11 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.game.GameScreenPresenter
+     * @see GamePresenter
      */
     private void initGameScreenView() throws IOException {
         if (gameScreenScene == null) {
-            Parent rootPane = initPresenter(GameScreenPresenter.FXML);
+            Parent rootPane = initPresenter(GamePresenter.FXML);
             gameScreenScene = new Scene(rootPane, 1280, 720);
             gameScreenScene.getStylesheets()
                            .add(STYLE_SHEET);

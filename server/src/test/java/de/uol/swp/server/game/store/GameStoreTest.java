@@ -1,26 +1,29 @@
 package de.uol.swp.server.game.store;
 
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GameStoreTest {
 
-    IGameStore gameStore;
+    private GameStore gameStore;
+    private IGame game;
 
-    void setGameStore() {
-        this.gameStore = GameStore.getInstance();
+    @BeforeEach
+    void setUp() {
+        gameStore = GameStore.getInstance();
+        game = mock(IGame.class);
     }
+
 
     @Test
-    void testGameStore() {
-        setGameStore();
-        IGame game = new Game();
-
-        this.gameStore.addGame("test", game);
-
-        assertEquals(game, this.gameStore.getGame("test"));
+    void testAddAndGetGame() {
+        String lobbyId = "lobby123";
+        gameStore.addGame(lobbyId, game);
+        IGame retrievedGame = gameStore.getGame(lobbyId);
+        assertSame(game, retrievedGame, "The retrieved game should be the same as the one added.");
     }
 }
+

@@ -2,7 +2,6 @@ package de.uol.swp.client.lobby.overview;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
-
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.user.UserStore;
@@ -10,6 +9,7 @@ import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.response.LobbyListResponse;
 import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.common.lobby.message.response.LobbyListResponse;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableRow;

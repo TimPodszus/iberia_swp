@@ -10,7 +10,11 @@ import de.uol.swp.server.lobby.data.Lobby;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,14 +134,54 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public ILobby updateLobby(String lobbycode, String lobbyName, List<User> users, User owner, int difficulty) {
-        // not implemented
-        return null;
+    public ILobby updateLobby(
+            String lobbycode, String lobbyName, List<User> users, User owner, int difficulty
+    ) throws SQLException {
+        String sql = "UPDATE Lobby SET lobbyname = ?, difficulty = ?, owner = ? WHERE lobbyID = ?";
+
+        try (
+                PreparedStatement ps = this.connection.prepareStatement(sql)
+        ) {
+            ps.setString(1, lobbyName);
+            ps.setInt(2, difficulty);
+            ps.setString(3, owner.getUsername());
+            ps.setString(4, lobbycode);
+            ps.executeUpdate();
+        }
+        return findLobby(lobbycode);
     }
 
     @Override
-    public void removeLobby(String lobbyName) {
-        // not implemented
+    public void removeUser(String lobbyID, User user) throws SQLException, LobbyStoreException {
+        String sql = "DELETE FROM LobbyUsers WHERE lobbyID = ? AND username = ?";
+
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, lobbyID);
+            ps.setString(2, user.getUsername());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new LobbyStoreException("User to remove does not exist in this lobby!");
+        }
+    }
+
+
+
+    @Override
+    public void removeLobby(String lobbyID) throws SQLException, LobbyStoreException {
+        String sql = "DELETE FROM Lobby WHERE lobbyID = ?";
+
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, lobbyID);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new LobbyStoreException("Lobby to remove does not exist!");
+        }
     }
 
     public void joinUser(String lobbyCode, User user) throws SQLException {

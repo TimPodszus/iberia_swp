@@ -11,8 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.lobby.message.AbstractLobbyMessage
  * @since 2023-05-14
  */
- class AbstractLobbyMessageTest
-{
+class AbstractLobbyMessageTest {
 
     final String lobbyName = "Test";
     final UserDTO user = new UserDTO("Marco", "Marco");
@@ -30,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     void createAbstractLobbyMessage() {
         AbstractLobbyMessage message = new AbstractLobbyMessage(lobbyName, user);
 
-        assertEquals(lobbyName, message.getName());
+        assertEquals(lobbyName, message.getLobbyCode());
         assertEquals(user, message.getUser());
     }
 
@@ -45,13 +44,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     void setAbstractLobbyNameAndUser() {
         AbstractLobbyMessage message = new AbstractLobbyMessage(lobbyName, user);
 
-        assertEquals(lobbyName, message.getName());
+        assertEquals(lobbyName, message.getLobbyCode());
         assertEquals(user, message.getUser());
 
-        message.setName("Test1");
+        message.setLobbyCode("Test1");
         message.setUser(user1);
 
-        assertEquals("Test1", message.getName());
+        assertEquals("Test1", message.getLobbyCode());
         assertEquals(user1, message.getUser());
     }
 

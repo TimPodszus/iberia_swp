@@ -1,0 +1,628 @@
+package de.uol.swp.client.game;
+
+import de.uol.swp.client.AbstractPresenter;
+import de.uol.swp.client.game.objects.GameFigure;
+import de.uol.swp.client.game.objects.HospitalSymbol;
+import de.uol.swp.client.game.objects.PlagueCube;
+import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.CityCard;
+import de.uol.swp.client.game.objects.cards.InfectionCard;
+import de.uol.swp.client.game.objects.cards.RoleCard;
+import de.uol.swp.client.options.event.ShowOptionsViewEvent;
+import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.game.RoleCardEnum;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Presenter class for the game screen.
+ * Handles user interactions and updates the game screen accordingly.
+ */
+public class GamePresenter extends AbstractPresenter {
+    public static final String FXML = "/fxml/GameScreen.fxml";
+    private static final String INFECTION_GRADE_ID = "#infectionGrade";
+    private static final String OUTBREAK_LEVEL_ID = "#outbreakLevel";
+    private static final String CURE_DISPLAY_CITY_ID = "#cureDisplayCity";
+    private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
+    private static final String CONNECTION_ID = "#connection";
+    private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
+
+    @FXML
+    private AnchorPane gameScreen;
+
+    @FXML
+    private StackPane mapPane;
+
+    @FXML
+    private Pane zoomPane;
+
+    @FXML
+    private WebView webViewMap;
+
+    @FXML
+    private ImageView cureMarkerRedImage;
+
+    @FXML
+    private ImageView cureMarkerBlueImage;
+
+    @FXML
+    private ImageView cureMarkerYellowImage;
+
+    @FXML
+    private ImageView cureMarkerBlackImage;
+
+    @FXML
+    private Pane playerCardDiscardPile;
+
+    @FXML
+    private Text playerCardDrawPileCounter;
+
+    @FXML
+    private Pane infectionCardDiscardPile;
+
+    @FXML
+    private Text infectionCardDrawPileCounter;
+
+    @FXML
+    private HBox playerCardsHBox;
+
+    @FXML
+    private Pane roleCard;
+
+    private double mouseX;
+
+    private double mouseY;
+
+    /**
+     * Initializes the game screen presenter.
+     */
+    @FXML
+    public void initialize() {
+        loadSvgIntoWebView();
+    }
+
+    /**
+     * Handles scroll events for zooming in and out on the game screen.
+     *
+     * @param event the scroll event
+     */
+    @FXML
+    void onScrollEvent(ScrollEvent event) {
+        double zoomFactor = (event.getDeltaY() > 0) ? 1.01 : 0.99;
+        double newScaleX = zoomPane.getScaleX() * zoomFactor;
+        double newScaleY = zoomPane.getScaleY() * zoomFactor;
+
+        if (newScaleX >= 1 && newScaleX <= 3.0) {
+            zoomPane.setScaleX(newScaleX);
+            zoomPane.setScaleY(newScaleY);
+        }
+    }
+
+    /**
+     * Handles mouse pressed events for panning the game screen.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    void onMousePressedEvent(MouseEvent event) {
+        if (event.getButton() == MouseButton.MIDDLE) {
+            mouseX = event.getSceneX();
+            mouseY = event.getSceneY();
+        }
+    }
+
+    /**
+     * Handles mouse dragged events for panning the game screen.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    void onMouseDraggedEvent(MouseEvent event) {
+        if (event.getButton() == MouseButton.MIDDLE) {
+            double deltaX = event.getSceneX() - mouseX;
+            double deltaY = event.getSceneY() - mouseY;
+
+            double newTranslateX = zoomPane.getTranslateX() + deltaX;
+            double newTranslateY = zoomPane.getTranslateY() + deltaY;
+
+            double maxTranslateY = 0;
+
+            zoomPane.setTranslateX(newTranslateX);
+
+            if (newTranslateY <= maxTranslateY) {
+                zoomPane.setTranslateY(newTranslateY);
+            }
+
+            mouseX = event.getSceneX();
+            mouseY = event.getSceneY();
+        }
+    }
+
+    /**
+     * Handles mouse entered events to apply hover effects on shapes.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    private void onMouseEnteredEvent(MouseEvent event) {
+        Shape shape = (Shape) event.getSource();
+        if (shape instanceof Polygon) {
+            shape.getStyleClass()
+                 .add("hover-effect-polygon");
+        } else {
+            shape.getStyleClass()
+                 .add("hover-effect");
+        }
+    }
+
+    /**
+     * Handles mouse exited events to remove hover effects on shapes.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    private void onMouseExitedEvent(MouseEvent event) {
+        Shape shape = (Shape) event.getSource();
+        if (shape instanceof Polygon) {
+            shape.getStyleClass()
+                 .remove("hover-effect-polygon");
+        } else {
+            shape.getStyleClass()
+                 .remove("hover-effect");
+        }
+    }
+
+    /**
+     * Handles city clicked events.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    private void onCityClickedEvent(MouseEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
+    }
+
+    /**
+     * Handles connection clicked events.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    private void onConnectionClickedEvent(MouseEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+    }
+
+    /**
+     * Handles region clicked events.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    private void onRegionClickedEvent(MouseEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
+    }
+
+    /**
+     * Handles build train track action.
+     *
+     * @param event the action event
+     */
+    @FXML
+    private void onBuildTrainTrack(ActionEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+    }
+
+    /**
+     * Handles build hospital action.
+     *
+     * @param event the action event
+     */
+    @FXML
+    private void onBuildHospital(ActionEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
+    }
+
+    /**
+     * Handles treat cure action.
+     *
+     * @param event the action event
+     */
+    @FXML
+    private void onTreatCure(ActionEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
+    }
+
+    /**
+     * Handles share knowledge action.
+     *
+     * @param event the action event
+     */
+    @FXML
+    private void onShareKnowledge(ActionEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/87
+    }
+
+    /**
+     * Handles research cure action.
+     *
+     * @param event the action event
+     */
+    @FXML
+    private void onResearchCure(ActionEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
+    }
+
+    /**
+     * Handles place water treatment action.
+     *
+     * @param event the action event
+     */
+    @FXML
+    private void onPlaceWaterTreatment(ActionEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
+    }
+
+    /**
+     * Handles the options clicked event.
+     * Posts a ShowOptionViewEvent to the event bus.
+     *
+     * @param event the action event
+     */
+    @FXML
+    private void onOptionsClickedEvent(ActionEvent event) {
+        eventBus.post(new ShowOptionsViewEvent());
+    }
+
+    /**
+     * Handles player button clicked event.
+     *
+     * @param event the action event
+     */
+    @FXML
+    private void onPlayerButtonClickedEvent(ActionEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/146
+    }
+
+    /**
+     * Loads the SVG map into the WebView.
+     * Reads the SVG file and injects it into an HTML template to be displayed in the WebView.
+     */
+    private void loadSvgIntoWebView() {
+        WebEngine webEngine = webViewMap.getEngine();
+        try {
+            String svgContent = new String(Files.readAllBytes(Paths.get("client/src/main/resources/img/iberia-map.svg")));
+
+            String htmlContent = "<html><head><style>html, body { background-color: #c6ecff; margin: 1; padding: 0; width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }svg { width: 100%; height: 100%; object-fit: contain; }</style></head><body>" + svgContent + "</body></html>";
+            webEngine.loadContent(htmlContent, "text/html");
+        } catch (IOException e) {
+            LOG.error(e);
+        }
+    }
+
+    /**
+     * Updates the infection grade by removing the old grade's active style and adding the new grade's active style.
+     *
+     * @param oldGrade the previous infection grade
+     * @param newGrade the new infection grade
+     */
+    public void setInfectionGrade(int oldGrade, int newGrade) {
+        if (gameScreen.lookup(INFECTION_GRADE_ID + oldGrade) instanceof Circle) {
+            gameScreen.lookup(INFECTION_GRADE_ID + oldGrade)
+                      .getStyleClass()
+                      .remove("infection-grade-active");
+        }
+
+        if (gameScreen.lookup(INFECTION_GRADE_ID + newGrade) instanceof Circle) {
+            gameScreen.lookup(INFECTION_GRADE_ID + newGrade)
+                      .getStyleClass()
+                      .add("infection-grade-active");
+        }
+    }
+
+    /**
+     * Updates the outbreak level by removing the old level's active style and adding the new level's active style.
+     *
+     * @param oldLevel the previous outbreak level
+     * @param newLevel the new outbreak level
+     */
+    public void setOutbreakLevel(int oldLevel, int newLevel) {
+        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel) instanceof Circle) {
+            gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel)
+                      .getStyleClass()
+                      .remove("outbreak-level-active");
+        }
+
+        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel) instanceof Circle) {
+            gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel)
+                      .getStyleClass()
+                      .add("outbreak-level-active");
+        }
+    }
+
+    /**
+     * Sets the train connection style for the specified connection ID.
+     *
+     * @param connectionId the ID of the connection
+     */
+    public void setTrainConnection(int connectionId) {
+        Line line = (Line) mapPane.lookup(CONNECTION_ID + connectionId);
+        line.getStyleClass()
+            .add("train-connection");
+    }
+
+    /**
+     * Sets the water marks for the specified region.
+     *
+     * @param regionId   the ID of the region
+     * @param waterMarks the number of water marks to set
+     */
+    public void setWaterMarks(int regionId, int waterMarks) {
+        StackPane stackPane = (StackPane) mapPane.lookup(WATER_MARK_REGION_ID + regionId);
+
+        if (waterMarks == 0) {
+            stackPane.getStyleClass()
+                     .remove("water-mark-visible");
+            stackPane.getStyleClass()
+                     .add("water-mark");
+        } else {
+            stackPane.getStyleClass()
+                     .add("water-mark-visible");
+            stackPane.getStyleClass()
+                     .remove("water-mark");
+
+            for (Node child : stackPane.getChildren()) {
+                if (child instanceof Text text) {
+                    text.setText(String.valueOf(waterMarks));
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the plague cubes to the specified city.
+     *
+     * @param cityId     the ID of the city
+     * @param plagueName the name of the plague
+     * @param cubes      the number of plague cubes to set
+     */
+    public void setPlaqueCubesToCity(int cityId, PlagueName plagueName, int cubes) {
+        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + cityId);
+
+        ObservableList<Node> existingPlaques = cureDisplayVBox.getChildren();
+
+        HBox plaqueHBox = new HBox();
+        for (Node node : existingPlaques) {
+            if (node.getUserData() == plagueName) {
+                cureDisplayVBox.getChildren()
+                               .remove(node);
+                break;
+            }
+        }
+
+        PlagueCube plagueCube = new PlagueCube(plagueName);
+
+        HBox.setMargin(plagueCube, new Insets(1.0, 1.0, 1.0, 1.0));
+
+        Text text = new Text(String.valueOf(cubes));
+        text.setFont(new Font(8.0));
+        text.setStrokeType(StrokeType.OUTSIDE);
+        text.setStrokeWidth(0.0);
+
+        plaqueHBox.getChildren()
+                  .addAll(plagueCube, text);
+        if (cubes == 3) {
+            plaqueHBox.getStyleClass()
+                      .add("cure-cubes-display-warning");
+        } else {
+            plaqueHBox.getStyleClass()
+                      .add("cure-cubes-display");
+        }
+
+        cureDisplayVBox.getChildren()
+                       .add(plaqueHBox);
+    }
+
+    /**
+     * Sets the researched cures.
+     *
+     * @param researchedCures an array of researched plague names
+     */
+    public void setResearchedCures(PlagueName[] researchedCures) {
+        cureMarkerRedImage.setVisible(false);
+        cureMarkerBlueImage.setVisible(false);
+        cureMarkerYellowImage.setVisible(false);
+        cureMarkerBlackImage.setVisible(false);
+
+        for (PlagueName plagueName : researchedCures) {
+            if (plagueName == PlagueName.YELLOW_FEVER) {
+                cureMarkerYellowImage.setVisible(true);
+            } else if (plagueName == PlagueName.CHOLERA) {
+                cureMarkerBlueImage.setVisible(true);
+            } else if (plagueName == PlagueName.TYPHUS) {
+                cureMarkerRedImage.setVisible(true);
+            } else if (plagueName == PlagueName.MALARIA) {
+                cureMarkerBlackImage.setVisible(true);
+            }
+        }
+    }
+
+    /**
+     * Sets the hospital to the specified city.
+     *
+     * @param cityId     the ID of the city
+     * @param plagueName the name of the plague
+     * @param oldCityId  the ID of the old city
+     */
+    public void setHospitalToCity(int cityId, PlagueName plagueName, int oldCityId) {
+        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + oldCityId);
+
+        for (Node node : cureDisplayVBox.getChildren()) {
+            if (node instanceof HBox hbox && hbox.getStyleClass()
+                                                 .contains("hospital")) {
+                cureDisplayVBox.getChildren()
+                               .remove(hbox);
+                break;
+            }
+        }
+
+        setHospitalToCity(cityId, plagueName);
+    }
+
+    /**
+     * Sets the hospital to the specified city.
+     *
+     * @param cityId     the ID of the city
+     * @param plagueName the name of the plague
+     */
+    public void setHospitalToCity(int cityId, PlagueName plagueName) {
+        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + cityId);
+
+        HBox hospitalHBox = new HBox();
+
+        HospitalSymbol hospitalSymbol = new HospitalSymbol(plagueName);
+
+        HBox.setMargin(hospitalSymbol, new Insets(1.0, 1.0, 1.0, 1.0));
+
+        hospitalHBox.getChildren()
+                    .add(hospitalSymbol);
+        hospitalHBox.getStyleClass()
+                    .add("hospital");
+
+        cureDisplayVBox.getChildren()
+                       .add(0, hospitalHBox);
+    }
+
+    /**
+     * Sets the player(s) in the specified city.
+     * Adds a `GameFigure` representing the player(s) to the city's `StackPane`.
+     *
+     * @param cityId      the ID of the city
+     * @param playerRoles the roles of the players to be added to the city
+     */
+    public void setPlayerInCity(int cityId, RoleCardEnum... playerRoles) {
+        StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + cityId);
+
+        List<Color> playerColors = new ArrayList<>();
+        for (RoleCardEnum role : playerRoles) {
+            playerColors.add(Color.web(role.getColorCode()));
+        }
+
+        GameFigure gameFigure = new GameFigure(playerColors);
+        gameFigure.setTranslateX(0);
+        gameFigure.setTranslateY(0);
+
+        stackPaneCity.getChildren()
+                     .addAll(gameFigure);
+    }
+
+    /**
+     * Sets the infection card discard pile with the specified card.
+     *
+     * @param card the infection card to be added to the discard pile
+     */
+    public void setInfectionCardDiscardPile(AbstractCard card) {
+        infectionCardDiscardPile.getChildren()
+                                .removeAll();
+        infectionCardDiscardPile.getChildren()
+                                .add(card);
+    }
+
+    /**
+     * Sets the player card discard pile with the specified card.
+     *
+     * @param card the player card to be added to the discard pile
+     */
+    public void setPlayerCardDiscardPile(AbstractCard card) {
+        playerCardDiscardPile.getChildren()
+                             .removeAll();
+        playerCardDiscardPile.getChildren()
+                             .add(card);
+    }
+
+    /**
+     * Adds a player hand card to the player's hand.
+     *
+     * @param card the card to be added to the player's hand
+     */
+    public void addPlayerHandCard(AbstractCard card) {
+        Pane cardSlot = new Pane();
+        cardSlot.getStyleClass()
+                .add("pile");
+        cardSlot.getChildren()
+                .add(card);
+        HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
+
+        playerCardsHBox.getChildren()
+                       .add(playerCardsHBox.getChildren()
+                                           .size() - 1, cardSlot);
+    }
+
+    /**
+     * Removes a player hand card from the player's hand.
+     *
+     * @param card the card to be removed from the player's hand
+     */
+    public void removePlayerHandCard(AbstractCard card) {
+        for (Node node : playerCardsHBox.getChildren()) {
+            if (node instanceof Pane cardSlot && cardSlot.getChildren()
+                                                         .contains(card)) {
+                playerCardsHBox.getChildren()
+                               .remove(cardSlot);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Sets the role card for the player.
+     *
+     * @param roleCard the role card to be set for the player
+     */
+    public void setRoleCard(RoleCard roleCard) {
+        this.roleCard.getChildren()
+                     .removeAll();
+        this.roleCard.getChildren()
+                     .add(roleCard);
+    }
+
+    /**
+     * Sets the counter for the infection card draw pile.
+     *
+     * @param count the number to set as the counter
+     */
+    public void setInfectionCardDrawPileCounter(int count) {
+        infectionCardDrawPileCounter.setText(String.valueOf(count));
+    }
+
+    /**
+     * Sets the counter for the player card draw pile.
+     *
+     * @param count the number to set as the counter
+     */
+    public void setPlayerCardDrawPileCounter(int count) {
+        playerCardDrawPileCounter.setText(String.valueOf(count));
+    }
+}

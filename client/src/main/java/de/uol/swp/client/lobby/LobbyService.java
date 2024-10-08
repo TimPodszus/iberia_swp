@@ -1,10 +1,14 @@
 package de.uol.swp.client.lobby;
 
-import de.uol.swp.common.lobby.request.LobbyListRequest;
+import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
-import de.uol.swp.common.lobby.message.CreateLobbyRequest;
-import de.uol.swp.common.lobby.message.LobbyJoinUserRequest;
+import de.uol.swp.common.lobby.dto.ILobbyDTO;
+import de.uol.swp.common.lobby.message.request.CreateLobbyRequest;
+import de.uol.swp.common.lobby.message.request.GetLobbyRequest;
+import de.uol.swp.common.lobby.message.request.LobbyJoinUserRequest;
+import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
+import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 
 /**
@@ -37,7 +41,7 @@ public class LobbyService {
      *
      * @param name Name chosen for the new lobby
      * @param user User who wants to create the new lobby
-     * @see de.uol.swp.common.lobby.message.CreateLobbyRequest
+     * @see CreateLobbyRequest
      * @since 2019-11-20
      */
     public void createNewLobby(String name, UserDTO user) {
@@ -50,7 +54,7 @@ public class LobbyService {
      *
      * @param name Name of the lobby the user wants to join
      * @param user User who wants to join the lobby
-     * @see de.uol.swp.common.lobby.message.LobbyJoinUserRequest
+     * @see LobbyJoinUserRequest
      * @since 2019-11-20
      */
     public void joinLobby(String name, UserDTO user) {
@@ -62,4 +66,30 @@ public class LobbyService {
         eventBus.post(new LobbyListRequest());
     }
 
+
+    /**
+     * Posts a request to update a specified lobby on the EventBus
+     *
+     * @param lobby The lobby to be updated
+     * @param user  The user requesting the update
+     * @see UpdateLobbyRequest
+     * @since 2024-10-08
+     */
+    public void updateLobby(ILobbyDTO lobby, User user) {
+        UpdateLobbyRequest updateLobbyRequest = new UpdateLobbyRequest(lobby, user);
+        eventBus.post(updateLobbyRequest);
+    }
+
+    /**
+     * Posts a request to get a specified lobby on the EventBus
+     *
+     * @param lobbyCode The code of the lobby to retrieve
+     * @param user      The user requesting the lobby information
+     * @see GetLobbyRequest
+     * @since 2024-10-08
+     */
+    public void getLobby(String lobbyCode, User user) {
+        GetLobbyRequest getLobbyRequest = new GetLobbyRequest(lobbyCode, user);
+        eventBus.post(getLobbyRequest);
+    }
 }

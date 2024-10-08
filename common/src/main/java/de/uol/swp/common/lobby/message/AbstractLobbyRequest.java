@@ -1,7 +1,7 @@
 package de.uol.swp.common.lobby.message;
 
 import de.uol.swp.common.message.request.AbstractRequestMessage;
-import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.common.user.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,9 +10,9 @@ import java.util.Objects;
 /**
  * Base class of all lobby request messages. Basic handling of lobby data.
  *
+ * @author Marco Grawunder
  * @see de.uol.swp.common.user.User
  * @see AbstractRequestMessage
- * @author Marco Grawunder
  * @since 2019-10-08
  */
 @Getter
@@ -20,7 +20,8 @@ import java.util.Objects;
 public class AbstractLobbyRequest extends AbstractRequestMessage {
 
     String lobbyCode;
-    UserDTO user;
+
+    User user;
 
     /**
      * Default constructor
@@ -35,7 +36,7 @@ public class AbstractLobbyRequest extends AbstractRequestMessage {
      * Constructor
      *
      * @param lobbyCode name of the lobby
-     * @param user user responsible for the creation of this message
+     * @param user      user responsible for the creation of this message
      * @since 2019-10-08
      */
     public AbstractLobbyRequest(String lobbyCode, UserDTO user) {
@@ -46,11 +47,14 @@ public class AbstractLobbyRequest extends AbstractRequestMessage {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AbstractLobbyRequest that = (AbstractLobbyRequest) o;
-        return Objects.equals(lobbyCode, that.lobbyCode) &&
-                Objects.equals(user, that.user);
+        return Objects.equals(lobbyCode, that.lobbyCode) && Objects.equals(user, that.user);
     }
 
     @Override
