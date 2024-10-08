@@ -71,7 +71,7 @@ public class LobbyService {
      * @param lobby The lobby to be updated
      * @param user  The user requesting the update
      * @see UpdateLobbyRequest
-     * @since 2019-11-20
+     * @since 2024-10-08
      */
     public void updateLobby(ILobbyDTO lobby, User user) {
         UpdateLobbyRequest updateLobbyRequest = new UpdateLobbyRequest(lobby, user);
@@ -84,7 +84,7 @@ public class LobbyService {
      * @param lobbyCode The code of the lobby to retrieve
      * @param user      The user requesting the lobby information
      * @see GetLobbyRequest
-     * @since 2019-11-20
+     * @since 2024-10-08
      */
     public void getLobby(String lobbyCode, User user) {
         GetLobbyRequest getLobbyRequest = new GetLobbyRequest(lobbyCode, user);

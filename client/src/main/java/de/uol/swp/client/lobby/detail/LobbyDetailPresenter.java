@@ -161,6 +161,11 @@ public class LobbyDetailPresenter extends AbstractPresenter {
                  .setAll(userListItems);
     }
 
+    /**
+     * Sets the accessibility of the lobby controls based on the ownership status.
+     * Disables the start game button, lobby password field, and difficulty dropdown
+     * if the current user is not the owner of the lobby.
+     */
     private void setAccessibility() {
         boolean isOwner = lobbyDTO.getOwner()
                                   .equals(UserStore.getInstance()
@@ -188,6 +193,14 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * Handles the event when the lobby is closed.
      */
     public void onLobbyClose() {
+        // TODO: Implement lobby close
+    }
+
+    /**
+     * Handles the event when the back button is pressed.
+     * Posts a ShowLastSceneEvent to the event bus.
+     */
+    public void onBackButtonPressed() {
         eventBus.post(new ShowLastSceneEvent());
     }
 }

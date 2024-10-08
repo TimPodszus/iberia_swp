@@ -347,7 +347,7 @@ public class SceneManager {
      */
     @Subscribe
     public void onShowCurrentGamesViewEvent(ShowCurrentGamesViewEvent event) {
-        showLobbyScreen();
+        showCurrentGamesScreen();
     }
 
     /**
