@@ -8,8 +8,7 @@ public abstract class CardDTO {
     private final String title;
     private final String type;
 
-    protected CardDTO(int id, String title, String type)
-    {
+    protected CardDTO(int id, String title, String type) {
         this.id = id;
         this.title = title;
         this.type = type;

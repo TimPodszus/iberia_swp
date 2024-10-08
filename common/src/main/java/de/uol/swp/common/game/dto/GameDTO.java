@@ -8,6 +8,7 @@ import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 import java.util.List;
 
 @Getter

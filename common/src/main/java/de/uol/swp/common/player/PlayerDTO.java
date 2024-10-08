@@ -4,6 +4,7 @@ import de.uol.swp.common.cards.CardDTO;
 import de.uol.swp.common.city.CityDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 import java.util.List;
 
 @Getter

@@ -9,8 +9,7 @@ import lombok.Getter;
 public class EpidemicCardDTO extends CardDTO {
     private final String description;
 
-    public EpidemicCardDTO(int id, String title, String type, String description)
-    {
+    public EpidemicCardDTO(int id, String title, String type, String description) {
         super(id, title, type);
         this.description = description;
     }
