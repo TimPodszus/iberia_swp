@@ -128,6 +128,8 @@ public interface IGame {
      * @return the player card discard pile
      */
 
+    List<Card> getPlayerCardDiscardPile();
+
     List<Player> getPlayers();
 
     ICityManagement getCityManagement();
