@@ -1,4 +1,4 @@
-package de.uol.swp.server.usermanagement.communication;
+package de.uol.swp.server.communication;
 
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.User;

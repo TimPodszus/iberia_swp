@@ -3,7 +3,8 @@ package de.uol.swp.client;
 
 import java.net.ConnectException;
 
-import de.uol.swp.common.lobby.message.LobbyCreatedMessage;
+import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.lobby.message.response.LobbyCreatedMessage;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -12,7 +13,6 @@ import com.google.inject.Injector;
 import de.uol.swp.client.di.ClientModule;
 import de.uol.swp.client.user.ClientUserService;
 import de.uol.swp.common.Configuration;
-import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.exception.RegistrationExceptionMessage;
 import de.uol.swp.common.user.response.LoginSuccessfulResponse;
 import de.uol.swp.common.user.response.RegistrationSuccessfulResponse;
@@ -46,13 +46,13 @@ public class ClientApp extends Application implements ConnectionListener {
 
     private ClientUserService userService;
 
-    private User user;
-
     private ClientConnection clientConnection;
 
     private EventBus eventBus;
 
     private SceneManager sceneManager;
+
+    private UserStore userStore = UserStore.getInstance();
 
     // -----------------------------------------------------
     // Java FX Methods
@@ -123,9 +123,9 @@ public class ClientApp extends Application implements ConnectionListener {
 
     @Override
     public void stop() throws InterruptedException {
-        if (userService != null && user != null) {
-            userService.logout(user);
-            user = null;
+        if (userService != null && userStore.getUser() != null) {
+            userService.logout(userStore.getUser());
+            userStore.setUser(null);
         }
         eventBus.unregister(this);
         // Important: Close connection so connection thread can terminate
@@ -157,8 +157,9 @@ public class ClientApp extends Application implements ConnectionListener {
                 message.getUser()
                        .getUsername()
         );
-        this.user = message.getUser();
-        sceneManager.showMainScreen(user);
+        this.userStore.setUser(message.getUser());
+
+        sceneManager.showMainScreen();
     }
 
     /**

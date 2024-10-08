@@ -1,14 +1,15 @@
-package de.uol.swp.common.lobby.message;
+package de.uol.swp.common.lobby.message.request;
 
+import de.uol.swp.common.lobby.message.AbstractLobbyRequest;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 
 /**
  * Request sent to the server when a user wants to create a new lobby
  *
+ * @author Marco Grawunder
  * @see de.uol.swp.common.lobby.message.AbstractLobbyRequest
  * @see de.uol.swp.common.user.User
- * @author Marco Grawunder
  * @since 2019-10-08
  */
 public class CreateLobbyRequest extends AbstractLobbyRequest {
@@ -25,7 +26,7 @@ public class CreateLobbyRequest extends AbstractLobbyRequest {
     /**
      * Constructor
      *
-     * @param name name of the lobby
+     * @param name  name of the lobby
      * @param owner User trying to create the lobby
      * @since 2019-10-08
      */
@@ -36,7 +37,7 @@ public class CreateLobbyRequest extends AbstractLobbyRequest {
     /**
      * Setter for the user variable
      *
-     * @param owner  User trying to create the lobby
+     * @param owner User trying to create the lobby
      * @since 2019-10-08
      */
     public void setOwner(UserDTO owner) {

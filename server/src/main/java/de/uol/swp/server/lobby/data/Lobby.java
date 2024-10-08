@@ -36,4 +36,19 @@ public class Lobby implements ILobby {
         // TODO document why this method is empty
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof ILobby) {
+            return lobbyCode.equals(((ILobby) o).getLobbyCode());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return lobbyCode.hashCode();
+    }
 }

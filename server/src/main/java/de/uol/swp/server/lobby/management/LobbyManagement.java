@@ -94,6 +94,19 @@ public class LobbyManagement implements ILobbyManagement {
         }
     }
 
+    public ILobby updateLobby(ILobby lobby) throws LobbyManagementException {
+        try {
+            return lobbyStore.updateLobby(lobby.getLobbyCode(),
+                    lobby.getName(),
+                    lobby.getUsers(),
+                    lobby.getOwner(),
+                    lobby.getDifficulty()
+            );
+        } catch (SQLException e) {
+            throw new LobbyManagementException("Failed to update lobby");
+        }
+    }
+
 
     /**
      * Generates a unique lobby code.

@@ -1,5 +1,6 @@
-package de.uol.swp.common.lobby.message;
+package de.uol.swp.common.lobby.message.response;
 
+import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
@@ -8,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Test for the user joined lobby message
  *
- * @see de.uol.swp.common.lobby.message.UserJoinedLobbyMessage
+ * @see UserJoinedLobbyMessage
  * @since 2023-05-14
  */
- class UserJoinedLobbyMessageTest {
+class UserJoinedLobbyMessageTest {
 
     final String lobbyName = "Test";
     final UserDTO user = new UserDTO("Marco", "Marco");
@@ -28,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     void createUserJoinedLobbyMessage() {
         UserJoinedLobbyMessage message = new UserJoinedLobbyMessage(lobbyName, user);
 
-        assertEquals(lobbyName, message.getName());
+        assertEquals(lobbyName, message.getLobbyCode());
         assertEquals(user, message.getUser());
     }
 
