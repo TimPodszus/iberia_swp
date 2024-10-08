@@ -1,4 +1,4 @@
-package de.uol.swp.server.Game.States;
+package de.uol.swp.server.game.States;
 
 import static org.mockito.Mockito.*;
 
@@ -9,7 +9,7 @@ import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class EventStateTest {
+ class EventStateTest {
     private GameController controller;
     private Action action;
     private Player player;
@@ -24,7 +24,7 @@ public class EventStateTest {
     }
 
     @Test
-    public void testHandleAction_RevertToPreviousState() {
+     void testHandleAction_RevertToPreviousState() {
         state.handleAction(controller, action, player);
         verify(controller).setState(controller.getPreviousState());
     }

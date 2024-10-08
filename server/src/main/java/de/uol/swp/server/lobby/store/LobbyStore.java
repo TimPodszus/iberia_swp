@@ -37,7 +37,7 @@ public class LobbyStore implements ILobbyStore {
             this.connection = DatabaseConnection.getInstance()
                                                 .getConnection();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOG.error("Failed to connect to the database: " + e.getMessage());
         }
     }
 
@@ -45,9 +45,11 @@ public class LobbyStore implements ILobbyStore {
     public ILobby findLobby(String lobbyID) throws SQLException {
         LOG.info(connection.isClosed());
 
+        if(connection.isClosed()){
          this.connection = DatabaseConnection.getInstance()
                                                 .getConnection();
-
+         LOG.info("Connection retry");
+        }
         LOG.info(connection.isClosed());
 
         String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby WHERE lobbyID = ?";
@@ -65,9 +67,7 @@ public class LobbyStore implements ILobbyStore {
                     return null;
                 }
             }
-            finally {
-                this.connection.close();
-            }
+
         }
     }
 

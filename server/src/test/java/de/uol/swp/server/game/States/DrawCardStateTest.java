@@ -1,4 +1,4 @@
-package de.uol.swp.server.Game.States;
+package de.uol.swp.server.game.States;
 
 import static org.mockito.Mockito.*;
 
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DrawCardStateTest {
+ class DrawCardStateTest {
     private GameController controller;
     private Action action;
     private Player player;
@@ -37,7 +37,7 @@ public class DrawCardStateTest {
     }
 
     @Test
-    public void testHandleAction_DrawTwoCardsAndChangeState() {
+     void testHandleAction_DrawTwoCardsAndChangeState() {
         when(controller.getCurrentTurn()).thenReturn(mock(GameTurn.class));
 
         player.getCards().add(new CityCard(1, "Test1", "CityCard", city));

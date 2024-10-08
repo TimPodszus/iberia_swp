@@ -81,19 +81,16 @@ public class LobbyService extends AbstractService {
      * to every user in the lobby.
      *
      * @param lobbyJoinUserRequest The LobbyJoinUserRequest found on the EventBus
-     * @see ILobby
-     * @see de.uol.swp.common.lobby.message.UserJoinedLobbyMessage
-     * @since 2019-10-08
      */
     @Subscribe
     public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws LobbyManagementException, SQLException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
-        if (lobby.isPresent()) {
-            lobbyManagement.joinLobby(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser());
+        Optional<ILobby> optionalLobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
+        if (optionalLobby.isPresent()) {
+            ILobby lobby = optionalLobby.get();
+            lobbyManagement.joinLobby(lobby, lobbyJoinUserRequest.getUser());
             sendToAllInLobby(lobbyJoinUserRequest.getLobbyCode(), new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(),
                     lobbyJoinUserRequest.getUser()));
-        }
-        else {
+        } else {
             throw new LobbyManagementException("Lobby not found");
         }
     }
@@ -121,7 +118,9 @@ public class LobbyService extends AbstractService {
                     new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
             );
         }
-        // TODO: error handling not existing lobby
+        else {
+            throw new LobbyManagementException("Lobby not found");
+        }
     }
 
     /**

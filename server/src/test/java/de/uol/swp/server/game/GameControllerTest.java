@@ -1,9 +1,7 @@
-package de.uol.swp.server.Game;
+package de.uol.swp.server.game;
 
 
 import de.uol.swp.common.game.Action;
-import de.uol.swp.server.game.GameController;
-import de.uol.swp.server.game.GameTurn;
 import de.uol.swp.server.lobby.data.Lobby;
 import org.junit.jupiter.api.BeforeEach;
 import de.uol.swp.common.user.User;

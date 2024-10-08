@@ -1,6 +1,7 @@
 package de.uol.swp.server.lobby.management;
 
 import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.lobby.data.ILobby;
 
 import java.sql.SQLException;
@@ -47,12 +48,13 @@ public interface ILobbyManagement {
      */
     List<ILobby> getLobbies() throws LobbyManagementException;
 
-    /**
-     * Adds a user to a lobby.
-     *
-     * @param lobbyId the ID of the lobby to add the user to
-     * @param user    the user to add to the lobby
-     * @throws LobbyManagementException if an error occurs during user addition
+
+
+   /**
+     * Allows a user to join a specified lobby.
+     * @param lobby an Optional containing the lobby to join
+     * @throws LobbyManagementException if an error occurs during the join process
+     * @throws SQLException if a database access error occurs
      */
-    void joinLobby(String lobbyId, User user) throws LobbyManagementException, SQLException;
+    void joinLobby(ILobby lobby, UserDTO user) throws LobbyManagementException, SQLException;
 }

@@ -1,4 +1,4 @@
-package de.uol.swp.server.Game.States;
+package de.uol.swp.server.game.States;
 
 import static org.mockito.Mockito.*;
 
@@ -8,7 +8,7 @@ import de.uol.swp.server.game.states.WaitForPositioning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class StartStateTest {
+ class StartStateTest {
     private GameController controller;
     private StartState state;
 
@@ -19,7 +19,7 @@ public class StartStateTest {
     }
 
     @Test
-    public void testHandleAction_InitializesGameAndSetsNextState() {
+     void testHandleAction_InitializesGameAndSetsNextState() {
         state.handleAction(controller, null, null);
 
         verify(controller).initializeGame();

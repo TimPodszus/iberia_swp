@@ -3,6 +3,7 @@ package de.uol.swp.server.lobby.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.store.ILobbyStore;
@@ -78,14 +79,13 @@ public class LobbyManagement implements ILobbyManagement {
     }
 
     @Override
-    public void joinLobby(String lobbyID, User user) throws LobbyManagementException, SQLException {
-        Optional<ILobby> lobby = getLobby(lobbyID);
-        if (lobby.isPresent()) {
-            lobby.get()
-                 .joinUser(user);
+    public void joinLobby(ILobby lobby, UserDTO user) throws LobbyManagementException, SQLException {
+        if (lobby != null) {
+            String lobbyID = lobby.getLobbyCode();
+            lobby.joinUser(user);
             lobbyStore.joinUser(lobbyID, user);
         } else {
-            throw new LobbyManagementException("LobbyID " + lobbyID + " not found!");
+            throw new LobbyManagementException("Lobby not found!");
         }
     }
 

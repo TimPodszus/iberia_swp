@@ -1,4 +1,4 @@
-package de.uol.swp.server.Game.States;
+package de.uol.swp.server.game.States;
 
 import static org.mockito.Mockito.*;
 
@@ -16,19 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class WaitForPositioningTest {
+ class WaitForPositioningTest {
     private GameController controller;
     private Player player;
     private WaitForPositioning state;
     private MoveAction action;
-    private PlayerTurnState playerTurnState;
+
     @BeforeEach
     public void setUp() {
         controller = mock(GameController.class);
         player = mock(Player.class);
         state = new WaitForPositioning();
         action = mock(MoveAction.class);
-        playerTurnState = mock(PlayerTurnState.class);
         when(action.getDestination()).thenReturn(mock(CityDTO.class));
         when(action.getDestination().getName()).thenReturn("Barcelona");
         List<Player> mockedPlayers = new ArrayList<>();
@@ -37,7 +36,7 @@ public class WaitForPositioningTest {
     }
 
     @Test
-    public void testHandleAction_SetsPlayerStartingPositionAndChangesState() throws Exception {
+     void testHandleAction_SetsPlayerStartingPositionAndChangesState() throws Exception {
         state.handleAction(controller, action, player);
 
         verify(player).setStartingPosition("Barcelona");
@@ -45,7 +44,7 @@ public class WaitForPositioningTest {
     }
 
     @Test
-    public void testHandleAction_WithInvalidActionDoesNotSetPositionOrChangeState() throws Exception {
+     void testHandleAction_WithInvalidActionDoesNotSetPositionOrChangeState() throws Exception {
         Action invalidAction = mock(Action.class); // Not a MoveAction
         state.handleAction(controller, invalidAction, player);
 
