@@ -57,4 +57,14 @@ public interface ILobbyManagement {
      * @throws SQLException if a database access error occurs
      */
     void joinLobby(ILobby lobby, UserDTO user) throws LobbyManagementException, SQLException;
+
+    /**
+     * Updates an existing lobby.
+     *
+     * @param lobby the lobby to update
+     * @return the updated lobby
+     * @throws LobbyManagementException if an error occurs during lobby update
+     */
+    ILobby updateLobby(ILobby lobby) throws LobbyManagementException;
 }
+

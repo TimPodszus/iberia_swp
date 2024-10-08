@@ -10,13 +10,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,9 +29,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+
 
 /**
  * Test class for LobbyManagement.
@@ -307,7 +303,7 @@ class LobbyManagementTest {
      */
     @Test
     void updateLobbyTest() throws LobbyManagementException, SQLException {
-        ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
+         lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
 
         lobbyManagement.updateLobby(lobby);
 
@@ -319,7 +315,7 @@ class LobbyManagementTest {
      */
     @Test
     void failedUpdateLobbyTest() throws SQLException {
-        ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
+         lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
 
         when(lobbyStore.updateLobby(eq("testcode"),
                 eq("Test"),
@@ -335,7 +331,7 @@ class LobbyManagementTest {
 
         assertEquals("Failed to update lobby", thrown.getMessage());
     }
-}
+
 
     @Test
     void joinLobby_LobbyNotFound() {

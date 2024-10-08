@@ -39,7 +39,7 @@ public class AbstractLobbyRequest extends AbstractRequestMessage {
      * @param user      user responsible for the creation of this message
      * @since 2019-10-08
      */
-    public AbstractLobbyRequest(String lobbyCode, UserDTO user) {
+    public AbstractLobbyRequest(String lobbyCode, User user) {
         this.lobbyCode = lobbyCode;
         this.user = user;
     }

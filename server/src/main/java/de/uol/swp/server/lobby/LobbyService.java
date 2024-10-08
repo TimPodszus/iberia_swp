@@ -8,6 +8,7 @@ import de.uol.swp.common.lobby.message.response.*;
 import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -69,7 +70,7 @@ public class LobbyService extends AbstractService {
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
         ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(), createLobbyRequest.getOwner());
-        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), (UserDTO) createLobbyRequest.getOwner()));
+        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), createLobbyRequest.getOwner()));
     }
 
     /**
@@ -88,7 +89,7 @@ public class LobbyService extends AbstractService {
         Optional<ILobby> optionalLobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
         if (optionalLobby.isPresent()) {
             ILobby lobby = optionalLobby.get();
-            lobbyManagement.joinLobby(lobby, lobbyJoinUserRequest.getUser());
+            lobbyManagement.joinLobby(lobby, (UserDTO) lobbyJoinUserRequest.getUser());
             sendToAllInLobby(lobbyJoinUserRequest.getLobbyCode(), new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(),
                     lobbyJoinUserRequest.getUser()));
         } else {
@@ -210,4 +211,6 @@ public class LobbyService extends AbstractService {
             throw new LobbyManagementException("Lobby not found");
         }
     }
+
+
 }
