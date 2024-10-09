@@ -44,6 +44,7 @@ public class AbstractLobbyRequest extends AbstractRequestMessage {
         this.user = user;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

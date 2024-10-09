@@ -96,6 +96,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.walterjwhite.java.dependencies</groupId>
+            <artifactId>hikari-jdbc-connection-pool</artifactId>
+            <version>0.0.17</version>
+            <type>pom</type>
+        </dependency>
+
+        <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>dotenv-java</artifactId>
             <version>3.0.0</version>

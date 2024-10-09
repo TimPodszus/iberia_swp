@@ -10,13 +10,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
+
 /**
  * Test class for LobbyManagement.
  */
@@ -42,6 +41,8 @@ class LobbyManagementTest {
     List<User> userList = new ArrayList<>();
     @Mock
     LobbyStore lobbyStore;
+    @Mock
+    ILobby lobby;
     LobbyManagement lobbyManagement;
 
     /**
@@ -50,12 +51,9 @@ class LobbyManagementTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-
+        lobbyManagement = new LobbyManagement(lobbyStore);
         userList.add(firstOwner);
         userList.add(user1);
-
-        lobbyStore = mock(LobbyStore.class);
-        lobbyManagement = new LobbyManagement(lobbyStore);
     }
 
     /**
@@ -66,7 +64,7 @@ class LobbyManagementTest {
      */
     @Test
     void createLobbyTest() throws LobbyManagementException, SQLException {
-        ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
+        lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
 
         when(lobbyStore.createLobby(anyString(), eq("Test"), anyList(), eq(firstOwner), eq(4))).thenReturn(lobby);
 
@@ -231,6 +229,20 @@ class LobbyManagementTest {
     }
 
     @Test
+    void joinLobby_Success() throws LobbyManagementException, SQLException {
+        UserDTO user = new UserDTO("testUser", "testUser");
+
+        when(lobby.getLobbyCode()).thenReturn("testLobbyCode"); // Mock the lobbyCode
+        doNothing().when(lobby).joinUser(user);
+        doNothing().when(lobbyStore).joinUser(anyString(), eq(user));
+
+        lobbyManagement.joinLobby(lobby, user);
+
+        verify(lobby, times(1)).joinUser(user);
+        verify(lobbyStore, times(1)).joinUser("testLobbyCode", user);
+    }
+
+    @Test
     void userLeavesLobbyTest() throws SQLException, LobbyStoreException {
         Lobby mockLobby = new Lobby("Test4", "code4", userList, firstOwner, 3);
         when(lobbyStore.findLobby("code4")).thenReturn(mockLobby);
@@ -291,7 +303,7 @@ class LobbyManagementTest {
      */
     @Test
     void updateLobbyTest() throws LobbyManagementException, SQLException {
-        ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
+         lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
 
         lobbyManagement.updateLobby(lobby);
 
@@ -303,7 +315,7 @@ class LobbyManagementTest {
      */
     @Test
     void failedUpdateLobbyTest() throws SQLException {
-        ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
+         lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
 
         when(lobbyStore.updateLobby(eq("testcode"),
                 eq("Test"),
@@ -318,5 +330,15 @@ class LobbyManagementTest {
         );
 
         assertEquals("Failed to update lobby", thrown.getMessage());
+    }
+
+
+    @Test
+    void joinLobby_LobbyNotFound() {
+        UserDTO user = new UserDTO("testUser", "testUser");
+
+        LobbyManagementException thrown = assertThrows(LobbyManagementException.class, () -> lobbyManagement.joinLobby(null, user));
+
+        assertEquals("Lobby not found!", thrown.getMessage());
     }
 }

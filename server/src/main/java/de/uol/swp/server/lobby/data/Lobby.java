@@ -28,7 +28,7 @@ public class Lobby implements ILobby {
 
     @Override
     public void joinUser(User user) {
-        // implemented with ticket #96
+        users.add(user);
     }
 
     @Override

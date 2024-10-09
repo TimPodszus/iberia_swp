@@ -33,6 +33,7 @@ public class LobbyService {
     @Inject
     public LobbyService(EventBus eventBus) {
         this.eventBus = eventBus;
+
     }
 
     /**
@@ -64,6 +65,7 @@ public class LobbyService {
     public void requestLobbyList() {
         eventBus.post(new LobbyListRequest());
     }
+
 
     /**
      * Posts a request to update a specified lobby on the EventBus

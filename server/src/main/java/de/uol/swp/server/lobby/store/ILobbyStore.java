@@ -75,5 +75,8 @@ public interface ILobbyStore {
 
 
     void removeUser(String lobbyID, User user) throws SQLException, LobbyStoreException;
+
+    void joinUser(String lobbyCode, User user) throws SQLException;
+
 }
 

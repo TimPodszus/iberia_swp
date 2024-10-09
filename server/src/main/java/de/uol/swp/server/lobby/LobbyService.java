@@ -8,6 +8,7 @@ import de.uol.swp.common.lobby.message.response.*;
 import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -17,6 +18,7 @@ import de.uol.swp.server.usermanagement.AuthenticationService;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -67,9 +69,7 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
-        ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(),
-                createLobbyRequest.getOwner()
-        );
+        ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(), createLobbyRequest.getOwner());
         sendToAll(new LobbyCreatedMessage(createdLobby.getName(), createLobbyRequest.getOwner()));
     }
 
@@ -85,17 +85,16 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws LobbyManagementException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
-
-        if (lobby.isPresent()) {
-            lobby.get()
-                 .joinUser(lobbyJoinUserRequest.getUser());
-            sendToAllInLobby(lobbyJoinUserRequest.getLobbyCode(),
-                    new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser())
-            );
+    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws LobbyManagementException, SQLException {
+        Optional<ILobby> optionalLobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
+        if (optionalLobby.isPresent()) {
+            ILobby lobby = optionalLobby.get();
+            lobbyManagement.joinLobby(lobby, (UserDTO) lobbyJoinUserRequest.getUser());
+            sendToAllInLobby(lobbyJoinUserRequest.getLobbyCode(), new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(),
+                    lobbyJoinUserRequest.getUser()));
+        } else {
+            throw new LobbyManagementException("Lobby not found");
         }
-        // TODO: error handling not existing lobby
     }
 
     /**
@@ -120,7 +119,9 @@ public class LobbyService extends AbstractService {
                     new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
             );
         }
-        // TODO: error handling not existing lobby
+        else {
+            throw new LobbyManagementException("Lobby not found");
+        }
     }
 
     /**
@@ -192,14 +193,13 @@ public class LobbyService extends AbstractService {
     /**
      * Prepares a given ServerMessage to be sent to all players in the lobby and
      * posts it on the EventBus
-     *
-     * @param lobbyName Name of the lobby the players are in
-     * @param message   the message to be sent to the users
+     * @param lobbyCode Code of the lobby the players are in
+     * @param message   the message to be send to the users
      * @see ServerMessage
      * @since 2019-10-08
      */
-    public void sendToAllInLobby(String lobbyName, ServerMessage message) throws LobbyManagementException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyName);
+    public void sendToAllInLobby(String lobbyCode, ServerMessage message) throws LobbyManagementException {
+        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyCode);
 
         if (lobby.isPresent()) {
             message.setReceiver(authenticationService.getSessions(new HashSet<>(lobby.get()
@@ -207,6 +207,7 @@ public class LobbyService extends AbstractService {
             post(message);
         }
 
-        // TODO: error handling not existing lobby
     }
+
+
 }

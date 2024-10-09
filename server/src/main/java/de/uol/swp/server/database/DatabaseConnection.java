@@ -1,21 +1,20 @@
 package de.uol.swp.server.database;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * Singleton class to manage the database connection.
+ * Singleton class to manage the database connection using HikariCP.
  */
 @Getter
 public class DatabaseConnection {
 
-    private static final Logger LOG = LogManager.getLogger(DatabaseConnection.class);
 
     private static final Dotenv dotenv = Dotenv.configure()
                                                .directory("./")
@@ -25,29 +24,30 @@ public class DatabaseConnection {
     private static final String PASSWORD = dotenv.get("MYSQL_ROOT_PASSWORD");
 
     private static DatabaseConnection instance;
-    private final Connection connection;
+    private final HikariDataSource dataSource;
 
     /**
-     * Private constructor to create a database connection.
-     *
-     * @throws SQLException if a database access error occurs
+     * Private constructor to create a database connection pool.
      */
-    private DatabaseConnection() throws SQLException {
-        try {
-            this.connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
-        } catch (SQLException e) {
-            LOG.error("Fehler beim Erstellen der Datenbankverbindung.", e);
-            throw new SQLException("Fehler beim Erstellen der Datenbankverbindung.", e);
-        }
+    private DatabaseConnection() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(JDBC_URL);
+        config.setUsername(USERNAME);
+        config.setPassword(PASSWORD);
+        config.setMaximumPoolSize(10);
+        config.setIdleTimeout(60000); // 60 seconds
+        config.setConnectionTimeout(30000); // 30 seconds
+        config.setLeakDetectionThreshold(2000); // 2 seconds
+
+        this.dataSource = new HikariDataSource(config);
     }
 
     /**
      * Returns the singleton instance of the DatabaseConnection.
      *
      * @return the singleton instance
-     * @throws SQLException if a database access error occurs
      */
-    public static DatabaseConnection getInstance() throws SQLException {
+    public static DatabaseConnection getInstance() {
         if (instance == null) {
             instance = createInstance();
         }
@@ -58,15 +58,21 @@ public class DatabaseConnection {
      * Creates the singleton instance of the DatabaseConnection in a thread-safe manner.
      *
      * @return the singleton instance
-     * @throws SQLException if a database access error occurs
      */
-    private static synchronized DatabaseConnection createInstance() throws SQLException {
+    private static synchronized DatabaseConnection createInstance() {
         if (instance == null) {
             instance = new DatabaseConnection();
         }
         return instance;
     }
 
+    /**
+     * Gets a connection from the pool.
+     *
+     * @return a database connection
+     * @throws SQLException if a database access error occurs
+     */
+    public Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
+    }
 }
-
-

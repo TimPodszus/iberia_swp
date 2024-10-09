@@ -16,6 +16,7 @@ import de.uol.swp.client.main.MainMenuPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.options.OptionsPresenter;
 import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
@@ -392,6 +393,11 @@ public class SceneManager {
     @Subscribe
     public void onRegistrationErrorEvent(RegistrationErrorEvent event) {
         showError(event.getMessage());
+    }
+
+    @Subscribe
+    public void onUserJoinedLobbyEvent(UserJoinedLobbyMessage userJoinedLobbyMessage) {
+       showLobbyScreen();
     }
 
     /**

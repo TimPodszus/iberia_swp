@@ -15,15 +15,14 @@ import java.util.Objects;
  * @author Marco Grawunder
  * @since  2017-03-17
  */
+@Setter
 @Getter
 public class LoginRequest extends AbstractRequestMessage {
 
 	@Serial
 	private static final long serialVersionUID = 7793454958390539421L;
 
-    @Setter
     private String username;
-	@Setter
 	private String password;
 
 	/**

@@ -3,6 +3,7 @@ package de.uol.swp.server.lobby.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.store.ILobbyStore;
@@ -94,6 +95,17 @@ public class LobbyManagement implements ILobbyManagement {
         }
     }
 
+    @Override
+    public void joinLobby(ILobby lobby, UserDTO user) throws LobbyManagementException, SQLException {
+        if (lobby != null) {
+            String lobbyID = lobby.getLobbyCode();
+            lobby.joinUser(user);
+            lobbyStore.joinUser(lobbyID, user);
+        } else {
+            throw new LobbyManagementException("Lobby not found!");
+        }
+    }
+
     public ILobby updateLobby(ILobby lobby) throws LobbyManagementException {
         try {
             return lobbyStore.updateLobby(lobby.getLobbyCode(),
@@ -108,11 +120,11 @@ public class LobbyManagement implements ILobbyManagement {
     }
 
 
-    /**
-     * Generates a unique lobby code.
-     *
-     * @return a unique lobby code
-     */
+        /**
+         * Generates a unique lobby code.
+         *
+         * @return a unique lobby code
+         */
     private String generateLobbyID() throws SQLException {
         String code;
         do {
