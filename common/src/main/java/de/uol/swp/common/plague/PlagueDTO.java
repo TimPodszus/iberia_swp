@@ -1,17 +1,13 @@
-package de.uol.swp.server.plague;
+package de.uol.swp.common.plague;
 
 import de.uol.swp.common.game.PlagueName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
-
-@AllArgsConstructor
 @Getter
-public class Plague implements IPlague {
+@AllArgsConstructor
+public class PlagueDTO implements IPlagueDTO {
     private final PlagueName name;
-    @Setter
     private int cubesRemaining;
-    @Setter
     private boolean researched;
 }
