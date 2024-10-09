@@ -4,8 +4,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
-public class EpedemicCard extends AbstractCard {
-    public EpedemicCard() {
+public class EpidemicCard extends AbstractCard {
+    public EpidemicCard() {
         this.setPrefSize(100, 150);
         this.setStyle("-fx-background-color: f7d48e;");
 
