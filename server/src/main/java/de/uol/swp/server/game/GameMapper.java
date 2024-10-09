@@ -5,10 +5,12 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.connection.ConnectionMapper;
-import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.PlayerMapper;
 import de.uol.swp.server.region.RegionMapper;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class GameMapper {
     /**
      * Converts an IGame object to an IGameDTO object.
@@ -16,7 +18,7 @@ public class GameMapper {
      * @param game the IGame object to convert
      * @return the converted IGameDTO object
      */
-    public static IGameDTO toDTO(Game game) {
+    public static IGameDTO toDTO(IGame game) {
         return new GameDTO(
                 game.getGameId(),
                 CityMapper.toDTOList(game.getCityRepository()
