@@ -55,16 +55,19 @@ public class GameManagement implements IGameManagement {
         for (User user : users) {
             Player player = new Player(user);
             game.getPlayers().add(player);
+        }
+        for (Player player : game.getPlayers()) {
             int cardsToDraw = switch ( game.getPlayers().size()) {
                 case 2 -> 4;
                 case 3 -> 3;
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                drawPlayerCard();
+                player.addCard(game.getPlayerCardDrawPile().get((int) Math.floor(Math.random() * game.getPlayerCardDrawPile().size())));
             }
+            player.setCurrentPosition(game.getCityRepository().getCities()
+                                          .get((int) Math.floor(Math.random() * 48)));
         }
-
     }
     private void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
