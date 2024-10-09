@@ -6,11 +6,11 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 public class RoleCard extends AbstractCard {
-    public RoleCard(RoleEnum roleCard, String role, String description) {
+    public RoleCard(RoleEnum roleCard, String description) {
         this.setPrefSize(100, 150);
         this.setStyle("-fx-background-color: " + roleCard.getColorCode() + ";");
 
-        Text roleText = new Text(role);
+        Text roleText = new Text(roleCard.getName());
         AnchorPane.setTopAnchor(roleText, 7.0);
         roleText.setLayoutX(37.0);
         roleText.setLayoutY(20.0);
