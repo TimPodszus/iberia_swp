@@ -1,6 +1,7 @@
 package de.uol.swp.server.communication;
 
 
+import de.uol.swp.common.game.message.event.BoardUpdateMessage;
 import de.uol.swp.common.message.request.RequestMessage;
 import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.message.response.ResponseMessage;
@@ -196,6 +197,11 @@ public class ServerHandler implements ServerHandlerDelegate {
     public void onUserLoggedOutMessage(UserLoggedOutMessage msg) {
         Optional<MessageContext> ctx = getCtx(msg);
         ctx.ifPresent(this::removeSession);
+        sendMessage(msg);
+    }
+
+    @Subscribe
+    public void onBoardUpdateMessage(BoardUpdateMessage msg) {
         sendMessage(msg);
     }
 
