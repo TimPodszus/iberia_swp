@@ -9,7 +9,6 @@ import de.uol.swp.server.infection.InfectionMapper;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Provides static methods to convert card objects into their respective Data Transfer Object (DTO) forms.
@@ -149,7 +148,7 @@ public class CardMapper {
     public static List<InfectionCardDTO> toInfectionCardDTOList(List<InfectionCard> infectionCards) {
         return infectionCards.stream()
                              .map(CardMapper::toInfectionCardDTO)
-                             .toList());
+                             .toList();
     }
 }
 
