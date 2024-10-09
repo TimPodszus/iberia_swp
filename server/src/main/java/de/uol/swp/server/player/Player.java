@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -22,7 +24,7 @@ public class Player {
     @Setter
     private City currentPosition;
     @Setter
-    private List<Card> cards;
+    private List<Card> cards = new ArrayList<>();
     private final User user;
     CityRepository cityRepository;
 
