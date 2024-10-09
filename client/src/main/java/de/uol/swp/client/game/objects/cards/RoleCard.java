@@ -1,12 +1,12 @@
 package de.uol.swp.client.game.objects.cards;
 
-import de.uol.swp.common.game.RoleCardEnum;
+import de.uol.swp.common.game.RoleEnum;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 public class RoleCard extends AbstractCard {
-    public RoleCard(RoleCardEnum roleCard, String role, String description) {
+    public RoleCard(RoleEnum roleCard, String role, String description) {
         this.setPrefSize(100, 150);
         this.setStyle("-fx-background-color: " + roleCard.getColorCode() + ";");
 
