@@ -207,9 +207,6 @@ public class LobbyService extends AbstractService {
             post(message);
         }
 
-       else  {
-            throw new LobbyManagementException("Lobby not found");
-        }
     }
 
 
