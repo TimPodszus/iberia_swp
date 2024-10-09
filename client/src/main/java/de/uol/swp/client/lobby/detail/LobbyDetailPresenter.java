@@ -5,6 +5,7 @@ import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
@@ -179,7 +180,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * Handles the event when the game starts.
      */
     public void onGameStart() {
-        //TODO: Implement game start
+        eventBus.post(new CreateGameRequest(lobbyDTO.getLobbyCode(), lobbyDTO.getDifficulty(), lobbyDTO.getUsers()));
     }
 
     /**
