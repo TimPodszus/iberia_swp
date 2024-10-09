@@ -7,9 +7,10 @@ import de.uol.swp.server.communication.ServerHandler;
 import de.uol.swp.server.communication.netty.NettyServerHandler;
 import de.uol.swp.server.communication.netty.Server;
 import de.uol.swp.server.di.ServerModule;
+import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.lobby.LobbyService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
-
+import de.uol.swp.server.usermanagement.UserManagement;
 import de.uol.swp.server.usermanagement.UserService;
 import io.netty.channel.ChannelHandler;
 import org.apache.logging.log4j.LogManager;
@@ -68,12 +69,14 @@ class ServerApp {
      * @since 2019-09-18
      */
     private static void createServices(Injector injector) {
+        injector.getInstance(UserManagement.class);
 
         // Remark: As these services are not referenced by any other class
         // we will need to create instances here (and inject dependencies)
         injector.getInstance(UserService.class);
         injector.getInstance(AuthenticationService.class);
         injector.getInstance(LobbyService.class);
+        injector.getInstance(GameService.class);
     }
 
 }
