@@ -1575,22 +1575,7 @@
                     <Insets right="20.0" />
                 </HBox.margin>
             </StackPane>
-            <Button mnemonicParsing="false" onAction="#onPlayerButtonClickedEvent" prefHeight="40.0" styleClass="action-button" text="Player 1" userData="1">
-                <HBox.margin>
-                    <Insets right="20.0" />
-                </HBox.margin>
-            </Button>
-            <Button mnemonicParsing="false" onAction="#onPlayerButtonClickedEvent" prefHeight="40.0" styleClass="action-button" text="Player 2" userData="2">
-                <HBox.margin>
-                    <Insets right="20.0" />
-                </HBox.margin>
-            </Button>
-            <Button mnemonicParsing="false" onAction="#onPlayerButtonClickedEvent" prefHeight="40.0" styleClass="action-button" text="Player 3" userData="3">
-                <HBox.margin>
-                    <Insets right="20.0" />
-                </HBox.margin>
-            </Button>
-            <Button layoutX="253.0" layoutY="15.0" mnemonicParsing="false" onAction="#onPlayerButtonClickedEvent" prefHeight="40.0" styleClass="action-button" text="Player 4" userData="4" />
+         <HBox fx:id="playerButtons" />
         </children>
         <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
