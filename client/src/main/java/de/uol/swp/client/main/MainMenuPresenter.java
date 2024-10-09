@@ -1,12 +1,9 @@
 package de.uol.swp.client.main;
 
-import de.uol.swp.client.game.event.ShowGameScreenEvent;
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
-import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.exception.UnsopportedMethodExeption;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -23,8 +20,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Manages the main menu
@@ -105,15 +100,7 @@ public class MainMenuPresenter extends AbstractPresenter {
      */
     @FXML
     void onCurrentGamesButtonPressed(ActionEvent event) {
-        List<User> users = new ArrayList<>();
-
-        users.add(UserStore.getInstance()
-                           .getUser());
-        users.add(new UserDTO("Max", "test"));
-        users.add(new UserDTO("Moritz", "test"));
-
-        eventBus.post(new CreateGameRequest("test", 3, users));
-        eventBus.post(new ShowGameScreenEvent());
+        eventBus.post(showCurrentGamesViewMessage);
     }
 
     /**

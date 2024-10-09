@@ -3,6 +3,7 @@ package de.uol.swp.server.communication;
 
 import de.uol.swp.common.game.message.event.BoardUpdateMessage;
 import de.uol.swp.common.message.request.RequestMessage;
+import de.uol.swp.common.message.response.CreatedGameResponse;
 import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.message.response.ResponseMessage;
 import de.uol.swp.common.message.ServerMessage;
@@ -203,6 +204,11 @@ public class ServerHandler implements ServerHandlerDelegate {
     @Subscribe
     public void onBoardUpdateMessage(BoardUpdateMessage msg) {
         sendMessage(msg);
+    }
+
+    @Subscribe
+    public void onCreatedGameResponse(CreatedGameResponse response) {
+        sendMessage(response);
     }
 
     // -------------------------------------------------------------------------------

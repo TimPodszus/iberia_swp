@@ -206,7 +206,7 @@ public class ClientApp extends Application implements ConnectionListener {
      */
     @Subscribe
     public void onLobbyCreatedMassage(LobbyCreatedMessage lobbyCreatedMessage) {
-        sceneManager.showLobbyScreen();
+        //
     }
 
     @Override

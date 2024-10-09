@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.event.BoardUpdateMessage;
 import de.uol.swp.common.game.message.response.StatusResponse;
+import de.uol.swp.common.message.response.CreatedGameResponse;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
@@ -42,6 +43,7 @@ public class GameService extends AbstractService {
         if (game != null) {
             success = true;
             post(new BoardUpdateMessage(GameMapper.toDTO(game)));
+            post(new CreatedGameResponse(request.getLobbyCode()));
         }
         sendStatusRespond(success);
     }

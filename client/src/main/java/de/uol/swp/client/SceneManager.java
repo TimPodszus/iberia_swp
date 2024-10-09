@@ -14,9 +14,11 @@ import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.main.MainMenuPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
+import de.uol.swp.client.main.event.ShowMainMenuEvent;
 import de.uol.swp.client.options.OptionsPresenter;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
+import de.uol.swp.common.message.response.CreatedGameResponse;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
@@ -365,6 +367,11 @@ public class SceneManager {
         showGameScreen();
     }
 
+    @Subscribe
+    public void onShowMainMenuEvent(ShowMainMenuEvent event) {
+        showMainScreen();
+    }
+
     /**
      * Handles RegistrationCanceledEvent detected on the EventBus
      * <p>
@@ -398,6 +405,11 @@ public class SceneManager {
     @Subscribe
     public void onUserJoinedLobbyEvent(UserJoinedLobbyMessage userJoinedLobbyMessage) {
        showLobbyScreen();
+    }
+
+    @Subscribe
+    public void onCreatedGameResponseEvent(CreatedGameResponse response) {
+        showGameScreen();
     }
 
     /**
