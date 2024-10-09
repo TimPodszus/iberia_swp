@@ -105,7 +105,8 @@ public class Game implements IGame {
      * Constructs a new Game instance with default values.
      * Initializes repositories and sets initial game state.
      */
-    public Game(int difficulty) {
+    public Game(int difficulty, String lobbyCode) {
+        this.gameId = lobbyCode;
         this.cityRepository = new CityRepository();
         this.regionRepository = new RegionRepository(this.cityRepository);
         this.connectionRepository = new ConnectionRepository();
