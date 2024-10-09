@@ -1,5 +1,7 @@
 package de.uol.swp.server.role;
 
+import de.uol.swp.common.game.RoleEnum;
+
 /**
  * Represents the role of a Scientist at the Royal Academy in the game.
  * This role allows the player to discard any city card regardless of color
@@ -14,7 +16,7 @@ public class ScientistAtTheRoyalAcademy extends Role {
      */
     public ScientistAtTheRoyalAcademy() {
         super(
-                "Wissenschaftlerin der königlichen Akademie",
+                RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY,
                 "Bei der Aktion „Wasser aufbereiten“ darfst du eine beliebige Stadtkarte abwerfen, die Farbe spielt dabei keine Rolle. Nutze eine Aktion, um dir die nächsten 3 Spielerkarten anzusehen. Ordne sie nach Belieben neu und lege sie zurück auf den Spielerkarten-Nachziehstapel."
         );
     }
