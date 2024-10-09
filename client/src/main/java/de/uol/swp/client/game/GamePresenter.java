@@ -4,13 +4,21 @@ import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
-import de.uol.swp.client.game.objects.cards.AbstractCard;
-import de.uol.swp.client.game.objects.cards.CityCard;
-import de.uol.swp.client.game.objects.cards.InfectionCard;
-import de.uol.swp.client.game.objects.cards.RoleCard;
+import de.uol.swp.client.game.objects.PlayerButton;
+import de.uol.swp.client.game.objects.cards.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
+import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.cards.*;
+import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.connectiom.IConnectionDTO;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.RoleCardEnum;
+import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.event.BoardUpdateMessage;
+import de.uol.swp.common.infection.IInfectionDTO;
+import de.uol.swp.common.plague.IPlagueDTO;
+import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.region.IRegionDTO;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -29,12 +37,13 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Presenter class for the game screen.
@@ -90,6 +99,9 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private Pane roleCard;
+
+    @FXML
+    private HBox playerButtons;
 
     private double mouseX;
 
@@ -342,20 +354,20 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Updates the outbreak level by removing the old level's active style and adding the new level's active style.
+     * Updates the escalation stage by removing the old stage's active style and adding the new stage's active style.
      *
-     * @param oldLevel the previous outbreak level
-     * @param newLevel the new outbreak level
+     * @param oldStage the previous outbreak level
+     * @param newStage the new outbreak level
      */
-    public void setOutbreakLevel(int oldLevel, int newLevel) {
-        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel) instanceof Circle) {
-            gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel)
+    public void setEscalationStage(int oldStage, int newStage) {
+        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + oldStage) instanceof Circle) {
+            gameScreen.lookup(OUTBREAK_LEVEL_ID + oldStage)
                       .getStyleClass()
                       .remove("outbreak-level-active");
         }
 
-        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel) instanceof Circle) {
-            gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel)
+        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + newStage) instanceof Circle) {
+            gameScreen.lookup(OUTBREAK_LEVEL_ID + newStage)
                       .getStyleClass()
                       .add("outbreak-level-active");
         }
@@ -378,7 +390,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param regionId   the ID of the region
      * @param waterMarks the number of water marks to set
      */
-    public void setWaterMarks(int regionId, int waterMarks) {
+    public void setWaterTreatments(int regionId, int waterMarks) {
         StackPane stackPane = (StackPane) mapPane.lookup(WATER_MARK_REGION_ID + regionId);
 
         if (waterMarks == 0) {
@@ -474,30 +486,8 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param cityId     the ID of the city
      * @param plagueName the name of the plague
-     * @param oldCityId  the ID of the old city
      */
-    public void setHospitalToCity(int cityId, PlagueName plagueName, int oldCityId) {
-        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + oldCityId);
-
-        for (Node node : cureDisplayVBox.getChildren()) {
-            if (node instanceof HBox hbox && hbox.getStyleClass()
-                                                 .contains("hospital")) {
-                cureDisplayVBox.getChildren()
-                               .remove(hbox);
-                break;
-            }
-        }
-
-        setHospitalToCity(cityId, plagueName);
-    }
-
-    /**
-     * Sets the hospital to the specified city.
-     *
-     * @param cityId     the ID of the city
-     * @param plagueName the name of the plague
-     */
-    public void setHospitalToCity(int cityId, PlagueName plagueName) {
+    private void setHospitalToCity(int cityId, PlagueName plagueName) {
         VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + cityId);
 
         HBox hospitalHBox = new HBox();
@@ -515,27 +505,52 @@ public class GamePresenter extends AbstractPresenter {
                        .add(0, hospitalHBox);
     }
 
+    private void removeHospitalFromCity(int cityId) {
+        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + cityId);
+
+        for (Node node : cureDisplayVBox.getChildren()) {
+            if (node instanceof HBox hbox && hbox.getStyleClass()
+                                                 .contains("hospital")) {
+                cureDisplayVBox.getChildren()
+                               .remove(hbox);
+                break;
+            }
+        }
+    }
+
     /**
      * Sets the player(s) in the specified city.
      * Adds a `GameFigure` representing the player(s) to the city's `StackPane`.
      *
-     * @param cityId      the ID of the city
-     * @param playerRoles the roles of the players to be added to the city
+     * @param cityId  the ID of the city
+     * @param players the roles of the players to be added to the city
      */
-    public void setPlayerInCity(int cityId, RoleCardEnum... playerRoles) {
+    public void setPlayerInCity(int cityId, List<IPlayerDTO> players) {
         StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + cityId);
 
         List<Color> playerColors = new ArrayList<>();
-        for (RoleCardEnum role : playerRoles) {
-            playerColors.add(Color.web(role.getColorCode()));
+        for (IPlayerDTO player : players) {
+            playerColors.add(Color.web(player.getRole()
+                                             .getName()
+                                             .getColorCode()));
         }
 
         GameFigure gameFigure = new GameFigure(playerColors);
-        gameFigure.setTranslateX(0);
-        gameFigure.setTranslateY(0);
 
         stackPaneCity.getChildren()
                      .addAll(gameFigure);
+    }
+
+    /**
+     * Removes all game figures from all cities.
+     * Iterates through all city StackPanes and removes any GameFigure nodes.
+     */
+    private void removeAllGameFigures() {
+        for (int i = 1; i <= 48; i++) {
+            StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + i);
+            stackPaneCity.getChildren()
+                         .removeIf(GameFigure.class::isInstance);
+        }
     }
 
     /**
@@ -580,22 +595,13 @@ public class GamePresenter extends AbstractPresenter {
                                            .size() - 1, cardSlot);
     }
 
-    /**
-     * Removes a player hand card from the player's hand.
-     *
-     * @param card the card to be removed from the player's hand
-     */
-    public void removePlayerHandCard(AbstractCard card) {
-        for (Node node : playerCardsHBox.getChildren()) {
-            if (node instanceof Pane cardSlot && cardSlot.getChildren()
-                                                         .contains(card)) {
-                playerCardsHBox.getChildren()
-                               .remove(cardSlot);
-                break;
-            }
-        }
+    public void removePlayerHandCards() {
+        playerCardsHBox.getChildren().removeIf(node ->
+                node instanceof Pane && node.getStyleClass().contains("pile") && !Objects.equals(node.getId(),
+                        "roleCard"
+                )
+        );
     }
-
     /**
      * Sets the role card for the player.
      *
@@ -624,5 +630,162 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setPlayerCardDrawPileCounter(int count) {
         playerCardDrawPileCounter.setText(String.valueOf(count));
+    }
+
+    @Subscribe
+    public void onBoardUpdateMessage(BoardUpdateMessage response) {
+        Platform.runLater(() -> updateBoard(response));
+    }
+
+    private void updateBoard(BoardUpdateMessage response) {
+        IGameDTO gameDTO = response.getGameDTO();
+
+        updateCities(gameDTO.getCities());
+        updateConnections(gameDTO.getConnections());
+        updateRegions(gameDTO.getRegions());
+        updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
+        updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
+        updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
+        updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
+        updatePlayerHandCards(gameDTO.getPlayers());
+        updatePlayers(gameDTO.getPlayers());
+        updateInfectionCounter(gameDTO.getInfectionCounter());
+        updateEscalationStage(gameDTO.getEscalationStage());
+        updateHospitals(gameDTO.getCities());
+    }
+
+    private void updatePlayerHandCards(List<IPlayerDTO> players) {
+        removePlayerHandCards();
+        for (IPlayerDTO player : players) {
+            if (Objects.equals(player.getUsername(), UserStore.getInstance().getUser().getUsername())) {
+                List<CardDTO> playerHand = player.getCards();
+                for (CardDTO card : playerHand) {
+                    AbstractCard abstractCard = createCard(card);
+                    addPlayerHandCard(abstractCard);
+                }
+            }
+        }
+    }
+
+    private void updateCities(List<ICityDTO> cities) {
+        for (ICityDTO city : cities) {
+            updateInfections(city);
+        }
+    }
+
+    private void updateInfections(ICityDTO city) {
+        List<IInfectionDTO> infections = city.getInfections();
+        for (IInfectionDTO infection : infections) {
+            IPlagueDTO plague = infection.getPlague();
+            PlagueName plagueName = plague.getName();
+            int severity = infection.getSeverity();
+            setPlaqueCubesToCity(city.getId(), plagueName, severity);
+        }
+    }
+
+    private void updateConnections(List<IConnectionDTO> connections) {
+        for (IConnectionDTO connection : connections) {
+            if (connection.isTrainTrack()) {
+                setTrainConnection(connection.getId());
+            }
+        }
+    }
+
+    private void updateRegions(List<IRegionDTO> regions) {
+        for (IRegionDTO region : regions) {
+            int regionId = region.getId();
+            setWaterTreatments(regionId, region.getWaterTreatments());
+        }
+    }
+
+    private void updateInfectionCardDiscardPile(List<InfectionCardDTO> infectionCardDiscardPileList) {
+        if (!infectionCardDiscardPileList.isEmpty()) {
+            InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
+            setInfectionCardDiscardPile(new InfectionCard(infectionCard.getCity().getPlagueName(),
+                    infectionCard.getCity().getName()));
+        }
+    }
+
+    private void updateInfectionCardDrawPile(List<InfectionCardDTO> infectionCardDrawPileList) {
+        setInfectionCardDrawPileCounter(infectionCardDrawPileList.size());
+    }
+
+    private void updatePlayerCardDiscardPile(List<CardDTO> playerCardDiscardPileList) {
+        if (!playerCardDiscardPileList.isEmpty()) {
+            AbstractCard card = getCard(playerCardDiscardPileList);
+            setPlayerCardDiscardPile(card);
+        }
+    }
+
+    private void updatePlayerCardDrawPile(List<CardDTO> playerCardDrawPileList) {
+        setPlayerCardDrawPileCounter(playerCardDrawPileList.size());
+    }
+
+    private void updatePlayers(List<IPlayerDTO> players) {
+        playerButtons.getChildren().clear();
+        for (IPlayerDTO player : players) {
+            if (!Objects.equals(player.getUsername(), UserStore.getInstance().getUser().getUsername())) {
+                playerButtons.getChildren().add(new PlayerButton(player.getUsername(), this::onPlayerButtonClickedEvent));
+            }
+        }
+        updatePlayersInCities(players);
+        updateCurrentUserRole(players);
+    }
+
+    private void updatePlayersInCities(List<IPlayerDTO> players) {
+        removeAllGameFigures();
+        Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
+                                                              .collect(Collectors.groupingBy(player -> player.getCurrentPosition().getId()));
+
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId, playersInCity)));
+    }
+
+    private void updateCurrentUserRole(List<IPlayerDTO> players) {
+        for (IPlayerDTO player : players) {
+            if (Objects.equals(player.getUsername(), UserStore.getInstance().getUser().getUsername())) {
+                setRoleCard(new RoleCard(player.getRole().getName()));
+            }
+        }
+    }
+
+    private void updateInfectionCounter(int infectionCounter) {
+        setInfectionGrade(infectionCounter - 1, infectionCounter);
+    }
+
+    private void updateEscalationStage(int escalationStage) {
+        setEscalationStage(escalationStage - 1, escalationStage);
+    }
+
+    private static AbstractCard getCard(List<CardDTO> playerCardDiscardPileList) {
+        CardDTO playerCard = playerCardDiscardPileList.get(playerCardDiscardPileList.size() - 1);
+        return createCard(playerCard);
+    }
+
+    private static AbstractCard createCard(CardDTO playerCard) {
+        if (playerCard instanceof CityCardDTO cityCard) {
+            return createCityCard(cityCard);
+        } else if (playerCard instanceof EpidemicCardDTO) {
+            return new EpidemicCard();
+        } else if (playerCard instanceof EventCardDTO eventCard) {
+            return new EventCard(eventCard.getTitle(), eventCard.getAction());
+        } else {
+            throw new IllegalArgumentException("Unknown card type.");
+        }
+    }
+
+    private static AbstractCard createCityCard(CityCardDTO cityCard) {
+        String foundationDate = cityCard.getCity().getFoundationDate() < 0
+                ? cityCard.getCity().getFoundationDate() + " v. Chr."
+                : String.valueOf(cityCard.getCity().getFoundationDate());
+        return new CityCard(cityCard.getCity().getName(), foundationDate, cityCard.getCity().getPlagueName());
+    }
+
+    private void updateHospitals(List<ICityDTO> cities) {
+        for (ICityDTO city : cities) {
+//            this.removeHospitalFromCity(city.getId());
+            if (city.isHospitalBuild()) {
+                this.setHospitalToCity(city.getId(), city.getPlagueName());
+            }
+        }
     }
 }
