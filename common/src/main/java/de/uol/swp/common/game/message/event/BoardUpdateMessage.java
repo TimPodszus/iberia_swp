@@ -1,16 +1,17 @@
 package de.uol.swp.common.game.message.event;
 
 import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.message.AbstractServerMessage;
+import de.uol.swp.common.game.message.AbstractGameMessage;
 import lombok.Getter;
 
 import java.util.Objects;
 
 @Getter
-public class BoardUpdateMessage extends AbstractServerMessage {
+public class BoardUpdateMessage extends AbstractGameMessage {
     private final IGameDTO gameDTO;
 
     public BoardUpdateMessage(IGameDTO gameDTO) {
+        super(gameDTO.getGameId());
         this.gameDTO = gameDTO;
     }
 
