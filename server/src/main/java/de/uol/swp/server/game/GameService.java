@@ -2,7 +2,7 @@ package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.response.BoardUpdateResponse;
+import de.uol.swp.common.game.message.event.BoardUpdateMessage;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.data.Game;
@@ -41,9 +41,9 @@ public class GameService extends AbstractService {
         IGame game = gameManagement.createAndInitializeGame(request);
         if (game != null) {
             success = true;
+            post(new BoardUpdateMessage(GameMapper.toDTO(game)));
         }
         sendStatusRespond(success);
-        post(new BoardUpdateResponse(success,"Game Aktualisierung", GameMapper.toDTO((Game) game)));
     }
 
     /**
