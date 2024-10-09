@@ -3,6 +3,7 @@ package de.uol.swp.client.game.objects.cards;
 import de.uol.swp.common.game.PlagueName;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 
 public class InfectionCard extends AbstractCard {
@@ -11,9 +12,13 @@ public class InfectionCard extends AbstractCard {
         this.setStyle("-fx-background-color: " + plagueName.getColorCode() + ";");
 
         Text cityText = new Text(city);
-        AnchorPane.setTopAnchor(cityText, 5.0);
-        cityText.setLayoutX(61.0);
-        cityText.setLayoutY(30.0);
+        StackPane cityStackPane = new StackPane();
+        cityStackPane.setStyle(TEXT_BACKGROUND_COLOR);
+        cityStackPane.getChildren().add(cityText);
+
+        AnchorPane.setTopAnchor(cityStackPane, 10.0);
+        AnchorPane.setLeftAnchor(cityStackPane, 0.0);
+        AnchorPane.setRightAnchor(cityStackPane, 0.0);
 
         ImageView imageView = new ImageView();
         imageView.setFitHeight(65.0);
@@ -26,6 +31,6 @@ public class InfectionCard extends AbstractCard {
         AnchorPane.setLeftAnchor(imageView, 10.0);
         AnchorPane.setRightAnchor(imageView, 10.0);
 
-        this.getChildren().addAll(cityText, imageView);
+        this.getChildren().addAll(cityStackPane, imageView);
     }
 }
