@@ -2,10 +2,10 @@ package de.uol.swp.common.city;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.infection.IInfectionDTO;
-import de.uol.swp.common.infection.InfectionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,7 +14,7 @@ import java.util.Objects;
  */
 @AllArgsConstructor
 @Getter
-public class CityDTO implements ICityDTO {
+public class CityDTO implements ICityDTO, Serializable {
     private final int id;
     private final PlagueName plagueName;
     private final String name;
