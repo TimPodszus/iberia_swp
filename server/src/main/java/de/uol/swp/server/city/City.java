@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,5 +51,5 @@ public class City {
     /**
      * The list of infections in the city.
      */
-    private List<IInfection> infections;
+    private List<IInfection> infections = new ArrayList<>();
 }
