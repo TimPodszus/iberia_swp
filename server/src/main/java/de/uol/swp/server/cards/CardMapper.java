@@ -5,6 +5,8 @@ import de.uol.swp.common.cards.CityCardDTO;
 import de.uol.swp.common.cards.EpidemicCardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.server.infection.InfectionMapper;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
  * This class is part of the server-side cards package, which interacts with various card-related data.
  * It includes conversions for CityCards, EpidemicCards, and InfectionCards.
  */
+@AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class CardMapper {
 
     /**
@@ -25,7 +28,7 @@ public class CardMapper {
     public static List<CardDTO> toMixedCardDTOList(List<Card> cards) {
         return cards.stream()
                     .map(CardMapper::toDTO)
-                    .collect(Collectors.toList());
+                    .toList();
     }
 
     /**
@@ -55,8 +58,9 @@ public class CardMapper {
      */
     private static CityCardDTO toCityCardDTO(CityCard cityCard) {
         CityDTO cityDTO = new CityDTO(cityCard.getCity()
-                                              .getPlagueName()
-                                              .toString(),
+                                              .getId(),
+                cityCard.getCity()
+                        .getPlagueName(),
                 cityCard.getCity()
                         .getName()
                         .getDisplayName(),
@@ -65,7 +69,9 @@ public class CardMapper {
                 cityCard.getCity()
                         .isHarbourCity(),
                 cityCard.getCity()
-                        .isHospitalBuilt()
+                        .isHospitalBuilt(),
+                InfectionMapper.toDTOList(cityCard.getCity()
+                                                  .getInfections())
         );
         return new CityCardDTO(cityCard.getId(), cityCard.getTitle(), cityCard.getType(), cityDTO);
     }
@@ -92,8 +98,9 @@ public class CardMapper {
      */
     private static InfectionCardDTO toInfectionCardDTO(InfectionCard infectionCard) {
         CityDTO cityDTO = new CityDTO(infectionCard.getCity()
-                                                   .getPlagueName()
-                                                   .toString(),
+                                                   .getId(),
+                infectionCard.getCity()
+                             .getPlagueName(),
                 infectionCard.getCity()
                              .getName()
                              .getDisplayName(),
@@ -102,7 +109,9 @@ public class CardMapper {
                 infectionCard.getCity()
                              .isHarbourCity(),
                 infectionCard.getCity()
-                             .isHospitalBuilt()
+                             .isHospitalBuilt(),
+                InfectionMapper.toDTOList(infectionCard.getCity()
+                                                       .getInfections())
         );
         return new InfectionCardDTO(infectionCard.getId(), infectionCard.getTitle(), infectionCard.getType(), cityDTO);
     }
@@ -116,7 +125,7 @@ public class CardMapper {
     public static List<CityCardDTO> toCityCardDTOList(List<CityCard> cityCards) {
         return cityCards.stream()
                         .map(CardMapper::toCityCardDTO)
-                        .collect(Collectors.toList());
+                        .toList();
     }
 
     /**
@@ -128,7 +137,7 @@ public class CardMapper {
     public static List<EpidemicCardDTO> toEpidemicCardDTOList(List<EpidemicCard> epidemicCards) {
         return epidemicCards.stream()
                             .map(CardMapper::toEpidemicCardDTO)
-                            .collect(Collectors.toList());
+                            .toList();
     }
 
     /**
@@ -140,7 +149,7 @@ public class CardMapper {
     public static List<InfectionCardDTO> toInfectionCardDTOList(List<InfectionCard> infectionCards) {
         return infectionCards.stream()
                              .map(CardMapper::toInfectionCardDTO)
-                             .collect(Collectors.toList());
+                             .toList());
     }
 }
 
