@@ -5,8 +5,6 @@ import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
-import de.uol.swp.client.game.objects.cards.CityCard;
-import de.uol.swp.client.game.objects.cards.InfectionCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.common.game.PlagueName;
