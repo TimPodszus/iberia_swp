@@ -3,6 +3,7 @@ package de.uol.swp.common.user;
 import de.uol.swp.common.passwordHashing.PasswordHashing;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -16,7 +17,7 @@ import java.util.Objects;
  * @since 2019-08-13
  */
 @Getter
-public class UserDTO implements User
+public class UserDTO implements User, Serializable
 {
     private String username;
     private String password;
