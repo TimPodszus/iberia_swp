@@ -110,7 +110,7 @@ public class Game implements IGame {
         this.cityRepository = new CityRepository();
         this.regionRepository = new RegionRepository(this.cityRepository);
         this.connectionRepository = new ConnectionRepository();
-        this.infectionCounter = 2;
+        this.infectionCounter = 1;
         this.escalationStage = 0;
         this.waterTreatmentsLeft = 14;
         this.tracksLeft = 20;
