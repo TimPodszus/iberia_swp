@@ -2,8 +2,10 @@ package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.game.message.response.BoardUpdateResponse;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import org.greenrobot.eventbus.EventBus;
@@ -41,6 +43,7 @@ public class GameService extends AbstractService {
             success = true;
         }
         sendStatusRespond(success);
+        post(new BoardUpdateResponse(success,"Game Aktualisierung", GameMapper.toDTO((Game) game)));
     }
 
     /**

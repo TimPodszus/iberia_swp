@@ -120,9 +120,21 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public ILobby updateLobby(String lobbycode, String lobbyName, List<User> users, User owner, int difficulty) {
-        // not implemented
-        return null;
+    public ILobby updateLobby(
+            String lobbycode, String lobbyName, List<User> users, User owner, int difficulty
+    ) throws SQLException {
+        String sql = "UPDATE Lobby SET lobbyname = ?, difficulty = ?, owner = ? WHERE lobbyID = ?";
+
+        try (
+                PreparedStatement ps = this.connection.prepareStatement(sql)
+        ) {
+            ps.setString(1, lobbyName);
+            ps.setInt(2, difficulty);
+            ps.setString(3, owner.getUsername());
+            ps.setString(4, lobbycode);
+            ps.executeUpdate();
+        }
+        return findLobby(lobbycode);
     }
 
     @Override

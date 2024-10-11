@@ -9,12 +9,13 @@ import de.uol.swp.client.game.GamePresenter;
 import de.uol.swp.client.game.event.ShowGameScreenEvent;
 import de.uol.swp.client.lobby.CurrentGamesPresenter;
 import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
-import de.uol.swp.client.lobby.LobbyScreenPresenter;
+import de.uol.swp.client.lobby.detail.LobbyDetailPresenter;
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.main.MainMenuPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.options.OptionsPresenter;
+import de.uol.swp.client.user.UserStore;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
@@ -22,7 +23,6 @@ import de.uol.swp.client.register.RegistrationPresenter;
 import de.uol.swp.client.register.event.RegistrationCanceledEvent;
 import de.uol.swp.client.register.event.RegistrationErrorEvent;
 import de.uol.swp.client.register.event.ShowRegistrationViewEvent;
-import de.uol.swp.common.user.User;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -204,11 +204,11 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.lobby.LobbyScreenPresenter
+     * @see LobbyDetailPresenter
      */
     private void initLobbyScreen() throws IOException {
         if (lobbyScene == null) {
-            Parent rootPane = initPresenter(LobbyScreenPresenter.FXML);
+            Parent rootPane = initPresenter(LobbyDetailPresenter.FXML);
             lobbyScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             lobbyScene.getStylesheets()
                       .add(STYLE_SHEET);
@@ -495,8 +495,13 @@ public class SceneManager {
      *
      * @since 2019-09-03
      */
-    public void showMainScreen(User currentUser) {
-        showScene(mainScene, "Welcome " + currentUser.getUsername());
+    public void showMainScreen() {
+        showScene(
+                mainScene,
+                "Welcome " + UserStore.getInstance()
+                                      .getUser()
+                                      .getUsername()
+        );
     }
 
     /**
@@ -573,7 +578,8 @@ public class SceneManager {
         showScene(gameScreenScene, "Iberia");
 
         Platform.runLater(() -> {
-            Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+            Rectangle2D visualBounds = Screen.getPrimary()
+                                             .getVisualBounds();
 
             primaryStage.setX(visualBounds.getMinX());
             primaryStage.setY(visualBounds.getMinY());

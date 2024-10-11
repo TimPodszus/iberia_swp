@@ -79,4 +79,18 @@ public interface ILobby extends Serializable {
      */
     void leaveUser(User user);
 
+    /**
+     * Checks if this lobby is equal to another object.
+     *
+     * @param o The object to compare with this lobby
+     * @return true if the specified object is equal to this lobby, false otherwise
+     */
+    boolean equals(Object o);
+
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return an integer hash code value
+     */
+    int hashCode();
 }
