@@ -2,26 +2,23 @@ package de.uol.swp.server.communication;
 
 
 import com.google.inject.Inject;
-import de.uol.swp.common.game.message.ActionRequest;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.MessageContext;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.message.request.RequestMessage;
 import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.message.response.ResponseMessage;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.message.UserLoggedInMessage;
 import de.uol.swp.common.user.message.UserLoggedOutMessage;
 import de.uol.swp.common.user.response.LoginSuccessfulResponse;
-import de.uol.swp.server.GameManager;
-import de.uol.swp.server.game.GameTurnException;
 import de.uol.swp.server.message.ClientAuthorizedMessage;
 import de.uol.swp.server.message.ClientDisconnectedMessage;
 import de.uol.swp.server.message.ServerExceptionMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -54,7 +51,6 @@ public class ServerHandler implements ServerHandlerDelegate {
      */
     private final EventBus eventBus;
 
-    private final GameManager gameManager;
 
     /**
      * Constructor
@@ -63,9 +59,8 @@ public class ServerHandler implements ServerHandlerDelegate {
      * @see EventBus
      */
     @Inject
-    public ServerHandler(EventBus eventBus, GameManager gameManager) {
+    public ServerHandler(EventBus eventBus) {
         this.eventBus = eventBus;
-        this.gameManager = gameManager;
         eventBus.register(this);
     }
 
@@ -74,28 +69,24 @@ public class ServerHandler implements ServerHandlerDelegate {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Received new message from client {}", msg);
         }
-
         final Optional<MessageContext> messageContext = msg.getMessageContext();
-        if (messageContext.isEmpty()) {
-            LOG.error("No message context for {}", msg);
-            return;
-        }
-
-        try {
-            checkIfMessageNeedsAuthorization(messageContext.get(), msg);
-
-            if (msg instanceof ActionRequest actionRequest) {
-                handleMessageAction(actionRequest);
-            } else {
+        if (messageContext.isPresent()) {
+            try {
+                checkIfMessageNeedsAuthorization(messageContext.get(), msg);
                 eventBus.post(msg);
+            } catch (Exception e) {
+                LOG.error(
+                        "ServerException {} {}",
+                        e.getClass()
+                         .getName(),
+                        e.getMessage()
+                );
+                sendToClient(messageContext.get(), new ExceptionMessage(e.getMessage()));
             }
-        } catch (Exception e) {
-            LOG.error("ServerException {} {}",
-                    e.getClass()
-                     .getName(),
-                    e.getMessage()
-            );
-            sendToClient(messageContext.get(), new ExceptionMessage(e.getMessage()));
+        } else {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(String.format("No message context for %s!", msg));
+            }
         }
     }
 
@@ -132,7 +123,8 @@ public class ServerHandler implements ServerHandlerDelegate {
     public void onServerExceptionMessage(ServerExceptionMessage msg) {
         Optional<MessageContext> ctx = getCtx(msg);
         LOG.error(msg.getException());
-        ctx.ifPresent(channelHandlerContext -> sendToClient(channelHandlerContext,
+        ctx.ifPresent(channelHandlerContext -> sendToClient(
+                channelHandlerContext,
                 new ExceptionMessage(msg.getException()
                                         .getMessage())
         ));
@@ -257,7 +249,8 @@ public class ServerHandler implements ServerHandlerDelegate {
         msg.setSession(null);
         msg.setMessageContext(null);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Send {} to {}",
+            LOG.debug(
+                    "Send {} to {}",
                     msg,
                     (msg.getReceiver()
                         .isEmpty() || msg.getReceiver() == null ? "all" : msg.getReceiver())
@@ -420,18 +413,4 @@ public class ServerHandler implements ServerHandlerDelegate {
             }
         }
     }
-
-    private void handleMessageAction(ActionRequest actionRequest) throws GameTurnException {
-        Optional<MessageContext> context = actionRequest.getMessageContext();
-        if (context.isPresent()) {
-            Session session = getSession(context.get()).orElseThrow(() -> new SecurityException("Client not logged in"));
-            gameManager.receiveAndForwardActionMessage(session.getUser(),
-                    actionRequest.getAction(),
-                    actionRequest.getLobbyCode()
-            );
-        } else {
-            LOG.error("ActionMessage received without a valid context");
-        }
-    }
-
 }

@@ -2,34 +2,43 @@ package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.enums.PlagueName;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+import java.util.ArrayList;
+import java.util.List;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CityMapper {
 
     public static ICityDTO toDTO(City city) {
         return new CityDTO(
                 city.getId(),
                 city.getPlagueName()
-                    .name(),
+                    .toString(),
                 city.getName()
-                    .getDisplayName(),
+                    .toString(),
                 city.getFoundationDate(),
                 city.isHarbourCity(),
-                city.isHasHospital()
+                city.isHospitalBuilt()
         );
     }
 
-    public static City fromDTO(ICityDTO cityDTO) {
-        return new City(
-                cityDTO.getId(),
-                PlagueName.valueOf(cityDTO.getPlagueName()),
-                CityName.getCityByName(cityDTO.getName()),
-                cityDTO.getFoundationDate(),
-                cityDTO.isHarbourCity(),
-                cityDTO.isHospitalBuild()
-        );
+    public static List<ICityDTO> toDTOList(List<City> cities) {
+        List<ICityDTO> citiesDto = new ArrayList<>();
+        for (City city : cities) {
+            CityDTO cityDTO = new CityDTO(
+                    city.getId(),
+                    city.getPlagueName()
+                        .toString(),
+                    city.getName()
+                        .toString(),
+                    city.getFoundationDate(),
+                    city.isHarbourCity(),
+                    city.isHospitalBuilt()
+            );
+            citiesDto.add(cityDTO);
+        }
+        return citiesDto;
     }
 }

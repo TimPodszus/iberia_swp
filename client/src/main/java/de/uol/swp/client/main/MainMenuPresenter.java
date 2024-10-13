@@ -1,9 +1,10 @@
 package de.uol.swp.client.main;
 
 import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
-import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
+import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.common.exception.UnsopportedMethodExeption;
+import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import org.greenrobot.eventbus.Subscribe;
 
 import com.google.inject.Inject;
@@ -112,6 +113,7 @@ public class MainMenuPresenter extends AbstractPresenter {
      */
     @FXML
     void onJoinLobbyButtonPressed(ActionEvent event) {
+        eventBus.post(new LobbyListRequest());
         eventBus.post(showLobbyOverviewViewMessage);
     }
 

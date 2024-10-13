@@ -1,0 +1,36 @@
+package de.uol.swp.common.lobby.message.request;
+
+import de.uol.swp.common.lobby.message.request.LobbyLeaveUserRequest;
+import de.uol.swp.common.user.UserDTO;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+/**
+ * Test for the lobby leave user request
+ *
+ * @see LobbyLeaveUserRequest
+ * @since 2023-05-14
+ */
+class LobbyLeaveUserRequestTest {
+
+    final String lobbyName = "Test";
+    final UserDTO user = new UserDTO("Marco", "Marco");
+
+
+    /**
+     * Test for creation of the LobbyLeaveUserRequests
+     * This test checks if the lobbyName and the user of the LobbyLeaveUserRequest gets
+     * set correctly during the creation of the request
+     *
+     * @since 2023-05-14
+     */
+    @Test
+    void createLobbyLeaveUserRequest() {
+        LobbyLeaveUserRequest request = new LobbyLeaveUserRequest(lobbyName, user);
+
+        assertEquals(lobbyName, request.getLobbyCode());
+        assertEquals(user, request.getUser());
+    }
+
+}

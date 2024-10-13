@@ -1,31 +1,29 @@
 package de.uol.swp.client;
 
-import com.google.inject.Provider;
-import de.uol.swp.client.game.GameScreenPresenter;
-import de.uol.swp.client.game.event.ShowGameScreenEvent;
-import de.uol.swp.client.lobby.CurrentGamesPresenter;
-import de.uol.swp.client.lobby.LobbyOverviewPresenter;
-import de.uol.swp.client.lobby.LobbyScreenPresenter;
-import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
-import de.uol.swp.client.main.event.ShowLobbyOverviewViewEvent;
-import de.uol.swp.client.main.event.ShowLastSceneEvent;
-import de.uol.swp.client.options.OptionsPresenter;
-import javafx.geometry.Rectangle2D;
-import javafx.stage.Screen;
-import de.uol.swp.client.options.event.ShowOptionsViewEvent;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import de.uol.swp.client.auth.LoginPresenter;
 import de.uol.swp.client.auth.events.ShowLoginViewEvent;
+import de.uol.swp.client.game.GamePresenter;
+import de.uol.swp.client.game.event.ShowGameScreenEvent;
+import de.uol.swp.client.lobby.CurrentGamesPresenter;
+import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
+import de.uol.swp.client.lobby.detail.LobbyDetailPresenter;
+import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
+import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.main.MainMenuPresenter;
+import de.uol.swp.client.main.event.ShowLastSceneEvent;
+import de.uol.swp.client.options.OptionsPresenter;
+import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
+import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.register.RegistrationPresenter;
 import de.uol.swp.client.register.event.RegistrationCanceledEvent;
 import de.uol.swp.client.register.event.RegistrationErrorEvent;
 import de.uol.swp.client.register.event.ShowRegistrationViewEvent;
-import de.uol.swp.common.user.User;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -35,6 +33,8 @@ import javafx.scene.control.DialogPane;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.net.URL;
@@ -186,7 +186,7 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.lobby.LobbyOverviewPresenter
+     * @see LobbyOverviewPresenter
      */
     private void initLobbyOverviewView() throws IOException {
         if (lobbyOverviewScene == null) {
@@ -205,11 +205,11 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.lobby.LobbyScreenPresenter
+     * @see LobbyDetailPresenter
      */
     private void initLobbyScreen() throws IOException {
         if (lobbyScene == null) {
-            Parent rootPane = initPresenter(LobbyScreenPresenter.FXML);
+            Parent rootPane = initPresenter(LobbyDetailPresenter.FXML);
             lobbyScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             lobbyScene.getStylesheets()
                       .add(STYLE_SHEET);
@@ -280,11 +280,11 @@ public class SceneManager {
      * FXML file.
      *
      * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.game.GameScreenPresenter
+     * @see GamePresenter
      */
     private void initGameScreenView() throws IOException {
         if (gameScreenScene == null) {
-            Parent rootPane = initPresenter(GameScreenPresenter.FXML);
+            Parent rootPane = initPresenter(GamePresenter.FXML);
             gameScreenScene = new Scene(rootPane, 1280, 720);
             gameScreenScene.getStylesheets()
                            .add(STYLE_SHEET);
@@ -395,6 +395,11 @@ public class SceneManager {
         showError(event.getMessage());
     }
 
+    @Subscribe
+    public void onUserJoinedLobbyEvent(UserJoinedLobbyMessage userJoinedLobbyMessage) {
+       showLobbyScreen();
+    }
+
     /**
      * Shows an error message inside an error alert
      *
@@ -496,8 +501,13 @@ public class SceneManager {
      *
      * @since 2019-09-03
      */
-    public void showMainScreen(User currentUser) {
-        showScene(mainScene, "Welcome " + currentUser.getUsername());
+    public void showMainScreen() {
+        showScene(
+                mainScene,
+                "Welcome " + UserStore.getInstance()
+                                      .getUser()
+                                      .getUsername()
+        );
     }
 
     /**
@@ -574,7 +584,8 @@ public class SceneManager {
         showScene(gameScreenScene, "Iberia");
 
         Platform.runLater(() -> {
-            Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+            Rectangle2D visualBounds = Screen.getPrimary()
+                                             .getVisualBounds();
 
             primaryStage.setX(visualBounds.getMinX());
             primaryStage.setY(visualBounds.getMinY());

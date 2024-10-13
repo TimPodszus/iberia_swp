@@ -1,11 +1,10 @@
 package de.uol.swp.common.lobby.dto;
 
-import de.uol.swp.common.lobby.ILobby;
 import de.uol.swp.common.user.User;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.List;
 
 
 /**
@@ -17,83 +16,14 @@ import java.util.TreeSet;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-public class LobbyDTO implements ILobby
-{
+@Getter
+@AllArgsConstructor
+public class LobbyDTO implements ILobbyDTO {
 
-    private final String name;
-    private User owner;
-    private final Set<User> users = new TreeSet<>();
 
     private final String lobbyCode;
-
+    private final String name;
+    private final List<User> users;
+    private User owner;
     private final int difficulty;
-
-
-    /**
-     * Constructor
-     *
-     * @param name    The name the lobby should have
-     * @param creator The user who created the lobby and therefore shall be the
-     *                owner
-     * @since 2019-10-08
-     */
-    public LobbyDTO(String name, User creator, String lobbyCode, int difficulty) {
-        this.name = name;
-        this.owner = creator;
-        this.users.add(creator);
-        this.lobbyCode = lobbyCode;
-        this.difficulty = difficulty;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public void joinUser(User user) {
-        this.users.add(user);
-    }
-
-    @Override
-    public void leaveUser(User user) {
-        if (users.size() == 1) {
-            throw new IllegalArgumentException("Lobby must contain at least one user!");
-        }
-        if (users.contains(user)) {
-            this.users.remove(user);
-            if (this.owner.equals(user)) {
-                updateOwner(users.iterator().next());
-            }
-        }
-    }
-
-    @Override
-    public void updateOwner(User user) {
-        if (!this.users.contains(user)) {
-            throw new IllegalArgumentException("User " + user.getUsername() + "not found. Owner must be member of lobby!");
-        }
-        this.owner = user;
-    }
-
-    @Override
-    public User getOwner() {
-        return owner;
-    }
-
-    @Override
-    public Set<User> getUsers() {
-        return Collections.unmodifiableSet(users);
-    }
-
-    @Override
-    public String getLobbyCode()
-    {
-        return lobbyCode;
-    }
-
-    public int getDifficulty()
-    {
-        return difficulty;
-    }
 }
