@@ -5,13 +5,18 @@ import de.uol.swp.common.message.AbstractServerMessage;
 
 import java.util.Objects;
 
+/**
+ * An abstract message class for plague-related communications.
+ * This class serves as a base for all messages related to plagues. It contains
+ * the plague name and standard methods like equals and hashCode for comparison.
+ * Any plague-related message should extend this class.
+ */
 public class AbstractPlagueMessage extends AbstractServerMessage {
     PlagueName name;
 
     public AbstractPlagueMessage() {
 
     }
-
     public AbstractPlagueMessage(PlagueName name) {
         this.name = name;
     }

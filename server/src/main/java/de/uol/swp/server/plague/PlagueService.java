@@ -16,21 +16,19 @@ import org.greenrobot.eventbus.Subscribe;
 public class PlagueService extends AbstractService {
 
     private final IPlagueManagement plagueManagement;
-    private final AuthenticationService authenticationService;
+
 
     /**
      * Constructor
      *
      * @param plagueManagement       The management class for researching plagues
-     * @param authenticationService  The user management
      * @param eventBus               The server-wide EventBus
      * @since 2024-10-04
      */
     @Inject
-    public PlagueService(IPlagueManagement plagueManagement, AuthenticationService authenticationService, EventBus eventBus) {
+    public PlagueService(IPlagueManagement plagueManagement, EventBus eventBus) {
         super(eventBus);
         this.plagueManagement = plagueManagement;
-        this.authenticationService = authenticationService;
     }
 
     /**

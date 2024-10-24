@@ -203,7 +203,10 @@ public class Game implements IGame {
         return subDecks;
     }
 
-
+    /**
+     * Retrieves the current player whose turn it is in the game.
+     * @return the {@link Player} object representing the current player
+     */
     public Player getCurrentPlayer() {
         return this.players.get(currentPlayerIndex);
     }
