@@ -11,6 +11,7 @@ import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
+import de.uol.swp.server.plague.PlagueRepository;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
@@ -45,6 +46,12 @@ public class Game implements IGame {
      * Repository for connection-related data.
      */
     private ConnectionRepository connectionRepository;
+
+    /**
+     * Repository for the plagues.
+     */
+    private PlagueRepository plagueRepository;
+
 
     /**
      * Counter for the number of infections.
@@ -109,6 +116,7 @@ public class Game implements IGame {
         this.cityRepository = new CityRepository();
         this.regionRepository = new RegionRepository(this.cityRepository);
         this.connectionRepository = new ConnectionRepository();
+        this.plagueRepository = new PlagueRepository();
         this.infectionCounter = 2;
         this.escalationStage = 0;
         this.waterTreatmentsLeft = 14;
@@ -195,5 +203,11 @@ public class Game implements IGame {
         return subDecks;
     }
 
-
+    /**
+     * Retrieves the current player whose turn it is in the game.
+     * @return the {@link Player} object representing the current player
+     */
+    public Player getCurrentPlayer() {
+        return this.players.get(currentPlayerIndex);
+    }
 }

@@ -6,19 +6,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlagueRepository {
-    // Private constructor to hide the implicit public one
-    private PlagueRepository() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
 
-    public static List<Plague> getAllPlagues() {
-        List<Plague> plagues = new ArrayList<>();
+    private final List<Plague> plagues;
 
+    /**
+     * Constructs a new PlagueRepository and initializes the list of plagues.
+     */
+    public PlagueRepository() {
+        plagues = new ArrayList<>();
         plagues.add(new Plague(PlagueName.YELLOW_FEVER, 24, false));
         plagues.add(new Plague(PlagueName.CHOLERA, 24, false));
         plagues.add(new Plague(PlagueName.MALARIA, 24, false));
         plagues.add(new Plague(PlagueName.TYPHUS, 24, false));
+    }
 
+    /**
+     * Returns the list of all plagues.
+     *
+     * @return the list of plagues
+     */
+    public List<Plague> getPlagues() {
         return plagues;
     }
 }
