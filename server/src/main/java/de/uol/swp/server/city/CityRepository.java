@@ -95,4 +95,17 @@ public class CityRepository {
                      .filter(city -> nameList.contains(city.getName()))
                      .toList();
     }
+
+    /**
+     * Retrieves a city by its ID.
+     *
+     * @param cityId the ID of the city to retrieve
+     * @return the city with the given ID, or null if no city is found
+     */
+    public City getCity(String cityId) {
+        return cities.stream()
+                     .filter(city -> city.getId() == Integer.parseInt(cityId))
+                     .findFirst()
+                     .orElse(null);
+    }
 }

@@ -3,6 +3,7 @@ package de.uol.swp.server.connection;
 import de.uol.swp.common.enums.PlagueName;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
+import de.uol.swp.server.connection.management.ConnectionManagement;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

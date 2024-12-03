@@ -6,8 +6,8 @@ import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityMapper;
+import de.uol.swp.server.connection.management.ConnectionManagement;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -39,8 +39,9 @@ public class ConnectionService extends AbstractService {
      */
     @Subscribe
     public void onAvailableDestinationsRequest(AvailableDestinationsRequest request) {
-        City city = CityMapper.fromDTO(request.getCity());
-        List<ICityDTO> availableDestinations = connectionManagement.getAvailableDestinations(city)
+        List<ICityDTO> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyCode(),
+                                                                           request.getCityId()
+                                                                   )
                                                                    .stream()
                                                                    .map(CityMapper::toDTO)
                                                                    .collect(Collectors.toList());

@@ -4,6 +4,7 @@ import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.city.City;
 import de.uol.swp.server.game.data.IGame;
 
 public interface IGameManagement {
@@ -18,9 +19,9 @@ public interface IGameManagement {
     /**
      * Sets the initial positioning of a player in the game based on the provided city.
      *
-     * @param user the user for whom the positioning is being set
+     * @param user      the user for whom the positioning is being set
      * @param lobbyCode the code of the lobby in which the game is happening
-     * @param cityDTO the city where the player will be positioned
+     * @param cityDTO   the city where the player will be positioned
      */
     void setPositioning(User user, String lobbyCode, CityDTO cityDTO);
 
@@ -35,5 +36,14 @@ public interface IGameManagement {
      * @return the drawn infection card
      */
     InfectionCard drawInfectionCard();
+
+    /**
+     * Moves a player to a specified city in the game.
+     *
+     * @param user      the user representing the player to be moved
+     * @param lobbyCode the code of the lobby in which the game is happening
+     * @param city      the city to which the player will be moved
+     */
+    void movePlayer(User user, String lobbyCode, City city);
 }
 

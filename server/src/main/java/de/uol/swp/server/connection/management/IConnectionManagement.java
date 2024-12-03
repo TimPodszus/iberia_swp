@@ -1,6 +1,5 @@
-package de.uol.swp.server.connection;
+package de.uol.swp.server.connection.management;
 
-import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.server.city.City;
 
 import java.util.List;
@@ -13,8 +12,9 @@ public interface IConnectionManagement {
     /**
      * Retrieves a list of available destinations from the given city.
      *
-     * @param city the city from which to get available destinations
+     * @param lobbyId the ID of the lobby
+     * @param cityId  the city from which to get available destinations
      * @return a list of available destinations
      */
-    List<City> getAvailableDestinations(City city);
+    List<City> getAvailableDestinations(String lobbyId, String cityId);
 }

@@ -55,8 +55,10 @@ public class CardMapper {
      */
     private static CityCardDTO toCityCardDTO(CityCard cityCard) {
         CityDTO cityDTO = new CityDTO(cityCard.getCity()
-                                              .getPlagueName()
-                                              .toString(),
+                                              .getId(),
+                cityCard.getCity()
+                        .getPlagueName()
+                        .toString(),
                 cityCard.getCity()
                         .getName()
                         .getDisplayName(),
@@ -92,8 +94,10 @@ public class CardMapper {
      */
     private static InfectionCardDTO toInfectionCardDTO(InfectionCard infectionCard) {
         CityDTO cityDTO = new CityDTO(infectionCard.getCity()
-                                                   .getPlagueName()
-                                                   .toString(),
+                                                   .getId(),
+                infectionCard.getCity()
+                             .getPlagueName()
+                             .toString(),
                 infectionCard.getCity()
                              .getName()
                              .getDisplayName(),
