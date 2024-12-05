@@ -9,7 +9,19 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.player.PlayerMapper;
 import de.uol.swp.server.region.RegionMapper;
 
+/**
+ * Utility class for mapping game-related objects to their Data Transfer Object (DTO) forms.
+ */
 public class GameMapper {
+
+    /**
+     * Private constructor to prevent instantiation of the utility class.
+     * Throws an UnsupportedOperationException if called.
+     */
+    private GameMapper() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
     /**
      * Converts an IGame object to an IGameDTO object.
      *
