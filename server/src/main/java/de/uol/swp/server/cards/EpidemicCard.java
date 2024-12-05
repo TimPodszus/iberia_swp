@@ -1,6 +1,7 @@
 package de.uol.swp.server.cards;
 
 
+import de.uol.swp.common.cards.CardType;
 import lombok.Getter;
 
 
@@ -9,8 +10,7 @@ import lombok.Getter;
 public class EpidemicCard extends Card {
     private final String description;
 
-    public EpidemicCard(int id, String title, String type, String description)
-    {
+    public EpidemicCard(int id, String title, CardType type, String description) {
         super(id, title, type);
         this.description = description;
     }

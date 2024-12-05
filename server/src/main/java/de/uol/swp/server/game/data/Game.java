@@ -1,5 +1,6 @@
 package de.uol.swp.server.game.data;
 
+import de.uol.swp.common.cards.CardType;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
@@ -148,7 +149,7 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    "InfectionCard",
+                    CardType.INFECTION_CARD,
                     city
             );
             infectionCardDrawPile.add(infectionCard);
@@ -163,7 +164,7 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    "CityCard",
+                    CardType.CITY_CARD,
                     city
             );
             playerCardDrawPile.add(citycard);
@@ -172,11 +173,13 @@ public class Game implements IGame {
     }
 
     public EpidemicCard createEpidemicCard(int id) {
-        return new EpidemicCard(id, "Epidemiekarte", "EpidemicCard", "");
+        return new EpidemicCard(id, "Epidemiekarte", CardType.EPIDEMIC_CARD, "");
     }
 
     public void gameStartShuffle(int numSubDecks) {
-        if (numSubDecks <= 0) throw new IllegalArgumentException("Number of sub-decks must be greater than zero.");
+        if (numSubDecks <= 0) {
+            throw new IllegalArgumentException("Number of sub-decks must be greater than zero.");
+        }
         List<List<Card>> subDecks = splitIntoSubDecks(playerCardDrawPile, numSubDecks);
         for (int i = 0; i < numSubDecks; i++) {
             subDecks.get(i)
