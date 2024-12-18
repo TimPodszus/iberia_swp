@@ -1,14 +1,14 @@
 package de.uol.swp.server.connection;
 
 import de.uol.swp.server.city.CityName;
-import de.uol.swp.server.connection.Connection;
-import de.uol.swp.server.connection.ConnectionRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConnectionRepositoryTest {
     static ConnectionRepository repository;

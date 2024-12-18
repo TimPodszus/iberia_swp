@@ -3,13 +3,14 @@ package de.uol.swp.server.usermanagement;
 import de.uol.swp.common.passwordHashing.PasswordHashing;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
-
 import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import de.uol.swp.server.usermanagement.store.UserStore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

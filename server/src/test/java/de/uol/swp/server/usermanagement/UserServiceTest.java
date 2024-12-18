@@ -4,7 +4,6 @@ import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.common.user.request.RegisterUserRequest;
 import de.uol.swp.server.EventBusBasedTest;
-
 import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import org.greenrobot.eventbus.EventBus;
 import org.junit.jupiter.api.BeforeEach;

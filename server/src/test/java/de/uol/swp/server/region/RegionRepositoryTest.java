@@ -1,8 +1,6 @@
 package de.uol.swp.server.region;
 
 import de.uol.swp.server.city.CityRepository;
-import de.uol.swp.server.region.Region;
-import de.uol.swp.server.region.RegionRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

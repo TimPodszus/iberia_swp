@@ -1,9 +1,6 @@
 package de.uol.swp.server.usermanagement;
 
 
-import de.uol.swp.server.EventBusBasedTest;
-import org.greenrobot.eventbus.Subscribe;
-
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
@@ -12,10 +9,12 @@ import de.uol.swp.common.user.request.LoginRequest;
 import de.uol.swp.common.user.request.LogoutRequest;
 import de.uol.swp.common.user.request.RetrieveAllOnlineUsersRequest;
 import de.uol.swp.common.user.response.AllOnlineUsersResponse;
+import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.message.ClientAuthorizedMessage;
 import de.uol.swp.server.message.ServerExceptionMessage;
 import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import de.uol.swp.server.usermanagement.store.UserStore;
+import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
