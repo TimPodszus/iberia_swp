@@ -1,0 +1,76 @@
+package de.uol.swp.server.connection;
+
+import de.uol.swp.common.connectiom.IConnectionDTO;
+import de.uol.swp.server.city.CityName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ConnectionMapperTest {
+    private Connection firstCityConnection;
+    private List<Connection> connectionList;
+
+    @BeforeEach
+    void setUp() {
+        firstCityConnection = new Connection(1, Arrays.asList(CityName.BARCELONA, CityName.ALICANTE), true, true);
+        Connection secondCityConnection = new Connection(2, Arrays.asList(CityName.ZARAGOZA, CityName.GIRONA), false, false);
+
+        connectionList = Arrays.asList(firstCityConnection, secondCityConnection);
+    }
+
+    @Test
+    void testToDTO() {
+        IConnectionDTO connectionDTO = ConnectionMapper.toDTO(firstCityConnection);
+
+        assertNotNull(connectionDTO);
+        assertEquals(1, connectionDTO.getId());
+        assertEquals(2, connectionDTO.getCityNames().size());
+        assertTrue(connectionDTO.getCityNames().contains(CityName.BARCELONA.getDisplayName()));
+        assertTrue(connectionDTO.getCityNames().contains(CityName.ALICANTE.getDisplayName()));
+        assertTrue(connectionDTO.isTrainTrack());
+        assertTrue(connectionDTO.isTrainTrackBuildable());
+    }
+
+    @Test
+    void testToDTOList() {
+        List<IConnectionDTO> connectionDTOS = ConnectionMapper.toDTOList(connectionList);
+
+        assertNotNull(connectionDTOS);
+        assertEquals(2, connectionDTOS.size());
+
+        IConnectionDTO dto1 = connectionDTOS.get(0);
+        assertEquals(1, dto1.getId());
+        assertTrue(dto1.getCityNames().contains(CityName.BARCELONA.getDisplayName()));
+        assertTrue(dto1.getCityNames().contains(CityName.ALICANTE.getDisplayName()));
+
+        IConnectionDTO dto2 = connectionDTOS.get(1);
+        assertEquals(2, dto2.getId());
+        assertTrue(dto2.getCityNames().contains(CityName.ZARAGOZA.getDisplayName()));
+        assertTrue(dto2.getCityNames().contains(CityName.GIRONA.getDisplayName()));
+    }
+
+    @Test
+    void testToDTOEmptyList() {
+        List<IConnectionDTO> emptyList = ConnectionMapper.toDTOList(Arrays.asList());
+        assertTrue(emptyList.isEmpty());
+    }
+
+    @Test
+    void testToDTOWithEmptyCityNames() {
+        Connection connectionWithEmptyCityNames = new Connection(3, Arrays.asList(), false, true);
+        IConnectionDTO connectionDTO = ConnectionMapper.toDTO(connectionWithEmptyCityNames);
+
+        assertNotNull(connectionDTO);
+        assertEquals(3, connectionDTO.getId());
+        assertTrue(connectionDTO.getCityNames().isEmpty());
+        assertFalse(connectionDTO.isTrainTrack());
+        assertTrue(connectionDTO.isTrainTrackBuildable());
+    }
+}

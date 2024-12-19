@@ -51,7 +51,7 @@ public class GameManagement implements IGameManagement {
         initiateInfections(game);
     }
 
-    private void createPlayers(List<User> users, IGame game) {
+    protected void createPlayers(List<User> users, IGame game) {
         for (User user : users) {
             Player player = new Player(user);
             game.getPlayers().add(player);
@@ -66,7 +66,7 @@ public class GameManagement implements IGameManagement {
         }
 
     }
-    private void setStartingPlayer(IGame game) {
+    protected void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
         Player startingPlayer = null;
         for (Player player : game.getPlayers()) {
@@ -85,7 +85,7 @@ public class GameManagement implements IGameManagement {
         }
     }
 
-    void assignRoles(IGame game) {
+    protected void assignRoles(IGame game) {
         List<Role> allRoles = RoleRepository.getAllRoles();
         Collections.shuffle(allRoles);
         for (int i = 0; i < game.getPlayers().size(); i++) {
@@ -93,7 +93,7 @@ public class GameManagement implements IGameManagement {
                    .setRole(allRoles.get(i));
         }
     }
-    void initiateInfections(IGame game) {
+    protected void initiateInfections(IGame game) {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
             game.getCityManagement().infectCity(drawInfectionCard(), infectionAmount);
@@ -142,7 +142,7 @@ public class GameManagement implements IGameManagement {
      * @param lobbyCode The code of the lobby to retrieve the game from
      * @return The game associated with the given lobby code
      */
-    private IGame getGame(String lobbyCode) {
+    protected IGame getGame(String lobbyCode) {
         return GameStore.getInstance().getGame(lobbyCode);
     }
 
