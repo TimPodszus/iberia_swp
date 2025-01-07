@@ -15,6 +15,4 @@ public abstract class CardDTO implements Serializable {
         this.title = title;
         this.type = type;
     }
-
-
 }

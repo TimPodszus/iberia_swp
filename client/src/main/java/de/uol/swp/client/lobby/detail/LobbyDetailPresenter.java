@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
-import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
