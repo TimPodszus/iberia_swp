@@ -632,11 +632,30 @@ public class GamePresenter extends AbstractPresenter {
         playerCardDrawPileCounter.setText(String.valueOf(count));
     }
 
+    /**
+     * Handles BoardUpdateMessage detected on the EventBus.
+     * <p>
+     * If a BoardUpdateMessage is detected on the EventBus, this method gets
+     * called. It updates the game board on the JavaFX Application Thread.
+     *
+     * @param response The BoardUpdateMessage detected on the EventBus
+     * @see de.uol.swp.common.game.message.event.BoardUpdateMessage
+     */
     @Subscribe
     public void onBoardUpdateMessage(BoardUpdateMessage response) {
         Platform.runLater(() -> updateBoard(response));
     }
 
+    /**
+     * Updates the game board with the data from the BoardUpdateMessage.
+     * <p>
+     * This method updates various aspects of the game board including cities,
+     * connections, regions, infection card discard pile, infection card draw pile,
+     * player card discard pile, player card draw pile, player hand cards, players,
+     * infection counter, escalation stage, and hospitals.
+     *
+     * @param response The BoardUpdateMessage containing the game data
+     */
     private void updateBoard(BoardUpdateMessage response) {
         IGameDTO gameDTO = response.getGameDTO();
 

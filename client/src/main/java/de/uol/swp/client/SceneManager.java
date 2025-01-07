@@ -367,6 +367,15 @@ public class SceneManager {
         showGameScreen();
     }
 
+    /**
+     * Handles ShowMainMenuEvent detected on the EventBus.
+     * <p>
+     * If a ShowMainMenuEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the main menu screen.
+     *
+     * @param event The ShowMainMenuEvent detected on the EventBus
+     * @see de.uol.swp.client.main.event.ShowMainMenuEvent
+     */
     @Subscribe
     public void onShowMainMenuEvent(ShowMainMenuEvent event) {
         showMainScreen();
@@ -402,11 +411,29 @@ public class SceneManager {
         showError(event.getMessage());
     }
 
+    /**
+     * Handles UserJoinedLobbyMessage detected on the EventBus.
+     * <p>
+     * If a UserJoinedLobbyMessage is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the lobby screen.
+     *
+     * @param userJoinedLobbyMessage The UserJoinedLobbyMessage detected on the EventBus
+     * @see de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage
+     */
     @Subscribe
     public void onUserJoinedLobbyEvent(UserJoinedLobbyMessage userJoinedLobbyMessage) {
        showLobbyScreen();
     }
 
+    /**
+     * Handles CreatedGameResponse detected on the EventBus.
+     * <p>
+     * If a CreatedGameResponse is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the game screen.
+     *
+     * @param response The CreatedGameResponse detected on the EventBus
+     * @see de.uol.swp.common.message.response.CreatedGameResponse
+     */
     @Subscribe
     public void onCreatedGameResponseEvent(CreatedGameResponse response) {
         showGameScreen();
