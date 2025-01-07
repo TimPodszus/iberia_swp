@@ -677,6 +677,7 @@ public class GamePresenter extends AbstractPresenter {
         updateInfectionCounter(gameDTO.getInfectionCounter());
         updateEscalationStage(gameDTO.getEscalationStage());
         updateHospitals(gameDTO.getCities());
+        updateResearchedPlagues(gameDTO.getPlagues());
     }
 
     /**
@@ -909,5 +910,18 @@ public class GamePresenter extends AbstractPresenter {
                 this.setHospitalToCity(city.getId(), city.getPlagueName());
             }
         }
+    }
+
+    /**
+     * Updates the researched plagues with the latest data.
+     *
+     * @param plagues the list of plagues
+     */
+    private void updateResearchedPlagues(List<IPlagueDTO> plagues) {
+        PlagueName[] researchedPlagues = plagues.stream()
+                                                .filter(IPlagueDTO::isResearched)
+                                                .map(IPlagueDTO::getName)
+                                                .toArray(PlagueName[]::new);
+        setResearchedPlagues(researchedPlagues);
     }
 }
