@@ -905,7 +905,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateHospitals(List<ICityDTO> cities) {
         for (ICityDTO city : cities) {
-//            this.removeHospitalFromCity(city.getId());
+            this.removeHospitalFromCity(city.getId());
             if (city.isHospitalBuild()) {
                 this.setHospitalToCity(city.getId(), city.getPlagueName());
             }
