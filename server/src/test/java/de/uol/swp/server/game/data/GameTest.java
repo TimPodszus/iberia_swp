@@ -6,7 +6,6 @@ import de.uol.swp.server.cards.EpidemicCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.city.CityRepository;
-import de.uol.swp.server.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
