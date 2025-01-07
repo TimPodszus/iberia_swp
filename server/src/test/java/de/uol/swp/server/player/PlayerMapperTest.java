@@ -1,7 +1,9 @@
 package de.uol.swp.server.player;
 
+import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.user.User;
+import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.role.Role;
@@ -20,7 +22,7 @@ import static org.mockito.Mockito.when;
  * Test class for PlayerMapper.
  */
 class PlayerMapperTest {
-    private static final String TEST_CITY_NAME = "testCity";
+    private static final String TEST_CITY_NAME = "A_CORUNA";
     private static final String TEST_ROLE_NAME = "Scientist";
     private static final String TEST_USER_NAME = "testUser";
     private Player mockPlayer;
@@ -38,11 +40,13 @@ class PlayerMapperTest {
 
         City mockCity = mock(City.class);
         when(mockCity.getName()).thenReturn(CityName.A_CORUNA);
+        when(mockCity.getPlagueName()).thenReturn(PlagueName.CHOLERA);
 
         mockPlayer = mock(Player.class);
         when(mockPlayer.getUser()).thenReturn(mockUser);
         when(mockPlayer.getRole()).thenReturn(mockRole);
         when(mockPlayer.getCurrentPosition()).thenReturn(mockCity);
+        when(mockPlayer.getCards()).thenReturn(Arrays.asList(mock(Card.class), mock(Card.class)));
     }
 
     /**
