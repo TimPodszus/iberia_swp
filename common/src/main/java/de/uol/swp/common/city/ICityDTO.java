@@ -3,12 +3,13 @@ package de.uol.swp.common.city;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.infection.IInfectionDTO;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Interface representing a City Data Transfer Object (DTO).
  */
-public interface ICityDTO {
+public interface ICityDTO extends Serializable {
 
     /**
      * Gets the id of the city.

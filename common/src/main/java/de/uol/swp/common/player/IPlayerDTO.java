@@ -4,9 +4,10 @@ import de.uol.swp.common.cards.CardDTO;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.role.IRoleDTO;
 
+import java.io.Serializable;
 import java.util.List;
 
-public interface IPlayerDTO {
+public interface IPlayerDTO extends Serializable {
     String getUsername();
 
     IRoleDTO getRole();

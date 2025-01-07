@@ -16,14 +16,14 @@ import java.util.List;
 @AllArgsConstructor
 public class GameDTO implements IGameDTO, Serializable {
     private String gameId;
-    private List<ICityDTO> cities;
-    private List<IConnectionDTO> connections;
-    private List<IRegionDTO> regions;
+    private transient List<ICityDTO> cities;
+    private transient List<IConnectionDTO> connections;
+    private transient List<IRegionDTO> regions;
     private List<InfectionCardDTO> infectionCardDrawPile;
     private List<InfectionCardDTO> infectionCardDiscardPile;
     private List<CardDTO> playerCardDrawPile;
     private List<CardDTO> playerCardDiscardPile;
-    private List<IPlayerDTO> players;
+    private transient List<IPlayerDTO> players;
     private int infectionCounter;
     private int escalationStage;
     private int waterTreatmentsLeft;
