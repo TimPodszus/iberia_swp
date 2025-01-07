@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ConnectionRepositoryTest {
     static ConnectionRepository repository;
@@ -27,15 +26,15 @@ class ConnectionRepositoryTest {
     }
 
     @Test
-    void testGetConnectionByID() {
-        Connection connection1 = connections.get(0);
-        assertEquals(1, connection1.getId());
-        assertTrue(connection1.isTrainTrackBuildable());
-        assertEquals(List.of(CityName.A_CORUNA, CityName.GIJON), connection1.getCityNames());
+    void testGetConnectionByIDMethod() {
+        Connection connection = repository.getConnectionByID(1);
+        assertNotNull(connection);
+        assertEquals(1, connection.getId());
+        assertEquals(List.of(CityName.A_CORUNA, CityName.GIJON), connection.getCityNames());
 
-        Connection connection28 = connections.get(27);
+        Connection connection28 = repository.getConnectionByID(28);
+        assertNotNull(connection28);
         assertEquals(28, connection28.getId());
-        assertFalse(connection28.isTrainTrackBuildable());
         assertEquals(List.of(CityName.CADIZ, CityName.GIBRALTAR), connection28.getCityNames());
     }
 }

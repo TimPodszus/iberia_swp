@@ -3,7 +3,6 @@ package de.uol.swp.server.lobby.store;
 import com.google.inject.Inject;
 import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.UserDTO;
-
 import de.uol.swp.server.database.DatabaseConnection;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
@@ -28,8 +27,9 @@ public class LobbyStore implements ILobbyStore {
     private static final String INSERT_LOBBY_SQL = "INSERT INTO Lobby (lobbyID, difficulty, owner, lobbyname) VALUES (?, ?, ?, ?)";
     private static final String INSERT_LOBBYUSERS_SQL = "INSERT INTO LobbyUsers (lobbyID, username) VALUES (?, ?)";
 
-    private Connection connection ;
+    private Connection connection;
     private static final Logger LOG = LogManager.getLogger(LobbyStore.class);
+
     /**
      * Constructs a new LobbyStore and initializes the database connection.
      *
@@ -39,7 +39,7 @@ public class LobbyStore implements ILobbyStore {
     public LobbyStore() {
         try {
             this.connection = DatabaseConnection.getInstance()
-                                                .getConnection();
+                    .getConnection();
         } catch (SQLException e) {
             LOG.error(e.getMessage());
         }
@@ -49,9 +49,9 @@ public class LobbyStore implements ILobbyStore {
     public ILobby findLobby(String lobbyID) throws SQLException {
 
 
-        if(connection.isClosed()){
-         this.connection = DatabaseConnection.getInstance()
-                                                .getConnection();
+        if (connection.isClosed()) {
+            this.connection = DatabaseConnection.getInstance()
+                    .getConnection();
 
         }
 
@@ -168,7 +168,6 @@ public class LobbyStore implements ILobbyStore {
     }
 
 
-
     @Override
     public void removeLobby(String lobbyID) throws SQLException, LobbyStoreException {
         String sql = "DELETE FROM Lobby WHERE lobbyID = ?";
@@ -194,6 +193,7 @@ public class LobbyStore implements ILobbyStore {
             ps.executeUpdate();
         }
     }
+
     @Override
     public Map<String, ILobby> getAllLobbies() throws SQLException {
         String sql = "SELECT lobbyID, difficulty, owner, lobbyname FROM Lobby";
@@ -242,7 +242,7 @@ public class LobbyStore implements ILobbyStore {
             psLobby.setInt(2, lobby.getDifficulty());
             psLobby.setString(3,
                     lobby.getOwner()
-                         .getUsername()
+                            .getUsername()
             );
             psLobby.setString(4, lobby.getName());
             psLobby.executeUpdate();
