@@ -5,9 +5,9 @@ import lombok.Getter;
 
 @Getter
 public abstract class AbstractGameMessage extends AbstractServerMessage {
-    private String lobbyCode;
+    private final String lobbyCode;
 
-    public AbstractGameMessage(String lobbyCode) {
+    protected AbstractGameMessage(String lobbyCode) {
         this.lobbyCode = lobbyCode;
     }
 
