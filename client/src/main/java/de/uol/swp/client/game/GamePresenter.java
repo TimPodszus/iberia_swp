@@ -53,7 +53,7 @@ public class GamePresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/GameScreen.fxml";
     private static final String INFECTION_GRADE_ID = "#infectionGrade";
     private static final String OUTBREAK_LEVEL_ID = "#outbreakLevel";
-    private static final String CURE_DISPLAY_CITY_ID = "#cureDisplayCity";
+    private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
@@ -71,16 +71,16 @@ public class GamePresenter extends AbstractPresenter {
     private WebView webViewMap;
 
     @FXML
-    private ImageView cureMarkerRedImage;
+    private ImageView plagueMarkerRedImage;
 
     @FXML
-    private ImageView cureMarkerBlueImage;
+    private ImageView plagueMarkerBlueImage;
 
     @FXML
-    private ImageView cureMarkerYellowImage;
+    private ImageView plagueMarkerYellowImage;
 
     @FXML
-    private ImageView cureMarkerBlackImage;
+    private ImageView plagueMarkerBlackImage;
 
     @FXML
     private Pane playerCardDiscardPile;
@@ -257,12 +257,12 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Handles treat cure action.
+     * Handles treat plague action.
      *
      * @param event the action event
      */
     @FXML
-    private void onTreatCure(ActionEvent event) {
+    private void onTreatPlague(ActionEvent event) {
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
     }
 
@@ -277,12 +277,12 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Handles research cure action.
+     * Handles research plague action.
      *
      * @param event the action event
      */
     @FXML
-    private void onResearchCure(ActionEvent event) {
+    private void onResearchPlague(ActionEvent event) {
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
     }
 
@@ -421,14 +421,14 @@ public class GamePresenter extends AbstractPresenter {
      * @param cubes      the number of plague cubes to set
      */
     public void setPlaqueCubesToCity(int cityId, PlagueName plagueName, int cubes) {
-        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + cityId);
+        VBox plagueDisplayVBox = (VBox) mapPane.lookup(PLAGUE_DISPLAY_CITY_ID + cityId);
 
-        ObservableList<Node> existingPlaques = cureDisplayVBox.getChildren();
+        ObservableList<Node> existingPlaques = plagueDisplayVBox.getChildren();
 
         HBox plaqueHBox = new HBox();
         for (Node node : existingPlaques) {
             if (node.getUserData() == plagueName) {
-                cureDisplayVBox.getChildren()
+                plagueDisplayVBox.getChildren()
                                .remove(node);
                 break;
             }
@@ -447,36 +447,36 @@ public class GamePresenter extends AbstractPresenter {
                   .addAll(plagueCube, text);
         if (cubes == 3) {
             plaqueHBox.getStyleClass()
-                      .add("cure-cubes-display-warning");
+                      .add("plague-cubes-display-warning");
         } else {
             plaqueHBox.getStyleClass()
-                      .add("cure-cubes-display");
+                      .add("plague-cubes-display");
         }
 
-        cureDisplayVBox.getChildren()
+        plagueDisplayVBox.getChildren()
                        .add(plaqueHBox);
     }
 
     /**
-     * Sets the researched cures.
+     * Sets the researched plagues.
      *
-     * @param researchedCures an array of researched plague names
+     * @param researchedPlagues an array of researched plague names
      */
-    public void setResearchedCures(PlagueName[] researchedCures) {
-        cureMarkerRedImage.setVisible(false);
-        cureMarkerBlueImage.setVisible(false);
-        cureMarkerYellowImage.setVisible(false);
-        cureMarkerBlackImage.setVisible(false);
+    public void setResearchedPlagues(PlagueName[] researchedPlagues) {
+        plagueMarkerRedImage.setVisible(false);
+        plagueMarkerBlueImage.setVisible(false);
+        plagueMarkerYellowImage.setVisible(false);
+        plagueMarkerBlackImage.setVisible(false);
 
-        for (PlagueName plagueName : researchedCures) {
+        for (PlagueName plagueName : researchedPlagues) {
             if (plagueName == PlagueName.YELLOW_FEVER) {
-                cureMarkerYellowImage.setVisible(true);
+                plagueMarkerYellowImage.setVisible(true);
             } else if (plagueName == PlagueName.CHOLERA) {
-                cureMarkerBlueImage.setVisible(true);
+                plagueMarkerBlueImage.setVisible(true);
             } else if (plagueName == PlagueName.TYPHUS) {
-                cureMarkerRedImage.setVisible(true);
+                plagueMarkerRedImage.setVisible(true);
             } else if (plagueName == PlagueName.MALARIA) {
-                cureMarkerBlackImage.setVisible(true);
+                plagueMarkerBlackImage.setVisible(true);
             }
         }
     }
@@ -488,7 +488,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param plagueName the name of the plague
      */
     private void setHospitalToCity(int cityId, PlagueName plagueName) {
-        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + cityId);
+        VBox plagueDisplayVBox = (VBox) mapPane.lookup(PLAGUE_DISPLAY_CITY_ID + cityId);
 
         HBox hospitalHBox = new HBox();
 
@@ -501,17 +501,17 @@ public class GamePresenter extends AbstractPresenter {
         hospitalHBox.getStyleClass()
                     .add("hospital");
 
-        cureDisplayVBox.getChildren()
+        plagueDisplayVBox.getChildren()
                        .add(0, hospitalHBox);
     }
 
     private void removeHospitalFromCity(int cityId) {
-        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + cityId);
+        VBox plagueDisplayVBox = (VBox) mapPane.lookup(PLAGUE_DISPLAY_CITY_ID + cityId);
 
-        for (Node node : cureDisplayVBox.getChildren()) {
+        for (Node node : plagueDisplayVBox.getChildren()) {
             if (node instanceof HBox hbox && hbox.getStyleClass()
                                                  .contains("hospital")) {
-                cureDisplayVBox.getChildren()
+                plagueDisplayVBox.getChildren()
                                .remove(hbox);
                 break;
             }
