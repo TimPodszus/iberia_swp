@@ -385,10 +385,10 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Sets the water marks for the specified region.
+     * Sets the watermarks for the specified region.
      *
      * @param regionId   the ID of the region
-     * @param waterMarks the number of water marks to set
+     * @param waterMarks the number of watermarks to set
      */
     public void setWaterTreatments(int regionId, int waterMarks) {
         StackPane stackPane = (StackPane) mapPane.lookup(WATER_MARK_REGION_ID + regionId);
@@ -595,6 +595,11 @@ public class GamePresenter extends AbstractPresenter {
                                            .size() - 1, cardSlot);
     }
 
+    /**
+     * Removes all player hand cards except the role card.
+     * Iterates through the children of `playerCardsHBox` and removes nodes that are instances of `Pane`,
+     * have the style class "pile", and do not have the ID "roleCard".
+     */
     public void removePlayerHandCards() {
         playerCardsHBox.getChildren().removeIf(node ->
                 node instanceof Pane && node.getStyleClass().contains("pile") && !Objects.equals(node.getId(),
@@ -602,6 +607,7 @@ public class GamePresenter extends AbstractPresenter {
                 )
         );
     }
+
     /**
      * Sets the role card for the player.
      *
@@ -673,6 +679,12 @@ public class GamePresenter extends AbstractPresenter {
         updateHospitals(gameDTO.getCities());
     }
 
+    /**
+     * Updates the player's hand cards.
+     * Removes all current hand cards and adds the new ones.
+     *
+     * @param players the list of players
+     */
     private void updatePlayerHandCards(List<IPlayerDTO> players) {
         removePlayerHandCards();
         for (IPlayerDTO player : players) {
@@ -686,12 +698,22 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Updates the cities with the latest data.
+     *
+     * @param cities the list of cities
+     */
     private void updateCities(List<ICityDTO> cities) {
         for (ICityDTO city : cities) {
             updateInfections(city);
         }
     }
 
+    /**
+     * Updates the infections in a city.
+     *
+     * @param city the city to update
+     */
     private void updateInfections(ICityDTO city) {
         List<IInfectionDTO> infections = city.getInfections();
         for (IInfectionDTO infection : infections) {
@@ -702,6 +724,11 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Updates the connections with the latest data.
+     *
+     * @param connections the list of connections
+     */
     private void updateConnections(List<IConnectionDTO> connections) {
         for (IConnectionDTO connection : connections) {
             if (connection.isTrainTrack()) {
@@ -710,6 +737,11 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Updates the regions with the latest data.
+     *
+     * @param regions the list of regions
+     */
     private void updateRegions(List<IRegionDTO> regions) {
         for (IRegionDTO region : regions) {
             int regionId = region.getId();
@@ -717,6 +749,11 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Updates the infection card discard pile with the latest data.
+     *
+     * @param infectionCardDiscardPileList the list of infection cards in the discard pile
+     */
     private void updateInfectionCardDiscardPile(List<InfectionCardDTO> infectionCardDiscardPileList) {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
@@ -725,10 +762,20 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Updates the infection card draw pile counter with the latest data.
+     *
+     * @param infectionCardDrawPileList the list of infection cards in the draw pile
+     */
     private void updateInfectionCardDrawPile(List<InfectionCardDTO> infectionCardDrawPileList) {
         setInfectionCardDrawPileCounter(infectionCardDrawPileList.size());
     }
 
+    /**
+     * Updates the player card discard pile with the latest data.
+     *
+     * @param playerCardDiscardPileList the list of player cards in the discard pile
+     */
     private void updatePlayerCardDiscardPile(List<CardDTO> playerCardDiscardPileList) {
         if (!playerCardDiscardPileList.isEmpty()) {
             AbstractCard card = getCard(playerCardDiscardPileList);
@@ -736,10 +783,21 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Updates the player card draw pile counter with the latest data.
+     *
+     * @param playerCardDrawPileList the list of player cards in the draw pile
+     */
     private void updatePlayerCardDrawPile(List<CardDTO> playerCardDrawPileList) {
         setPlayerCardDrawPileCounter(playerCardDrawPileList.size());
     }
 
+    /**
+     * Updates the players with the latest data.
+     * Clears the current player buttons and adds new ones.
+     *
+     * @param players the list of players
+     */
     private void updatePlayers(List<IPlayerDTO> players) {
         playerButtons.getChildren().clear();
         for (IPlayerDTO player : players) {
@@ -751,6 +809,12 @@ public class GamePresenter extends AbstractPresenter {
         updateCurrentUserRole(players);
     }
 
+    /**
+     * Updates the players in cities with the latest data.
+     * Removes all game figures and sets the players in their respective cities.
+     *
+     * @param players the list of players
+     */
     private void updatePlayersInCities(List<IPlayerDTO> players) {
         removeAllGameFigures();
         Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
@@ -759,6 +823,11 @@ public class GamePresenter extends AbstractPresenter {
         playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId, playersInCity)));
     }
 
+    /**
+     * Updates the current user's role with the latest data.
+     *
+     * @param players the list of players
+     */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
             if (Objects.equals(player.getUsername(), UserStore.getInstance().getUser().getUsername())) {
@@ -767,19 +836,41 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Updates the infection counter with the latest data.
+     *
+     * @param infectionCounter the current infection counter
+     */
     private void updateInfectionCounter(int infectionCounter) {
         setInfectionGrade(infectionCounter - 1, infectionCounter);
     }
 
+    /**
+     * Updates the escalation stage with the latest data.
+     *
+     * @param escalationStage the current escalation stage
+     */
     private void updateEscalationStage(int escalationStage) {
         setEscalationStage(escalationStage - 1, escalationStage);
     }
 
+    /**
+     * Retrieves the last card from the player card discard pile.
+     *
+     * @param playerCardDiscardPileList the list of player cards in the discard pile
+     * @return the last card in the discard pile
+     */
     private static AbstractCard getCard(List<CardDTO> playerCardDiscardPileList) {
         CardDTO playerCard = playerCardDiscardPileList.get(playerCardDiscardPileList.size() - 1);
         return createCard(playerCard);
     }
 
+    /**
+     * Creates an abstract card from the given card data.
+     *
+     * @param playerCard the card data
+     * @return the created abstract card
+     */
     private static AbstractCard createCard(CardDTO playerCard) {
         if (playerCard instanceof CityCardDTO cityCard) {
             return createCityCard(cityCard);
@@ -792,6 +883,12 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Creates a city card from the given city card data.
+     *
+     * @param cityCard the city card data
+     * @return the created city card
+     */
     private static AbstractCard createCityCard(CityCardDTO cityCard) {
         String foundationDate = cityCard.getCity().getFoundationDate() < 0
                 ? cityCard.getCity().getFoundationDate() + " v. Chr."
@@ -799,6 +896,12 @@ public class GamePresenter extends AbstractPresenter {
         return new CityCard(cityCard.getCity().getName(), foundationDate, cityCard.getCity().getPlagueName());
     }
 
+    /**
+     * Updates the hospitals in cities with the latest data.
+     * Removes existing hospitals and sets new ones.
+     *
+     * @param cities the list of cities
+     */
     private void updateHospitals(List<ICityDTO> cities) {
         for (ICityDTO city : cities) {
 //            this.removeHospitalFromCity(city.getId());
