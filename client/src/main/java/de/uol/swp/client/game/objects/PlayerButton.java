@@ -10,7 +10,7 @@ public class PlayerButton extends Button {
         this.setText(player);
         this.setMnemonicParsing(false);
         this.setPrefHeight(40.0);
-        this.setPrefWidth(50.0);
+        this.setPrefWidth(80.0);
         this.getStyleClass()
             .add("action-button");
         this.setUserData(1);
