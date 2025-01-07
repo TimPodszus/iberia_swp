@@ -2,6 +2,7 @@ package de.uol.swp.common.game.dto;
 
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
+import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.cards.CardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
@@ -19,6 +20,7 @@ public class GameDTO implements IGameDTO, Serializable {
     private transient List<ICityDTO> cities;
     private transient List<IConnectionDTO> connections;
     private transient List<IRegionDTO> regions;
+    private transient List<IPlagueDTO> plagues;
     private List<InfectionCardDTO> infectionCardDrawPile;
     private List<InfectionCardDTO> infectionCardDiscardPile;
     private List<CardDTO> playerCardDrawPile;

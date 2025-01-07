@@ -6,6 +6,7 @@ import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.connection.ConnectionMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.plague.PlagueMapper;
 import de.uol.swp.server.player.PlayerMapper;
 import de.uol.swp.server.region.RegionMapper;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,8 @@ public class GameMapper {
                                                .getConnections()),
                 RegionMapper.toDTOList(game.getRegionRepository()
                                            .getRegions()),
+                PlagueMapper.toDTOList(game.getPlagueRepository()
+                                           .getPlagues()),
                 CardMapper.toInfectionCardDTOList(game.getInfectionCardDrawPile()),
                 CardMapper.toInfectionCardDTOList(game.getInfectionCardDiscardPile()),
                 CardMapper.toMixedCardDTOList(game.getPlayerCardDrawPile()),

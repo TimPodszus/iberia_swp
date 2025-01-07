@@ -11,6 +11,7 @@ import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
+import de.uol.swp.server.plague.PlagueRepository;
 import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
@@ -30,7 +31,11 @@ public class Game implements IGame {
      */
     private String gameId;
 
+    /**
+     * Repository for role-related data.
+     */
     private RoleRepository roleRepository;
+
     /**
      * Repository for city-related data.
      */
@@ -45,6 +50,11 @@ public class Game implements IGame {
      * Repository for connection-related data.
      */
     private ConnectionRepository connectionRepository;
+
+    /**
+     * Repository for plague-related data.
+     */
+    private PlagueRepository plagueRepository;
 
     /**
      * Counter for the number of infections.
@@ -90,15 +100,42 @@ public class Game implements IGame {
      */
     private List<Card> playerCardDiscardPile;
 
+    /**
+     * List of players in the game.
+     */
     private List<Player> players;
+
+    /**
+     * Index of the current player.
+     */
     @Setter
     private int currentPlayerIndex;
+
+    /**
+     * Current state of the game.
+     */
     @Setter
     private IGameState state;
+
+    /**
+     * Previous state of the game.
+     */
     @Setter
     private IGameState previousState;
+
+    /**
+     * Management class for game-related operations.
+     */
     private GameManagement gameManagement;
+
+    /**
+     * Management class for city-related operations.
+     */
     private CityManagement cityManagement;
+
+    /**
+     * Difficulty level of the game.
+     */
     private int difficulty;
 
     /**
@@ -110,6 +147,7 @@ public class Game implements IGame {
         this.cityRepository = new CityRepository();
         this.regionRepository = new RegionRepository(this.cityRepository);
         this.connectionRepository = new ConnectionRepository();
+        this.plagueRepository = new PlagueRepository();
         this.infectionCounter = 1;
         this.escalationStage = 0;
         this.waterTreatmentsLeft = 14;
