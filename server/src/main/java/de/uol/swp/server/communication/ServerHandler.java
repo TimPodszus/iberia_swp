@@ -111,7 +111,7 @@ public class ServerHandler implements ServerHandlerDelegate {
 
     /**
      * Handles exceptions on the Server
-     *
+     * <p>
      * If an ServerExceptionMessage is detected on the EventBus, this method is called.
      * It sends the ServerExceptionMessage to the affiliated client if a client is
      * affiliated.
@@ -158,7 +158,7 @@ public class ServerHandler implements ServerHandlerDelegate {
 
     /**
      * Handles ClientAuthorizedMessages found on the EventBus
-     *
+     * <p>
      * If a ClientAuthorizedMessage is detected on the EventBus, this method is called.
      * It gets the MessageContext and then gives it and a new LoginSuccessfulResponse to
      * sendToClient for sending as well as giving a new UserLoggedInMessage to sendMessage
@@ -185,7 +185,7 @@ public class ServerHandler implements ServerHandlerDelegate {
 
     /**
      * Handles UserLoggedOutMessages found on the EventBus
-     *
+     * <p>
      * If an UserLoggedOutMessage is detected on the EventBus, this method is called.
      * It gets the MessageContext and then gives the message to sendMessage in order
      * to send it to the connected client.
@@ -201,11 +201,31 @@ public class ServerHandler implements ServerHandlerDelegate {
         sendMessage(msg);
     }
 
+    /**
+     * Handles BoardUpdateMessage events found on the EventBus.
+     * <p>
+     * If a BoardUpdateMessage is detected on the EventBus, this method is called.
+     * It sends the BoardUpdateMessage to all connected clients.
+     *
+     * @param msg The BoardUpdateMessage found on the EventBus
+     * @see de.uol.swp.server.communication.ServerHandler#sendMessage(ServerMessage)
+     * @since 2019-11-20
+     */
     @Subscribe
     public void onBoardUpdateMessage(BoardUpdateMessage msg) {
         sendMessage(msg);
     }
 
+    /**
+     * Handles CreatedGameResponse events found on the EventBus.
+     * <p>
+     * If a CreatedGameResponse is detected on the EventBus, this method is called.
+     * It sends the CreatedGameResponse to all connected clients.
+     *
+     * @param response The CreatedGameResponse found on the EventBus
+     * @see de.uol.swp.server.communication.ServerHandler#sendMessage(ServerMessage)
+     * @since 2019-11-20
+     */
     @Subscribe
     public void onCreatedGameResponse(CreatedGameResponse response) {
         sendMessage(response);
@@ -217,7 +237,7 @@ public class ServerHandler implements ServerHandlerDelegate {
 
     /**
      * Handles ResponseMessages found on the EventBus
-     *
+     * <p>
      * If an ResponseMessage is detected on the EventBus, this method is called.
      * It gets the MessageContext and then gives it and the ResponseMessage to
      * sendToClient for sending.
@@ -245,7 +265,7 @@ public class ServerHandler implements ServerHandlerDelegate {
 
     /**
      * Handles ServerMessages found on the EventBus
-     *
+     * <p>
      * If an ServerMessage is detected on the EventBus, this method is called.
      * It sets the Session and MessageContext to null and then gives the message
      * to sendMessage in order to send it to all connected clients.
