@@ -1,9 +1,8 @@
 package de.uol.swp.common.connectiom;
 
-import java.io.Serializable;
 import java.util.List;
 
-public interface IConnectionDTO extends Serializable {
+public interface IConnectionDTO {
     int getId();
 
     List<String> getCityNames();

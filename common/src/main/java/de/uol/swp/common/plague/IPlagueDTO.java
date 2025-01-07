@@ -2,9 +2,7 @@ package de.uol.swp.common.plague;
 
 import de.uol.swp.common.game.PlagueName;
 
-import java.io.Serializable;
-
-public interface IPlagueDTO extends Serializable {
+public interface IPlagueDTO {
     /**
      * Gets the name.
      *

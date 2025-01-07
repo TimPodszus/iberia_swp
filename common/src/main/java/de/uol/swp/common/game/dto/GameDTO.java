@@ -3,6 +3,7 @@ package de.uol.swp.common.game.dto;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
+import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.cards.CardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
@@ -17,15 +18,15 @@ import java.util.List;
 @AllArgsConstructor
 public class GameDTO implements IGameDTO, Serializable {
     private String gameId;
-    private transient List<ICityDTO> cities;
-    private transient List<IConnectionDTO> connections;
-    private transient List<IRegionDTO> regions;
-    private transient List<IPlagueDTO> plagues;
+    private List<ICityDTO> cities;
+    private List<IConnectionDTO> connections;
+    private List<IRegionDTO> regions;
+    private List<IPlagueDTO> plagues;
     private List<InfectionCardDTO> infectionCardDrawPile;
     private List<InfectionCardDTO> infectionCardDiscardPile;
     private List<CardDTO> playerCardDrawPile;
     private List<CardDTO> playerCardDiscardPile;
-    private transient List<IPlayerDTO> players;
+    private List<IPlayerDTO> players;
     private int infectionCounter;
     private int escalationStage;
     private int waterTreatmentsLeft;
