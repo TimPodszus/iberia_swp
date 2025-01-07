@@ -1,7 +1,7 @@
 package de.uol.swp.server.connection;
 
-import de.uol.swp.common.connectiom.ConnectionDTO;
-import de.uol.swp.common.connectiom.IConnectionDTO;
+import de.uol.swp.common.connection.ConnectionDTO;
+import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.connection.data.Connection;
 

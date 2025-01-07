@@ -1,4 +1,4 @@
-package de.uol.swp.common.connectiom;
+package de.uol.swp.common.connection;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package de.uol.swp.common.game.dto;
 
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.connectiom.IConnectionDTO;
+import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.cards.CardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
