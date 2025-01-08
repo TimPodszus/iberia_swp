@@ -5,11 +5,13 @@ import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.response.BoardUpdateResponse;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
+import de.uol.swp.common.user.Session;
+import de.uol.swp.common.user.User;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
-import de.uol.swp.server.usermanagement.UserManagement;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -20,6 +22,7 @@ import org.greenrobot.eventbus.Subscribe;
  */
 public class GameService extends AbstractService {
     GameManagement gameManagement = new GameManagement();
+    CityManagement cityManagement = new CityManagement();
 
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
@@ -49,9 +52,21 @@ public class GameService extends AbstractService {
         post(new BoardUpdateResponse(success, "Game Aktualisierung", GameMapper.toDTO((Game) game)));
     }
 
+    /**
+     * Handles incoming requests to move a player. This method retrieves the user from the session,
+     * and then delegates the player movement to the GameManagement class.
+     *
+     * @param request the player move request containing session, lobby code, and city ID
+     */
     @Subscribe
     public void onMovePlayerRequest(MovePlayerRequest request) {
-        //TODO Implement method to handle player movement
+        User user = request.getSession()
+                           .map(Session::getUser)
+                           .orElse(null);
+        gameManagement.movePlayer(user,
+                request.getLobbyCode(),
+                cityManagement.getCity(request.getLobbyCode(), request.getCityId())
+        );
     }
 
     /**

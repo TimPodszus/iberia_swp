@@ -56,8 +56,7 @@ public class AvailableDestinationsRequestTest {
         AvailableDestinationsRequest availableDestinationsRequest = new AvailableDestinationsRequest(LOBBY_CODE,
                 CITY_ID
         );
-        boolean equals = availableDestinationsRequest.equals(CITY_ID);
-        assertFalse(equals);
+        assertNotEquals(availableDestinationsRequest, new Object());
     }
 
     /**

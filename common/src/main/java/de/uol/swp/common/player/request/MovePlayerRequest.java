@@ -7,7 +7,6 @@ import java.util.Objects;
 
 @Getter
 public class MovePlayerRequest extends AbstractGameRequest {
-    private final String playerId;
     private final String cityId;
 
     /**
@@ -17,9 +16,8 @@ public class MovePlayerRequest extends AbstractGameRequest {
      * @param playerId  the ID of the player
      * @param cityId    the ID of the city
      */
-    public MovePlayerRequest(String lobbyCode, String playerId, String cityId) {
+    public MovePlayerRequest(String lobbyCode, String cityId) {
         super(lobbyCode);
-        this.playerId = playerId;
         this.cityId = cityId;
     }
 
@@ -32,13 +30,11 @@ public class MovePlayerRequest extends AbstractGameRequest {
             return false;
         }
         MovePlayerRequest that = (MovePlayerRequest) object;
-        return Objects.equals(super.getLobbyCode(), that.getLobbyCode()) && Objects.equals(playerId,
-                that.playerId
-        ) && Objects.equals(cityId, that.cityId);
+        return Objects.equals(super.getLobbyCode(), that.getLobbyCode()) && Objects.equals(cityId, that.cityId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.getLobbyCode(), playerId, cityId);
+        return Objects.hash(super.getLobbyCode(), cityId);
     }
 }
