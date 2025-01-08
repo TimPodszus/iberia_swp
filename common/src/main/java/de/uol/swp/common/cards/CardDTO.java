@@ -2,8 +2,10 @@ package de.uol.swp.common.cards;
 
 import lombok.Getter;
 
+import java.io.Serializable;
+
 @Getter
-public abstract class CardDTO implements ICardDTO {
+public abstract class CardDTO implements ICardDTO, Serializable {
     private final int id;
     private final String title;
     private final CardType type;
