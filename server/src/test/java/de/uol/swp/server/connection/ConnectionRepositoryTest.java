@@ -9,22 +9,43 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+/**
+ * Test class for the {@link ConnectionRepository}.
+ * This class verifies the functionality of creating and retrieving {@link Connection} objects from the repository.
+ */
 class ConnectionRepositoryTest {
+    /**
+     * Static instance of the {@link ConnectionRepository} used for testing.
+     */
     static ConnectionRepository repository;
+
+    /**
+     * Static list of {@link Connection} objects retrieved from the repository.
+     */
     static List<Connection> connections;
 
+    /**
+     * Initializes the {@link ConnectionRepository} and retrieves all connections before all test methods are executed.
+     */
     @BeforeAll
     static void create() {
         repository = new ConnectionRepository();
         connections = repository.getConnections();
     }
 
-
+    /**
+     * Tests that the repository creates all expected connections.
+     * Verifies that the size of the connection list matches the expected number of connections.
+     */
     @Test
     void testCreateAllConnections() {
         assertEquals(81, connections.size());
     }
 
+    /**
+     * Tests the {@link ConnectionRepository#getConnectionByID(int)} method.
+     * Verifies that connections with specific IDs can be retrieved correctly, and that their details match expectations.
+     */
     @Test
     void testGetConnectionByIDMethod() {
         Connection connection = repository.getConnectionByID(1);

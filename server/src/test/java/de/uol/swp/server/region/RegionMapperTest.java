@@ -15,10 +15,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Test class for the {@link RegionMapper} class.
+ * Ensures the correct mapping of {@link Region} entities to their corresponding DTO representations.
+ */
 class RegionMapperTest {
+
+    /**
+     * Mocked instance of {@link Region} used for testing.
+     */
     private Region mockRegion;
+
+    /**
+     * Mocked instance of {@link City} used as a secondary city in test scenarios.
+     */
     private City mockSecondCity;
 
+    /**
+     * Sets up the test environment by creating and configuring mocked {@link Region} and {@link City} instances.
+     */
     @BeforeEach
     void setUp() {
         CityName firstCityName = CityName.ALBACETE;
@@ -37,8 +52,12 @@ class RegionMapperTest {
         when(mockRegion.isPreventionMarker()).thenReturn(true);
     }
 
+    /**
+     * Tests the {@link RegionMapper#toDTO(Region)} method to ensure proper mapping
+     * of a {@link Region} entity to its corresponding DTO.
+     */
     @Test
-    void testToDTO_ValidRegion() {
+    void testToDTO() {
         IRegionDTO regionDTO = RegionMapper.toDTO(mockRegion);
 
         assertEquals(1, regionDTO.getId());
@@ -50,8 +69,12 @@ class RegionMapperTest {
         assertTrue(regionDTO.isPreventionMarker());
     }
 
+    /**
+     * Tests the {@link RegionMapper#toDTOList(List)} method to ensure correct mapping
+     * of a list of {@link Region} entities to their corresponding DTOs.
+     */
     @Test
-    void testToDTOList_ValidRegions() {
+    void testToDTOList() {
         Region mockRegion2 = mock(Region.class);
         when(mockRegion2.getId()).thenReturn(2);
         when(mockRegion2.getSurroundingCities()).thenReturn(List.of(mockSecondCity));

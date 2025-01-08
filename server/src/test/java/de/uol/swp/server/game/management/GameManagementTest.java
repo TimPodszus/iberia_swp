@@ -9,11 +9,9 @@ import de.uol.swp.server.player.Player;
 import de.uol.swp.server.role.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,19 +27,37 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+/**
+ * Test class for the {@link GameManagement} class.
+ * This class ensures the correct functionality of game management methods, such as creating players,
+ * setting the starting player, assigning roles, and initiating infections.
+ */
 class GameManagementTest {
 
+    /**
+     * Mock object for {@link IGame}, representing the game being managed.
+     */
     @Mock
     private IGame game;
+
+    /**
+     * Injected instance of {@link GameManagement}, under test.
+     */
     @InjectMocks
     private GameManagement gameManagement;
 
+    /**
+     * Initializes mocks before each test.
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
+    /**
+     * Tests the {@link GameManagement#createPlayers(List, IGame)} method.
+     * Verifies that the correct number of players is created based on the provided list of users.
+     */
     @Test
     void testCreatePlayers() {
         List<User> users = Arrays.asList(mock(User.class), mock(User.class));
@@ -53,6 +69,10 @@ class GameManagementTest {
         assertEquals(2, players.size(), "Es sollten zwei Spieler erstellt werden");
     }
 
+    /**
+     * Tests the {@link GameManagement#setStartingPlayer(IGame)} method.
+     * Ensures the player with the oldest city's foundation date is set as the starting player.
+     */
     @Test
     void testSetStartingPlayer() {
         Player firstPlayer = mock(Player.class);
@@ -82,7 +102,10 @@ class GameManagementTest {
         assertEquals(firstPlayer, players.get(1), "Der andere Spieler sollte an die zweite Position verschoben werden");
     }
 
-
+    /**
+     * Tests the {@link GameManagement#assignRoles(IGame)} method.
+     * Ensures that roles are assigned to all players in the game.
+     */
     @Test
     void testAssignRoles() {
         when(game.getPlayers()).thenReturn(Arrays.asList(mock(Player.class), mock(Player.class)));
@@ -94,6 +117,10 @@ class GameManagementTest {
                 .get(1)).setRole(any(Role.class));
     }
 
+    /**
+     * Tests the {@link GameManagement#initiateInfections(IGame)} method.
+     * Verifies that cities are infected correctly during game initialization.
+     */
     @Test
     void testInitiateInfections() {
         CityManagement cityManagement = mock(CityManagement.class);
@@ -104,6 +131,10 @@ class GameManagementTest {
         verify(cityManagement, times(9)).infectCity(any(), anyInt());
     }
 
+    /**
+     * Tests the custom {@link GameManagementException}.
+     * Ensures that the exception can be thrown and contains the correct message.
+     */
     @Test
     void testGameManagementException() {
         GameManagementException exception = assertThrows(GameManagementException.class, () -> {
