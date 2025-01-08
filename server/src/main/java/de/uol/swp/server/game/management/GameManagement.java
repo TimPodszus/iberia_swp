@@ -1,6 +1,5 @@
 package de.uol.swp.server.game.management;
 
-import de.uol.swp.common.cards.CardType;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.user.User;
@@ -56,21 +55,23 @@ public class GameManagement implements IGameManagement {
     private void createPlayers(List<User> users, IGame game) {
         for (User user : users) {
             Player player = new Player(user);
-
-            game.getPlayers()
-                .add(player);
-            int cardsToDraw = switch (game.getPlayers()
-                                          .size()) {
+            game.getPlayers().add(player);
+        }
+        for (Player player : game.getPlayers()) {
+            int cardsToDraw = switch ( game.getPlayers().size()) {
                 case 2 -> 4;
                 case 3 -> 3;
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                drawPlayerCard();
+                //TODO draw Card from Pile
+                player.addCard(game.getPlayerCardDrawPile().get((int) Math.floor(Math.random() * game.getPlayerCardDrawPile().size())));
             }
+            //TODO set position like in the real game
+            player.setCurrentPosition(game.getCityRepository().getCities()
+                                          .get((int) Math.floor(Math.random() * 48)));
         }
     }
-
     private void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
         Player startingPlayer = null;
