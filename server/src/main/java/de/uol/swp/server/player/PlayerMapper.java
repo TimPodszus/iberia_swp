@@ -1,7 +1,5 @@
 package de.uol.swp.server.player;
 
-import de.uol.swp.common.city.CityDTO;
-import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.PlayerDTO;
 import de.uol.swp.server.cards.CardMapper;
@@ -33,7 +31,7 @@ public class PlayerMapper {
                 player.getUser()
                       .getUsername(),
                 RoleMapper.toRoleDTO(player.getRole()),
-                (ICityDTO) CityMapper.toDTO(player.getCurrentPosition()),
+                CityMapper.toDTO(player.getCurrentPosition()),
                 player.getCards()
                       .stream()
                       .map(CardMapper::toDTO)
@@ -56,7 +54,7 @@ public class PlayerMapper {
                     player.getUser()
                           .getUsername(),
                     RoleMapper.toRoleDTO(player.getRole()),
-                    (CityDTO) CityMapper.toDTO(player.getCurrentPosition()),
+                    CityMapper.toDTO(player.getCurrentPosition()),
                     player.getCards()
                           .stream()
                           .map(CardMapper::toDTO)

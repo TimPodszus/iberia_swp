@@ -16,15 +16,6 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class GameMapper {
-
-    /**
-     * Private constructor to prevent instantiation of the utility class.
-     * Throws an UnsupportedOperationException if called.
-     */
-    private GameMapper() {
-        throw new UnsupportedOperationException("Utility class");
-    }
-
     /**
      * Converts an IGame object to an IGameDTO object.
      *

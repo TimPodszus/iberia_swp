@@ -1,5 +1,6 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.common.cards.CardType;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.user.User;
@@ -55,6 +56,7 @@ public class GameManagement implements IGameManagement {
     private void createPlayers(List<User> users, IGame game) {
         for (User user : users) {
             Player player = new Player(user);
+
             game.getPlayers()
                 .add(player);
             int cardsToDraw = switch (game.getPlayers()
@@ -66,7 +68,7 @@ public class GameManagement implements IGameManagement {
             for (int i = 0; i < cardsToDraw; i++) {
                 drawPlayerCard();
             }
-
+        }
     }
 
     private void setStartingPlayer(IGame game) {

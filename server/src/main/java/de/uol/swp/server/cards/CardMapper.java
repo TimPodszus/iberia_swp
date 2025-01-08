@@ -17,15 +17,6 @@ import java.util.List;
  */
 @AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class CardMapper {
-
-    /**
-     * Private constructor to prevent instantiation of the utility class.
-     * Throws an UnsupportedOperationException if called.
-     */
-    private CardMapper() {
-        throw new UnsupportedOperationException("Utility class");
-    }
-
     /**
      * Converts a list of Card objects into a list of mixed CardDTOs.
      *

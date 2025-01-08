@@ -690,8 +690,8 @@ public class GamePresenter extends AbstractPresenter {
         removePlayerHandCards();
         for (IPlayerDTO player : players) {
             if (Objects.equals(player.getUsername(), UserStore.getInstance().getUser().getUsername())) {
-                List<CardDTO> playerHand = player.getCards();
-                for (CardDTO card : playerHand) {
+                List<ICardDTO> playerHand = player.getCards();
+                for (ICardDTO card : playerHand) {
                     AbstractCard abstractCard = createCard(card);
                     addPlayerHandCard(abstractCard);
                 }
@@ -777,7 +777,7 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param playerCardDiscardPileList the list of player cards in the discard pile
      */
-    private void updatePlayerCardDiscardPile(List<CardDTO> playerCardDiscardPileList) {
+    private void updatePlayerCardDiscardPile(List<ICardDTO> playerCardDiscardPileList) {
         if (!playerCardDiscardPileList.isEmpty()) {
             AbstractCard card = getCard(playerCardDiscardPileList);
             setPlayerCardDiscardPile(card);
@@ -789,7 +789,7 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param playerCardDrawPileList the list of player cards in the draw pile
      */
-    private void updatePlayerCardDrawPile(List<CardDTO> playerCardDrawPileList) {
+    private void updatePlayerCardDrawPile(List<ICardDTO> playerCardDrawPileList) {
         setPlayerCardDrawPileCounter(playerCardDrawPileList.size());
     }
 
@@ -861,8 +861,8 @@ public class GamePresenter extends AbstractPresenter {
      * @param playerCardDiscardPileList the list of player cards in the discard pile
      * @return the last card in the discard pile
      */
-    private static AbstractCard getCard(List<CardDTO> playerCardDiscardPileList) {
-        CardDTO playerCard = playerCardDiscardPileList.get(playerCardDiscardPileList.size() - 1);
+    private static AbstractCard getCard(List<ICardDTO> playerCardDiscardPileList) {
+        ICardDTO playerCard = playerCardDiscardPileList.get(playerCardDiscardPileList.size() - 1);
         return createCard(playerCard);
     }
 
@@ -872,7 +872,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param playerCard the card data
      * @return the created abstract card
      */
-    private static AbstractCard createCard(CardDTO playerCard) {
+    private static AbstractCard createCard(ICardDTO playerCard) {
         if (playerCard instanceof CityCardDTO cityCard) {
             return createCityCard(cityCard);
         } else if (playerCard instanceof EpidemicCardDTO) {
