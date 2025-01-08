@@ -13,7 +13,7 @@ import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.plague.PlagueRepository;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
 import lombok.AllArgsConstructor;
@@ -208,6 +208,7 @@ public class Game implements IGame {
 
     /**
      * Retrieves the current player whose turn it is in the game.
+     *
      * @return the {@link Player} object representing the current player
      */
     public Player getCurrentPlayer() {

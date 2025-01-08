@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.role.Role;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

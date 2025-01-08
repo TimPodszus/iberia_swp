@@ -1,4 +1,4 @@
-package de.uol.swp.server.player;
+package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
@@ -36,7 +36,7 @@ public class PlayerManagement implements IPlayerManagement {
                            .orElseThrow(() -> new IllegalStateException("Session not present"))
                            .getUser();
 
-        if (user == game.getPlayers()
+        if (user != game.getPlayers()
                         .get(game.getCurrentPlayerIndex())
                         .getUser()) {
             throw new PlayerManagementException();

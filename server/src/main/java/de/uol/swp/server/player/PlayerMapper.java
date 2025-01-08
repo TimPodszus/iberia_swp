@@ -6,6 +6,7 @@ import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.PlayerDTO;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.city.CityMapper;
+import de.uol.swp.server.player.data.Player;
 
 import java.util.ArrayList;
 import java.util.List;

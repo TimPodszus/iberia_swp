@@ -8,9 +8,11 @@ import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardResponse;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.GameMapper;
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.player.management.IPlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -50,6 +52,6 @@ public class PlayerService extends AbstractService {
         response.setSession(request.getSession()
                                    .orElseThrow(() -> new IllegalStateException("Session not present")));
         post(response);
-        post(new BoardUpdateResponse(true, "Card drawn successfully", GameMapper.toDTO(new Game(1))));
+        post(new BoardUpdateResponse(true, "Card drawn successfully", GameMapper.toDTO(game)));
     }
 }

@@ -1,4 +1,4 @@
-package de.uol.swp.server.player;
+package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
