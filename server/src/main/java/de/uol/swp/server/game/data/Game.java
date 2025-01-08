@@ -1,5 +1,6 @@
 package de.uol.swp.server.game.data;
 
+import de.uol.swp.common.cards.CardType;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
@@ -12,7 +13,7 @@ import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.plague.PlagueRepository;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
 import lombok.AllArgsConstructor;
@@ -52,7 +53,7 @@ public class Game implements IGame {
     private ConnectionRepository connectionRepository;
 
     /**
-     * Repository for plague-related data.
+     * Repository for the plagues.
      */
     private PlagueRepository plagueRepository;
 
@@ -179,7 +180,7 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    "InfectionCard",
+                    CardType.INFECTION_CARD,
                     city
             );
             infectionCardDrawPile.add(infectionCard);
@@ -194,7 +195,7 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    "CityCard",
+                    CardType.CITY_CARD,
                     city
             );
             playerCardDrawPile.add(citycard);
@@ -203,11 +204,13 @@ public class Game implements IGame {
     }
 
     public EpidemicCard createEpidemicCard(int id) {
-        return new EpidemicCard(id, "Epidemiekarte", "EpidemicCard", "");
+        return new EpidemicCard(id, "Epidemiekarte", CardType.EPIDEMIC_CARD, "");
     }
 
     public void gameStartShuffle(int numSubDecks) {
-        if (numSubDecks <= 0) throw new IllegalArgumentException("Number of sub-decks must be greater than zero.");
+        if (numSubDecks <= 0) {
+            throw new IllegalArgumentException("Number of sub-decks must be greater than zero.");
+        }
         List<List<Card>> subDecks = splitIntoSubDecks(playerCardDrawPile, numSubDecks);
         for (int i = 0; i < numSubDecks; i++) {
             subDecks.get(i)
@@ -234,5 +237,12 @@ public class Game implements IGame {
         return subDecks;
     }
 
-
+    /**
+     * Retrieves the current player whose turn it is in the game.
+     *
+     * @return the {@link Player} object representing the current player
+     */
+    public Player getCurrentPlayer() {
+        return this.players.get(currentPlayerIndex);
+    }
 }

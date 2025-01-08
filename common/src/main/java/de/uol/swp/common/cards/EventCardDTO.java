@@ -9,7 +9,7 @@ import lombok.Getter;
 public class EventCardDTO extends CardDTO {
     private final String action;
 
-    protected EventCardDTO(int id, String title, String type, String action) {
+    protected EventCardDTO(int id, String title, CardType type, String action) {
         super(id, title, type);
         this.action = action;
     }

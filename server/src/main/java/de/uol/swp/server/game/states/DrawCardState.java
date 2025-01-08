@@ -1,8 +1,7 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 
 /**
  * Represents the state in a game where players draw cards.
@@ -19,13 +18,15 @@ public class DrawCardState implements IGameState {
      * the total number of cards held by the player. If the player holds seven or fewer cards,
      * the game state is transitioned to InfectionState.
      *
-     * @param game the game in which this action is being processed
+     * @param game   the game in which this action is being processed
      * @param player the player who is drawing the card
      */
     public void handleAction(IGame game, Player player) {
-        game.getGameManagement().drawPlayerCard();
+        game.getGameManagement()
+            .drawPlayerCard();
         cardsDrawn++;
-        if (cardsDrawn == 2 && player.getCards().size() <= 7) {
+        if (cardsDrawn == 2 && player.getCards()
+                                     .size() <= 7) {
             game.setState(new InfectionState());
         }
     }

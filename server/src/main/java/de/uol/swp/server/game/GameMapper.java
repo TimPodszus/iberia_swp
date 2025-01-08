@@ -11,8 +11,20 @@ import de.uol.swp.server.player.PlayerMapper;
 import de.uol.swp.server.region.RegionMapper;
 import lombok.NoArgsConstructor;
 
+/**
+ * Utility class for mapping game-related objects to their Data Transfer Object (DTO) forms.
+ */
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class GameMapper {
+
+    /**
+     * Private constructor to prevent instantiation of the utility class.
+     * Throws an UnsupportedOperationException if called.
+     */
+    private GameMapper() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
     /**
      * Converts an IGame object to an IGameDTO object.
      *

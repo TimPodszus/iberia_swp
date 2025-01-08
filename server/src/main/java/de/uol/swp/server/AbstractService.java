@@ -1,14 +1,13 @@
 package de.uol.swp.server;
 
-import org.greenrobot.eventbus.EventBus;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.Collections;
 
 /**
  * This class is the base for creating a new Service.
- *
  * This class prepares the child classes to have the EventBus set and methods post
  * and sendToAll implemented in order to reduce unnecessary code repetition.
  *
@@ -19,8 +18,11 @@ import java.util.Collections;
 
 public class AbstractService {
 
-
-    private final EventBus bus;
+    /**
+     * The EventBus instance used for posting and handling events.
+     * This is a protected final field, ensuring it is initialized once and cannot be changed.
+     */
+    protected final EventBus bus;
 
     /**
      * Constructor
@@ -45,10 +47,10 @@ public class AbstractService {
     }
 
     /**
-     * Prepares a ServerMessage to be send to all connected users and posts it to the
+     * Prepares a ServerMessage to be sent to all connected users and posts it to the
      * EventBus.
      *
-     * @param message the message to be send to every user
+     * @param message the message to be sent to every user
      * @see ServerMessage
      * @since 2019-10-08
      */

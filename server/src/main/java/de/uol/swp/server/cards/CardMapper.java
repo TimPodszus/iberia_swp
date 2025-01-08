@@ -1,8 +1,8 @@
 package de.uol.swp.server.cards;
 
-import de.uol.swp.common.cards.CardDTO;
 import de.uol.swp.common.cards.CityCardDTO;
 import de.uol.swp.common.cards.EpidemicCardDTO;
+import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.server.infection.InfectionMapper;
@@ -19,12 +19,20 @@ import java.util.List;
 public class CardMapper {
 
     /**
+     * Private constructor to prevent instantiation of the utility class.
+     * Throws an UnsupportedOperationException if called.
+     */
+    private CardMapper() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
+    /**
      * Converts a list of Card objects into a list of mixed CardDTOs.
      *
      * @param cards the list of Card objects to be converted
      * @return a List of CardDTO objects, each corresponding to the input list's specific card type
      */
-    public static List<CardDTO> toMixedCardDTOList(List<Card> cards) {
+    public static List<ICardDTO> toMixedCardDTOList(List<Card> cards) {
         return cards.stream()
                     .map(CardMapper::toDTO)
                     .toList();
@@ -37,7 +45,7 @@ public class CardMapper {
      * @param card the Card object to convert
      * @return the CardDTO corresponding to the type of the provided Card object, or null if the type is not supported
      */
-    public static CardDTO toDTO(Card card) {
+    public static ICardDTO toDTO(Card card) {
         if (card instanceof CityCard cityCard) {
             return toCityCardDTO(cityCard);
         } else if (card instanceof EpidemicCard epidemicCard) {
@@ -56,8 +64,9 @@ public class CardMapper {
      * @return a CityCardDTO object containing data from the provided CityCard and its associated City
      */
     private static CityCardDTO toCityCardDTO(CityCard cityCard) {
-        CityDTO cityDTO = new CityDTO(cityCard.getCity()
-                                              .getId(),
+        CityDTO cityDTO = new CityDTO(
+                cityCard.getCity()
+                        .getId(),
                 cityCard.getCity()
                         .getPlagueName(),
                 cityCard.getCity()
@@ -82,7 +91,8 @@ public class CardMapper {
      * @return an EpidemicCardDTO containing data from the EpidemicCard
      */
     private static EpidemicCardDTO toEpidemicCardDTO(EpidemicCard epidemicCard) {
-        return new EpidemicCardDTO(epidemicCard.getId(),
+        return new EpidemicCardDTO(
+                epidemicCard.getId(),
                 epidemicCard.getTitle(),
                 epidemicCard.getType(),
                 epidemicCard.getDescription()
@@ -96,8 +106,9 @@ public class CardMapper {
      * @return an InfectionCardDTO containing data from the InfectionCard and its associated City
      */
     private static InfectionCardDTO toInfectionCardDTO(InfectionCard infectionCard) {
-        CityDTO cityDTO = new CityDTO(infectionCard.getCity()
-                                                   .getId(),
+        CityDTO cityDTO = new CityDTO(
+                infectionCard.getCity()
+                             .getId(),
                 infectionCard.getCity()
                              .getPlagueName(),
                 infectionCard.getCity()

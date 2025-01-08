@@ -1,4 +1,4 @@
-package de.uol.swp.server.player;
+package de.uol.swp.server.player.data;
 
 import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.Card;
@@ -36,13 +36,15 @@ public class Player {
                 cityCardCount++;
                 if (cityCard.getCity()
                             .getName()
-                            .toString().equals(cityName)) {
+                            .toString()
+                            .equals(cityName)) {
                     validRequest = true;
                 }
             }
         }
         if (validRequest || cityCardCount == 0) {
-            City city = cityRepository.getCitiesByNames(Enum.valueOf(CityName.class, cityName)).get(0);
+            City city = cityRepository.getCitiesByNames(Enum.valueOf(CityName.class, cityName))
+                                      .get(0);
             setCurrentPosition(city);
         } else {
             throw new Exception("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast auswählen!");

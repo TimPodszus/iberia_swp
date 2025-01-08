@@ -7,8 +7,8 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.plague.PlagueRepository;
-import de.uol.swp.server.player.Player;
 import de.uol.swp.server.region.RegionRepository;
 
 import java.util.List;
