@@ -1,10 +1,12 @@
 package de.uol.swp.server.player;
 
 import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.PlayerDTO;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.city.CityMapper;
+import de.uol.swp.server.player.data.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,7 @@ public class PlayerMapper {
                       .getUsername(),
                 player.getRole()
                       .getName(),
-                (CityDTO) CityMapper.toDTO(player.getCurrentPosition()),
+                (ICityDTO) CityMapper.toDTO(player.getCurrentPosition()),
                 player.getCards()
                       .stream()
                       .map(CardMapper::toDTO)
@@ -58,10 +60,10 @@ public class PlayerMapper {
                     player.getCards()
                           .stream()
                           .map(CardMapper::toDTO)
-                          .collect(Collectors.toList())
+                          .toList()
             );
             playerDTOS.add(playerDTO);
         }
-        return playerDTOS;
+        return List.copyOf(playerDTOS);
     }
 }

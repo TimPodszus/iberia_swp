@@ -1,8 +1,7 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 
 /**
  * Represents the initial state of the game where essential setup actions are performed.
