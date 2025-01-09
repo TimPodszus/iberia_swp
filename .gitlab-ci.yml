@@ -35,3 +35,6 @@ unit-test-job:
       junit: "**/target/surefire-reports/*.xml"
   coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
 
+
+
+

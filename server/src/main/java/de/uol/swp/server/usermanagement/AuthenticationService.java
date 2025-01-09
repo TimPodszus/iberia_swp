@@ -1,13 +1,10 @@
 package de.uol.swp.server.usermanagement;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.Session;
-import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.message.UserLoggedOutMessage;
 import de.uol.swp.common.user.request.LoginRequest;
 import de.uol.swp.common.user.request.LogoutRequest;
@@ -40,7 +37,7 @@ public class AuthenticationService extends AbstractService {
     /**
      * The list of current logged in users
      */
-    private final Map<Session, User> userSessions = new HashMap<>();
+    private final Map<Session, IUser> userSessions = new HashMap<>();
 
     private final UserManagement userManagement;
 
@@ -64,11 +61,11 @@ public class AuthenticationService extends AbstractService {
      * @param user user whose Session is to be searched
      * @return either empty Optional or Optional containing the Session
      * @see de.uol.swp.common.user.Session
-     * @see de.uol.swp.common.user.User
+     * @see IUser
      * @since 2019-09-04
      */
-    public Optional<Session> getSession(User user) {
-        Optional<Map.Entry<Session, User>> entry = userSessions.entrySet().stream().filter(e -> e.getValue().equals(user)).findFirst();
+    public Optional<Session> getSession(IUser user) {
+        Optional<Map.Entry<Session, IUser>> entry = userSessions.entrySet().stream().filter(e -> e.getValue().equals(user)).findFirst();
         return entry.map(Map.Entry::getKey);
     }
 
@@ -78,10 +75,10 @@ public class AuthenticationService extends AbstractService {
      * @param users Set of users whose Sessions are to be searched
      * @return List containing the Sessions that where found
      * @see de.uol.swp.common.user.Session
-     * @see de.uol.swp.common.user.User
+     * @see IUser
      * @since 2019-10-08
      */
-    public List<Session> getSessions(Set<User> users) {
+    public List<Session> getSessions(Set<IUser> users) {
         List<Session> sessions = new ArrayList<>();
         users.forEach(u -> {
             Optional<Session> session = getSession(u);
@@ -92,7 +89,6 @@ public class AuthenticationService extends AbstractService {
 
     /**
      * Handles LoginRequests found on the EventBus
-     *
      * If a LoginRequest is detected on the EventBus, this method is called. It
      * tries to login a user via the UserManagement. If this succeeds the user and
      * his Session are stored in the userSessions Map and a ClientAuthorizedMessage
@@ -112,7 +108,7 @@ public class AuthenticationService extends AbstractService {
         }
         ServerInternalMessage returnMessage;
         try {
-            User newUser = userManagement.login(msg.getUsername(), msg.getPassword());
+            IUser newUser = userManagement.login(msg.getUsername(), msg.getPassword());
             returnMessage = new ClientAuthorizedMessage(newUser);
             Session newSession = UUIDSession.create(newUser);
             userSessions.put(newSession, newUser);
@@ -127,7 +123,6 @@ public class AuthenticationService extends AbstractService {
 
     /**
      * Handles LogoutRequests found on the EventBus
-     *
      * If a LogoutRequest is detected on the EventBus, this method is called. It
      * tries to logout a user via the UserManagement. If this succeeds the user and
      * his Session are removed from the userSessions Map and a UserLoggedOutMessage
@@ -143,7 +138,7 @@ public class AuthenticationService extends AbstractService {
         final Optional<Session> session = msg.getSession();
         if (session.isPresent()) {
             Session userSession = session.get();
-            User userToLogOut = userSessions.get(userSession);
+            IUser userToLogOut = userSessions.get(userSession);
 
 
             // Could be already logged out
@@ -165,7 +160,6 @@ public class AuthenticationService extends AbstractService {
 
     /**
      * Handles RetrieveAllOnlineUsersRequests found on the EventBus
-     *
      * If a RetrieveAllOnlineUsersRequest is detected on the EventBus, this method
      * is called. It posts a AllOnlineUsersResponse containing user objects for
      * every logged in user on the EvenBus.
@@ -177,7 +171,7 @@ public class AuthenticationService extends AbstractService {
      */
     @Subscribe
     public void onRetrieveAllOnlineUsersRequest(RetrieveAllOnlineUsersRequest msg) {
-        AllOnlineUsersResponse response = new AllOnlineUsersResponse(userSessions.values());
+        AllOnlineUsersResponse response = new AllOnlineUsersResponse(UserMapper.toDTO(userSessions.values()));
         response.initWithMessage(msg);
         post(response);
     }

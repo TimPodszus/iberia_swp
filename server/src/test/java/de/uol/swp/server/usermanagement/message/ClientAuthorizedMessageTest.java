@@ -1,8 +1,9 @@
 package de.uol.swp.server.usermanagement.message;
 
-import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
+
 import de.uol.swp.server.message.ClientAuthorizedMessage;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
  class ClientAuthorizedMessageTest {
 
-    final User user = new UserDTO("name", "password");
+    final IUser user = new User("name", "password");
 
     /**
      * Test for the creation of ClientAuthorizedMessages

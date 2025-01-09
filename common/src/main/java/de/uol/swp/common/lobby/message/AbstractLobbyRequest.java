@@ -1,7 +1,7 @@
 package de.uol.swp.common.lobby.message;
 
 import de.uol.swp.common.message.request.AbstractRequestMessage;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +11,7 @@ import java.util.Objects;
  * Base class of all lobby request messages. Basic handling of lobby data.
  *
  * @author Marco Grawunder
- * @see de.uol.swp.common.user.User
+ * @see IUserDTO
  * @see AbstractRequestMessage
  * @since 2019-10-08
  */
@@ -21,7 +21,7 @@ public class AbstractLobbyRequest extends AbstractRequestMessage {
 
     String lobbyCode;
 
-    User user;
+    IUserDTO user;
 
     /**
      * Default constructor
@@ -39,7 +39,7 @@ public class AbstractLobbyRequest extends AbstractRequestMessage {
      * @param user      user responsible for the creation of this message
      * @since 2019-10-08
      */
-    public AbstractLobbyRequest(String lobbyCode, User user) {
+    public AbstractLobbyRequest(String lobbyCode, IUserDTO user) {
         this.lobbyCode = lobbyCode;
         this.user = user;
     }

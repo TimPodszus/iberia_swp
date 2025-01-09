@@ -1,6 +1,7 @@
 package de.uol.swp.client.lobby;
 
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
+import de.uol.swp.common.user.IUserDTO;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
@@ -8,8 +9,7 @@ import de.uol.swp.common.lobby.message.request.CreateLobbyRequest;
 import de.uol.swp.common.lobby.message.request.GetLobbyRequest;
 import de.uol.swp.common.lobby.message.request.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
-import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
+
 
 /**
  * Classes that manages lobbies
@@ -44,7 +44,7 @@ public class LobbyService {
      * @see CreateLobbyRequest
      * @since 2019-11-20
      */
-    public void createNewLobby(String name, UserDTO user) {
+    public void createNewLobby(String name, IUserDTO user) {
         CreateLobbyRequest createLobbyRequest = new CreateLobbyRequest(name, user);
         eventBus.post(createLobbyRequest);
     }
@@ -57,7 +57,7 @@ public class LobbyService {
      * @see LobbyJoinUserRequest
      * @since 2019-11-20
      */
-    public void joinLobby(String name, UserDTO user) {
+    public void joinLobby(String name, IUserDTO user) {
         LobbyJoinUserRequest joinUserRequest = new LobbyJoinUserRequest(name, user);
         eventBus.post(joinUserRequest);
     }
@@ -75,7 +75,7 @@ public class LobbyService {
      * @see UpdateLobbyRequest
      * @since 2024-10-08
      */
-    public void updateLobby(ILobbyDTO lobby, User user) {
+    public void updateLobby(ILobbyDTO lobby, IUserDTO user) {
         UpdateLobbyRequest updateLobbyRequest = new UpdateLobbyRequest(lobby, user);
         eventBus.post(updateLobbyRequest);
     }
@@ -88,7 +88,7 @@ public class LobbyService {
      * @see GetLobbyRequest
      * @since 2024-10-08
      */
-    public void getLobby(String lobbyCode, User user) {
+    public void getLobby(String lobbyCode, IUserDTO user) {
         GetLobbyRequest getLobbyRequest = new GetLobbyRequest(lobbyCode, user);
         eventBus.post(getLobbyRequest);
     }

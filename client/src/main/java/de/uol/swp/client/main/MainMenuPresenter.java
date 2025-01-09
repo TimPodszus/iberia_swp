@@ -10,7 +10,7 @@ import org.greenrobot.eventbus.Subscribe;
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.common.user.response.LoginSuccessfulResponse;
 import javafx.event.ActionEvent;
@@ -37,7 +37,7 @@ public class MainMenuPresenter extends AbstractPresenter {
     private static final ShowLobbyOverviewViewEvent showLobbyOverviewViewMessage = new ShowLobbyOverviewViewEvent();
     private static final ShowCurrentGamesViewEvent showCurrentGamesViewMessage = new ShowCurrentGamesViewEvent();
 
-    private User loggedInUser;
+    private IUserDTO loggedInUser;
 
     @Inject
     private LobbyService lobbyService;

@@ -1,9 +1,8 @@
 package de.uol.swp.server.player;
-
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
+import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.player.data.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,20 +26,10 @@ class PlayerTest {
         mockCityCard = mock(CityCard.class);
         when(mockCityCard.getCity()).thenReturn(mockCity);
         cards = new ArrayList<>();
-        player = new Player(mock(User.class));
+        player = new Player(mock(IUser.class));
         player.setCards(cards);
     }
 
-    /*
-    Auskommentiert, da die Methode nicht implementiert ist
-
-    @Test
-    void playCard_AddsCardToHand() {
-        Card card = mock(Card.class);
-        player.playCard(card);
-        assertTrue(player.getCards().contains(card));
-    }
-*/
     @Test
     void discardCard_RemovesCardFromHand() {
         Card card = mock(Card.class);

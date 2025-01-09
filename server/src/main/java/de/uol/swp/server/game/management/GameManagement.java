@@ -2,7 +2,6 @@ package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
@@ -14,6 +13,8 @@ import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.UserMapper;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,21 +40,20 @@ public class GameManagement implements IGameManagement {
      */
     public IGame createAndInitializeGame(CreateGameRequest request) {
         IGame game = new Game(request.getDifficulty());
-        GameStore.getInstance()
-                 .addGame(request.getLobbyCode(), game);
-        initializing(game, request.getUsers());
+        GameStore.getInstance().addGame(request.getLobbyCode(), game);
+        initializing(game, UserMapper.toUser(request.getUsers()));
         return game;
     }
 
-    void initializing(IGame game, List<User> users) {
+    void initializing(IGame game, List<IUser> users) {
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
         initiateInfections(game);
     }
 
-    private void createPlayers(List<User> users, IGame game) {
-        for (User user : users) {
+    private void createPlayers(List<IUser> users, IGame game) {
+        for (IUser user : users) {
             Player player = new Player(user);
             game.getPlayers()
                 .add(player);
@@ -122,7 +122,7 @@ public class GameManagement implements IGameManagement {
      * @param lobbyCode The lobby code of the game
      * @param cityDTO   The city to position the player at
      */
-    public void setPositioning(User user, String lobbyCode, CityDTO cityDTO) {
+    public void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO) {
         IGame game = getGame(lobbyCode);
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<Player> players = game.getPlayers();

@@ -2,20 +2,24 @@ package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
-import de.uol.swp.common.user.User;
+
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.EpidemicCard;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.UserMapper;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
 
 @AllArgsConstructor
-public class PlayerManagement implements IPlayerManagement {
+public class PlayerManagement implements IPlayerManagement
+{
     private IGame game;
 
-    public ICardDTO drawPlayerCard(IGame game, DrawPlayerCardRequest request) throws PlayerManagementException {
+    public ICardDTO drawPlayerCard(IGame game, DrawPlayerCardRequest request) throws PlayerManagementException
+    {
         this.game = game;
 
         Card card = getCard(request);
@@ -31,14 +35,15 @@ public class PlayerManagement implements IPlayerManagement {
         return CardMapper.toDTO(card);
     }
 
-    private Card getCard(DrawPlayerCardRequest request) throws PlayerManagementException {
-        User user = request.getSession()
-                           .orElseThrow(() -> new IllegalStateException("Session not present"))
-                           .getUser();
+    private Card getCard(DrawPlayerCardRequest request) throws PlayerManagementException
+    {
+        IUser user = UserMapper.toUser(request.getSession()
+                                              .orElseThrow(() -> new IllegalStateException("Session not present"))
+                                              .getUser());
 
-        if (user != game.getPlayers()
-                        .get(game.getCurrentPlayerIndex())
-                        .getUser()) {
+        if (!user.equals(game.getPlayers()
+                             .get(game.getCurrentPlayerIndex())
+                             .getUser())) {
             throw new PlayerManagementException();
         }
 
