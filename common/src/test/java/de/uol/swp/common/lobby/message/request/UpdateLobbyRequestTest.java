@@ -2,7 +2,8 @@ package de.uol.swp.common.lobby.message.request;
 
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
-import de.uol.swp.common.user.User;
+
+import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,7 @@ class UpdateLobbyRequestTest {
     /**
      * The owner of the lobby.
      */
-    User owner = new UserDTO("Test1", "qweasd");
+    IUserDTO owner = new UserDTO("Test1", "qweasd");
 
     /**
      * The lobby data transfer object.

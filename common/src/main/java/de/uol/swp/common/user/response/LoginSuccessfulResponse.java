@@ -1,17 +1,16 @@
 package de.uol.swp.common.user.response;
 
 import de.uol.swp.common.message.response.AbstractResponseMessage;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 
 import java.util.Objects;
 
 /**
  * A message containing the session (typically for a new logged in user)
- *
  * This response is sent to the Client whose LoginRequest was successful
  *
  * @see de.uol.swp.common.user.request.LoginRequest
- * @see de.uol.swp.common.user.User
+ * @see IUserDTO
  * @author Marco Grawunder
  * @since 2019-08-07
  */
@@ -19,7 +18,7 @@ public class LoginSuccessfulResponse extends AbstractResponseMessage {
 
     private static final long serialVersionUID = -9107206137706636541L;
 
-    private final User user;
+    private final IUserDTO user;
 
     /**
      * Constructor
@@ -27,7 +26,7 @@ public class LoginSuccessfulResponse extends AbstractResponseMessage {
      * @param user the user who successfully logged in
      * @since 2019-08-07
      */
-    public LoginSuccessfulResponse(User user) {
+    public LoginSuccessfulResponse(IUserDTO user) {
         this.user = user;
     }
 
@@ -37,7 +36,7 @@ public class LoginSuccessfulResponse extends AbstractResponseMessage {
      * @return User object of the user who successfully logged in
      * @since 2019-08-07
      */
-    public User getUser() {
+    public IUserDTO getUser() {
         return user;
     }
 

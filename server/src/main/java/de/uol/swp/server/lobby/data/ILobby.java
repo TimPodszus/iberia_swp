@@ -1,7 +1,9 @@
 package de.uol.swp.server.lobby.data;
 
 import de.uol.swp.common.lobby.dto.LobbyDTO;
-import de.uol.swp.common.user.User;
+
+import de.uol.swp.server.usermanagement.IUser;
+
 
 import java.io.Serializable;
 import java.util.List;
@@ -38,7 +40,7 @@ public interface ILobby extends Serializable {
      * @return A Set containing all user in this lobby
      * @since 2019-10-08
      */
-    List<User> getUsers();
+    List<IUser> getUsers();
 
     /**
      * Getter for the current owner of the lobby
@@ -46,7 +48,7 @@ public interface ILobby extends Serializable {
      * @return A User object containing the owner of the lobby
      * @since 2019-10-08
      */
-    User getOwner();
+    IUser getOwner();
 
     /**
      * Getter for the lobby's difficulty level
@@ -61,7 +63,7 @@ public interface ILobby extends Serializable {
      * @param user The user who should be the new owner
      * @since 2019-10-08
      */
-    void updateOwner(User user);
+    void updateOwner(IUser user);
 
     /**
      * Adds a new user to the lobby
@@ -69,7 +71,7 @@ public interface ILobby extends Serializable {
      * @param user The new user to add to the lobby
      * @since 2019-10-08
      */
-    void joinUser(User user);
+    void joinUser(IUser user);
 
     /**
      * Removes an user from the lobby
@@ -77,7 +79,7 @@ public interface ILobby extends Serializable {
      * @param user The user to remove from the lobby
      * @since 2019-10-08
      */
-    void leaveUser(User user);
+    void leaveUser(IUser user);
 
     /**
      * Checks if this lobby is equal to another object.

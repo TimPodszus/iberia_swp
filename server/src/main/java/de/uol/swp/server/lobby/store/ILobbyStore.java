@@ -1,8 +1,7 @@
 package de.uol.swp.server.lobby.store;
 
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.lobby.data.ILobby;
-
+import de.uol.swp.server.usermanagement.IUser;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,7 @@ public interface ILobbyStore {
      * @return the newly created {@code Lobby}
      * @throws SQLException if an error occurs while saving the lobby to the database
      */
-    ILobby createLobby(String lobbyCode, String name, List<User> users, User owner, int difficulty) throws SQLException;
+    ILobby createLobby(String lobbyCode, String name, List<IUser> users, IUser owner, int difficulty) throws SQLException;
 
     /**
      * Updates an existing lobby with the specified name, code, users, owner, and difficulty level.
@@ -47,7 +46,7 @@ public interface ILobbyStore {
      * @return the updated {@code Lobby}
      * @throws SQLException if an error occurs while updating the lobby in the database
      */
-    ILobby updateLobby(String name, String lobbycode, List<User> users, User owner, int difficulty) throws SQLException;
+    ILobby updateLobby(String name, String lobbycode, List<IUser> users, IUser owner, int difficulty) throws SQLException;
 
     /**
      * Removes the lobby with the specified name from the system.
@@ -74,9 +73,9 @@ public interface ILobbyStore {
     void saveLobby(ILobby lobby) throws SQLException;
 
 
-    void removeUser(String lobbyID, User user) throws SQLException, LobbyStoreException;
+    void removeUser(String lobbyID, IUser user) throws SQLException, LobbyStoreException;
 
-    void joinUser(String lobbyCode, User user) throws SQLException;
+    void joinUser(String lobbyCode, IUser user) throws SQLException;
 
 }
 

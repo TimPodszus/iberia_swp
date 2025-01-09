@@ -24,8 +24,8 @@ public interface Session {
      * Getter for the user that uses the session
      *
      * @return the user of the session as object implementing user
-     * @see de.uol.swp.common.user.User
+     * @see IUserDTO
      * @since 2019-08-13
      */
-    User getUser();
+    IUserDTO getUser();
 }

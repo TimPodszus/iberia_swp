@@ -1,7 +1,8 @@
 package de.uol.swp.common.game.message.request;
 
 import de.uol.swp.common.game.message.AbstractGameRequest;
-import de.uol.swp.common.user.User;
+
+import de.uol.swp.common.user.IUserDTO;
 import lombok.Getter;
 import java.util.List;
 import java.util.Objects;
@@ -9,8 +10,8 @@ import java.util.Objects;
 @Getter
 public class CreateGameRequest extends AbstractGameRequest {
     int difficulty;
-    private List<User> users;
-    public CreateGameRequest(String lobbyCode, int difficulty, List<User> users) {
+    private final List<IUserDTO> users;
+    public CreateGameRequest(String lobbyCode, int difficulty, List<IUserDTO> users) {
         super(lobbyCode);
         this.difficulty = difficulty;
         this.users = users;

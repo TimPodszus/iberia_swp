@@ -1,8 +1,9 @@
 package de.uol.swp.server.usermanagement.store;
 
-import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
+
 import de.uol.swp.server.database.DatabaseConnection;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.usermanagement.UserManagementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,13 +29,13 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
     }
 
 
-    public Optional<User> findUser(String username, String password) {
+    public Optional<IUser> findUser(String username, String password) {
         try (PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM User WHERE username = ? and password = ?")) {
             ps.setString(1, username);
             ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    UserDTO user = new UserDTO(rs.getString("username"), rs.getString("password"));
+                    User user = new User(rs.getString("username"), rs.getString("password"));
                     return Optional.of(user);
                 }
             }
@@ -45,12 +46,12 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
     }
 
     @Override
-    public Optional<User> findUser(String username) {
+    public Optional<IUser> findUser(String username) {
         try (PreparedStatement ps = connection.prepareStatement("SELECT username, password FROM User WHERE username = ?")) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    UserDTO user = new UserDTO(rs.getString("username"), rs.getString("password"));
+                    User user = new User(rs.getString("username"), rs.getString("password"));
                     return Optional.of(user);
                 }
             }
@@ -71,7 +72,7 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
      * @throws UserManagementException if the username or password is empty, or if a user with the specified username already exists
      */
     @Override
-    public User createUser(String username, String password) throws UserManagementException
+    public IUser createUser(String username, String password) throws UserManagementException
     {
 
         if (username.isEmpty() || password.isEmpty()) {
@@ -85,7 +86,7 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
         } catch (SQLException e) {
             LOG.error(e);
         }
-        Optional<User> user = findUser(username);
+        Optional<IUser> user = findUser(username);
         if (user.isPresent()) {
             return user.get();
         } else {
@@ -95,7 +96,7 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
 
 
     @Override
-    public User createUser(User user) {
+    public IUser createUser(IUser user) {
         String username = user.getUsername();
         String password = user.getPassword();
         if (username.isEmpty() || password.isEmpty()) {
@@ -109,7 +110,7 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
         } catch (SQLException e) {
             LOG.error(e);
         }
-        Optional<User> returnuser = findUser(username);
+        Optional<IUser> returnuser = findUser(username);
         if (returnuser.isPresent()) {
             return returnuser.get();
         } else {
@@ -118,7 +119,7 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
     }
 
     @Override
-    public User updateUser(String username, String password)
+    public IUser updateUser(String username, String password)
     {
         return null;
     }
@@ -132,7 +133,7 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
     }
 
     @Override
-    public List<User> getAllUsers()
+    public List<IUser> getAllUsers()
     {
         return List.of();
     }
