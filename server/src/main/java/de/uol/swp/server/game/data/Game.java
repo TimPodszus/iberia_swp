@@ -14,6 +14,7 @@ import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.plague.PlagueRepository;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
 import lombok.AllArgsConstructor;
@@ -106,6 +107,7 @@ public class Game implements IGame {
     @Setter
     private IGameState previousState;
     private GameManagement gameManagement;
+    private PlayerManagement playerManagement;
     private CityManagement cityManagement;
     private int difficulty;
 
@@ -130,6 +132,7 @@ public class Game implements IGame {
         this.players = new ArrayList<>();
         this.currentPlayerIndex = 0;
         this.gameManagement = new GameManagement();
+        this.playerManagement = new PlayerManagement(this);
         this.cityManagement = new CityManagement();
         this.state = new StartState();
         state.handleAction(this, null);

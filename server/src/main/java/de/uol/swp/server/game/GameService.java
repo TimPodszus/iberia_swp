@@ -8,6 +8,7 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
+import de.uol.swp.server.game.management.IGameManagement;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -17,7 +18,8 @@ import org.greenrobot.eventbus.Subscribe;
  * and communicates the result back to the client through status responses.
  */
 public class GameService extends AbstractService {
-    GameManagement gameManagement = new GameManagement();
+    IGameManagement gameManagement = new GameManagement();
+
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
      *
@@ -43,7 +45,7 @@ public class GameService extends AbstractService {
             success = true;
         }
         sendStatusRespond(success);
-        post(new BoardUpdateResponse(success,"Game Aktualisierung", GameMapper.toDTO((Game) game)));
+        post(new BoardUpdateResponse(success, "Game Aktualisierung", GameMapper.toDTO((Game) game)));
     }
 
     /**
