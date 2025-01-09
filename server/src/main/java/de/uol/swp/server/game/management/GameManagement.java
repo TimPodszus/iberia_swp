@@ -12,8 +12,11 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.management.IPlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
+import jakarta.inject.Inject;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +26,10 @@ import java.util.List;
  * setting player positions, and handling card draws.
  */
 public class GameManagement implements IGameManagement {
+
+    @Inject
+    IPlayerManagement playerManagement;
+
     /**
      * Constructs a new GameManagement object.
      */
@@ -41,18 +48,22 @@ public class GameManagement implements IGameManagement {
         IGame game = new Game(request.getDifficulty());
         GameStore.getInstance()
                  .addGame(request.getLobbyCode(), game);
-        initializing(game, request.getUsers());
+        try {
+            initializing(game, request.getUsers());
+        } catch (PlayerManagementException e) {
+            //TODO: irgendwo Fehler anzeigen "Fehler beim Initialisieren des Spiels"
+        }
         return game;
     }
 
-    void initializing(IGame game, List<User> users) {
+    void initializing(IGame game, List<User> users) throws PlayerManagementException {
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
         initiateInfections(game);
     }
 
-    private void createPlayers(List<User> users, IGame game) {
+    private void createPlayers(List<User> users, IGame game) throws PlayerManagementException {
         for (User user : users) {
             Player player = new Player(user);
             game.getPlayers()
@@ -64,7 +75,7 @@ public class GameManagement implements IGameManagement {
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                drawPlayerCard();
+                playerManagement.drawPlayerCard(game, user);
             }
         }
 
@@ -106,7 +117,7 @@ public class GameManagement implements IGameManagement {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
             game.getCityManagement()
-                .infectCity(drawInfectionCard(), infectionAmount);
+                .infectCityWithOwnPlague(game, drawInfectionCard(game), infectionAmount);
             if (i % 3 == 0) {
                 infectionAmount--;
             }
@@ -161,20 +172,30 @@ public class GameManagement implements IGameManagement {
     }
 
     /**
-     * Draws a player card from the deck.
-     * This method needs to be implemented to define how player cards are drawn.
-     */
-    public void drawPlayerCard() {
-        // TODO Implement Method
-    }
-
-    /**
      * Draws an infection card from the deck.
      *
      * @return The drawn infection card, or null if no card can be drawn
      */
-    public InfectionCard drawInfectionCard() {
-        return null; // This method needs proper implementation
+    public InfectionCard drawInfectionCard(IGame game) {
+        List<InfectionCard> infectionCardDrawPile = game.getInfectionCardDrawPile();
+
+        if (infectionCardDrawPile.isEmpty()) {
+            throw new IllegalStateException("Infection card draw pile is empty");
+        }
+
+        return infectionCardDrawPile.remove(0);
     }
 
+
+    /**
+     * Discards an infection card by adding it to the infection card discard pile of the specified game.
+     *
+     * @param game          The game from which the infection card is to be discarded
+     * @param infectionCard The infection card to be discarded
+     */
+    public void discardInfectionCard(IGame game, InfectionCard infectionCard) {
+        List<InfectionCard> infectionCardDiscardPile = game.getInfectionCardDiscardPile();
+
+        infectionCardDiscardPile.add(infectionCard);
+    }
 }
