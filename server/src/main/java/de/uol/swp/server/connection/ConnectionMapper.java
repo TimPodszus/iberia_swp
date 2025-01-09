@@ -4,6 +4,7 @@ import de.uol.swp.common.connection.ConnectionDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.connection.data.Connection;
+import de.uol.swp.server.connection.data.IConnection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,10 +44,10 @@ public class ConnectionMapper {
      * @param connections the list of Connection objects to convert
      * @return the corresponding list of IConnectionDTOs
      */
-    public static List<IConnectionDTO> toDTOList(List<Connection> connections) {
+    public static List<IConnectionDTO> toDTOList(List<IConnection> connections) {
         List<IConnectionDTO> connectionDTOS = new ArrayList<>();
-        for (Connection connection : connections) {
-            ConnectionDTO connectionDTO = new ConnectionDTO(
+        for (IConnection connection : connections) {
+            IConnectionDTO connectionDTO = new ConnectionDTO(
                     connection.getId(),
                     connection.getCityNames()
                               .stream()
