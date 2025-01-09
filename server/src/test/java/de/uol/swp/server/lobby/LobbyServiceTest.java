@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 /**
  * Test class for the LobbyService.
  */
-class LobbyServiceTest extends EventBusBasedTest {
+public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * The first owner of the lobby.
      */

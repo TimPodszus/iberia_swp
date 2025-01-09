@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test class for AuthenticationService.
  */
-class AuthenticationServiceTest extends EventBusBasedTest
+public class AuthenticationServiceTest extends EventBusBasedTest
 {
 
     final IUser user = new User("name", "password");
