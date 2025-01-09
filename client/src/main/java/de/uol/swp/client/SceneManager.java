@@ -6,7 +6,6 @@ import com.google.inject.assistedinject.Assisted;
 import de.uol.swp.client.auth.LoginPresenter;
 import de.uol.swp.client.auth.events.ShowLoginViewEvent;
 import de.uol.swp.client.game.GamePresenter;
-import de.uol.swp.client.game.event.ShowGameScreenEvent;
 import de.uol.swp.client.lobby.CurrentGamesPresenter;
 import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
 import de.uol.swp.client.lobby.detail.LobbyDetailPresenter;
@@ -16,6 +15,7 @@ import de.uol.swp.client.main.MainMenuPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.options.OptionsPresenter;
 import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
@@ -361,7 +361,7 @@ public class SceneManager {
      * @see de.uol.swp.client.game.event.ShowGameScreenEvent
      */
     @Subscribe
-    public void onShowGameScreenEvent(ShowGameScreenEvent event) {
+    public void onStartGameEvent(StartGameEvent event) {
         showGameScreen();
     }
 

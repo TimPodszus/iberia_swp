@@ -1,7 +1,7 @@
 package de.uol.swp.server.player;
 
 import de.uol.swp.common.cards.ICardDTO;
-import de.uol.swp.common.game.message.response.BoardUpdateResponse;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
@@ -52,6 +52,6 @@ public class PlayerService extends AbstractService {
         response.setSession(request.getSession()
                                    .orElseThrow(() -> new IllegalStateException("Session not present")));
         post(response);
-        post(new BoardUpdateResponse(true, "Card drawn successfully", GameMapper.toDTO(game)));
+        post(new BoardUpdateEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
     }
 }
