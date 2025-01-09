@@ -8,6 +8,7 @@ import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.connection.management.ConnectionManagement;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class ConnectionService extends AbstractService {
-    ConnectionManagement connectionManagement;
+    IConnectionManagement connectionManagement;
 
     /**
      * Constructor
@@ -26,7 +27,7 @@ public class ConnectionService extends AbstractService {
      * @since 2019-10-08
      */
     @Inject
-    public ConnectionService(EventBus bus, ConnectionManagement connectionManagement) {
+    public ConnectionService(EventBus bus, IConnectionManagement connectionManagement) {
         super(bus);
         this.connectionManagement = connectionManagement;
     }

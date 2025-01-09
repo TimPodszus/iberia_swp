@@ -1,5 +1,7 @@
 package de.uol.swp.server.di;
 
+import de.uol.swp.server.connection.management.ConnectionManagement;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagement;
 import de.uol.swp.server.lobby.store.ILobbyStore;
@@ -31,5 +33,6 @@ public class ServerModule extends AbstractModule {
         bind(EventBus.class).toInstance(bus);
         bind(ILobbyManagement.class).to(LobbyManagement.class);
         bind(ILobbyStore.class).to(LobbyStore.class);
+        bind(IConnectionManagement.class).to(ConnectionManagement.class);
     }
 }
