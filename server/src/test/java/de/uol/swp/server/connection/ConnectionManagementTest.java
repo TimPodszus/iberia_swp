@@ -1,20 +1,107 @@
 package de.uol.swp.server.connection;
 
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
+import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.management.ConnectionManagement;
+import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.player.Player;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ConnectionManagementTest {
     final ConnectionManagement connectionManagement = new ConnectionManagement();
+    IGame game;
+    Player player;
+
+    @BeforeEach
+    void setUp() {
+        game = mock(Game.class);
+        player = mock(Player.class);
+        GameStore.getInstance()
+                 .addGame("lobbyCode", game);
+
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+    }
 
     /**
      * Tests the available destinations for the city Palma de Mallorca.
      * It verifies that the number of available destinations is as expected.
      */
     @Test
-    void testAvailableDestinationsForPalmaDeMallorca() {
+    void testAvailableDestinations() {
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getCards()).thenReturn(new ArrayList<>());
+
         City city = new City(29, PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true);
+        List<City> cities = connectionManagement.getAvailableDestinations("lobbyCode", String.valueOf(city.getId()));
+
+        assertEquals(2, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
+    }
+
+    @Test
+    void testAvailableDestinationsWithTrainTracks() {
+        City barcelona = game.getCityRepository()
+                             .getCitiesByNames(CityName.EVORA)
+                             .get(0);
+        game.getConnectionRepository()
+            .getConnectionByID(19)
+            .buildTrainTracks(true);
+        game.getConnectionRepository()
+            .getConnectionByID(81)
+            .buildTrainTracks(true);
+        game.getConnectionRepository()
+            .getConnectionByID(75)
+            .buildTrainTracks(true);
+        game.getConnectionRepository()
+            .getConnectionByID(72)
+            .buildTrainTracks(true);
+
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getCards()).thenReturn(new ArrayList<>());
+
+        List<City> cities = connectionManagement.getAvailableDestinations("lobbyCode",
+                String.valueOf(barcelona.getId())
+        );
+
+        assertEquals(6, cities.size(), "Expected 5 available destinations for Evora");
+    }
+
+    @Test
+    void testAvailableDestinationsWithHarbourConnections() {
+        City city = game.getCityRepository()
+                        .getCitiesByNames(CityName.PALMA_DE_MALLORCA)
+                        .get(0);
+        City harbourCity = game.getCityRepository()
+                               .getCitiesByNames(CityName.ALICANTE)
+                               .get(0);
+
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getCards()).thenReturn(List.of(new CityCard(harbourCity.getId(),
+                harbourCity.getName()
+                           .toString(),
+                "",
+                harbourCity
+        )));
+
+        List<City> cities = connectionManagement.getAvailableDestinations("lobbyCode", String.valueOf(city.getId()));
+
+        assertEquals(3, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
+        assertTrue(cities.contains(harbourCity), "Expected Alicante to be an available destination");
     }
 }

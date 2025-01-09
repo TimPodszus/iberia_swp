@@ -32,7 +32,9 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
             availableDestinations.addAll(getBySeaConnectedCities(lobbyId));
         }
 
-        return availableDestinations;
+        return availableDestinations.stream()
+                                    .distinct()
+                                    .toList();
     }
 
     private List<City> getByLandConnectedCities(String lobbyId, City startCity) {
@@ -49,8 +51,11 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                                     .get(0);
 
                     if (connection.isTrainTrack()) {
-                        List<City> trainConnections = getTrainConnectionsForCity(lobbyId, city);
-                        availableDestinations.addAll(trainConnections);
+                        availableDestinations = getAdditionalTrainConnectionsForCity(lobbyId,
+                                city,
+                                startCity,
+                                availableDestinations
+                        );
                     }
                     availableDestinations.add(city);
                 }
@@ -63,27 +68,34 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     /**
      * Retrieves the train connections for a given city.
      *
-     * @param lobbyId   the ID of the lobby
-     * @param startCity the starting city
+     * @param lobbyId     the ID of the lobby
+     * @param currentCity the starting city
      * @return a list of cities that can be reached via train connections
      */
-    private List<City> getTrainConnectionsForCity(String lobbyId, City startCity) {
+    private List<City> getAdditionalTrainConnectionsForCity(
+            String lobbyId, City currentCity, City previousCity, List<City> availableDestinations
+    ) {
         IGame game = super.getGame(lobbyId);
-        List<City> availableDestinations = new ArrayList<>();
         List<IConnection> connections = game.getConnectionRepository()
-                                            .getConnectionsOfCity(startCity.getName());
+                                            .getConnectionsOfCity(currentCity.getName());
 
         for (IConnection connection : connections) {
-            if (connection.isTrainTrack() && connection.getCityNames()
-                                                       .contains(startCity.getName())) {
+            if (connection.isTrainTrack()) {
                 for (CityName connectedCity : connection.getCityNames()) {
-                    if (!connectedCity.equals(startCity.getName())) {
+                    if (!connectedCity.equals(currentCity.getName())) {
                         City city = super.getGame(lobbyId)
                                          .getCityRepository()
                                          .getCitiesByNames(connectedCity)
                                          .get(0);
+                        if (city.equals(previousCity)) {
+                            continue;
+                        }
                         availableDestinations.add(city);
-                        availableDestinations.addAll(getTrainConnectionsForCity(lobbyId, city));
+                        availableDestinations = getAdditionalTrainConnectionsForCity(lobbyId,
+                                city,
+                                currentCity,
+                                availableDestinations
+                        );
                     }
                 }
             }
