@@ -3,8 +3,9 @@ package de.uol.swp.server.game.store;
 import de.uol.swp.server.game.data.IGame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.mock;
 
 public class GameStoreTest {
 

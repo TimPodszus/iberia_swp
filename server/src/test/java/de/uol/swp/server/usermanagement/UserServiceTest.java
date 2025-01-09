@@ -13,13 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 
-public class UserServiceTest extends EventBusBasedTest {
+class UserServiceTest extends EventBusBasedTest {
 
     static final IUser userToRegister = new User("Marco", "Marco");
     static final IUser userWithSameName = new User("Marco", "Marco2");
     UserService userService;
-
-
     @Mock
     UserStore userStore;
     @Mock

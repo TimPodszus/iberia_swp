@@ -4,9 +4,9 @@ package de.uol.swp.server.lobby;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.CreateLobbyRequest;
 import de.uol.swp.common.lobby.message.request.GetLobbyRequest;
+import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
 import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
-import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.lobby.message.response.LobbyListResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
@@ -30,12 +30,15 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for the LobbyService.
  */
- public class LobbyServiceTest extends EventBusBasedTest {
+public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * The first owner of the lobby.
      */

@@ -45,6 +45,13 @@ public class GameManagement implements IGameManagement {
         return game;
     }
 
+    /**
+     * Initializes the game by setting up players, assigning roles,
+     * determining the starting player, and initiating city infections.
+     *
+     * @param game  The game instance to initialize
+     * @param users The list of users participating in the game
+     */
     void initializing(IGame game, List<IUser> users) {
         createPlayers(users, game);
         assignRoles(game);
@@ -52,6 +59,13 @@ public class GameManagement implements IGameManagement {
         initiateInfections(game);
     }
 
+    /**
+     * Creates player instances for the provided users, adds them to the game,
+     * and assigns each player a specific number of starting cards based on the number of players.
+     *
+     * @param users The list of users to create players for
+     * @param game  The game instance to add players to
+     */
     private void createPlayers(List<IUser> users, IGame game) {
         for (IUser user : users) {
             Player player = new Player(user);
@@ -69,6 +83,13 @@ public class GameManagement implements IGameManagement {
         }
 
     }
+
+    /**
+     * Determines the starting player based on the player holding the city card
+     * with the oldest foundation date. Moves this player to the first position in the player list.
+     *
+     * @param game The game instance where the starting player will be set
+     */
 
     private void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
@@ -91,7 +112,13 @@ public class GameManagement implements IGameManagement {
         }
     }
 
-    void assignRoles(IGame game) {
+    /**
+     * Assigns roles to all players in the game by shuffling a list of roles
+     * and distributing them sequentially to the players.
+     *
+     * @param game The game instance where roles will be assigned
+     */
+    private void assignRoles(IGame game) {
         List<Role> allRoles = RoleRepository.getAllRoles();
         Collections.shuffle(allRoles);
         for (int i = 0; i < game.getPlayers()
@@ -101,6 +128,13 @@ public class GameManagement implements IGameManagement {
                 .setRole(allRoles.get(i));
         }
     }
+
+    /**
+     * Initiates infections in the game by infecting cities in a predefined pattern.
+     * The number of infection cubes placed decreases after every three cities.
+     *
+     * @param game The game instance where city infections will be initiated
+     */
 
     void initiateInfections(IGame game) {
         int infectionAmount = 3;
