@@ -96,7 +96,7 @@ import static org.mockito.Mockito.*;
         lobbyManagement = mock(LobbyManagement.class);
         when(lobbyManagement.createLobby("Test", UserMapper.toUser(firstOwner))).thenReturn(lobby);
 
-        lobbyService = new LobbyService(lobbyManagement, null, getBus());
+        lobbyService = new LobbyService(getBus());
     }
 
     /**
