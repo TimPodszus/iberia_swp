@@ -1,8 +1,10 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.server.game.data.IGame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,11 +25,12 @@ class GameManagementTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    @Mock
+    private IGame game;
 
-    /**
-     * Tests the custom {@link GameManagementException}.
-     * Ensures that the exception can be thrown and contains the correct message.
-     */
+    @InjectMocks
+    private GameManagement gameManagement;
+
     @Test
     void testGameManagementException() {
         GameManagementException exception = assertThrows(GameManagementException.class, () -> {
@@ -36,5 +39,4 @@ class GameManagementTest {
 
         assertEquals("Test Exception", exception.getMessage());
     }
-
 }

@@ -1,9 +1,7 @@
 package de.uol.swp.server.lobby.management;
 
-import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.lobby.data.ILobby;
-
+import de.uol.swp.server.usermanagement.IUser;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +19,7 @@ public interface ILobbyManagement {
      * @return the created lobby
      * @throws LobbyManagementException if an error occurs during lobby creation
      */
-    ILobby createLobby(String lobbyName, User owner) throws LobbyManagementException;
+    ILobby createLobby(String lobbyName, IUser owner) throws LobbyManagementException;
 
     /**
      * Deletes an existing lobby.
@@ -56,7 +54,7 @@ public interface ILobbyManagement {
      * @throws LobbyManagementException if an error occurs during the join process
      * @throws SQLException if a database access error occurs
      */
-    void joinLobby(ILobby lobby, UserDTO user) throws LobbyManagementException, SQLException;
+    void joinLobby(ILobby lobby, IUser user) throws LobbyManagementException, SQLException;
 
     /**
      * Updates an existing lobby.

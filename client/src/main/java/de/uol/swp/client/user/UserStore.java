@@ -1,6 +1,6 @@
 package de.uol.swp.client.user;
 
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +15,7 @@ public class UserStore {
     /**
      * The current user.
      */
-    private User user;
+    private IUserDTO user;
 
     /**
      * Private constructor to prevent instantiation.

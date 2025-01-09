@@ -2,7 +2,6 @@ package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
@@ -11,9 +10,11 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.UserMapper;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,12 +38,13 @@ public class GameManagement implements IGameManagement {
      * @param request The request containing the necessary data to create the game
      * @return The newly created game
      */
-    public IGame createAndInitializeGame(CreateGameRequest request){
+    public IGame createAndInitializeGame(CreateGameRequest request) {
         IGame game = new Game(request.getDifficulty());
         GameStore.getInstance().addGame(request.getLobbyCode(), game);
-        initializing(game, request.getUsers());
+        initializing(game, UserMapper.toUser(request.getUsers()));
         return game;
     }
+
     /**
      * Initializes the game by setting up players, assigning roles,
      * determining the starting player, and initiating city infections.
@@ -50,7 +52,7 @@ public class GameManagement implements IGameManagement {
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
      */
-    void initializing(IGame game, List<User> users) {
+    void initializing(IGame game, List<IUser> users) {
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
@@ -64,11 +66,13 @@ public class GameManagement implements IGameManagement {
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
      */
-    private void createPlayers(List<User> users, IGame game) {
-        for (User user : users) {
+    private void createPlayers(List<IUser> users, IGame game) {
+        for (IUser user : users) {
             Player player = new Player(user);
-            game.getPlayers().add(player);
-            int cardsToDraw = switch ( game.getPlayers().size()) {
+            game.getPlayers()
+                .add(player);
+            int cardsToDraw = switch (game.getPlayers()
+                                          .size()) {
                 case 2 -> 4;
                 case 3 -> 3;
                 default -> 2;
@@ -86,6 +90,7 @@ public class GameManagement implements IGameManagement {
      *
      * @param game The game instance where the starting player will be set
      */
+
     private void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
         Player startingPlayer = null;
@@ -100,8 +105,10 @@ public class GameManagement implements IGameManagement {
             }
         }
         if (startingPlayer != null) {
-            game.getPlayers().remove(startingPlayer);
-            game.getPlayers().add(0, startingPlayer);
+            game.getPlayers()
+                .remove(startingPlayer);
+            game.getPlayers()
+                .add(0, startingPlayer);
         }
     }
 
@@ -114,9 +121,11 @@ public class GameManagement implements IGameManagement {
     private void assignRoles(IGame game) {
         List<Role> allRoles = RoleRepository.getAllRoles();
         Collections.shuffle(allRoles);
-        for (int i = 0; i < game.getPlayers().size(); i++) {
-            game.getPlayers().get(i)
-                   .setRole(allRoles.get(i));
+        for (int i = 0; i < game.getPlayers()
+                                .size(); i++) {
+            game.getPlayers()
+                .get(i)
+                .setRole(allRoles.get(i));
         }
     }
 
@@ -126,10 +135,12 @@ public class GameManagement implements IGameManagement {
      *
      * @param game The game instance where city infections will be initiated
      */
-    private void initiateInfections(IGame game) {
+
+    void initiateInfections(IGame game) {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
-            game.getCityManagement().infectCity(drawInfectionCard(), infectionAmount);
+            game.getCityManagement()
+                .infectCity(drawInfectionCard(), infectionAmount);
             if (i % 3 == 0) {
                 infectionAmount--;
             }
@@ -141,17 +152,19 @@ public class GameManagement implements IGameManagement {
      * if the game is currently in a state that allows setting positioning.
      * Updates the game state if all players have been positioned.
      *
-     * @param user The user whose position is to be set
+     * @param user      The user whose position is to be set
      * @param lobbyCode The lobby code of the game
-     * @param cityDTO The city to position the player at
+     * @param cityDTO   The city to position the player at
      */
-    public void setPositioning(User user, String lobbyCode, CityDTO cityDTO) {
+    public void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO) {
         IGame game = getGame(lobbyCode);
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<Player> players = game.getPlayers();
             Player requestPlayer = null;
             for (Player player : players) {
-                if (player.getUser().getUsername().equals(user.getUsername()) && player.getCurrentPosition() == null) {
+                if (player.getUser()
+                          .getUsername()
+                          .equals(user.getUsername()) && player.getCurrentPosition() == null) {
                     requestPlayer = player;
                     break;
                 }
@@ -163,7 +176,8 @@ public class GameManagement implements IGameManagement {
             } catch (Exception e) {
                 // StatusResponse
             }
-            if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers().size()) {
+            if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
+                                                                      .size()) {
                 game.setState(new PlayerTurnState());
             }
         }
@@ -176,7 +190,8 @@ public class GameManagement implements IGameManagement {
      * @return The game associated with the given lobby code
      */
     private IGame getGame(String lobbyCode) {
-        return GameStore.getInstance().getGame(lobbyCode);
+        return GameStore.getInstance()
+                        .getGame(lobbyCode);
     }
 
     /**

@@ -5,6 +5,8 @@ import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 
+import de.uol.swp.server.usermanagement.UserMapper;
+
 /**
  * Utility class for mapping between ILobby and ILobbyDTO objects.
  */
@@ -19,10 +21,12 @@ public class LobbyMapper {
     public static ILobbyDTO toDTO(ILobby lobby) {
         return new LobbyDTO(lobby.getLobbyCode(),
                 lobby.getName(),
-                lobby.getUsers(),
-                lobby.getOwner(),
+                UserMapper.toDTO(lobby.getUsers()),
+                UserMapper.toDTO(lobby.getOwner()),
                 lobby.getDifficulty()
         );
+
+
     }
 
     /**
@@ -34,8 +38,8 @@ public class LobbyMapper {
     public static ILobby toLobby(ILobbyDTO lobbyDTO) {
         return new Lobby(lobbyDTO.getLobbyCode(),
                 lobbyDTO.getName(),
-                lobbyDTO.getUsers(),
-                lobbyDTO.getOwner(),
+                UserMapper.toUser(lobbyDTO.getUsers()),
+                UserMapper.toUser(lobbyDTO.getOwner()),
                 lobbyDTO.getDifficulty()
         );
     }

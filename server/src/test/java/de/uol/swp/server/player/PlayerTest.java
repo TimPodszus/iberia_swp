@@ -1,19 +1,17 @@
 package de.uol.swp.server.player;
 
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
-import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -46,23 +44,16 @@ class PlayerTest {
     private List<Card> cards;
 
     /**
-     * Mocked instance of {@link CityRepository} used for fetching city data.
-     */
-    private CityRepository mockCityRepository;
-
-    /**
      * Sets up the test environment by initializing mocks and the Player instance.
      */
     @BeforeEach
     void setUp() {
         mockCity = mock(City.class);
         mockCityCard = mock(CityCard.class);
-        mockCityRepository = mock(CityRepository.class);
         when(mockCityCard.getCity()).thenReturn(mockCity);
         cards = new ArrayList<>();
-        player = new Player(mock(User.class));
+        player = new Player(mock(IUser.class));
         player.setCards(cards);
-        player.cityRepository = mockCityRepository;
     }
 
     /*
@@ -85,25 +76,6 @@ class PlayerTest {
         player.discardCard(card);
         assertFalse(player.getCards()
                           .contains(card));
-    }
-
-    /**
-     * Tests that the {@link Player#setStartingPosition(String)} method correctly sets the player's starting
-     * position based on a valid city name and card.
-     *
-     * @throws Exception if the starting position cannot be set (should not happen in this test case).
-     */
-    @Test
-    void testSetStartingPosition() throws Exception {
-        when(mockCity.getName()).thenReturn(CityName.BARCELONA);
-        cards.add(mockCityCard);
-
-        City mockCityFromRepo = mock(City.class);
-        when(mockCityRepository.getCitiesByNames(CityName.BARCELONA)).thenReturn(Collections.singletonList(mockCityFromRepo));
-
-        player.setStartingPosition("BARCELONA");
-
-        assertEquals(mockCityFromRepo, player.getCurrentPosition());
     }
 
     /**

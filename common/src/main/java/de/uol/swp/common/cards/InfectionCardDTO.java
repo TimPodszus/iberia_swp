@@ -9,7 +9,7 @@ import lombok.Getter;
 public class InfectionCardDTO extends CardDTO {
     private final CityDTO city;
 
-    public InfectionCardDTO(int id, String title, String type, CityDTO city) {
+    public InfectionCardDTO(int id, String title, CardType type, CityDTO city) {
         super(id, title, type);
         this.city = city;
     }

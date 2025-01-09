@@ -1,4 +1,4 @@
-package de.uol.swp.common.user;
+package de.uol.swp.server.usermanagement;
 
 import java.io.Serializable;
 
@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author Marco Grawunder
  * @since 2019-08-05
  */
-public interface User extends Serializable, Comparable<User> {
+public interface IUser extends Serializable {
 
     /**
      * Getter for the username variable
@@ -30,5 +30,5 @@ public interface User extends Serializable, Comparable<User> {
      * @return Copy of this with empty password field
      * @since 2019-08-05
      */
-    User getWithoutPassword();
+    IUser getWithoutPassword();
 }

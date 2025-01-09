@@ -1,7 +1,7 @@
 package de.uol.swp.common.player;
 
-import de.uol.swp.common.cards.CardDTO;
-import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.city.ICityDTO;
 
 import java.util.List;
 
@@ -10,8 +10,8 @@ public interface IPlayerDTO {
 
     String getRoleName();
 
-    CityDTO getCurrentPosition();
+    ICityDTO getCurrentPosition();
 
-    List<CardDTO> getCards();
+    List<ICardDTO> getCards();
 }
 
