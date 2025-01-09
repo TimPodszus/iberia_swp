@@ -127,26 +127,82 @@ public interface IGame {
      *
      * @return the player card discard pile
      */
-
     List<Card> getPlayerCardDiscardPile();
 
+    /**
+     * Gets the list of players.
+     *
+     * @return the list of players
+     */
     List<Player> getPlayers();
 
+    /**
+     * Gets the city management.
+     *
+     * @return the city management
+     */
     ICityManagement getCityManagement();
 
+    /**
+     * Gets the current state of the game.
+     *
+     * @return the current state of the game
+     */
     Object getState();
 
+    /**
+     * Sets the current state of the game.
+     *
+     * @param state the new state of the game
+     */
     void setState(IGameState state);
 
+    /**
+     * Gets the game management.
+     *
+     * @return the game management
+     */
     IGameManagement getGameManagement();
 
+    /**
+     * Gets the previous state of the game.
+     *
+     * @return the previous state of the game
+     */
     IGameState getPreviousState();
 
+    /**
+     * Sets the current player index.
+     *
+     * @param count the new current player index
+     */
     void setCurrentPlayerIndex(int count);
 
+    /**
+     * Gets the current player index.
+     *
+     * @return the current player index
+     */
     int getCurrentPlayerIndex();
 
+    /**
+     * Gets the current player.
+     *
+     * @return the current player
+     */
+    Player getCurrentPlayer();
+
+    /**
+     * Initializes the game with the specified difficulty.
+     *
+     * @param difficulty the difficulty level
+     */
     void initializeGame(int difficulty);
 
+    /**
+     * Gets the difficulty level of the game.
+     *
+     * @return the difficulty level
+     */
     int getDifficulty();
 }

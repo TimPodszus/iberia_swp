@@ -168,7 +168,9 @@ public class Game implements IGame {
     }
 
     public void gameStartShuffle(int numSubDecks) {
-        if (numSubDecks <= 0) throw new IllegalArgumentException("Number of sub-decks must be greater than zero.");
+        if (numSubDecks <= 0) {
+            throw new IllegalArgumentException("Number of sub-decks must be greater than zero.");
+        }
         List<List<Card>> subDecks = splitIntoSubDecks(playerCardDrawPile, numSubDecks);
         for (int i = 0; i < numSubDecks; i++) {
             subDecks.get(i)
@@ -193,6 +195,10 @@ public class Game implements IGame {
         }
 
         return subDecks;
+    }
+
+    public Player getCurrentPlayer() {
+        return players.get(currentPlayerIndex);
     }
 
 
