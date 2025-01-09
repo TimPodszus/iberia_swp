@@ -64,7 +64,7 @@ public class GameManagement implements IGameManagement {
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
      */
-    protected void createPlayers(List<User> users, IGame game) {
+    private void createPlayers(List<User> users, IGame game) {
         for (User user : users) {
             Player player = new Player(user);
             game.getPlayers().add(player);
@@ -86,7 +86,7 @@ public class GameManagement implements IGameManagement {
      *
      * @param game The game instance where the starting player will be set
      */
-    protected void setStartingPlayer(IGame game) {
+    private void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
         Player startingPlayer = null;
         for (Player player : game.getPlayers()) {
@@ -111,7 +111,7 @@ public class GameManagement implements IGameManagement {
      *
      * @param game The game instance where roles will be assigned
      */
-    protected void assignRoles(IGame game) {
+    private void assignRoles(IGame game) {
         List<Role> allRoles = RoleRepository.getAllRoles();
         Collections.shuffle(allRoles);
         for (int i = 0; i < game.getPlayers().size(); i++) {
@@ -126,7 +126,7 @@ public class GameManagement implements IGameManagement {
      *
      * @param game The game instance where city infections will be initiated
      */
-    protected void initiateInfections(IGame game) {
+    private void initiateInfections(IGame game) {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
             game.getCityManagement().infectCity(drawInfectionCard(), infectionAmount);
@@ -175,7 +175,7 @@ public class GameManagement implements IGameManagement {
      * @param lobbyCode The code of the lobby to retrieve the game from
      * @return The game associated with the given lobby code
      */
-    protected IGame getGame(String lobbyCode) {
+    private IGame getGame(String lobbyCode) {
         return GameStore.getInstance().getGame(lobbyCode);
     }
 
