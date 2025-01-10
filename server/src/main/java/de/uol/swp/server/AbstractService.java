@@ -5,9 +5,10 @@ import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.server.lobby.data.ILobby;
-import de.uol.swp.server.lobby.management.LobbyManagement;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
+import lombok.Setter;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.Collections;
@@ -35,7 +36,8 @@ public class AbstractService {
      * This field is injected by the dependency injection framework.
      */
     @Inject
-    protected LobbyManagement lobbyManagement;
+    @Setter
+    protected ILobbyManagement lobbyManagement;
 
     /**
      * The AuthenticationService instance used for handling user authentication.
