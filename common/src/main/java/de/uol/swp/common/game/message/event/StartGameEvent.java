@@ -12,7 +12,7 @@ import java.util.Objects;
  * It extends the AbstractGameEvent class and includes additional information about the game.
  */
 public class StartGameEvent extends AbstractGameEvent {
-    private final transient IGameDTO gameDTO;
+    private final IGameDTO gameDTO;
 
     /**
      * Constructs a new StartGameEvent.
