@@ -9,7 +9,7 @@ import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.response.LobbyListResponse;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 
 import javafx.fxml.FXML;
@@ -174,7 +174,11 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
                                    .orElse(null);
 
         boolean userInLobby = false;
-        for (User u : lobby.getUsers()) {
+
+        List<IUserDTO> users = lobby.getUsers();
+        IUserDTO user = UserStore.getInstance().getUser();
+
+        for (IUserDTO u : lobby.getUsers()) {
             if (Objects.equals(u, UserStore.getInstance().getUser())) {
                 userInLobby = true;
             }
