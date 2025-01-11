@@ -19,7 +19,7 @@ class GameTest {
     @Test
     void testGameInitialization() {
         assertNotNull(game.getInfectionCardDrawPile());
-        assertEquals(2, game.getInfectionCounter());
+        assertEquals(1, game.getInfectionCounter());
         assertEquals(0, game.getEscalationStage());
         assertEquals(14, game.getWaterTreatmentsLeft());
         assertEquals(20, game.getTracksLeft());

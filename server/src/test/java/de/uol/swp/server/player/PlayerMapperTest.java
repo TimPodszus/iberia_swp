@@ -1,6 +1,7 @@
 package de.uol.swp.server.player;
 
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.cards.Card;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.when;
  */
 class PlayerMapperTest {
     private static final String TEST_CITY_NAME = "A_CORUNA";
-    private static final String TEST_ROLE_NAME = "Scientist";
+    private static final String TEST_ROLE_NAME = "POLITICIAN";
     private static final String TEST_USER_NAME = "testUser";
     private Player mockPlayer;
 
@@ -37,7 +38,7 @@ class PlayerMapperTest {
         when(mockUser.getUsername()).thenReturn(TEST_USER_NAME);
 
         Role mockRole = mock(Role.class);
-        when(mockRole.getName()).thenReturn(TEST_ROLE_NAME);
+        when(mockRole.getName()).thenReturn(RoleEnum.valueOf(TEST_ROLE_NAME));
 
         City mockCity = mock(City.class);
         when(mockCity.getName()).thenReturn(CityName.A_CORUNA);
@@ -58,7 +59,7 @@ class PlayerMapperTest {
         IPlayerDTO playerDTO = PlayerMapper.toDTO(mockPlayer);
 
         assertEquals(TEST_USER_NAME, playerDTO.getUsername());
-        assertEquals(TEST_ROLE_NAME, playerDTO.getRoleName());
+        assertEquals(RoleEnum.valueOf(TEST_ROLE_NAME), playerDTO.getRole().getName());
         assertEquals(
                 TEST_CITY_NAME,
                 playerDTO.getCurrentPosition()
@@ -84,8 +85,9 @@ class PlayerMapperTest {
                              .allMatch(playerDTO -> playerDTO.getUsername()
                                                              .equals(TEST_USER_NAME)));
         assertTrue(playerDTOs.stream()
-                             .allMatch(playerDTO -> playerDTO.getRoleName()
-                                                             .equals(TEST_ROLE_NAME)));
+                             .allMatch(playerDTO -> playerDTO.getRole()
+                                                             .getName()
+                                                             .equals(RoleEnum.valueOf(TEST_ROLE_NAME))));
         assertTrue(playerDTOs.stream()
                              .allMatch(playerDTO -> playerDTO.getCurrentPosition()
                                                              .getName()
