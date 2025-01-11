@@ -6,20 +6,14 @@ import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.lobby.message.response.*;
 import de.uol.swp.common.lobby.message.request.*;
-import de.uol.swp.common.message.ServerMessage;
-import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.lobby.management.LobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
-import de.uol.swp.server.usermanagement.AuthenticationService;
+import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,31 +23,19 @@ import java.util.Optional;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-
-
 @Singleton
 public class LobbyService extends AbstractService {
-
-    private final ILobbyManagement lobbyManagement;
-    private final AuthenticationService authenticationService;
-
-
     /**
-     * Constructor
+     * Constructs a new LobbyService.
+     * <p>
+     * This constructor is used to create an instance of LobbyService and
+     * initializes it with the provided EventBus.
      *
-     * @param lobbyManagement       The management class for creating, storing and deleting
-     *                              lobbies
-     * @param authenticationService the user management
-     * @param eventBus              the server-wide EventBus
-     * @since 2019-10-08
+     * @param eventBus the EventBus to be used by this service
      */
     @Inject
-    public LobbyService(
-            ILobbyManagement lobbyManagement, AuthenticationService authenticationService, EventBus eventBus
-    ) {
+    public LobbyService(EventBus eventBus) {
         super(eventBus);
-        this.lobbyManagement = lobbyManagement;
-        this.authenticationService = authenticationService;
     }
 
     /**
@@ -63,13 +45,14 @@ public class LobbyService extends AbstractService {
      * request and sends a LobbyCreatedMessage to every connected user
      *
      * @param createLobbyRequest The CreateLobbyRequest found on the EventBus
-     * @see LobbyManagement#createLobby(String, User)
      * @see LobbyCreatedMessage
      * @since 2019-10-08
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
-        ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(), createLobbyRequest.getOwner());
+        ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(),
+                UserMapper.toUser(createLobbyRequest.getOwner())
+        );
         sendToAll(new LobbyCreatedMessage(createdLobby.getName(), createLobbyRequest.getOwner()));
     }
 
@@ -89,9 +72,11 @@ public class LobbyService extends AbstractService {
         Optional<ILobby> optionalLobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
         if (optionalLobby.isPresent()) {
             ILobby lobby = optionalLobby.get();
-            lobbyManagement.joinLobby(lobby, (UserDTO) lobbyJoinUserRequest.getUser());
-            sendToAllInLobby(lobbyJoinUserRequest.getLobbyCode(), new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(),
-                    lobbyJoinUserRequest.getUser()));
+            lobbyManagement.joinLobby(lobby, UserMapper.toUser(lobbyJoinUserRequest.getUser()));
+            sendToAllInLobby(
+                    lobbyJoinUserRequest.getLobbyCode(),
+                    new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser())
+            );
         } else {
             throw new LobbyManagementException("Lobby not found");
         }
@@ -114,12 +99,11 @@ public class LobbyService extends AbstractService {
 
         if (lobby.isPresent()) {
             lobby.get()
-                 .leaveUser(lobbyLeaveUserRequest.getUser());
+                 .leaveUser(UserMapper.toUser(lobbyLeaveUserRequest.getUser()));
             sendToAllInLobby(lobbyLeaveUserRequest.getLobbyCode(),
                     new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
             );
-        }
-        else {
+        } else {
             throw new LobbyManagementException("Lobby not found");
         }
     }
@@ -189,25 +173,4 @@ public class LobbyService extends AbstractService {
         ILobby updatedLobby = lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO));
         sendToAllInLobby(updatedLobby.getLobbyCode(), new LobbyUpdatedEvent(LobbyMapper.toDTO(updatedLobby)));
     }
-
-    /**
-     * Prepares a given ServerMessage to be sent to all players in the lobby and
-     * posts it on the EventBus
-     * @param lobbyCode Code of the lobby the players are in
-     * @param message   the message to be send to the users
-     * @see ServerMessage
-     * @since 2019-10-08
-     */
-    public void sendToAllInLobby(String lobbyCode, ServerMessage message) throws LobbyManagementException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyCode);
-
-        if (lobby.isPresent()) {
-            message.setReceiver(authenticationService.getSessions(new HashSet<>(lobby.get()
-                                                                                     .getUsers())));
-            post(message);
-        }
-
-    }
-
-
 }

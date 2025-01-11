@@ -1,11 +1,14 @@
 package de.uol.swp.common.lobby.dto;
 
-import de.uol.swp.common.user.User;
+
+import de.uol.swp.common.user.IUserDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -24,7 +27,27 @@ public class LobbyDTO implements ILobbyDTO, Serializable {
 
     private final String lobbyCode;
     private final String name;
-    private final List<User> users;
-    private User owner;
+    private final List<IUserDTO> users;
+    private IUserDTO owner;
     private final int difficulty;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        LobbyDTO lobbyDTO = (LobbyDTO) o;
+        return difficulty == lobbyDTO.difficulty && Objects.equals(
+                lobbyCode,
+                lobbyDTO.lobbyCode
+        ) && Objects.equals(name, lobbyDTO.name) && Objects.equals(users, lobbyDTO.users) && Objects.equals(
+                owner,
+                lobbyDTO.owner
+        );
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lobbyCode, name, users, owner, difficulty);
+    }
 }

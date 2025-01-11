@@ -1,104 +1,62 @@
 package de.uol.swp.common.user;
 
-import de.uol.swp.common.passwordHashing.PasswordHashing;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.Objects;
+
 
 /**
  * Objects of this class are used to transfer user data between the server and the
  * clients.
  *
  * @author Marco Grawunder
- * @see de.uol.swp.common.user.User
+ * @see IUserDTO
  * @see de.uol.swp.common.user.request.RegisterUserRequest
  * @see de.uol.swp.common.user.response.AllOnlineUsersResponse
  * @since 2019-08-13
  */
+
 @Getter
-public class UserDTO implements User, Serializable
-{
+@AllArgsConstructor
+public class UserDTO implements IUserDTO, Serializable {
     private String username;
+
     private String password;
 
-
-    /**
-     * Constructor
-     *
-     * @param username username of the user
-     * @param password password the user uses
-     *
-     * @since 2019-08-13
-     */
-    public UserDTO(String username, String password)
-    {
-        if (Objects.nonNull(username) && Objects.nonNull(password)) {
-            this.username = username;
-            this.password = PasswordHashing.hashPassword(password);
-        }else{
-            throw new IllegalArgumentException("Username and password cannot be null");
-        }
+    public static IUserDTO createWithoutPassword(IUserDTO defaultUser) {
+        return new UserDTO(defaultUser.getUsername(), "");
     }
-
-    public UserDTO(String username)
-    {
-        createWithoutPassword(new UserDTO(username, ""));
-    }
-
-
-    /**
-     * Copy constructor leaving password variable empty
-     * This constructor is used for the user list, because it would be a major security
-     * flaw to send all user data including passwords to everyone connected.
-     *
-     * @param user User object to copy the values of
-     *
-     * @return UserDTO copy of User object having the password variable left empty
-     *
-     * @since 2019-08-13
-     */
-    public static UserDTO createWithoutPassword(User user) {
-        return new UserDTO(user.getUsername(), "");
-    }
-
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
+    public UserDTO(IUserDTO user) {
+        this.username = user.getUsername();
+        this.password = user.getPassword();
     }
 
     @Override
-    public User getWithoutPassword() {
+    public IUserDTO getWithoutPassword() {
         return new UserDTO(username, "");
     }
 
     @Override
-    public int compareTo(User o) {
+    public int compareTo(IUserDTO o) {
         return username.compareTo(o.getUsername());
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        UserDTO userDTO = (UserDTO) o;
-        return Objects.equals(username, userDTO.username);
+        UserDTO userDTO = (UserDTO) obj;
+        return Objects.equals(username, userDTO.username) && Objects.equals(password, userDTO.password);
     }
 
-
     @Override
-    public int hashCode()
-    {
-        return Objects.hash(username);
+    public int hashCode() {
+        return username.hashCode() + password.hashCode();
     }
 }

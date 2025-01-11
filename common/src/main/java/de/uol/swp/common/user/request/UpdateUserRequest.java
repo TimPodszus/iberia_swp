@@ -1,20 +1,20 @@
 package de.uol.swp.common.user.request;
 
 import de.uol.swp.common.message.request.AbstractRequestMessage;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 
 import java.util.Objects;
 
 /**
  * Request to update an user
  *
- * @see de.uol.swp.common.user.User
+ * @see IUserDTO
  * @author Marco Grawunder
  * @since 2019-09-02
  */
 public class UpdateUserRequest extends AbstractRequestMessage {
 
-    private final User toUpdate;
+    private final IUserDTO toUpdate;
 
     /**
      * Constructor
@@ -23,7 +23,7 @@ public class UpdateUserRequest extends AbstractRequestMessage {
      *             being empty
      * @since 2019-09-02
      */
-    public UpdateUserRequest(User user){
+    public UpdateUserRequest(IUserDTO user){
         this.toUpdate = user;
     }
 
@@ -33,7 +33,7 @@ public class UpdateUserRequest extends AbstractRequestMessage {
      * @return the updated user object
      * @since 2019-09-02
      */
-    public User getUser() {
+    public IUserDTO getUser() {
         return toUpdate;
     }
 

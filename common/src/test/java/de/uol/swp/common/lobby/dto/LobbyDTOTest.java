@@ -1,8 +1,6 @@
 package de.uol.swp.common.lobby.dto;
 
-import de.uol.swp.common.lobby.dto.ILobbyDTO;
-import de.uol.swp.common.lobby.dto.LobbyDTO;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +23,7 @@ class LobbyDTOTest {
      */
     @Test
     void createLobbyTest() {
-        User defaultUser = new UserDTO("marco", "marco");
+        IUserDTO defaultUser = new UserDTO("marco", "marco");
         ILobbyDTO lobbyDTO = new LobbyDTO("testcode", "test", List.of(defaultUser), defaultUser, 4);
         assertEquals("test", lobbyDTO.getName());
         assertEquals(

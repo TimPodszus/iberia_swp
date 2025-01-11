@@ -1,12 +1,13 @@
 package de.uol.swp.server.lobby.store;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
+
 
 import de.uol.swp.server.database.DatabaseConnection;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -82,7 +83,7 @@ public class LobbyStore implements ILobbyStore {
      * @return the User object without the password, or null if the user is not found
      * @throws SQLException if a database access error occurs
      */
-    private User findUserByUsername(String username) throws SQLException {
+    private IUser findUserByUsername(String username) throws SQLException {
         String sql = "SELECT username, password FROM User WHERE username = ?";
 
         try (
@@ -94,17 +95,17 @@ public class LobbyStore implements ILobbyStore {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String password = rs.getString("password");
-                    UserDTO userDTO = new UserDTO(username, password);
-                    return userDTO.getWithoutPassword();
+                    IUser user = new User(username, password);
+                    return user.getWithoutPassword();
                 }
             }
         }
         return null;
     }
 
-    private List<User> findUsersByLobbyCode(String lobbyCode) throws SQLException {
+    private List<IUser> findUsersByLobbyCode(String lobbyCode) throws SQLException {
         String sql = "SELECT username FROM LobbyUsers WHERE lobbyID = ?";
-        List<User> users = new ArrayList<>();
+        List<IUser> users = new ArrayList<>();
 
         try (
                 PreparedStatement ps = this.connection.prepareStatement(sql)
@@ -114,7 +115,7 @@ public class LobbyStore implements ILobbyStore {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String username = rs.getString("username");
-                    User user = findUserByUsername(username);
+                    IUser user = findUserByUsername(username);
                     if (user != null) {
                         users.add(user);
                     }
@@ -126,7 +127,7 @@ public class LobbyStore implements ILobbyStore {
 
     @Override
     public ILobby createLobby(
-            String lobbyCode, String lobbyName, List<User> users, User owner, int difficulty
+            String lobbyCode, String lobbyName, List<IUser> users, IUser owner, int difficulty
     ) throws SQLException {
         ILobby newLobby = new Lobby(lobbyCode, lobbyName, users, owner, difficulty);
         saveLobby(newLobby);
@@ -135,7 +136,7 @@ public class LobbyStore implements ILobbyStore {
 
     @Override
     public ILobby updateLobby(
-            String lobbycode, String lobbyName, List<User> users, User owner, int difficulty
+            String lobbycode, String lobbyName, List<IUser> users, IUser owner, int difficulty
     ) throws SQLException {
         String sql = "UPDATE Lobby SET lobbyname = ?, difficulty = ?, owner = ? WHERE lobbyID = ?";
 
@@ -152,12 +153,12 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public void removeUser(String lobbyID, User user) throws SQLException, LobbyStoreException {
+    public void removeUser(String lobbyID, IUser user) throws LobbyStoreException {
         String sql = "DELETE FROM LobbyUsers WHERE lobbyID = ? AND username = ?";
 
-        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-        try (Connection connection = dbConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+        try (
+             PreparedStatement ps = this.connection.prepareStatement(sql)) {
 
             ps.setString(1, lobbyID);
             ps.setString(2, user.getUsername());
@@ -170,12 +171,11 @@ public class LobbyStore implements ILobbyStore {
 
 
     @Override
-    public void removeLobby(String lobbyID) throws SQLException, LobbyStoreException {
+    public void removeLobby(String lobbyID) throws LobbyStoreException {
         String sql = "DELETE FROM Lobby WHERE lobbyID = ?";
 
-        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-        try (Connection connection = dbConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (
+             PreparedStatement ps = this.connection.prepareStatement(sql)) {
 
             ps.setString(1, lobbyID);
             ps.executeUpdate();
@@ -184,7 +184,7 @@ public class LobbyStore implements ILobbyStore {
         }
     }
 
-    public void joinUser(String lobbyCode, User user) throws SQLException {
+    public void joinUser(String lobbyCode, IUser user) throws SQLException {
 
 
         try (PreparedStatement ps = connection.prepareStatement(INSERT_LOBBYUSERS_SQL)) {
@@ -256,7 +256,7 @@ public class LobbyStore implements ILobbyStore {
      * @throws SQLException if a database access error occurs
      */
     private void saveUsersInLobbyToDatabase(ILobby lobby) throws SQLException {
-        for (User user : lobby.getUsers()) {
+        for (IUser user : lobby.getUsers()) {
             try (PreparedStatement psLobbyUsers = this.connection.prepareStatement(INSERT_LOBBYUSERS_SQL)) {
                 psLobbyUsers.setString(1, lobby.getLobbyCode());
                 psLobbyUsers.setString(2, user.getUsername());
@@ -278,9 +278,9 @@ public class LobbyStore implements ILobbyStore {
         String ownerUsername = rs.getString("owner");
         String lobbyName = rs.getString("lobbyname");
 
-        User owner = findUserByUsername(ownerUsername);
+        IUser owner = findUserByUsername(ownerUsername);
 
-        List<User> users = findUsersByLobbyCode(lobbyCode);
+        List<IUser> users = findUsersByLobbyCode(lobbyCode);
 
         return new Lobby(lobbyCode, lobbyName, users, owner, difficulty);
     }

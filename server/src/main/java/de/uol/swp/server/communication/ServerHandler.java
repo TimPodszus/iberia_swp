@@ -7,6 +7,7 @@ import de.uol.swp.common.message.response.CreatedGameResponse;
 import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.message.response.ResponseMessage;
 import de.uol.swp.common.message.ServerMessage;
+import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -175,7 +176,7 @@ public class ServerHandler implements ServerHandlerDelegate {
         final Optional<Session> session = msg.getSession();
         if (ctx.isPresent() && session.isPresent()) {
             putSession(ctx.get(), session.get());
-            sendToClient(ctx.get(), new LoginSuccessfulResponse(msg.getUser()));
+            sendToClient(ctx.get(), new LoginSuccessfulResponse(UserMapper.toDTO(msg.getUser())));
             sendMessage(new UserLoggedInMessage(msg.getUser()
                                                    .getUsername()));
         } else {

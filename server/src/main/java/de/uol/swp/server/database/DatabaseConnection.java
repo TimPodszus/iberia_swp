@@ -35,9 +35,9 @@ public class DatabaseConnection {
         config.setUsername(USERNAME);
         config.setPassword(PASSWORD);
         config.setMaximumPoolSize(10);
-        config.setIdleTimeout(60000); // 60 seconds
-        config.setConnectionTimeout(30000); // 30 seconds
-        config.setLeakDetectionThreshold(2000); // 2 seconds
+        config.setIdleTimeout(60000);
+        config.setConnectionTimeout(30000);
+        config.setLeakDetectionThreshold(2000);
 
         this.dataSource = new HikariDataSource(config);
     }

@@ -2,12 +2,11 @@ package de.uol.swp.server.lobby.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
-import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.store.ILobbyStore;
 import de.uol.swp.server.lobby.store.LobbyStoreException;
+import de.uol.swp.server.usermanagement.IUser;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -36,10 +35,10 @@ public class LobbyManagement implements ILobbyManagement {
         this.lobbyStore = lobbyStore;
     }
 
-    public ILobby createLobby(String name, User owner) throws LobbyManagementException {
+    public ILobby createLobby(String name, IUser owner) throws LobbyManagementException {
         try {
             String lobbyID = generateLobbyID();
-            List<User> users = new ArrayList<>();
+            List<IUser> users = new ArrayList<>();
             users.add(owner);
             return lobbyStore.createLobby(lobbyID, name, users, owner, 4);
         } catch (SQLException e) {
@@ -47,14 +46,14 @@ public class LobbyManagement implements ILobbyManagement {
         }
     }
 
-    public void leaveLobby(String lobbyID, User user) throws SQLException, LobbyStoreException {
+    public void leaveLobby(String lobbyID, IUser user) throws SQLException, LobbyStoreException {
         ILobby lobbyToLeave = lobbyStore.findLobby(lobbyID);
         lobbyToLeave.getUsers().remove(user);
         lobbyStore.removeUser(lobbyID, user);
         if (user.getUsername().equals(lobbyToLeave.getOwner().getUsername()) && !lobbyToLeave.getUsers().isEmpty()) {
-            List<User> remainingUsers = lobbyToLeave.getUsers();
+            List<IUser> remainingUsers = lobbyToLeave.getUsers();
             if (!remainingUsers.isEmpty()) {
-                User newOwner = remainingUsers.get(0);
+                IUser newOwner = remainingUsers.get(0);
                 lobbyToLeave.updateOwner(newOwner);
             }
         }
@@ -96,7 +95,7 @@ public class LobbyManagement implements ILobbyManagement {
     }
 
     @Override
-    public void joinLobby(ILobby lobby, UserDTO user) throws LobbyManagementException, SQLException {
+    public void joinLobby(ILobby lobby, IUser user) throws LobbyManagementException, SQLException {
         if (lobby != null) {
             String lobbyID = lobby.getLobbyCode();
             lobby.joinUser(user);

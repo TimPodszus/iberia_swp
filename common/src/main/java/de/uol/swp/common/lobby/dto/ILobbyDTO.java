@@ -1,6 +1,7 @@
 package de.uol.swp.common.lobby.dto;
 
-import de.uol.swp.common.user.User;
+
+import de.uol.swp.common.user.IUserDTO;
 
 import java.io.Serializable;
 import java.util.List;
@@ -22,14 +23,14 @@ public interface ILobbyDTO extends Serializable {
      *
      * @return the owner of the lobby
      */
-    User getOwner();
+    IUserDTO getOwner();
 
     /**
      * Gets the list of users in the lobby.
      *
      * @return the list of users
      */
-    List<User> getUsers();
+    List<IUserDTO> getUsers();
 
     /**
      * Gets the lobby code.
