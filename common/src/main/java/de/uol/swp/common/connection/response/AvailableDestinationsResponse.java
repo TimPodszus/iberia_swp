@@ -1,7 +1,7 @@
 package de.uol.swp.common.connection.response;
 
 
-import java.util.List;
+import java.util.Map;
 
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
@@ -14,5 +14,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AvailableDestinationsResponse extends AbstractResponseMessage {
-    private final List<ICityDTO> cities;
+    /**
+     * Map of cities and if they are only accessible when the player discards the city card.
+     * <p>
+     * Key is the city DTO.
+     * Value is a boolean. True if the city is only accessible when the player discards the city card.
+     */
+    private final Map<ICityDTO, Boolean> cities;
 }

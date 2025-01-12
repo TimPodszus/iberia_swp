@@ -2,7 +2,7 @@ package de.uol.swp.server.connection.management;
 
 import de.uol.swp.server.city.City;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * Interface for managing connections.
@@ -14,7 +14,7 @@ public interface IConnectionManagement {
      *
      * @param lobbyId the ID of the lobby
      * @param cityId  the city from which to get available destinations
-     * @return a list of available destinations
+     * @return a map of available destinations, and whether they are only accessible when the player discards the city card
      */
-    List<City> getAvailableDestinations(String lobbyId, String cityId);
+    Map<City, Boolean> getAvailableDestinations(String lobbyId, String cityId);
 }

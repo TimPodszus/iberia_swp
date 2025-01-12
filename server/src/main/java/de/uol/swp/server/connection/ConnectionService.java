@@ -7,12 +7,11 @@ import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.CityMapper;
-import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -40,12 +39,17 @@ public class ConnectionService extends AbstractService {
      */
     @Subscribe
     public void onAvailableDestinationsRequest(AvailableDestinationsRequest request) {
-        List<ICityDTO> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyCode(),
-                                                                           request.getCityId()
-                                                                   )
-                                                                   .stream()
-                                                                   .map(CityMapper::toDTO)
-                                                                   .collect(Collectors.toList());
+        Map<ICityDTO, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyCode(),
+                                                                                   request.getCityId()
+                                                                           )
+                                                                           .entrySet()
+                                                                           .stream()
+                                                                           .collect(Collectors.toMap(
+                                                                                   entry -> CityMapper.toDTO(entry.getKey()),
+                                                                                   Map.Entry::getValue
+                                                                           ));
+
+
         AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
 
         request.getMessageContext()

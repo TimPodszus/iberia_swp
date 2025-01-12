@@ -11,14 +11,16 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.role.Nurse;
+import de.uol.swp.server.role.Sailor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +52,9 @@ class ConnectionManagementTest {
         when(player.getCards()).thenReturn(new ArrayList<>());
 
         City city = new City(29, PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true);
-        List<City> cities = connectionManagement.getAvailableDestinations("lobbyCode", String.valueOf(city.getId()));
+        Map<City, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
+                String.valueOf(city.getId())
+        );
 
         assertEquals(2, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
     }
@@ -76,7 +80,7 @@ class ConnectionManagementTest {
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCards()).thenReturn(new ArrayList<>());
 
-        List<City> cities = connectionManagement.getAvailableDestinations("lobbyCode",
+        Map<City, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
                 String.valueOf(barcelona.getId())
         );
 
@@ -99,10 +103,47 @@ class ConnectionManagementTest {
                 CardType.CITY_CARD,
                 harbourCity
         )));
+        when(player.getRole()).thenReturn(new Nurse());
 
-        List<City> cities = connectionManagement.getAvailableDestinations("lobbyCode", String.valueOf(city.getId()));
+        Map<City, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
+                String.valueOf(city.getId())
+        );
 
         assertEquals(3, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
-        assertTrue(cities.contains(harbourCity), "Expected Alicante to be an available destination");
+        assertTrue(cities.containsKey(harbourCity), "Expected Alicante to be an available destination");
+        assertTrue(
+                cities.get(harbourCity),
+                "Expected Alicante to be a harbour connection and accessible only by discarding a city card"
+        );
+    }
+
+    @Test
+    void testAvailableDestinationsWithHarbourConnectionsAndPlayerRoleSailor() {
+        City city = game.getCityRepository()
+                        .getCitiesByNames(CityName.PALMA_DE_MALLORCA)
+                        .get(0);
+        City harbourCity = game.getCityRepository()
+                               .getCitiesByNames(CityName.ALICANTE)
+                               .get(0);
+
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getCards()).thenReturn(List.of(new CityCard(harbourCity.getId(),
+                harbourCity.getName()
+                           .toString(),
+                CardType.CITY_CARD,
+                harbourCity
+        )));
+        when(player.getRole()).thenReturn(new Sailor());
+
+        Map<City, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
+                String.valueOf(city.getId())
+        );
+
+        assertEquals(3, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
+        assertTrue(cities.containsKey(harbourCity), "Expected Alicante to be an available destination");
+        assertFalse(
+                cities.get(harbourCity),
+                "Expected Alicante to be accessible without discarding a city card, because the player is a Sailor"
+        );
     }
 }
