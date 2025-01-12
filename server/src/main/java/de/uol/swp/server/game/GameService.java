@@ -11,6 +11,7 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
+import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
@@ -46,8 +47,11 @@ public class GameService extends AbstractService {
     public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException {
         IGame game = gameManagement.createAndInitializeGame(request);
         if (game != null) {
-            post(new CreateGameResponse(true,"Game erstellt", GameMapper.toDTO(game)));
-            sendToAllInLobby(request.getLobbyCode(), new StartGameEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
+            post(new CreateGameResponse(true, "Game erstellt", GameMapper.toDTO(game)));
+            sendToAllInLobby(
+                    request.getLobbyCode(),
+                    new StartGameEvent(request.getLobbyCode(), GameMapper.toDTO(game))
+            );
         }
     }
 
@@ -58,13 +62,14 @@ public class GameService extends AbstractService {
      * @param request the player move request containing session, lobby code, and city ID
      */
     @Subscribe
-    public void onMovePlayerRequest(MovePlayerRequest request) {
+    public void onMovePlayerRequest(MovePlayerRequest request) throws GameManagementException {
         IUserDTO user = request.getSession()
                                .map(Session::getUser)
                                .orElse(null);
-        if(user == null) throw new IllegalArgumentException("Player is unknown");
-        gameManagement.movePlayer(
-                UserMapper.toUser(user),
+        if (user == null) {
+            throw new IllegalArgumentException("Player is unknown");
+        }
+        gameManagement.movePlayer(UserMapper.toUser(user),
                 request.getLobbyCode(),
                 cityManagement.getCity(request.getLobbyCode(), request.getCityId())
         );

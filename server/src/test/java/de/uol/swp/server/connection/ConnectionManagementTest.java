@@ -100,7 +100,6 @@ class ConnectionManagementTest {
         when(player.getCards()).thenReturn(List.of(new CityCard(harbourCity.getId(),
                 harbourCity.getName()
                            .toString(),
-                CardType.CITY_CARD,
                 harbourCity
         )));
         when(player.getRole()).thenReturn(new Nurse());
@@ -120,17 +119,14 @@ class ConnectionManagementTest {
     @Test
     void testAvailableDestinationsWithHarbourConnectionsAndPlayerRoleSailor() {
         City city = game.getCityRepository()
-                        .getCitiesByNames(CityName.PALMA_DE_MALLORCA)
-                        .get(0);
+                        .getCityByName(CityName.PALMA_DE_MALLORCA);
         City harbourCity = game.getCityRepository()
-                               .getCitiesByNames(CityName.ALICANTE)
-                               .get(0);
+                               .getCityByName(CityName.ALICANTE);
 
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCards()).thenReturn(List.of(new CityCard(harbourCity.getId(),
                 harbourCity.getName()
                            .toString(),
-                CardType.CITY_CARD,
                 harbourCity
         )));
         when(player.getRole()).thenReturn(new Sailor());

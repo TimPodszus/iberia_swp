@@ -13,7 +13,6 @@ public class MovePlayerRequest extends AbstractGameRequest {
      * Constructs a new MovePlayerRequest.
      *
      * @param lobbyCode the code of the lobby
-     * @param playerId  the ID of the player
      * @param cityId    the ID of the city
      */
     public MovePlayerRequest(String lobbyCode, String cityId) {

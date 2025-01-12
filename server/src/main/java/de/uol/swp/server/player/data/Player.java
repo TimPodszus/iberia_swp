@@ -6,6 +6,7 @@ import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.usermanagement.IUser;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,7 +22,7 @@ import java.util.List;
 @Getter
 public class Player {
     @Setter
-    private Role role;
+    private IRole role;
     @Setter
     private City currentPosition;
     @Setter
@@ -47,8 +49,7 @@ public class Player {
                                       .get(0);
             setCurrentPosition(city);
         } else {
-            throw new GameException("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast " +
-                    "auswählen!");
+            throw new GameException("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast " + "auswählen!");
         }
     }
 
@@ -56,6 +57,9 @@ public class Player {
         //not implemented
 
         //Für Unittest:
+        if (cards == null) {
+            cards = new ArrayList<>();
+        }
         cards.add(card);
     }
 

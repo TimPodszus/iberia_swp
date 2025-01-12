@@ -43,7 +43,9 @@ public interface IGameManagement {
      * @param user      the user representing the player to be moved
      * @param lobbyCode the code of the lobby in which the game is happening
      * @param city      the city to which the player will be moved
+     *                  <p>
+     * @throws GameManagementException if moving the player fails
      */
-    void movePlayer(IUser user, String lobbyCode, City city);
+    void movePlayer(IUser user, String lobbyCode, City city) throws GameManagementException;
 }
 

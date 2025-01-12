@@ -36,8 +36,7 @@ class ConnectionMapperTest {
     @BeforeEach
     void setUp() {
         firstCityConnection = new Connection(1, Arrays.asList(CityName.BARCELONA, CityName.ALICANTE), true, true);
-        IConnection secondCityConnection = new Connection(
-                2,
+        IConnection secondCityConnection = new Connection(2,
                 Arrays.asList(CityName.ZARAGOZA, CityName.GIRONA),
                 false,
                 false
@@ -47,7 +46,7 @@ class ConnectionMapperTest {
     }
 
     /**
-     * Tests the {@link ConnectionMapper#toDTO(Connection)} method.
+     * Tests the  method.
      * Verifies that a {@link IConnection} object is correctly mapped to an {@link IConnectionDTO} object.
      */
     @Test
@@ -56,8 +55,7 @@ class ConnectionMapperTest {
 
         assertNotNull(connectionDTO);
         assertEquals(1, connectionDTO.getId());
-        assertEquals(
-                2,
+        assertEquals(2,
                 connectionDTO.getCityNames()
                              .size()
         );
