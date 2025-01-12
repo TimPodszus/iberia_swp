@@ -2,7 +2,7 @@ package de.uol.swp.common.lobby.message.response;
 
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
@@ -13,12 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Test class for the LobbyUpdatedEvent.
  */
-public class LobbyUpdatedEventTest {
+ class LobbyUpdatedEventTest {
 
     /**
      * A test user.
      */
-    User user = new UserDTO("TestUser", "testpassword");
+    IUserDTO user = new UserDTO("TestUser", "testpassword");
 
     /**
      * A test lobby DTO.

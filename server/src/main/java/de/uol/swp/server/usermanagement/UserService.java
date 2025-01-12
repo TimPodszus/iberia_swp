@@ -6,7 +6,6 @@ import org.greenrobot.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.uol.swp.common.message.response.ResponseMessage;
-import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.exception.RegistrationExceptionMessage;
 import de.uol.swp.common.user.request.RegisterUserRequest;
 import de.uol.swp.common.user.response.RegistrationSuccessfulResponse;
@@ -52,7 +51,7 @@ public class UserService extends AbstractService {
      * gets posted there.
      *
      * @param msg The RegisterUserRequest found on the EventBus
-     * @see de.uol.swp.server.usermanagement.UserManagement#createUser(User)
+     * @see de.uol.swp.server.usermanagement.UserManagement#createUser(IUser)
      * @see de.uol.swp.common.user.request.RegisterUserRequest
      * @see de.uol.swp.common.user.response.RegistrationSuccessfulResponse
      * @see de.uol.swp.common.user.exception.RegistrationExceptionMessage
@@ -65,7 +64,7 @@ public class UserService extends AbstractService {
         }
         ResponseMessage returnMessage;
         try {
-            userManagement.createUser(msg.getUser());
+            userManagement.createUser(UserMapper.toUser(msg.getUser()));
             returnMessage = new RegistrationSuccessfulResponse();
         }catch (Exception e){
             LOG.error(e);

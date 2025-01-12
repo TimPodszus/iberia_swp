@@ -1,14 +1,14 @@
 package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.response.BoardUpdateResponse;
-import de.uol.swp.common.game.message.response.StatusResponse;
+import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.lobby.management.LobbyManagementException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -38,14 +38,12 @@ public class GameService extends AbstractService {
      * @param request the game creation request containing necessary game initialization parameters
      */
     @Subscribe
-    public void onCreateGameRequest(CreateGameRequest request) {
-        boolean success = false;
+    public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException {
         IGame game = gameManagement.createAndInitializeGame(request);
         if (game != null) {
-            success = true;
+            post(new CreateGameResponse(true,"Game erstellt", GameMapper.toDTO(game)));
+            sendToAllInLobby(request.getLobbyCode(), new StartGameEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
         }
-        sendStatusRespond(success);
-        post(new BoardUpdateResponse(success, "Game Aktualisierung", GameMapper.toDTO((Game) game)));
     }
 
     /**
@@ -54,21 +52,5 @@ public class GameService extends AbstractService {
      */
     public void sendPositioningRequest() {
         // TODO: Implement method to handle player positioning initialization
-    }
-
-    /**
-     * Sends a status response indicating the success or failure of an operation.
-     * This method creates a status response based on the success parameter and posts it to the EventBus.
-     *
-     * @param success a boolean indicating whether the operation was successful
-     */
-    private void sendStatusRespond(boolean success) {
-        StatusResponse statusResponse;
-        if (success) {
-            statusResponse = new StatusResponse(true, "Game wurde erfolgreich erstellt!");
-        } else {
-            statusResponse = new StatusResponse(false, "Game konnte nicht erstellt werden!");
-        }
-        post(statusResponse);
     }
 }

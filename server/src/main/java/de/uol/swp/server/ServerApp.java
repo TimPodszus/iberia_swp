@@ -17,11 +17,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * This class handles the startup of the server, as well as, the creation of default
- * users while the MainMemoryBasedUserStore is still in use.
+ * This class handles the startup of the server
  *
  * @author Marco Grawunder
- * @see de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore
+ *
  * @since 2017-03-17
  */
 class ServerApp {
@@ -30,7 +29,6 @@ class ServerApp {
 
     /**
      * Main Method
-     *
      * This method handles the creation of the server components and the start of
      * the server
      *

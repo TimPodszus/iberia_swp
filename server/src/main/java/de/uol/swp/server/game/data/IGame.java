@@ -160,4 +160,6 @@ public interface IGame {
     void initializeGame(int difficulty);
 
     int getDifficulty();
+
+    Player getCurrentPlayer();
 }

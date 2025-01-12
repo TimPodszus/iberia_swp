@@ -1,6 +1,7 @@
 package de.uol.swp.common.user.response;
 
-import de.uol.swp.common.user.User;
+
+import de.uol.swp.common.user.IUserDTO;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -13,9 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.user.response.AllOnlineUsersResponse
  * @since 2023-05-14
  */
-public class AllOnlineUserResponseTest {
+ class AllOnlineUserResponseTest {
 
-    final ArrayList<User> users = new ArrayList<>();
+    final ArrayList<IUserDTO> users = new ArrayList<>();
 
     /**
      * Test for creation of the AllOnlineUserResponses

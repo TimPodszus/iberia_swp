@@ -2,7 +2,7 @@ package de.uol.swp.common.lobby.message.request;
 
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.AbstractLobbyRequest;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 import lombok.Getter;
 
 @Getter
@@ -10,8 +10,9 @@ public class UpdateLobbyRequest extends AbstractLobbyRequest {
 
     private final ILobbyDTO lobbyDTO;
 
-    public UpdateLobbyRequest(ILobbyDTO lobbyDTO, User userDto) {
+    public UpdateLobbyRequest(ILobbyDTO lobbyDTO, IUserDTO userDto) {
         super(lobbyDTO.getLobbyCode(), userDto);
         this.lobbyDTO = lobbyDTO;
     }
+
 }

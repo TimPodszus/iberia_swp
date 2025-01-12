@@ -1,6 +1,6 @@
 package de.uol.swp.server.usermanagement.store;
 
-import de.uol.swp.common.user.User;
+import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +22,7 @@ public interface UserStore {
      * @return The User without password information, if found
      * @since 2019-08-13
      */
-    Optional<User> findUser(String username, String password);
+    Optional<IUser> findUser(String username, String password);
 
     /**
      * Find a user only by name
@@ -31,7 +31,7 @@ public interface UserStore {
      * @return The User without password information, if found
      * @since 2019-08-13
      */
-    Optional<User> findUser(String username);
+    Optional<IUser> findUser(String username);
 
     /**
      * Create a new user
@@ -43,9 +43,9 @@ public interface UserStore {
      *
      * @since 2019-08-13
      */
-    User createUser(String username, String password);
+    IUser createUser(String username, String password);
 
-    User createUser(User user);
+    IUser createUser(IUser user);
 
     /**
      * Update user. Update only given fields. Username cannot be changed
@@ -55,7 +55,7 @@ public interface UserStore {
      * @return The User without password information
      * @since 2019-08-13
      */
-    User updateUser(String username, String password);
+    IUser updateUser(String username, String password);
 
 
 
@@ -73,6 +73,6 @@ public interface UserStore {
      * @return A list of all users without password information
      * @since 2019-08-13
      */
-    List<User> getAllUsers();}
+    List<IUser> getAllUsers();}
 
 

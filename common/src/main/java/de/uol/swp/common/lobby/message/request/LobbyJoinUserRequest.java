@@ -1,14 +1,15 @@
 package de.uol.swp.common.lobby.message.request;
 
 import de.uol.swp.common.lobby.message.AbstractLobbyRequest;
-import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.common.user.IUserDTO;
+
 
 /**
  * Request sent to the server when a user wants to join a lobby
  *
  * @author Marco Grawunder
  * @see de.uol.swp.common.lobby.message.AbstractLobbyRequest
- * @see de.uol.swp.common.user.User
+ * @see IUserDTO
  * @since 2019-10-08
  */
 public class LobbyJoinUserRequest extends AbstractLobbyRequest {
@@ -29,7 +30,7 @@ public class LobbyJoinUserRequest extends AbstractLobbyRequest {
      * @param user user who wants to join the lobby
      * @since 2019-10-08
      */
-    public LobbyJoinUserRequest(String lobbyCode, UserDTO user) {
+    public LobbyJoinUserRequest(String lobbyCode, IUserDTO user) {
         super(lobbyCode, user);
     }
 

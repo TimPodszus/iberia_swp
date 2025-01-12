@@ -2,6 +2,8 @@ package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.user.User;
+import de.uol.swp.common.player.request.DrawPlayerCardRequest;
+
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.EpidemicCard;
@@ -12,13 +14,16 @@ import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.UserMapper;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
-public class PlayerManagement implements IPlayerManagement {
+public class PlayerManagement implements IPlayerManagement
+{
     private IGame game;
 
     public ICardDTO drawPlayerCard(IGame game, User user) throws PlayerManagementException {
@@ -33,7 +38,8 @@ public class PlayerManagement implements IPlayerManagement {
         return drawPlayerCard(game, player);
     }
 
-    public ICardDTO drawPlayerCard(IGame game, Player player) throws PlayerManagementException {
+    public ICardDTO drawPlayerCard(IGame game, Player player) throws PlayerManagementException
+    {
         this.game = game;
 
         Card card = getCard(player);
@@ -58,6 +64,15 @@ public class PlayerManagement implements IPlayerManagement {
         return CardMapper.toDTO(card);
     }
 
+    private Card getCard(DrawPlayerCardRequest request) throws PlayerManagementException
+    {
+        IUser user = UserMapper.toUser(request.getSession()
+                                              .orElseThrow(() -> new IllegalStateException("Session not present"))
+                                              .getUser());
+
+        if (!user.equals(game.getPlayers()
+                             .get(game.getCurrentPlayerIndex())
+                             .getUser())) {
     private Card getCard(Player player) throws PlayerManagementException {
         if (player != game.getPlayers()
                           .get(game.getCurrentPlayerIndex()) || game.getState() instanceof StartState) {
