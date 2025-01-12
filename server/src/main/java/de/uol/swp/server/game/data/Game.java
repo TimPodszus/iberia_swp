@@ -164,7 +164,6 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    CardType.CITY_CARD,
                     city
             );
             playerCardDrawPile.add(citycard);

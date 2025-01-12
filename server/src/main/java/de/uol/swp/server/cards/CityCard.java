@@ -10,8 +10,8 @@ import lombok.Getter;
 public class CityCard extends Card {
     private final City city;
 
-    public CityCard(int id, String title, CardType type, City city) {
-        super(id, title, type);
+    public CityCard(int id, String title, City city) {
+        super(id, title, CardType.CITY_CARD);
         this.city = city;
     }
 }
