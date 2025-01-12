@@ -1,5 +1,6 @@
 package de.uol.swp.server.game.data;
 
+import de.uol.swp.common.cards.CardType;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
@@ -11,7 +12,8 @@ import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.plague.PlagueRepository;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
 import lombok.AllArgsConstructor;
@@ -45,6 +47,12 @@ public class Game implements IGame {
      * Repository for connection-related data.
      */
     private ConnectionRepository connectionRepository;
+
+    /**
+     * Repository for the plagues.
+     */
+    private PlagueRepository plagueRepository;
+
 
     /**
      * Counter for the number of infections.
@@ -109,6 +117,7 @@ public class Game implements IGame {
         this.cityRepository = new CityRepository();
         this.regionRepository = new RegionRepository(this.cityRepository);
         this.connectionRepository = new ConnectionRepository();
+        this.plagueRepository = new PlagueRepository();
         this.infectionCounter = 2;
         this.escalationStage = 0;
         this.waterTreatmentsLeft = 14;
@@ -140,7 +149,7 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    "InfectionCard",
+                    CardType.INFECTION_CARD,
                     city
             );
             infectionCardDrawPile.add(infectionCard);
@@ -155,7 +164,7 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    "CityCard",
+                    CardType.CITY_CARD,
                     city
             );
             playerCardDrawPile.add(citycard);
@@ -164,7 +173,7 @@ public class Game implements IGame {
     }
 
     public EpidemicCard createEpidemicCard(int id) {
-        return new EpidemicCard(id, "Epidemiekarte", "EpidemicCard", "");
+        return new EpidemicCard(id, "Epidemiekarte", CardType.EPIDEMIC_CARD, "");
     }
 
     public void gameStartShuffle(int numSubDecks) {
@@ -197,9 +206,12 @@ public class Game implements IGame {
         return subDecks;
     }
 
+    /**
+     * Retrieves the current player whose turn it is in the game.
+     *
+     * @return the {@link Player} object representing the current player
+     */
     public Player getCurrentPlayer() {
-        return players.get(currentPlayerIndex);
+        return this.players.get(currentPlayerIndex);
     }
-
-
 }

@@ -2,9 +2,9 @@ package de.uol.swp.client.user;
 
 import de.uol.swp.common.passwordHashing.PasswordHashing;
 
+import de.uol.swp.common.user.IUserDTO;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
-import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.request.*;
 
 /**
@@ -49,31 +49,30 @@ public class UserService implements ClientUserService {
 
 
 	@Override
-	public void logout(User username){
+	public void logout(IUserDTO username){
 		LogoutRequest msg = new LogoutRequest();
 		bus.post(msg);
 	}
 
 	@Override
-	public void createUser(User user) {
+	public void createUser(IUserDTO user) {
 		RegisterUserRequest request = new RegisterUserRequest(user);
 		bus.post(request);
 	}
 
 	/**
 	 * Method to delete an users account
-	 *
 	 * This method should send a request to delete an users account, but being not
 	 * implemented, it currently does nothing.
 	 *
 	 * @param user The user to remove
 	 */
-    public void dropUser(User user) {
+    public void dropUser(IUserDTO user) {
         //TODO: Implement me
     }
 
 	@Override
-	public void updateUser(User user) {
+	public void updateUser(IUserDTO user) {
 		UpdateUserRequest request = new UpdateUserRequest(user);
 		bus.post(request);
 	}

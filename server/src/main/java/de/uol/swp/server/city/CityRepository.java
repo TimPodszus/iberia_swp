@@ -84,15 +84,38 @@ public class CityRepository {
     }
 
     /**
+     * Retrieves a city by its name.
+     *
+     * @param cityName the name of the city to retrieve
+     * @return the city matching the specified name
+     */
+    public City getCityByName(CityName cityName) {
+        return cities.stream()
+                     .filter(city -> city.getName()
+                                         .equals(cityName))
+                     .findFirst()
+                     .orElse(null);
+    }
+
+    /**
      * Retrieves a list of cities by their names.
      *
-     * @param names the names of the cities to retrieve
+     * @param cityNames the names of the cities to retrieve
+     * @return a list of cities matching the specified names
+     */
+    public List<City> getCitiesByNames(CityName... cityNames) {
+        return getCitiesByNames(Arrays.asList(cityNames));
+    }
+
+    /**
+     * Retrieves a list of cities by their names.
+     *
+     * @param cityNames the names of the cities to retrieve
      * @return a list of cities matching the given names
      */
-    public List<City> getCitiesByNames(CityName... names) {
-        List<CityName> nameList = Arrays.asList(names);
+    public List<City> getCitiesByNames(List<CityName> cityNames) {
         return cities.stream()
-                     .filter(city -> nameList.contains(city.getName()))
+                     .filter(city -> cityNames.contains(city.getName()))
                      .toList();
     }
 

@@ -3,8 +3,6 @@ package de.uol.swp.client.game;
 import com.google.inject.Inject;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
-import de.uol.swp.common.game.action.MoveAction;
-import de.uol.swp.common.game.message.ActionRequest;
 import org.greenrobot.eventbus.EventBus;
 
 /**
@@ -26,10 +24,11 @@ public class GameService {
     /**
      * Requests available destinations for the specified city.
      *
-     * @param city the city for which available destinations are requested
+     * @param lobbyCode the lobby code of the game for which available destinations are to be requested
+     * @param cityId    the ID of the city for which available destinations are to be requested
      */
-    public void requestAvailableDestination(ICityDTO city) {
-        AvailableDestinationsRequest request = new AvailableDestinationsRequest(city);
+    public void requestAvailableDestination(String lobbyCode, String cityId) {
+        AvailableDestinationsRequest request = new AvailableDestinationsRequest(lobbyCode, cityId);
         eventBus.post(request);
     }
 
@@ -39,7 +38,6 @@ public class GameService {
      * @param cityDTO the city to which the player is to be moved
      */
     public void movePlayerToCity(ICityDTO cityDTO) {
-        ActionRequest message = new ActionRequest(new MoveAction(cityDTO), null, null);
-        eventBus.post(message);
+        // TODO: FIx this
     }
 }

@@ -1,5 +1,6 @@
 package de.uol.swp.server.connection;
 
+import de.uol.swp.common.cards.CardType;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
@@ -9,7 +10,7 @@ import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.store.GameStore;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -95,7 +96,7 @@ class ConnectionManagementTest {
         when(player.getCards()).thenReturn(List.of(new CityCard(harbourCity.getId(),
                 harbourCity.getName()
                            .toString(),
-                "",
+                CardType.CITY_CARD,
                 harbourCity
         )));
 

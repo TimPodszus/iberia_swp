@@ -26,7 +26,7 @@ public class ConnectionMapper {
      * @param connection the Connection object to convert
      * @return the corresponding IConnectionDTO
      */
-    public static IConnectionDTO toDTO(Connection connection) {
+    public static IConnectionDTO toDTO(IConnection connection) {
         return new ConnectionDTO(
                 connection.getId(),
                 connection.getCityNames()

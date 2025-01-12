@@ -1,10 +1,10 @@
 package de.uol.swp.common.game.dto;
 
+import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.common.cards.CardDTO;
-import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.region.IRegionDTO;
 
 import java.util.List;
@@ -22,9 +22,9 @@ public interface IGameDTO {
 
     List<InfectionCardDTO> getInfectionCardDiscardPile();
 
-    List<CardDTO> getPlayerCardDrawPile();
+    List<ICardDTO> getPlayerCardDrawPile();
 
-    List<CardDTO> getPlayerCardDiscardPile();
+    List<ICardDTO> getPlayerCardDiscardPile();
 
     List<IPlayerDTO> getPlayers();
 

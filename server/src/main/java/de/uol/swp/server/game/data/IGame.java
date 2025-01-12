@@ -7,7 +7,7 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.IGameState;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.region.RegionRepository;
 
 import java.util.List;
@@ -186,13 +186,6 @@ public interface IGame {
     int getCurrentPlayerIndex();
 
     /**
-     * Gets the current player.
-     *
-     * @return the current player
-     */
-    Player getCurrentPlayer();
-
-    /**
      * Initializes the game with the specified difficulty.
      *
      * @param difficulty the difficulty level
@@ -205,4 +198,6 @@ public interface IGame {
      * @return the difficulty level
      */
     int getDifficulty();
+
+    Player getCurrentPlayer();
 }

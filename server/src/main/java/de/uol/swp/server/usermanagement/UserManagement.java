@@ -2,7 +2,6 @@ package de.uol.swp.server.usermanagement;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.usermanagement.store.UserStore;
 
 import java.util.*;
@@ -17,7 +16,7 @@ import java.util.*;
 public class UserManagement extends AbstractUserManagement {
 
     private final UserStore userStore;
-    private final SortedMap<String, User> loggedInUsers = new TreeMap<>();
+    private final SortedMap<String, IUser> loggedInUsers = new TreeMap<>();
 
     /**
      * Constructor
@@ -32,8 +31,8 @@ public class UserManagement extends AbstractUserManagement {
     }
 
     @Override
-    public User login(String username, String password) {
-        Optional<User> user = userStore.findUser(username, password);
+    public IUser login(String username, String password) {
+        Optional<IUser> user = userStore.findUser(username, password);
         if (user.isPresent()){
             this.loggedInUsers.put(username, user.get());
             return user.get();
@@ -43,13 +42,13 @@ public class UserManagement extends AbstractUserManagement {
     }
 
     @Override
-    public boolean isLoggedIn(User username) {
+    public boolean isLoggedIn(IUser username) {
         return loggedInUsers.containsKey(username.getUsername());
     }
 
     @Override
-    public User createUser(User userToCreate){
-        Optional<User> user = userStore.findUser(userToCreate.getUsername());
+    public IUser createUser(IUser userToCreate){
+        Optional<IUser> user = userStore.findUser(userToCreate.getUsername());
         if (user.isPresent()){
             throw new UserManagementException("Username already used!");
         }
@@ -57,8 +56,8 @@ public class UserManagement extends AbstractUserManagement {
     }
 
     @Override
-    public User updateUser(User userToUpdate){
-        Optional<User> user = userStore.findUser(userToUpdate.getUsername());
+    public IUser updateUser(IUser userToUpdate){
+        Optional<IUser> user = userStore.findUser(userToUpdate.getUsername());
         if (user.isEmpty()){
             throw new UserManagementException("Username unknown!");
         }
@@ -69,8 +68,8 @@ public class UserManagement extends AbstractUserManagement {
     }
 
     @Override
-    public void dropUser(User userToDrop) {
-        Optional<User> user = userStore.findUser(userToDrop.getUsername());
+    public void dropUser(IUser userToDrop) {
+        Optional<IUser> user = userStore.findUser(userToDrop.getUsername());
         if (user.isEmpty()) {
             throw new UserManagementException("Username unknown!");
         }
@@ -95,12 +94,12 @@ public class UserManagement extends AbstractUserManagement {
     }
 
     @Override
-    public void logout(User user) {
+    public void logout(IUser user) {
         loggedInUsers.remove(user.getUsername());
     }
 
     @Override
-    public List<User> retrieveAllUsers() {
+    public List<IUser> retrieveAllUsers() {
         return userStore.getAllUsers();
     }
 }

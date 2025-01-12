@@ -2,10 +2,10 @@ package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.City;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.usermanagement.IUser;
 
 public interface IGameManagement {
     /**
@@ -23,7 +23,7 @@ public interface IGameManagement {
      * @param lobbyCode the code of the lobby in which the game is happening
      * @param cityDTO   the city where the player will be positioned
      */
-    void setPositioning(User user, String lobbyCode, CityDTO cityDTO);
+    void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO);
 
     /**
      * Draws a player card. The specific behavior of this method should be defined.
@@ -44,6 +44,6 @@ public interface IGameManagement {
      * @param lobbyCode the code of the lobby in which the game is happening
      * @param city      the city to which the player will be moved
      */
-    void movePlayer(User user, String lobbyCode, City city);
+    void movePlayer(IUser user, String lobbyCode, City city);
 }
 

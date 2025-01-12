@@ -1,6 +1,7 @@
 package de.uol.swp.server.connection;
 
 import de.uol.swp.server.city.CityName;
+import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -10,14 +11,22 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for ConnectionRepository.
+ * Test class for the {@link ConnectionRepository}.
+ * This class verifies the functionality of creating and retrieving {@link Connection} objects from the repository.
  */
 class ConnectionRepositoryTest {
+    /**
+     * Static instance of the {@link ConnectionRepository} used for testing.
+     */
     static ConnectionRepository repository;
+
+    /**
+     * Static list of {@link Connection} objects retrieved from the repository.
+     */
     static List<IConnection> connections;
 
     /**
-     * Initializes the repository and connections before all tests.
+     * Initializes the {@link ConnectionRepository} and retrieves all connections before all test methods are executed.
      */
     @BeforeAll
     static void create() {
@@ -26,7 +35,8 @@ class ConnectionRepositoryTest {
     }
 
     /**
-     * Tests that all connections are created.
+     * Tests that the repository creates all expected connections.
+     * Verifies that the size of the connection list matches the expected number of connections.
      */
     @Test
     void testCreateAllConnections() {
@@ -34,7 +44,8 @@ class ConnectionRepositoryTest {
     }
 
     /**
-     * Tests getting a connection by its ID.
+     * Tests the {@link ConnectionRepository#getConnectionByID(int)} method.
+     * Verifies that connections with specific IDs can be retrieved correctly, and that their details match expectations.
      */
     @Test
     void testGetConnectionByID() {

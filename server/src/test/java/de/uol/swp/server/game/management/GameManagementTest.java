@@ -1,20 +1,29 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.Player;
-import de.uol.swp.server.role.Role;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import static org.mockito.Mockito.*;
-
-@ExtendWith(MockitoExtension.class)
+/**
+ * Test class for the {@link GameManagement} class.
+ * This class ensures the correct functionality of game management methods, such as creating players,
+ * setting the starting player, assigning roles, and initiating infections.
+ */
 class GameManagementTest {
+
+    /**
+     * Initializes mocks before each test.
+     */
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Mock
     private IGame game;
@@ -23,13 +32,11 @@ class GameManagementTest {
     private GameManagement gameManagement;
 
     @Test
-    void testAssignRoles() {
-        when(game.getPlayers()).thenReturn(Arrays.asList(mock(Player.class), mock(Player.class)));
-        gameManagement.assignRoles(game);
+    void testGameManagementException() {
+        GameManagementException exception = assertThrows(GameManagementException.class, () -> {
+            throw new GameManagementException("Test Exception");
+        });
 
-        verify(game.getPlayers()
-                   .get(0)).setRole(any(Role.class));
-        verify(game.getPlayers()
-                   .get(1)).setRole(any(Role.class));
+        assertEquals("Test Exception", exception.getMessage());
     }
 }

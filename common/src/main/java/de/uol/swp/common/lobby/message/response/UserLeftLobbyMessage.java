@@ -1,14 +1,14 @@
 package de.uol.swp.common.lobby.message.response;
 
 import de.uol.swp.common.lobby.message.AbstractLobbyMessage;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.user.IUserDTO;
 
 /**
  * Message sent by the server when a user successfully leaves a lobby
  *
  * @author Marco Grawunder
  * @see de.uol.swp.common.lobby.message.AbstractLobbyMessage
- * @see de.uol.swp.common.user.User
+ * @see IUserDTO
  * @since 2019-10-08
  */
 public class UserLeftLobbyMessage extends AbstractLobbyMessage {
@@ -29,7 +29,7 @@ public class UserLeftLobbyMessage extends AbstractLobbyMessage {
      * @param user      user who left the lobby
      * @since 2019-10-08
      */
-    public UserLeftLobbyMessage(String lobbyCode, User user) {
+    public UserLeftLobbyMessage(String lobbyCode, IUserDTO user) {
         super(lobbyCode, user);
     }
 }

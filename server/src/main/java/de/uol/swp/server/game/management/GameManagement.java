@@ -2,7 +2,6 @@ package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.user.User;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
@@ -13,9 +12,11 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.UserMapper;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,19 +44,33 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IGame game = new Game(request.getDifficulty());
         GameStore.getInstance()
                  .addGame(request.getLobbyCode(), game);
-        initializing(game, request.getUsers());
+        initializing(game, UserMapper.toUser(request.getUsers()));
         return game;
     }
 
-    void initializing(IGame game, List<User> users) {
+    /**
+     * Initializes the game by setting up players, assigning roles,
+     * determining the starting player, and initiating city infections.
+     *
+     * @param game  The game instance to initialize
+     * @param users The list of users participating in the game
+     */
+    void initializing(IGame game, List<IUser> users) {
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
         initiateInfections(game);
     }
 
-    private void createPlayers(List<User> users, IGame game) {
-        for (User user : users) {
+    /**
+     * Creates player instances for the provided users, adds them to the game,
+     * and assigns each player a specific number of starting cards based on the number of players.
+     *
+     * @param users The list of users to create players for
+     * @param game  The game instance to add players to
+     */
+    private void createPlayers(List<IUser> users, IGame game) {
+        for (IUser user : users) {
             Player player = new Player(user);
             game.getPlayers()
                 .add(player);
@@ -71,6 +86,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
     }
+
+    /**
+     * Determines the starting player based on the player holding the city card
+     * with the oldest foundation date. Moves this player to the first position in the player list.
+     *
+     * @param game The game instance where the starting player will be set
+     */
 
     private void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
@@ -93,7 +115,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
     }
 
-    void assignRoles(IGame game) {
+    /**
+     * Assigns roles to all players in the game by shuffling a list of roles
+     * and distributing them sequentially to the players.
+     *
+     * @param game The game instance where roles will be assigned
+     */
+    private void assignRoles(IGame game) {
         List<Role> allRoles = RoleRepository.getAllRoles();
         Collections.shuffle(allRoles);
         for (int i = 0; i < game.getPlayers()
@@ -103,6 +131,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 .setRole(allRoles.get(i));
         }
     }
+
+    /**
+     * Initiates infections in the game by infecting cities in a predefined pattern.
+     * The number of infection cubes placed decreases after every three cities.
+     *
+     * @param game The game instance where city infections will be initiated
+     */
 
     void initiateInfections(IGame game) {
         int infectionAmount = 3;
@@ -124,7 +159,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param lobbyCode The lobby code of the game
      * @param cityDTO   The city to position the player at
      */
-    public void setPositioning(User user, String lobbyCode, CityDTO cityDTO) {
+    public void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO) {
         IGame game = getGame(lobbyCode);
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<Player> players = game.getPlayers();
@@ -169,7 +204,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void movePlayer(User user, String lobbyCode, City city) {
+    public void movePlayer(IUser user, String lobbyCode, City city) {
         IGame game = super.getGame(lobbyCode);
         Player player = game.getPlayers()
                             .get(game.getCurrentPlayerIndex());

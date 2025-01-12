@@ -1,8 +1,7 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 
 /**
  * Represents the state in the game where cities are infected based on drawn infection cards.
@@ -27,11 +26,16 @@ public class InfectionState implements IGameState {
     public void handleAction(IGame game, Player player) {
         int infectionCounter = game.getInfectionCounter();
 
-        game.getCityManagement().infectCity(game.getGameManagement().drawInfectionCard(), 1);
+        game.getCityManagement()
+            .infectCity(
+                    game.getGameManagement()
+                        .drawInfectionCard(), 1
+            );
         infectedCities++;
 
         if (infectedCities == infectionCounter) {
-            game.setCurrentPlayerIndex((game.getCurrentPlayerIndex() + 1) % game.getPlayers().size());
+            game.setCurrentPlayerIndex((game.getCurrentPlayerIndex() + 1) % game.getPlayers()
+                                                                                .size());
             game.setState(new PlayerTurnState());
         }
     }

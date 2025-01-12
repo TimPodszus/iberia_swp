@@ -8,7 +8,7 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.Player;
+import de.uol.swp.server.player.data.Player;
 import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;

@@ -1,8 +1,10 @@
 package de.uol.swp.server.communication;
 
+import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
-import de.uol.swp.common.user.User;
 import de.uol.swp.common.user.request.LoginRequest;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.UserMapper;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -18,7 +20,7 @@ import java.util.UUID;
 public class UUIDSession implements Session {
 
 	private final String sessionId;
-    private final User user;
+    private final IUser user;
 
 	/**
 	 * private Constructor
@@ -26,7 +28,7 @@ public class UUIDSession implements Session {
 	 * @param user the user connected to the session
 	 * @since 2017-03-17
 	 */
-	private UUIDSession(User user) {
+	private UUIDSession(IUser user) {
 		synchronized (UUIDSession.class) {
 			this.sessionId = String.valueOf(UUID.randomUUID());
             this.user = user;
@@ -35,14 +37,13 @@ public class UUIDSession implements Session {
 
 	/**
 	 * Builder for the UUIDSession
-	 *
 	 * Builder exposed to every class in the server, used since the constructor is private
 	 *
 	 * @param user the user connected to the session
 	 * @return a new UUIDSession object for the user
 	 * @since 2019-08-07
 	 */
-	public static Session create(User user) {
+	public static Session create(IUser user) {
 		return new UUIDSession(user);
 	}
 
@@ -52,8 +53,7 @@ public class UUIDSession implements Session {
 	}
 
 	@Override
-	public User getUser() {
-		return user;
+	public IUserDTO getUser() {return UserMapper.toDTO(user);
 	}
 
 	@Override
