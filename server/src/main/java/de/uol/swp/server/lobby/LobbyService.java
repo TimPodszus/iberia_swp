@@ -8,6 +8,7 @@ import de.uol.swp.common.lobby.message.response.*;
 import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
@@ -26,6 +27,12 @@ import java.util.Optional;
 @Singleton
 public class LobbyService extends AbstractService {
     /**
+     * The LobbyManagement instance used for managing lobbies.
+     * This field is injected by the dependency injection framework.
+     */
+    protected ILobbyManagement lobbyManagement;
+
+    /**
      * Constructs a new LobbyService.
      * <p>
      * This constructor is used to create an instance of LobbyService and
@@ -34,8 +41,9 @@ public class LobbyService extends AbstractService {
      * @param eventBus the EventBus to be used by this service
      */
     @Inject
-    public LobbyService(EventBus eventBus) {
+    public LobbyService(EventBus eventBus, ILobbyManagement lobbyManagement) {
         super(eventBus);
+        this.lobbyManagement = lobbyManagement;
     }
 
     /**
@@ -74,7 +82,7 @@ public class LobbyService extends AbstractService {
             ILobby lobby = optionalLobby.get();
             lobbyManagement.joinLobby(lobby, UserMapper.toUser(lobbyJoinUserRequest.getUser()));
             sendToAllInLobby(
-                    lobbyJoinUserRequest.getLobbyCode(),
+                    lobby,
                     new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser())
             );
         } else {
@@ -100,7 +108,8 @@ public class LobbyService extends AbstractService {
         if (lobby.isPresent()) {
             lobby.get()
                  .leaveUser(UserMapper.toUser(lobbyLeaveUserRequest.getUser()));
-            sendToAllInLobby(lobbyLeaveUserRequest.getLobbyCode(),
+            sendToAllInLobby(
+                    lobby.get(),
                     new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
             );
         } else {
@@ -171,6 +180,6 @@ public class LobbyService extends AbstractService {
     public void onUpdateLobbyRequest(UpdateLobbyRequest request) throws LobbyManagementException {
         ILobbyDTO lobbyDTO = request.getLobbyDTO();
         ILobby updatedLobby = lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO));
-        sendToAllInLobby(updatedLobby.getLobbyCode(), new LobbyUpdatedEvent(LobbyMapper.toDTO(updatedLobby)));
+        sendToAllInLobby(updatedLobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(updatedLobby)));
     }
 }
