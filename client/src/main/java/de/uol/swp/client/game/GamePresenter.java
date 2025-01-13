@@ -10,6 +10,7 @@ import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleCardEnum;
+import de.uol.swp.common.game.message.event.StartGameEvent;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,6 +29,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -238,16 +240,16 @@ public class GamePresenter extends AbstractPresenter {
         gameService.drawPlayerCard(lobbyCode);
     }
 
-    //        /**
-    //         * Event handler for the GameStartedEvent.
-    //         * This method is called when a game starts and sets the lobby code.
-    //         *
-    //         * @param event the GameStartedEvent containing the lobby code
-    //         */
-    //        @Subscribe
-    //        private void onGameStartedEvent(GameStartedEvent event) {
-    //            lobbyCode = event.getLobbyCode();
-    //        }
+    /**
+     * Event handler for the GameStartedEvent.
+     * This method is called when a game starts and sets the lobby code.
+     *
+     * @param event the GameStartedEvent containing the lobby code
+     */
+    @Subscribe
+    private void onStartGameEventEvent(StartGameEvent event) {
+        lobbyCode = event.getLobbyCode();
+    }
 
     /**
      * Handles build train track action.

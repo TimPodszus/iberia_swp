@@ -14,6 +14,7 @@ import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -47,7 +48,7 @@ public class PlayerService extends AbstractService {
         try {
             Session session = request.getSession()
                                      .orElseThrow(() -> new IllegalStateException("Session not present"));
-            ICardDTO card = playerManagement.drawPlayerCard(game, session.getUser());
+            ICardDTO card = playerManagement.drawPlayerCard(game, UserMapper.toUser(session.getUser()));
             response = new DrawPlayerCardResponse(true, "Card drawn successfully", card);
         } catch (PlayerManagementException e) {
             response = new StatusResponse(false, "Error drawing a player card");
