@@ -2,6 +2,7 @@ package de.uol.swp.server.lobby;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import de.uol.swp.common.chat.ChatRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.lobby.message.response.*;
