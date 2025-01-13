@@ -3,7 +3,7 @@ package de.uol.swp.client;
 
 import java.net.ConnectException;
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.lobby.message.response.LobbyCreatedMessage;
+import de.uol.swp.common.lobby.message.response.LobbyCreatedResponse;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import com.google.inject.Guice;
@@ -198,14 +198,14 @@ public class ClientApp extends Application implements ConnectionListener {
     /**
      * Handles the event when a lobby is created.
      * <p>
-     * If a LobbyCreatedMessage is detected on the EventBus, this method gets
+     * If a LobbyCreatedResponse is detected on the EventBus, this method gets
      * called. It tells the SceneManager to show the lobby screen.
      *
-     * @param lobbyCreatedMessage The LobbyCreatedMessage detected on the EventBus
+     * @param lobbyCreatedResponse The LobbyCreatedResponse detected on the EventBus
      * @see de.uol.swp.client.SceneManager
      */
     @Subscribe
-    public void onLobbyCreatedMassage(LobbyCreatedMessage lobbyCreatedMessage) {
+    public void onLobbyCreatedResponse(LobbyCreatedResponse lobbyCreatedResponse) {
         sceneManager.showLobbyScreen();
     }
 
