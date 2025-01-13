@@ -42,10 +42,10 @@ public class LobbyService extends AbstractService {
      * Handles CreateLobbyRequests found on the EventBus
      * If a CreateLobbyRequest is detected on the EventBus, this method is called.
      * It creates a new Lobby via the LobbyManagement using the parameters from the
-     * request and sends a LobbyCreatedMessage to every connected user
+     * request and sends a LobbyCreatedResponse to every connected user
      *
      * @param createLobbyRequest The CreateLobbyRequest found on the EventBus
-     * @see LobbyCreatedMessage
+     * @see LobbyCreatedResponse
      * @since 2019-10-08
      */
     @Subscribe
@@ -53,7 +53,12 @@ public class LobbyService extends AbstractService {
         ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(),
                 UserMapper.toUser(createLobbyRequest.getOwner())
         );
-        sendToAll(new LobbyCreatedMessage(createdLobby.getName(), createLobbyRequest.getOwner()));
+        LobbyCreatedResponse response = new LobbyCreatedResponse(LobbyMapper.toDTO(createdLobby));
+        createLobbyRequest.getSession()
+               .ifPresent(response::setSession);
+        createLobbyRequest.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        post(response);
     }
 
     /**
