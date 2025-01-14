@@ -3,7 +3,7 @@ package de.uol.swp.client.lobby.detail;
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
-import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
+import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
@@ -202,6 +202,6 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * Posts a ShowLastSceneEvent to the event bus.
      */
     public void onBackButtonPressed() {
-        eventBus.post(new ShowLobbyOverviewViewEvent());
+        eventBus.post(new ShowLastSceneEvent());
     }
 }
