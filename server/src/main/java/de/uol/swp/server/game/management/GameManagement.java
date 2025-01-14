@@ -69,22 +69,20 @@ public class GameManagement implements IGameManagement {
     private void createPlayers(List<IUser> users, IGame game) {
         for (IUser user : users) {
             Player player = new Player(user);
-            game.getPlayers().add(player);
-        }
-        for (Player player : game.getPlayers()) {
-            int cardsToDraw = switch ( game.getPlayers().size()) {
+
+            game.getPlayers()
+                .add(player);
+            int cardsToDraw = switch (game.getPlayers()
+                                          .size()) {
                 case 2 -> 4;
                 case 3 -> 3;
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                //TODO draw Card from Pile
-                player.addCard(game.getPlayerCardDrawPile().get((int) Math.floor(Math.random() * game.getPlayerCardDrawPile().size())));
+                drawPlayerCard();
             }
-            //TODO set position like in the real game
-            player.setCurrentPosition(game.getCityRepository().getCities()
-                                          .get((int) Math.floor(Math.random() * 48)));
         }
+
     }
 
     /**
