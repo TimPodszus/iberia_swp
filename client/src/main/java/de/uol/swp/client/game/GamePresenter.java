@@ -738,7 +738,7 @@ public class GamePresenter extends AbstractPresenter {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
             setInfectionCardDiscardPile(new InfectionCard(infectionCard.getCity().getPlagueName(),
-                    infectionCard.getCity().getName()));
+                    infectionCard.getCity().getName().getDisplayName()));
         }
     }
 
@@ -892,7 +892,7 @@ public class GamePresenter extends AbstractPresenter {
         String foundationDate = cityCard.getCity().getFoundationDate() < 0
                 ? cityCard.getCity().getFoundationDate() + " v. Chr."
                 : String.valueOf(cityCard.getCity().getFoundationDate());
-        return new CityCard(cityCard.getCity().getName(), foundationDate, cityCard.getCity().getPlagueName());
+        return new CityCard(cityCard.getCity().getName().getDisplayName(), foundationDate, cityCard.getCity().getPlagueName());
     }
 
     /**
