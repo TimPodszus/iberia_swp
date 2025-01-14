@@ -1,5 +1,6 @@
 package de.uol.swp.server.city;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.infection.IInfection;

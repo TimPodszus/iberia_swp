@@ -2,7 +2,7 @@ package de.uol.swp.server.connection;
 
 import de.uol.swp.common.connectiom.ConnectionDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
-import de.uol.swp.server.city.CityName;
+import de.uol.swp.common.city.CityName;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;

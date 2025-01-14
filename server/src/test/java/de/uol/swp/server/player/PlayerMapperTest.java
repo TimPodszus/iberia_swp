@@ -6,7 +6,7 @@ import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.city.City;
-import de.uol.swp.server.city.CityName;
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.role.Role;
 import org.junit.jupiter.api.BeforeEach;

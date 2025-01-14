@@ -17,7 +17,7 @@ import java.util.Objects;
 public class CityDTO implements ICityDTO, Serializable {
     private final int id;
     private final PlagueName plagueName;
-    private final String name;
+    private final CityName name;
     private final int foundationDate;
     private final boolean harbourCity;
     private boolean hospitalBuild;

@@ -54,15 +54,14 @@ public class CardMapper {
      * @param cityCard the CityCard to convert
      * @return a CityCardDTO object containing data from the provided CityCard and its associated City
      */
-    private static CityCardDTO toCityCardDTO(CityCard cityCard) {
+    static CityCardDTO toCityCardDTO(CityCard cityCard) {
         CityDTO cityDTO = new CityDTO(
                 cityCard.getCity()
                         .getId(),
                 cityCard.getCity()
                         .getPlagueName(),
                 cityCard.getCity()
-                        .getName()
-                        .getDisplayName(),
+                        .getName(),
                 cityCard.getCity()
                         .getFoundationDate(),
                 cityCard.getCity()
@@ -81,7 +80,7 @@ public class CardMapper {
      * @param epidemicCard the EpidemicCard to convert
      * @return an EpidemicCardDTO containing data from the EpidemicCard
      */
-    private static EpidemicCardDTO toEpidemicCardDTO(EpidemicCard epidemicCard) {
+    static EpidemicCardDTO toEpidemicCardDTO(EpidemicCard epidemicCard) {
         return new EpidemicCardDTO(
                 epidemicCard.getId(),
                 epidemicCard.getTitle(),
@@ -96,15 +95,14 @@ public class CardMapper {
      * @param infectionCard the InfectionCard to convert
      * @return an InfectionCardDTO containing data from the InfectionCard and its associated City
      */
-    private static InfectionCardDTO toInfectionCardDTO(InfectionCard infectionCard) {
+    static InfectionCardDTO toInfectionCardDTO(InfectionCard infectionCard) {
         CityDTO cityDTO = new CityDTO(
                 infectionCard.getCity()
                              .getId(),
                 infectionCard.getCity()
                              .getPlagueName(),
                 infectionCard.getCity()
-                             .getName()
-                             .getDisplayName(),
+                             .getName(),
                 infectionCard.getCity()
                              .getFoundationDate(),
                 infectionCard.getCity()

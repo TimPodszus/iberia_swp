@@ -14,8 +14,7 @@ public class CityMapper {
         return new CityDTO(
                 city.getId(),
                 city.getPlagueName(),
-                city.getName()
-                    .toString(),
+                city.getName(),
                 city.getFoundationDate(),
                 city.isHarbourCity(),
                 city.isHospitalBuilt(),
@@ -29,8 +28,7 @@ public class CityMapper {
             CityDTO cityDTO = new CityDTO(
                     city.getId(),
                     city.getPlagueName(),
-                    city.getName()
-                        .toString(),
+                    city.getName(),
                     city.getFoundationDate(),
                     city.isHarbourCity(),
                     city.isHospitalBuilt(),

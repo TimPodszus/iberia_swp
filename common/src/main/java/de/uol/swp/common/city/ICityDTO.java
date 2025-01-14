@@ -22,7 +22,7 @@ public interface ICityDTO {
      *
      * @return the name of the city
      */
-    String getName();
+    CityName getName();
 
     /**
      * Gets the name of the plague associated with the city.
