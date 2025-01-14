@@ -335,46 +335,6 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Updates the infection grade by removing the old grade's active style and adding the new grade's active style.
-     *
-     * @param oldGrade the previous infection grade
-     * @param newGrade the new infection grade
-     */
-    public void setInfectionGrade(int oldGrade, int newGrade) {
-        if (gameScreen.lookup(INFECTION_GRADE_ID + oldGrade) instanceof Circle) {
-            gameScreen.lookup(INFECTION_GRADE_ID + oldGrade)
-                      .getStyleClass()
-                      .remove("infection-grade-active");
-        }
-
-        if (gameScreen.lookup(INFECTION_GRADE_ID + newGrade) instanceof Circle) {
-            gameScreen.lookup(INFECTION_GRADE_ID + newGrade)
-                      .getStyleClass()
-                      .add("infection-grade-active");
-        }
-    }
-
-    /**
-     * Updates the escalation stage by removing the old stage's active style and adding the new stage's active style.
-     *
-     * @param oldStage the previous outbreak level
-     * @param newStage the new outbreak level
-     */
-    public void setEscalationStage(int oldStage, int newStage) {
-        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + oldStage) instanceof Circle) {
-            gameScreen.lookup(OUTBREAK_LEVEL_ID + oldStage)
-                      .getStyleClass()
-                      .remove("outbreak-level-active");
-        }
-
-        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + newStage) instanceof Circle) {
-            gameScreen.lookup(OUTBREAK_LEVEL_ID + newStage)
-                      .getStyleClass()
-                      .add("outbreak-level-active");
-        }
-    }
-
-    /**
      * Sets the train connection style for the specified connection ID.
      *
      * @param connectionId the ID of the connection
@@ -859,7 +819,17 @@ public class GamePresenter extends AbstractPresenter {
      * @param infectionCounter the current infection counter
      */
     private void updateInfectionCounter(int infectionCounter) {
-        setInfectionGrade(infectionCounter - 1, infectionCounter);
+        if (gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1)) instanceof Circle) {
+            gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1))
+                      .getStyleClass()
+                      .remove("infection-grade-active");
+        }
+
+        if (gameScreen.lookup(INFECTION_GRADE_ID + infectionCounter) instanceof Circle) {
+            gameScreen.lookup(INFECTION_GRADE_ID + infectionCounter)
+                      .getStyleClass()
+                      .add("infection-grade-active");
+        }
     }
 
     /**
@@ -868,7 +838,17 @@ public class GamePresenter extends AbstractPresenter {
      * @param escalationStage the current escalation stage
      */
     private void updateEscalationStage(int escalationStage) {
-        setEscalationStage(escalationStage - 1, escalationStage);
+        if (gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1)) instanceof Circle) {
+            gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1))
+                      .getStyleClass()
+                      .remove("escalation-stage-active");
+        }
+
+        if (gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage) instanceof Circle) {
+            gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage)
+                      .getStyleClass()
+                      .add("escalation-stage-active");
+        }
     }
 
     /**
