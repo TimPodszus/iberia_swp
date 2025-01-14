@@ -1,9 +1,9 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
-import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.IGame;

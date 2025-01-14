@@ -1,4 +1,4 @@
-package de.uol.swp.server.city;
+package de.uol.swp.common.city;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -22,9 +22,6 @@ public class GameFigure extends Group {
             Arc arc = createStripedArc(colors.get(i), i * angleStep, angleStep);
             this.getChildren().add(arc);
         }
-
-        this.setTranslateX(100);
-        this.setTranslateY(100);
     }
 
     private Arc createStripedArc(Color color, double startAngle, double angleExtent) {

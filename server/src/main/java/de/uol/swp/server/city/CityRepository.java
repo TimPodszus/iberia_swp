@@ -1,5 +1,6 @@
 package de.uol.swp.server.city;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import lombok.Getter;
 

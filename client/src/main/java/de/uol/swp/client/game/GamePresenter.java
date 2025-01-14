@@ -5,11 +5,22 @@ import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
-import de.uol.swp.client.game.objects.cards.AbstractCard;
-import de.uol.swp.client.game.objects.cards.RoleCard;
+import de.uol.swp.client.game.objects.PlayerButton;
+import de.uol.swp.client.game.objects.cards.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
+import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.cards.*;
+import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.RoleCardEnum;
+import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.infection.IInfectionDTO;
+import de.uol.swp.common.plague.IPlagueDTO;
+import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.region.IRegionDTO;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,12 +39,13 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Presenter class for the game screen.
@@ -42,8 +54,8 @@ import java.util.List;
 public class GamePresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/GameScreen.fxml";
     private static final String INFECTION_GRADE_ID = "#infectionGrade";
-    private static final String OUTBREAK_LEVEL_ID = "#outbreakLevel";
-    private static final String CURE_DISPLAY_CITY_ID = "#cureDisplayCity";
+    private static final String ESCALATION_STAGE_ID = "#escalationStage";
+    private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
@@ -64,16 +76,16 @@ public class GamePresenter extends AbstractPresenter {
     private WebView webViewMap;
 
     @FXML
-    private ImageView cureMarkerRedImage;
+    private ImageView plagueMarkerRedImage;
 
     @FXML
-    private ImageView cureMarkerBlueImage;
+    private ImageView plagueMarkerBlueImage;
 
     @FXML
-    private ImageView cureMarkerYellowImage;
+    private ImageView plagueMarkerYellowImage;
 
     @FXML
-    private ImageView cureMarkerBlackImage;
+    private ImageView plagueMarkerBlackImage;
 
     @FXML
     private Pane playerCardDiscardPile;
@@ -92,6 +104,9 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private Pane roleCard;
+
+    @FXML
+    private HBox playerButtons;
 
     private double mouseX;
 
@@ -250,12 +265,12 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Handles treat cure action.
+     * Handles treat plague action.
      *
      * @param event the action event
      */
     @FXML
-    private void onTreatCure(ActionEvent event) {
+    private void onTreatPlague(ActionEvent event) {
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
     }
 
@@ -270,12 +285,12 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Handles research cure action.
+     * Handles research plague action.
      *
      * @param event the action event
      */
     @FXML
-    private void onResearchCure(ActionEvent event) {
+    private void onResearchPlague(ActionEvent event) {
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
     }
 
@@ -327,46 +342,6 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Updates the infection grade by removing the old grade's active style and adding the new grade's active style.
-     *
-     * @param oldGrade the previous infection grade
-     * @param newGrade the new infection grade
-     */
-    public void setInfectionGrade(int oldGrade, int newGrade) {
-        if (gameScreen.lookup(INFECTION_GRADE_ID + oldGrade) instanceof Circle) {
-            gameScreen.lookup(INFECTION_GRADE_ID + oldGrade)
-                      .getStyleClass()
-                      .remove("infection-grade-active");
-        }
-
-        if (gameScreen.lookup(INFECTION_GRADE_ID + newGrade) instanceof Circle) {
-            gameScreen.lookup(INFECTION_GRADE_ID + newGrade)
-                      .getStyleClass()
-                      .add("infection-grade-active");
-        }
-    }
-
-    /**
-     * Updates the outbreak level by removing the old level's active style and adding the new level's active style.
-     *
-     * @param oldLevel the previous outbreak level
-     * @param newLevel the new outbreak level
-     */
-    public void setOutbreakLevel(int oldLevel, int newLevel) {
-        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel) instanceof Circle) {
-            gameScreen.lookup(OUTBREAK_LEVEL_ID + oldLevel)
-                      .getStyleClass()
-                      .remove("outbreak-level-active");
-        }
-
-        if (gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel) instanceof Circle) {
-            gameScreen.lookup(OUTBREAK_LEVEL_ID + newLevel)
-                      .getStyleClass()
-                      .add("outbreak-level-active");
-        }
-    }
-
-    /**
      * Sets the train connection style for the specified connection ID.
      *
      * @param connectionId the ID of the connection
@@ -378,12 +353,12 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Sets the water marks for the specified region.
+     * Sets the watermarks for the specified region.
      *
      * @param regionId   the ID of the region
-     * @param waterMarks the number of water marks to set
+     * @param waterMarks the number of watermarks to set
      */
-    public void setWaterMarks(int regionId, int waterMarks) {
+    public void setWaterTreatments(int regionId, int waterMarks) {
         StackPane stackPane = (StackPane) mapPane.lookup(WATER_MARK_REGION_ID + regionId);
 
         if (waterMarks == 0) {
@@ -414,15 +389,15 @@ public class GamePresenter extends AbstractPresenter {
      * @param cubes      the number of plague cubes to set
      */
     public void setPlaqueCubesToCity(int cityId, PlagueName plagueName, int cubes) {
-        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + cityId);
+        VBox plagueDisplayVBox = (VBox) mapPane.lookup(PLAGUE_DISPLAY_CITY_ID + cityId);
 
-        ObservableList<Node> existingPlaques = cureDisplayVBox.getChildren();
+        ObservableList<Node> existingPlaques = plagueDisplayVBox.getChildren();
 
         HBox plaqueHBox = new HBox();
         for (Node node : existingPlaques) {
             if (node.getUserData() == plagueName) {
-                cureDisplayVBox.getChildren()
-                               .remove(node);
+                plagueDisplayVBox.getChildren()
+                                 .remove(node);
                 break;
             }
         }
@@ -440,36 +415,36 @@ public class GamePresenter extends AbstractPresenter {
                   .addAll(plagueCube, text);
         if (cubes == 3) {
             plaqueHBox.getStyleClass()
-                      .add("cure-cubes-display-warning");
+                      .add("plague-cubes-display-warning");
         } else {
             plaqueHBox.getStyleClass()
-                      .add("cure-cubes-display");
+                      .add("plague-cubes-display");
         }
 
-        cureDisplayVBox.getChildren()
-                       .add(plaqueHBox);
+        plagueDisplayVBox.getChildren()
+                         .add(plaqueHBox);
     }
 
     /**
-     * Sets the researched cures.
+     * Sets the researched plagues.
      *
-     * @param researchedCures an array of researched plague names
+     * @param researchedPlagues an array of researched plague names
      */
-    public void setResearchedCures(PlagueName[] researchedCures) {
-        cureMarkerRedImage.setVisible(false);
-        cureMarkerBlueImage.setVisible(false);
-        cureMarkerYellowImage.setVisible(false);
-        cureMarkerBlackImage.setVisible(false);
+    public void setResearchedPlagues(PlagueName[] researchedPlagues) {
+        plagueMarkerRedImage.setVisible(false);
+        plagueMarkerBlueImage.setVisible(false);
+        plagueMarkerYellowImage.setVisible(false);
+        plagueMarkerBlackImage.setVisible(false);
 
-        for (PlagueName plagueName : researchedCures) {
+        for (PlagueName plagueName : researchedPlagues) {
             if (plagueName == PlagueName.YELLOW_FEVER) {
-                cureMarkerYellowImage.setVisible(true);
+                plagueMarkerYellowImage.setVisible(true);
             } else if (plagueName == PlagueName.CHOLERA) {
-                cureMarkerBlueImage.setVisible(true);
+                plagueMarkerBlueImage.setVisible(true);
             } else if (plagueName == PlagueName.TYPHUS) {
-                cureMarkerRedImage.setVisible(true);
+                plagueMarkerRedImage.setVisible(true);
             } else if (plagueName == PlagueName.MALARIA) {
-                cureMarkerBlackImage.setVisible(true);
+                plagueMarkerBlackImage.setVisible(true);
             }
         }
     }
@@ -479,31 +454,9 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param cityId     the ID of the city
      * @param plagueName the name of the plague
-     * @param oldCityId  the ID of the old city
      */
-    public void setHospitalToCity(int cityId, PlagueName plagueName, int oldCityId) {
-        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + oldCityId);
-
-        for (Node node : cureDisplayVBox.getChildren()) {
-            if (node instanceof HBox hbox && hbox.getStyleClass()
-                                                 .contains("hospital")) {
-                cureDisplayVBox.getChildren()
-                               .remove(hbox);
-                break;
-            }
-        }
-
-        setHospitalToCity(cityId, plagueName);
-    }
-
-    /**
-     * Sets the hospital to the specified city.
-     *
-     * @param cityId     the ID of the city
-     * @param plagueName the name of the plague
-     */
-    public void setHospitalToCity(int cityId, PlagueName plagueName) {
-        VBox cureDisplayVBox = (VBox) mapPane.lookup(CURE_DISPLAY_CITY_ID + cityId);
+    private void setHospitalToCity(int cityId, PlagueName plagueName) {
+        VBox plagueDisplayVBox = (VBox) mapPane.lookup(PLAGUE_DISPLAY_CITY_ID + cityId);
 
         HBox hospitalHBox = new HBox();
 
@@ -516,31 +469,56 @@ public class GamePresenter extends AbstractPresenter {
         hospitalHBox.getStyleClass()
                     .add("hospital");
 
-        cureDisplayVBox.getChildren()
-                       .add(0, hospitalHBox);
+        plagueDisplayVBox.getChildren()
+                         .add(0, hospitalHBox);
+    }
+
+    private void removeHospitalFromCity(int cityId) {
+        VBox plagueDisplayVBox = (VBox) mapPane.lookup(PLAGUE_DISPLAY_CITY_ID + cityId);
+
+        for (Node node : plagueDisplayVBox.getChildren()) {
+            if (node instanceof HBox hbox && hbox.getStyleClass()
+                                                 .contains("hospital")) {
+                plagueDisplayVBox.getChildren()
+                                 .remove(hbox);
+                break;
+            }
+        }
     }
 
     /**
      * Sets the player(s) in the specified city.
      * Adds a `GameFigure` representing the player(s) to the city's `StackPane`.
      *
-     * @param cityId      the ID of the city
-     * @param playerRoles the roles of the players to be added to the city
+     * @param cityId  the ID of the city
+     * @param players the roles of the players to be added to the city
      */
-    public void setPlayerInCity(int cityId, RoleCardEnum... playerRoles) {
+    public void setPlayerInCity(int cityId, List<IPlayerDTO> players) {
         StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + cityId);
 
         List<Color> playerColors = new ArrayList<>();
-        for (RoleCardEnum role : playerRoles) {
-            playerColors.add(Color.web(role.getColorCode()));
+        for (IPlayerDTO player : players) {
+            playerColors.add(Color.web(player.getRole()
+                                             .getName()
+                                             .getColorCode()));
         }
 
         GameFigure gameFigure = new GameFigure(playerColors);
-        gameFigure.setTranslateX(0);
-        gameFigure.setTranslateY(0);
 
         stackPaneCity.getChildren()
                      .addAll(gameFigure);
+    }
+
+    /**
+     * Removes all game figures from all cities.
+     * Iterates through all city StackPanes and removes any GameFigure nodes.
+     */
+    private void removeAllGameFigures() {
+        for (int i = 1; i <= 48; i++) {
+            StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + i);
+            stackPaneCity.getChildren()
+                         .removeIf(GameFigure.class::isInstance);
+        }
     }
 
     /**
@@ -586,19 +564,16 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Removes a player hand card from the player's hand.
-     *
-     * @param card the card to be removed from the player's hand
+     * Removes all player hand cards except the role card.
+     * Iterates through the children of `playerCardsHBox` and removes nodes that are instances of `Pane`,
+     * have the style class "pile", and do not have the ID "roleCard".
      */
-    public void removePlayerHandCard(AbstractCard card) {
-        for (Node node : playerCardsHBox.getChildren()) {
-            if (node instanceof Pane cardSlot && cardSlot.getChildren()
-                                                         .contains(card)) {
-                playerCardsHBox.getChildren()
-                               .remove(cardSlot);
-                break;
-            }
-        }
+    public void removePlayerHandCards() {
+        playerCardsHBox.getChildren()
+                       .removeIf(node -> node instanceof Pane && node.getStyleClass()
+                                                                     .contains("pile") && !Objects.equals(node.getId(),
+                               "roleCard"
+                       ));
     }
 
     /**
@@ -629,5 +604,364 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setPlayerCardDrawPileCounter(int count) {
         playerCardDrawPileCounter.setText(String.valueOf(count));
+    }
+
+    /**
+     * Handles BoardUpdateEvent detected on the EventBus.
+     * <p>
+     * If a BoardUpdateEvent is detected on the EventBus, this method gets
+     * called. It updates the game board on the JavaFX Application Thread.
+     *
+     * @param event The BoardUpdateEvent detected on the EventBus
+     * @see de.uol.swp.common.game.message.event.BoardUpdateEvent
+     */
+    @Subscribe
+    public void onBoardUpdateEvent(BoardUpdateEvent event) {
+        IGameDTO gameDTO = event.getGameDTO();
+
+        Platform.runLater(() -> updateBoard(gameDTO));
+    }
+
+    /**
+     * Handles the StartGameEvent.
+     * <p>
+     * This method is called when a StartGameEvent is received. It updates the players
+     * and the game board with the data from the event.
+     *
+     * @param event the StartGameEvent containing the game data
+     */
+    @Subscribe
+    public void onStartGameEvent(StartGameEvent event) {
+        IGameDTO gameDTO = event.getGameDTO();
+
+        Platform.runLater(() -> {
+            updateBoard(gameDTO);
+            updatePlayers(gameDTO.getPlayers());
+        });
+    }
+
+    /**
+     * Updates the game board with the latest data from the game DTO.
+     * <p>
+     * This method updates various aspects of the game board, including cities, connections,
+     * regions, infection card discard pile, infection card draw pile, player card discard pile,
+     * player card draw pile, player hand cards, players in cities, infection counter, escalation stage,
+     * hospitals, and researched plagues.
+     *
+     * @param gameDTO the game data transfer object containing the latest game state
+     */
+    private void updateBoard(IGameDTO gameDTO) {
+        updateCities(gameDTO.getCities());
+        updateConnections(gameDTO.getConnections());
+        updateRegions(gameDTO.getRegions());
+        updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
+        updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
+        updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
+        updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
+        updatePlayerHandCards(gameDTO.getPlayers());
+        updatePlayersInCities(gameDTO.getPlayers());
+        updateInfectionCounter(gameDTO.getInfectionCounter());
+        updateEscalationStage(gameDTO.getEscalationStage());
+        updateHospitals(gameDTO.getCities());
+        updateResearchedPlagues(gameDTO.getPlagues());
+    }
+
+    /**
+     * Updates the player's hand cards.
+     * Removes all current hand cards and adds the new ones.
+     *
+     * @param players the list of players
+     */
+    private void updatePlayerHandCards(List<IPlayerDTO> players) {
+        removePlayerHandCards();
+        for (IPlayerDTO player : players) {
+            if (Objects.equals(
+                    player.getUsername(),
+                    UserStore.getInstance()
+                             .getUser()
+                             .getUsername()
+            )) {
+                List<ICardDTO> playerHand = player.getCards();
+                for (ICardDTO card : playerHand) {
+                    AbstractCard abstractCard = createCard(card);
+                    addPlayerHandCard(abstractCard);
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates the cities with the latest data.
+     *
+     * @param cities the list of cities
+     */
+    private void updateCities(List<ICityDTO> cities) {
+        for (ICityDTO city : cities) {
+            updateInfections(city);
+        }
+    }
+
+    /**
+     * Updates the infections in a city.
+     *
+     * @param city the city to update
+     */
+    private void updateInfections(ICityDTO city) {
+        List<IInfectionDTO> infections = city.getInfections();
+        for (IInfectionDTO infection : infections) {
+            IPlagueDTO plague = infection.getPlague();
+            PlagueName plagueName = plague.getName();
+            int severity = infection.getSeverity();
+            setPlaqueCubesToCity(city.getId(), plagueName, severity);
+        }
+    }
+
+    /**
+     * Updates the connections with the latest data.
+     *
+     * @param connections the list of connections
+     */
+    private void updateConnections(List<IConnectionDTO> connections) {
+        for (IConnectionDTO connection : connections) {
+            if (connection.isTrainTrack()) {
+                setTrainConnection(connection.getId());
+            }
+        }
+    }
+
+    /**
+     * Updates the regions with the latest data.
+     *
+     * @param regions the list of regions
+     */
+    private void updateRegions(List<IRegionDTO> regions) {
+        for (IRegionDTO region : regions) {
+            int regionId = region.getId();
+            setWaterTreatments(regionId, region.getWaterTreatments());
+        }
+    }
+
+    /**
+     * Updates the infection card discard pile with the latest data.
+     *
+     * @param infectionCardDiscardPileList the list of infection cards in the discard pile
+     */
+    private void updateInfectionCardDiscardPile(List<InfectionCardDTO> infectionCardDiscardPileList) {
+        if (!infectionCardDiscardPileList.isEmpty()) {
+            InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
+            setInfectionCardDiscardPile(new InfectionCard(infectionCard.getCity()
+                                                                       .getPlagueName(),
+                    infectionCard.getCity()
+                                 .getName()
+                                 .getDisplayName()
+            ));
+        }
+    }
+
+    /**
+     * Updates the infection card draw pile counter with the latest data.
+     *
+     * @param infectionCardDrawPileList the list of infection cards in the draw pile
+     */
+    private void updateInfectionCardDrawPile(List<InfectionCardDTO> infectionCardDrawPileList) {
+        setInfectionCardDrawPileCounter(infectionCardDrawPileList.size());
+    }
+
+    /**
+     * Updates the player card discard pile with the latest data.
+     *
+     * @param playerCardDiscardPileList the list of player cards in the discard pile
+     */
+    private void updatePlayerCardDiscardPile(List<ICardDTO> playerCardDiscardPileList) {
+        if (!playerCardDiscardPileList.isEmpty()) {
+            AbstractCard card = getCard(playerCardDiscardPileList);
+            setPlayerCardDiscardPile(card);
+        }
+    }
+
+    /**
+     * Updates the player card draw pile counter with the latest data.
+     *
+     * @param playerCardDrawPileList the list of player cards in the draw pile
+     */
+    private void updatePlayerCardDrawPile(List<ICardDTO> playerCardDrawPileList) {
+        setPlayerCardDrawPileCounter(playerCardDrawPileList.size());
+    }
+
+    /**
+     * Updates the players with the latest data.
+     * Clears the current player buttons and adds new ones.
+     *
+     * @param players the list of players
+     */
+    private void updatePlayers(List<IPlayerDTO> players) {
+        playerButtons.getChildren()
+                     .clear();
+        for (IPlayerDTO player : players) {
+            if (!Objects.equals(
+                    player.getUsername(),
+                    UserStore.getInstance()
+                             .getUser()
+                             .getUsername()
+            )) {
+                playerButtons.getChildren()
+                             .add(new PlayerButton(player.getUsername(), this::onPlayerButtonClickedEvent));
+            }
+        }
+        updateCurrentUserRole(players);
+    }
+
+    /**
+     * Updates the players in cities with the latest data.
+     * Removes all game figures and sets the players in their respective cities.
+     *
+     * @param players the list of players
+     */
+    private void updatePlayersInCities(List<IPlayerDTO> players) {
+        removeAllGameFigures();
+        Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
+                                                              .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
+                                                                                                             .getId()));
+
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
+                cityId,
+                playersInCity
+        )));
+    }
+
+    /**
+     * Updates the current user's role with the latest data.
+     *
+     * @param players the list of players
+     */
+    private void updateCurrentUserRole(List<IPlayerDTO> players) {
+        for (IPlayerDTO player : players) {
+            if (Objects.equals(
+                    player.getUsername(),
+                    UserStore.getInstance()
+                             .getUser()
+                             .getUsername()
+            )) {
+                setRoleCard(new RoleCard(player.getRole()
+                                               .getName()));
+            }
+        }
+    }
+
+    /**
+     * Updates the infection counter with the latest data.
+     *
+     * @param infectionCounter the current infection counter
+     */
+    private void updateInfectionCounter(int infectionCounter) {
+        if (gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1)) instanceof Circle) {
+            gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1))
+                      .getStyleClass()
+                      .remove("infection-grade-active");
+        }
+
+        if (gameScreen.lookup(INFECTION_GRADE_ID + infectionCounter) instanceof Circle) {
+            gameScreen.lookup(INFECTION_GRADE_ID + infectionCounter)
+                      .getStyleClass()
+                      .add("infection-grade-active");
+        }
+    }
+
+    /**
+     * Updates the escalation stage with the latest data.
+     *
+     * @param escalationStage the current escalation stage
+     */
+    private void updateEscalationStage(int escalationStage) {
+        if (gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1)) instanceof Circle) {
+            gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1))
+                      .getStyleClass()
+                      .remove("escalation-stage-active");
+        }
+
+        if (gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage) instanceof Circle) {
+            gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage)
+                      .getStyleClass()
+                      .add("escalation-stage-active");
+        }
+    }
+
+    /**
+     * Retrieves the last card from the player card discard pile.
+     *
+     * @param playerCardDiscardPileList the list of player cards in the discard pile
+     * @return the last card in the discard pile
+     */
+    private static AbstractCard getCard(List<ICardDTO> playerCardDiscardPileList) {
+        ICardDTO playerCard = playerCardDiscardPileList.get(playerCardDiscardPileList.size() - 1);
+        return createCard(playerCard);
+    }
+
+    /**
+     * Creates an abstract card from the given card data.
+     *
+     * @param playerCard the card data
+     * @return the created abstract card
+     */
+    private static AbstractCard createCard(ICardDTO playerCard) {
+        if (playerCard instanceof CityCardDTO cityCard) {
+            return createCityCard(cityCard);
+        } else if (playerCard instanceof EpidemicCardDTO) {
+            return new EpidemicCard();
+        } else if (playerCard instanceof EventCardDTO eventCard) {
+            return new EventCard(eventCard.getTitle(), eventCard.getAction());
+        } else {
+            throw new IllegalArgumentException("Unknown card type.");
+        }
+    }
+
+    /**
+     * Creates a city card from the given city card data.
+     *
+     * @param cityCard the city card data
+     * @return the created city card
+     */
+    private static AbstractCard createCityCard(CityCardDTO cityCard) {
+        String foundationDate = cityCard.getCity()
+                                        .getFoundationDate() < 0 ? cityCard.getCity()
+                                                                           .getFoundationDate() + " v. Chr." : String.valueOf(
+                cityCard.getCity()
+                        .getFoundationDate());
+        return new CityCard(
+                cityCard.getCity()
+                        .getName()
+                        .getDisplayName(),
+                foundationDate,
+                cityCard.getCity()
+                        .getPlagueName()
+        );
+    }
+
+    /**
+     * Updates the hospitals in cities with the latest data.
+     * Removes existing hospitals and sets new ones.
+     *
+     * @param cities the list of cities
+     */
+    private void updateHospitals(List<ICityDTO> cities) {
+        for (ICityDTO city : cities) {
+            this.removeHospitalFromCity(city.getId());
+            if (city.isHospitalBuild()) {
+                this.setHospitalToCity(city.getId(), city.getPlagueName());
+            }
+        }
+    }
+
+    /**
+     * Updates the researched plagues with the latest data.
+     *
+     * @param plagues the list of plagues
+     */
+    private void updateResearchedPlagues(List<IPlagueDTO> plagues) {
+        PlagueName[] researchedPlagues = plagues.stream()
+                                                .filter(IPlagueDTO::isResearched)
+                                                .map(IPlagueDTO::getName)
+                                                .toArray(PlagueName[]::new);
+        setResearchedPlagues(researchedPlagues);
     }
 }

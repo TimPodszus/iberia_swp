@@ -2,9 +2,9 @@ package de.uol.swp.server.connection;
 
 import de.uol.swp.common.connection.ConnectionDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
-import de.uol.swp.server.city.CityName;
-import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.common.city.CityName;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +12,8 @@ import java.util.List;
 /**
  * Utility class for mapping Connection objects to their corresponding Data Transfer Objects (DTOs).
  */
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class ConnectionMapper {
-
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private ConnectionMapper() {
-    }
-
     /**
      * Converts a Connection object to an IConnectionDTO.
      *
@@ -47,7 +41,7 @@ public class ConnectionMapper {
     public static List<IConnectionDTO> toDTOList(List<IConnection> connections) {
         List<IConnectionDTO> connectionDTOS = new ArrayList<>();
         for (IConnection connection : connections) {
-            IConnectionDTO connectionDTO = new ConnectionDTO(
+            ConnectionDTO connectionDTO = new ConnectionDTO(
                     connection.getId(),
                     connection.getCityNames()
                               .stream()

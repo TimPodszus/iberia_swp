@@ -4,23 +4,23 @@ import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.city.ICityDTO;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import de.uol.swp.server.infection.InfectionMapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CityMapper {
-
     public static ICityDTO toDTO(City city) {
         return new CityDTO(
                 city.getId(),
-                city.getPlagueName()
-                    .toString(),
-                city.getName()
-                    .toString(),
+                city.getId(),
+                city.getPlagueName(),
+                city.getName(),
                 city.getFoundationDate(),
                 city.isHarbourCity(),
-                city.isHospitalBuilt()
+                city.isHospitalBuilt(),
+                InfectionMapper.toDTOList(city.getInfections())
         );
     }
 
@@ -29,13 +29,12 @@ public class CityMapper {
         for (City city : cities) {
             CityDTO cityDTO = new CityDTO(
                     city.getId(),
-                    city.getPlagueName()
-                        .toString(),
-                    city.getName()
-                        .toString(),
+                    city.getPlagueName(),
+                    city.getName(),
                     city.getFoundationDate(),
                     city.isHarbourCity(),
-                    city.isHospitalBuilt()
+                    city.isHospitalBuilt(),
+                    InfectionMapper.toDTOList(city.getInfections())
             );
             citiesDto.add(cityDTO);
         }

@@ -1,6 +1,7 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.Card;
@@ -48,7 +49,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @return The newly created game
      */
     public IGame createAndInitializeGame(CreateGameRequest request) {
-        IGame game = new Game(request.getDifficulty());
+        IGame game = new Game(request.getDifficulty(), request.getLobbyCode());
         GameStore.getInstance()
                  .addGame(request.getLobbyCode(), game);
         initializing(game, UserMapper.toUser(request.getUsers()));
@@ -79,6 +80,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private void createPlayers(List<IUser> users, IGame game) {
         for (IUser user : users) {
             Player player = new Player(user);
+
             game.getPlayers()
                 .add(player);
             int cardsToDraw = switch (game.getPlayers()
@@ -268,7 +270,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
         boolean playerIsSailor = player.getRole()
                                        .getName()
-                                       .equals("Seemann");
+                                       .equals(RoleEnum.SAILOR);
         if (!playerIsSailor) {
             player.discardCard(cityCard);
         }

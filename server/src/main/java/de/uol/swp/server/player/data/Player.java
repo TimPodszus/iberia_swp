@@ -3,7 +3,7 @@ package de.uol.swp.server.player.data;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
-import de.uol.swp.server.city.CityName;
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.game.GameException;
 import de.uol.swp.server.role.IRole;
@@ -26,11 +26,11 @@ public class Player {
     @Setter
     private City currentPosition;
     @Setter
-    private List<Card> cards;
+    private List<Card> cards = new ArrayList<>();
     private final IUser user;
     CityRepository cityRepository;
 
-    public void setStartingPosition(String cityName) throws Exception {
+    public void setStartingPosition(CityName cityName) throws Exception {
         boolean validRequest = false;
         int cityCardCount = 0;
         for (Card card : cards) {
@@ -38,14 +38,13 @@ public class Player {
                 cityCardCount++;
                 if (cityCard.getCity()
                             .getName()
-                            .toString()
                             .equals(cityName)) {
                     validRequest = true;
                 }
             }
         }
         if (validRequest || cityCardCount == 0) {
-            City city = cityRepository.getCitiesByNames(Enum.valueOf(CityName.class, cityName))
+            City city = cityRepository.getCitiesByNames(cityName)
                                       .get(0);
             setCurrentPosition(city);
         } else {

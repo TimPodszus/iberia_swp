@@ -7,7 +7,6 @@ import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.CreateLobbyRequest;
 import de.uol.swp.common.lobby.message.request.GetLobbyRequest;
-import de.uol.swp.common.lobby.message.request.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
 
 
@@ -47,19 +46,6 @@ public class LobbyService {
     public void createNewLobby(String name, IUserDTO user) {
         CreateLobbyRequest createLobbyRequest = new CreateLobbyRequest(name, user);
         eventBus.post(createLobbyRequest);
-    }
-
-    /**
-     * Posts a request to join a specified lobby on the EventBus
-     *
-     * @param name Name of the lobby the user wants to join
-     * @param user User who wants to join the lobby
-     * @see LobbyJoinUserRequest
-     * @since 2019-11-20
-     */
-    public void joinLobby(String name, IUserDTO user) {
-        LobbyJoinUserRequest joinUserRequest = new LobbyJoinUserRequest(name, user);
-        eventBus.post(joinUserRequest);
     }
 
     public void requestLobbyList() {

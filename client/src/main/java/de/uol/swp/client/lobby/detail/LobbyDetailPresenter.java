@@ -9,6 +9,7 @@ import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
+import de.uol.swp.common.lobby.message.response.LobbyCreatedResponse;
 import de.uol.swp.common.lobby.message.response.LobbyUpdatedEvent;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.application.Platform;
@@ -106,6 +107,20 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onGetLobbyResponse(GetLobbyResponse response) {
+        lobbyDTO = response.getLobbyDTO();
+        initializeScreen();
+    }
+
+    /**
+     * Handles the response when a lobby is created.
+     * <p>
+     * This method is called when a LobbyCreatedResponse is received. It updates the lobbyDTO
+     * with the data from the response and initializes the screen with the updated lobby data.
+     *
+     * @param response the response containing the lobby data
+     */
+    @Subscribe
+    public void onLobbyCreatedResponse(LobbyCreatedResponse response) {
         lobbyDTO = response.getLobbyDTO();
         initializeScreen();
     }

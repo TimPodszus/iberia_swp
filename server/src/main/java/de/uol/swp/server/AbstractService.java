@@ -5,15 +5,11 @@ import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.server.lobby.data.ILobby;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.lobby.management.LobbyManagementException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
-import lombok.Setter;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 
 /**
  * This class is the base for creating a new Service.
@@ -24,20 +20,11 @@ import java.util.Optional;
  * @since 2019-10-08
  */
 public class AbstractService {
-
     /**
      * The EventBus instance used for posting and handling events.
      * This is a protected final field, ensuring it is initialized once and cannot be changed.
      */
     protected final EventBus bus;
-
-    /**
-     * The LobbyManagement instance used for managing lobbies.
-     * This field is injected by the dependency injection framework.
-     */
-    @Inject
-    @Setter
-    protected ILobbyManagement lobbyManagement;
 
     /**
      * The AuthenticationService instance used for handling user authentication.
@@ -81,22 +68,21 @@ public class AbstractService {
         post(message);
     }
 
+
     /**
-     * Prepares a given ServerMessage to be sent to all players in the lobby and
-     * posts it on the EventBus
+     * Sends a message to all users in a specified lobby.
+     * <p>
+     * This method prepares an AbstractServerMessage to be sent to all users in the given lobby
+     * and posts it to the EventBus.
      *
-     * @param lobbyCode Code of the lobby the players are in
-     * @param message   the message to the users
-     * @see ServerMessage
+     * @param lobby the lobby whose users will receive the message
+     * @param message the message to be sent to all users in the lobby
+     * @see AbstractServerMessage
      * @since 2019-10-08
      */
-    public void sendToAllInLobby(String lobbyCode, AbstractServerMessage message) throws LobbyManagementException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyCode);
+    public void sendToAllInLobby(ILobby lobby, AbstractServerMessage message) {
+        message.setReceiver(authenticationService.getSessions(new HashSet<>((lobby.getUsers()))));
 
-        if (lobby.isPresent()) {
-            message.setReceiver(authenticationService.getSessions(new HashSet<>((lobby.get()
-                                                                                      .getUsers()))));
-            post(message);
-        }
+        post(message);
     }
 }

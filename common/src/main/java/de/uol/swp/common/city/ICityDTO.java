@@ -1,5 +1,10 @@
 package de.uol.swp.common.city;
 
+import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.infection.IInfectionDTO;
+
+import java.util.List;
+
 import java.io.Serializable;
 
 /**
@@ -8,9 +13,9 @@ import java.io.Serializable;
 public interface ICityDTO extends Serializable {
 
     /**
-     * Gets the ID of the city.
+     * Gets the id of the city.
      *
-     * @return the ID of the city
+     * @return the id of the city
      */
     int getId();
 
@@ -19,14 +24,14 @@ public interface ICityDTO extends Serializable {
      *
      * @return the name of the city
      */
-    String getName();
+    CityName getName();
 
     /**
      * Gets the name of the plague associated with the city.
      *
      * @return the name of the plague
      */
-    String getPlagueName();
+    PlagueName getPlagueName();
 
     /**
      * Gets the foundation date of the city.
@@ -48,4 +53,11 @@ public interface ICityDTO extends Serializable {
      * @return true if a hospital is built, false otherwise
      */
     boolean isHospitalBuild();
+
+    /**
+     * Gets the list of infections in the city.
+     *
+     * @return the list of infections
+     */
+    List<IInfectionDTO> getInfections();
 }

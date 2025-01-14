@@ -1,6 +1,7 @@
 package de.uol.swp.server.connection.data;
 
-import de.uol.swp.server.city.CityName;
+
+import de.uol.swp.common.city.CityName;
 
 import java.util.List;
 

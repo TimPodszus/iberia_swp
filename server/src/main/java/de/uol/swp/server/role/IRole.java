@@ -1,8 +1,10 @@
 package de.uol.swp.server.role;
 
+import de.uol.swp.common.game.RoleEnum;
+
 public interface IRole
 {
-    String getName();
+    RoleEnum getName();
 
     String getDescription();
 }

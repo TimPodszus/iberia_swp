@@ -1,9 +1,10 @@
 package de.uol.swp.server.connection.management;
 
+import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.City;
-import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.data.IConnection;
@@ -121,8 +122,10 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         Player currentPlayer = super.getGame(lobbyId)
                                     .getCurrentPlayer();
 
-        if (currentPlayer.getRole() != null && "Seemann".equals(currentPlayer.getRole()
-                                                                             .getName())) {
+        boolean isSailor = currentPlayer.getRole() != null && currentPlayer.getRole()
+                                                                           .getName()
+                                                                           .equals(RoleEnum.SAILOR);
+        if (isSailor) {
             harbourCities.forEach(city -> availableConnections.put(city, false));
         } else {
             for (Card card : currentPlayer.getCards()) {

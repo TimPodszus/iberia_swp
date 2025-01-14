@@ -1,5 +1,6 @@
 package de.uol.swp.server.role;
 
+import de.uol.swp.common.game.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -7,6 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public abstract class Role implements IRole
 {
-    private final String name;
+    private final RoleEnum name;
     private final String description;
 }
