@@ -1,13 +1,14 @@
-package de.uol.swp.server.plague;
+package de.uol.swp.server.plague.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.store.IGameStore;
+import de.uol.swp.server.plague.data.IPlague;
 
 import java.util.List;
 import java.util.Map;
@@ -47,13 +48,13 @@ public class PlagueManagement implements IPlagueManagement {
             throw new PlagueManagementException("The plague to be researched was not specified");
         }
 
-        Plague plague = game.getPlagueRepository()
-                            .getPlagues()
-                            .stream()
-                            .filter(p -> p.getName()
-                                          .equals(plagueToResearch))
-                            .findFirst()
-                            .orElseThrow(() -> new PlagueManagementException("Plague not found"));
+        IPlague plague = game.getPlagueRepository()
+                             .getPlagues()
+                             .stream()
+                             .filter(p -> p.getName()
+                                           .equals(plagueToResearch))
+                             .findFirst()
+                             .orElseThrow(() -> new PlagueManagementException("Plague not found"));
 
         if (plague.isResearched()) {
             throw new PlagueManagementException("The plague is already researched");
@@ -61,8 +62,8 @@ public class PlagueManagement implements IPlagueManagement {
         Map<PlagueName, List<CityCard>> cardsByPlague = game.getCurrentPlayer()
                                                             .getCards()
                                                             .stream()
-                                                            .filter(card -> card instanceof CityCard)
-                                                            .map(card -> (CityCard) card)
+                                                            .filter(CityCard.class::isInstance)
+                                                            .map(CityCard.class::cast)
                                                             .collect(Collectors.groupingBy(cityCard -> cityCard.getCity()
                                                                                                                .getPlagueName()));
 

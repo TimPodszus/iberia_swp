@@ -1,4 +1,4 @@
-package de.uol.swp.server.plague;
+package de.uol.swp.server.plague.management;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.game.data.Game;
