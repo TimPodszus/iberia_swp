@@ -1,6 +1,6 @@
 package de.uol.swp.server.region.data;
 
-import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.region.management.RegionManagementException;
 
 import java.util.List;
@@ -37,7 +37,7 @@ public interface IRegion {
      *
      * @return the list of names of the surrounding cities
      */
-    List<City> getSurroundingCities();
+    List<ICity> getSurroundingCities();
 
     /**
      * Checks if the region has a prevention marker.

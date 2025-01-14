@@ -6,7 +6,7 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
-import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.GameManagement;
@@ -145,9 +145,9 @@ public class Game implements IGame {
         gameStartShuffle(difficulty);
     }
 
-    public void createInfectionCards(List<City> cities) {
+    public void createInfectionCards(List<ICity> cities) {
         int i = 0;
-        for (City city : cities) {
+        for (ICity city : cities) {
             InfectionCard infectionCard = new InfectionCard(
                     i,
                     city.getName()
@@ -160,9 +160,9 @@ public class Game implements IGame {
         }
     }
 
-    public void createPlayerCards(List<City> cities) {
+    public void createPlayerCards(List<ICity> cities) {
         int i = 1;
-        for (City city : cities) {
+        for (ICity city : cities) {
             CityCard citycard = new CityCard(
                     i,
                     city.getName()

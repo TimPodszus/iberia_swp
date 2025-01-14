@@ -1,6 +1,6 @@
 package de.uol.swp.server.region.data;
 
-import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.region.management.RegionManagementException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Region implements IRegion {
     private final int id;
-    private final List<City> surroundingCities;
+    private final List<ICity> surroundingCities;
     private int waterTreatments;
     private boolean preventionMarker;
 

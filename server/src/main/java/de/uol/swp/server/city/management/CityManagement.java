@@ -2,7 +2,6 @@ package de.uol.swp.server.city.management;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.InfectionCard;
-import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.CityName;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
@@ -119,7 +118,7 @@ public class CityManagement implements ICityManagement {
      * @return the city corresponding to the infection card
      * @throws CityManagementException if the city is not found
      */
-    private City findCity(IGame game, InfectionCard infectionCard) throws CityManagementException {
+    private ICity findCity(IGame game, InfectionCard infectionCard) throws CityManagementException {
         return Optional.ofNullable(game.getCityRepository()
                                        .getCityByName(infectionCard.getCity()
                                                                    .getName()))
@@ -132,7 +131,7 @@ public class CityManagement implements ICityManagement {
      * @param city the city to check
      * @return true if the infection severity has exceeded the threshold, false otherwise
      */
-    private boolean hasExceededSeverity(City city) {
+    private boolean hasExceededSeverity(ICity city) {
         return city.getInfections()
                    .stream()
                    .anyMatch(i -> i.getPlague()
@@ -190,10 +189,10 @@ public class CityManagement implements ICityManagement {
             CityName currentCity = citiesToProcess.poll();
             List<CityName> connectedCityNames = game.getConnectionRepository()
                                                     .getCityNamesOfConnectedCitiesByCityName(currentCity);
-            List<City> connectedCities = game.getCityRepository()
-                                             .getCitiesByNames(connectedCityNames);
+            List<ICity> connectedCities = game.getCityRepository()
+                                              .getCitiesByNames(connectedCityNames);
 
-            for (City connectedCity : connectedCities) {
+            for (ICity connectedCity : connectedCities) {
                 if (escalatedCities.contains(connectedCity.getName())) {
                     continue;
                 }
