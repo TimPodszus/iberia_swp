@@ -1,5 +1,6 @@
 package de.uol.swp.client.game;
 
+import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
@@ -46,6 +47,9 @@ public class GamePresenter extends AbstractPresenter {
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
+
+    @Inject
+    private GameService gameService;
 
     @FXML
     private AnchorPane gameScreen;
@@ -199,7 +203,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
+        boolean cityIsHighlighted = true;
+        if (cityIsHighlighted) {
+            gameService.movePlayerToCity("lobbyId", "cityId");
+        }
     }
 
     /**
