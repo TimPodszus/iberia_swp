@@ -61,9 +61,8 @@ class ConnectionManagementTest {
 
     @Test
     void testAvailableDestinationsWithTrainTracks() {
-        City barcelona = game.getCityRepository()
-                             .getCitiesByNames(CityName.EVORA)
-                             .get(0);
+        City evora = game.getCityRepository()
+                         .getCityByName(CityName.EVORA);
         game.getConnectionRepository()
             .getConnectionByID(19)
             .buildTrainTracks(true);
@@ -81,7 +80,7 @@ class ConnectionManagementTest {
         when(player.getCards()).thenReturn(new ArrayList<>());
 
         Map<City, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
-                String.valueOf(barcelona.getId())
+                String.valueOf(evora.getId())
         );
 
         assertEquals(6, cities.size(), "Expected 5 available destinations for Evora");
@@ -90,11 +89,9 @@ class ConnectionManagementTest {
     @Test
     void testAvailableDestinationsWithHarbourConnections() {
         City city = game.getCityRepository()
-                        .getCitiesByNames(CityName.PALMA_DE_MALLORCA)
-                        .get(0);
+                        .getCityByName(CityName.PALMA_DE_MALLORCA);
         City harbourCity = game.getCityRepository()
-                               .getCitiesByNames(CityName.ALICANTE)
-                               .get(0);
+                               .getCityByName(CityName.ALICANTE);
 
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCards()).thenReturn(List.of(new CityCard(harbourCity.getId(),
@@ -135,7 +132,7 @@ class ConnectionManagementTest {
                 String.valueOf(city.getId())
         );
 
-        assertEquals(3, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
+        assertEquals(19, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
         assertTrue(cities.containsKey(harbourCity), "Expected Alicante to be an available destination");
         assertFalse(
                 cities.get(harbourCity),

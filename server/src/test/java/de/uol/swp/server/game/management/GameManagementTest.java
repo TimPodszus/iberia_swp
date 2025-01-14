@@ -196,6 +196,22 @@ class GameManagementTest {
         );
     }
 
+    @Test
+    void testTrainRide() throws GameManagementException {
+        City startCity = cityRepository.getCityByName(CityName.EVORA);
+        City destinationCity = cityRepository.getCityByName(CityName.VALLADOLID);
+        IUser user = new User("user1");
+        createTestPlayers(user);
+        Player player = game.getPlayers()
+                            .get(0);
+        setupPlayerForMove(startCity, player, new Nurse(), new ArrayList<>());
+        buildTrainTracks();
+
+        gameManagement.movePlayer(user, "lobbyCode", destinationCity);
+
+        assertEquals(destinationCity, player.getCurrentPosition(), "Expected player to have moved to Valladolid");
+    }
+
     private void createTestPlayers(IUser... users) {
         List<Player> players = new ArrayList<>();
         for (IUser user : users) {
@@ -213,5 +229,25 @@ class GameManagementTest {
         player.setCards(cards);
         when(game.getCurrentPlayer()).thenReturn(player);
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(game.getCityRepository()).thenReturn(cityRepository);
+    }
+
+    /**
+     * Builds train tracks for specific connections.
+     * This method sets the train tracks as built between evora, badajoz, cuidad real, madrid and valladolid.
+     */
+    private void buildTrainTracks() {
+        game.getConnectionRepository()
+            .getConnectionByID(19)
+            .buildTrainTracks(true);
+        game.getConnectionRepository()
+            .getConnectionByID(81)
+            .buildTrainTracks(true);
+        game.getConnectionRepository()
+            .getConnectionByID(75)
+            .buildTrainTracks(true);
+        game.getConnectionRepository()
+            .getConnectionByID(72)
+            .buildTrainTracks(true);
     }
 }

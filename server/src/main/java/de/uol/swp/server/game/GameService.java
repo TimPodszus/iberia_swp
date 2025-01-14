@@ -8,10 +8,10 @@ import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.city.management.CityManagement;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
+import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
@@ -23,8 +23,11 @@ import org.greenrobot.eventbus.Subscribe;
  * and communicates the result back to the client through status responses.
  */
 public class GameService extends AbstractService {
-    GameManagement gameManagement = new GameManagement();
-    CityManagement cityManagement = new CityManagement();
+    @Inject
+    IGameManagement gameManagement;
+
+    @Inject
+    ICityManagement cityManagement;
 
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
@@ -48,8 +51,7 @@ public class GameService extends AbstractService {
         IGame game = gameManagement.createAndInitializeGame(request);
         if (game != null) {
             post(new CreateGameResponse(true, "Game erstellt", GameMapper.toDTO(game)));
-            sendToAllInLobby(
-                    request.getLobbyCode(),
+            sendToAllInLobby(request.getLobbyCode(),
                     new StartGameEvent(request.getLobbyCode(), GameMapper.toDTO(game))
             );
         }
@@ -67,7 +69,7 @@ public class GameService extends AbstractService {
                                .map(Session::getUser)
                                .orElse(null);
         if (user == null) {
-            throw new IllegalArgumentException("Player is unknown");
+            throw new IllegalArgumentException("User is unknown");
         }
         gameManagement.movePlayer(UserMapper.toUser(user),
                 request.getLobbyCode(),

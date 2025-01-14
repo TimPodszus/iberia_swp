@@ -1,8 +1,11 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.player.request.MovePlayerRequest;
+import de.uol.swp.common.user.IUserDTO;
 import org.greenrobot.eventbus.EventBus;
 
 /**
@@ -35,9 +38,10 @@ public class GameService {
     /**
      * Moves the player to the specified city.
      *
-     * @param cityDTO the city to which the player is to be moved
+     * @param lobbyId the lobby ID of the game in which the player is to be moved
+     * @param cityId  the city to which the player is to be moved
      */
-    public void movePlayerToCity(ICityDTO cityDTO) {
-        // TODO: FIx this
+    public void movePlayerToCity(String lobbyId, String cityId) {
+        eventBus.post(new MovePlayerRequest(lobbyId, cityId));
     }
 }

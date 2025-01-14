@@ -1,6 +1,5 @@
 package de.uol.swp.server.game.management;
 
-import de.uol.swp.common.cards.CardType;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.server.AbstractManagement;
@@ -8,7 +7,8 @@ import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.City;
-import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.connection.management.ConnectionManagement;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Manages game related operations such as creating games,
@@ -219,17 +220,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             throw new GameManagementException("Player is not the current player");
         }
 
-        ConnectionRepository connectionRepository = game.getConnectionRepository();
-        boolean citiesConnectedByLand = connectionRepository.getConnectionsOfCity(player.getCurrentPosition()
-                                                                                        .getName())
-                                                            .stream()
-                                                            .anyMatch(connection -> connection.getCityNames()
-                                                                                              .contains(city.getName()));
-        boolean citiesConnectedBySea = player.getCurrentPosition()
-                                             .isHarbourCity() && city.isHarbourCity();
+        IConnectionManagement connectionManagement = new ConnectionManagement();
+        Map<City, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(
+                lobbyCode,
+                String.valueOf(player.getCurrentPosition()
+                                     .getId())
+        );
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city) && !availableDestinations.get(city);
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city) && availableDestinations.get(city);
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error(
-                    "[LobbyID: {}] Failed to move {}.There is no connection between {} and {}",
+                    "[LobbyID: {}] Failed to move {}.There is no available connection between {} and {}",
                     lobbyCode,
                     player.getUser()
                           .getUsername(),
@@ -239,10 +240,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     city.getName()
                         .getDisplayName()
             );
-            throw new GameManagementException("There is no connection between " + player.getCurrentPosition()
-                                                                                        .getName()
-                                                                                        .getDisplayName() + " " + "and " + city.getName()
-                                                                                                                               .getDisplayName());
+            throw new GameManagementException("There is no available connection between " + player.getCurrentPosition()
+                                                                                                  .getName()
+                                                                                                  .getDisplayName() + " " + "and " + city.getName()
+                                                                                                                                         .getDisplayName());
         }
 
         if (citiesConnectedByLand) {
@@ -264,24 +265,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     .toString(),
                 city
         );
-        boolean playerHasCityCard = player.getCards()
-                                          .contains(cityCard);
+
         boolean playerIsSailor = player.getRole()
                                        .getName()
                                        .equals("Seemann");
-        if (!playerHasCityCard && !playerIsSailor) {
-            LOG.error(
-                    "[LobbyID: {}] {} does not have the required city card to sail to {}",
-                    lobbyCode,
-                    player.getUser()
-                          .getUsername(),
-                    city.getName()
-                        .getDisplayName()
-            );
-            throw new GameManagementException("The player does not have the required city card to sail to " + city.getName()
-                                                                                                                  .getDisplayName());
-        }
-
         if (!playerIsSailor) {
             player.discardCard(cityCard);
         }

@@ -120,15 +120,18 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                                                  .toList();
         Player currentPlayer = super.getGame(lobbyId)
                                     .getCurrentPlayer();
-        for (Card card : currentPlayer.getCards()) {
-            if (card instanceof CityCard cityCard && harbourCities.contains(cityCard.getCity())) {
-                // TODO: change check with string to role enum, when merge request #115 is merged
-                availableConnections.put(cityCard.getCity(),
-                        !Objects.equals(currentPlayer.getRole()
-                                                     .getName(), "Seemann")
-                );
-            }
 
+        if (currentPlayer.getRole() != null && "Seemann".equals(currentPlayer.getRole()
+                                                                             .getName())) {
+            harbourCities.forEach(city -> availableConnections.put(city, false));
+        } else {
+            for (Card card : currentPlayer.getCards()) {
+                if (card instanceof CityCard cityCard) {
+                    harbourCities.stream()
+                                 .filter(city -> city.equals(cityCard.getCity()))
+                                 .forEach(city -> availableConnections.put(city, true));
+                }
+            }
         }
         return availableConnections;
     }
