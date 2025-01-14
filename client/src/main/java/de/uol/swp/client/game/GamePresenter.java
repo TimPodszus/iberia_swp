@@ -627,8 +627,10 @@ public class GamePresenter extends AbstractPresenter {
     public void onStartGameEvent(StartGameEvent event) {
         IGameDTO gameDTO = event.getGameDTO();
 
-        updatePlayers(gameDTO.getPlayers());
-        Platform.runLater(() -> updateBoard(gameDTO));
+        Platform.runLater(() -> {
+            updateBoard(gameDTO);
+            updatePlayers(gameDTO.getPlayers());
+        });
     }
 
     /**
