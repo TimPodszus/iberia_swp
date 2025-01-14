@@ -15,9 +15,9 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
-import jakarta.inject.Inject;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import jakarta.inject.Inject;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,14 +29,7 @@ import java.util.List;
 public class GameManagement implements IGameManagement {
 
     @Inject
-    IPlayerManagement playerManagement;
-
-    /**
-     * Constructs a new GameManagement object.
-     */
-    public GameManagement() {
-        //Todo: SpielInitialisierung
-    }
+    private IPlayerManagement playerManagement;
 
     /**
      * Creates and initializes a game based on the provided creation request.
@@ -47,7 +40,8 @@ public class GameManagement implements IGameManagement {
      */
     public IGame createAndInitializeGame(CreateGameRequest request) {
         IGame game = new Game(request.getDifficulty());
-        GameStore.getInstance().addGame(request.getLobbyCode(), game);
+        GameStore.getInstance()
+                 .addGame(request.getLobbyCode(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
         } catch (PlayerManagementException e) {
@@ -89,7 +83,7 @@ public class GameManagement implements IGameManagement {
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                playerManagement.drawPlayerCard(game, user);
+                playerManagement.drawPlayerCard(game, player);
             }
         }
 
