@@ -5,6 +5,8 @@ import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.chat.AbstractChatMessage;
+import de.uol.swp.common.chat.ChatRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
@@ -56,6 +58,16 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     @FXML
     public TableView<UserListItem> userTable;
 
+    @FXML
+    private TextArea chatArea;
+
+    @FXML
+    private TextField chatInput;
+
+    @FXML
+    private Button sendChatButton;
+
+
     /**
      * Initializes the Lobby Screen.
      */
@@ -85,6 +97,9 @@ public class LobbyDetailPresenter extends AbstractPresenter {
                  .get(0)
                  .setCellValueFactory(new PropertyValueFactory<>("name"));
         userTable.setPlaceholder(new Label("Keine Spieler in der Lobby"));
+
+        sendChatButton.setOnAction(event -> onSendChat());
+
     }
 
     /**
@@ -219,4 +234,25 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     public void onBackButtonPressed() {
         eventBus.post(new ShowLastSceneEvent());
     }
+
+    public void onSendChat() {
+        String message = chatInput.getText();
+        if (message == null || message.trim().isEmpty()) {
+            return;
+        }
+
+        ChatRequest chatRequest = new ChatRequest(lobbyDTO.getLobbyCode(),
+                UserStore.getInstance().getUser().getUsername(),
+                message);
+
+        eventBus.post(chatRequest);
+        chatInput.clear();
+    }
+
+    @Subscribe
+    public void onChatMessageReceived(AbstractChatMessage chatMessage) {
+        Platform.runLater(() -> chatArea.appendText(chatMessage.getSender() + ": " + chatMessage.getMessage() + "\n"));
+    }
+
+
 }

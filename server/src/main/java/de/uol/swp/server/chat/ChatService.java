@@ -1,12 +1,15 @@
 package de.uol.swp.server.chat;
 
-import de.uol.swp.common.chat.AbstractChatMessage;
+import de.uol.swp.common.chat.ChatRequest;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.LobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import jakarta.inject.Inject;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+
+import java.util.Optional;
 
 public class ChatService extends AbstractService {
     private final Chat chat;
@@ -22,15 +25,20 @@ public class ChatService extends AbstractService {
     /**
      * Fügt eine Nachricht zur Lobby hinzu und sendet sie an alle Spieler.
      *
-     * @param chatMessage Die Chat-Nachricht
+     * @param chatRequest Die Chat-Nachricht
      */
     @Subscribe
-    public void onChatRequest(AbstractChatMessage chatMessage) {
-        chat.addMessage(chatMessage);
-        try {
-            sendToAllInLobby(chatMessage.getLobbyCode(), chatMessage);
-        } catch (LobbyManagementException e) {
-            e.printStackTrace();
+    public void onChatRequest(ChatRequest chatRequest) throws LobbyManagementException {
+        Optional<ILobby> optionalLobby = lobbyManagement.getLobby(chatRequest.getLobbyCode());
+
+        if (optionalLobby.isEmpty()) {
+            throw new LobbyManagementException("Lobby not found for code: " + chatRequest.getLobbyCode());
         }
+
+        ILobby lobby = optionalLobby.get();
+
+        chat.addMessage(chatRequest);
+
+        sendToAllInLobby(lobby, chatRequest);
     }
 }

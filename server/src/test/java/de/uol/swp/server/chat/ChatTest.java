@@ -1,6 +1,7 @@
 package de.uol.swp.server.chat;
 
 import de.uol.swp.common.chat.ChatRequest;
+import de.uol.swp.server.lobby.management.LobbyManagementException;
 import org.greenrobot.eventbus.EventBus;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +11,7 @@ import static org.mockito.Mockito.verify;
 public class ChatTest {
 
     @Test
-    void handleOnChatRequest() {
+    void handleOnChatRequest() throws LobbyManagementException {
         // Arrange
         ChatRequest chatRequest = new ChatRequest("lobby1", "player1", "Moin Leute");
         EventBus eventBus = new EventBus();

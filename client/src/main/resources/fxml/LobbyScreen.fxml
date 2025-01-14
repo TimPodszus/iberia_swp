@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.control.TextArea?>
 <AnchorPane prefHeight="436.0" prefWidth="722.0" styleClass="background-pane" stylesheets="@../css/optionView.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.lobby.detail.LobbyDetailPresenter">
    <children>
       <AnchorPane layoutX="261.0" layoutY="118.0" prefHeight="200.0" prefWidth="200.0" styleClass="content-pane" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="20.0">
@@ -63,6 +64,20 @@
                         </Button>
                      </children>
                   </HBox>
+
+                  <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+                     <children>
+                        <!-- Chat-Nachrichtenanzeige -->
+                        <TextArea fx:id="chatArea" editable="false" prefHeight="200.0" wrapText="true" />
+
+                        <!-- Eingabebereich für Chat -->
+                        <HBox spacing="10.0">
+                           <TextField fx:id="chatInput" promptText="Nachricht eingeben..." HBox.hgrow="ALWAYS" />
+                           <Button fx:id="sendChatButton" mnemonicParsing="false" text="Senden" onAction="#onSendChat" />
+                        </HBox>
+                     </children>
+                  </VBox>
+
                </children>
             </VBox>
          </children>
