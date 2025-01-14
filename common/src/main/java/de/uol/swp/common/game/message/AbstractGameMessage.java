@@ -1,13 +1,13 @@
 package de.uol.swp.common.game.message;
 
-import de.uol.swp.common.message.AbstractMessage;
+import de.uol.swp.common.message.AbstractServerMessage;
 import lombok.Getter;
 
 @Getter
-public abstract class AbstractGameMessage extends AbstractMessage {
-    private String lobbyCode;
+public abstract class AbstractGameMessage extends AbstractServerMessage {
+    private final String lobbyCode;
 
-    public AbstractGameMessage(String lobbyCode) {
+    protected AbstractGameMessage(String lobbyCode) {
         this.lobbyCode = lobbyCode;
     }
 

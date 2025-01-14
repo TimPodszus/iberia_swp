@@ -2,20 +2,20 @@ package de.uol.swp.server.connection;
 
 import de.uol.swp.common.connectiom.ConnectionDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
-import de.uol.swp.server.city.CityName;
+import de.uol.swp.common.city.CityName;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class ConnectionMapper {
-
     public static IConnectionDTO toDTO(Connection connection) {
         return new ConnectionDTO(connection.getId(),
                 connection.getCityNames()
                           .stream()
                           .map(CityName::getDisplayName)
-                          .collect(Collectors.toList()),
+                          .toList(),
                 connection.isTrainTrack(),
                 connection.isTrainTrackBuildable()
         );
@@ -28,7 +28,7 @@ public class ConnectionMapper {
                     connection.getCityNames()
                               .stream()
                               .map(CityName::getDisplayName)
-                              .collect(Collectors.toList()),
+                              .toList(),
                     connection.isTrainTrack(),
                     connection.isTrainTrackBuildable()
             );

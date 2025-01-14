@@ -6,22 +6,16 @@ import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.connection.ConnectionMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.plague.PlagueMapper;
 import de.uol.swp.server.player.PlayerMapper;
 import de.uol.swp.server.region.RegionMapper;
+import lombok.NoArgsConstructor;
 
 /**
  * Utility class for mapping game-related objects to their Data Transfer Object (DTO) forms.
  */
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class GameMapper {
-
-    /**
-     * Private constructor to prevent instantiation of the utility class.
-     * Throws an UnsupportedOperationException if called.
-     */
-    private GameMapper() {
-        throw new UnsupportedOperationException("Utility class");
-    }
-
     /**
      * Converts an IGame object to an IGameDTO object.
      *
@@ -37,6 +31,8 @@ public class GameMapper {
                                                .getConnections()),
                 RegionMapper.toDTOList(game.getRegionRepository()
                                            .getRegions()),
+                PlagueMapper.toDTOList(game.getPlagueRepository()
+                                           .getPlagues()),
                 CardMapper.toInfectionCardDTOList(game.getInfectionCardDrawPile()),
                 CardMapper.toInfectionCardDTOList(game.getInfectionCardDiscardPile()),
                 CardMapper.toMixedCardDTOList(game.getPlayerCardDrawPile()),

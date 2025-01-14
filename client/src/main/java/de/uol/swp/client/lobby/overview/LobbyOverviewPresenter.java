@@ -3,11 +3,13 @@ package de.uol.swp.client.lobby.overview;
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
-import de.uol.swp.client.main.event.ShowLastSceneEvent;
+import de.uol.swp.client.main.event.ShowMainMenuEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.response.LobbyListResponse;
+import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
+import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 
 import javafx.fxml.FXML;
@@ -22,6 +24,7 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class LobbyOverviewPresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/LobbyOverviewView.fxml";
@@ -85,7 +88,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
      * Posts a ShowLastSceneEvent to the event bus.
      */
     public void onBackButtonPressed() {
-        eventBus.post(new ShowLastSceneEvent());
+        eventBus.post(new ShowMainMenuEvent());
     }
 
     /**
@@ -164,7 +167,26 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
      * @param lobbyId the ID of the lobby to join
      */
     private void onJoinLobby(String lobbyId) {
-        eventBus.post(new LobbyJoinUserRequest(lobbyId,(UserDTO) UserStore.getInstance().getUser()));
+        ILobbyDTO lobby = lobbyList.stream()
+                                   .filter(l -> l.getLobbyCode()
+                                                 .equals(lobbyId))
+                                   .findFirst()
+                                   .orElse(null);
 
+        boolean userInLobby = false;
+
+        List<IUserDTO> users = lobby.getUsers();
+        IUserDTO user = UserStore.getInstance().getUser();
+
+        for (IUserDTO u : lobby.getUsers()) {
+            if (Objects.equals(u, UserStore.getInstance().getUser())) {
+                userInLobby = true;
+            }
+        }
+        if (userInLobby) {
+            eventBus.post(new UserJoinedLobbyMessage(lobbyId, UserStore.getInstance().getUser()));
+        } else {
+            eventBus.post(new LobbyJoinUserRequest(lobbyId,(UserDTO) UserStore.getInstance().getUser()));
+        }
     }
 }

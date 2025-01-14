@@ -13,9 +13,11 @@ import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.main.MainMenuPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
+import de.uol.swp.client.main.event.ShowMainMenuEvent;
 import de.uol.swp.client.options.OptionsPresenter;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
@@ -366,6 +368,20 @@ public class SceneManager {
     }
 
     /**
+     * Handles ShowMainMenuEvent detected on the EventBus.
+     * <p>
+     * If a ShowMainMenuEvent is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the main menu screen.
+     *
+     * @param event The ShowMainMenuEvent detected on the EventBus
+     * @see de.uol.swp.client.main.event.ShowMainMenuEvent
+     */
+    @Subscribe
+    public void onShowMainMenuEvent(ShowMainMenuEvent event) {
+        showMainScreen();
+    }
+
+    /**
      * Handles RegistrationCanceledEvent detected on the EventBus
      * <p>
      * If a RegistrationCanceledEvent is detected on the EventBus, this method gets
@@ -395,9 +411,32 @@ public class SceneManager {
         showError(event.getMessage());
     }
 
+    /**
+     * Handles UserJoinedLobbyMessage detected on the EventBus.
+     * <p>
+     * If a UserJoinedLobbyMessage is detected on the EventBus, this method gets
+     * called. It calls a method to switch the current screen to the lobby screen.
+     *
+     * @param userJoinedLobbyMessage The UserJoinedLobbyMessage detected on the EventBus
+     * @see de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage
+     */
     @Subscribe
     public void onUserJoinedLobbyEvent(UserJoinedLobbyMessage userJoinedLobbyMessage) {
        showLobbyScreen();
+    }
+
+    /**
+     * Handles the CreateGameResponse event.
+     * <p>
+     * This method is called when a CreateGameResponse event is received. It switches
+     * the current screen to the game screen.
+     *
+     * @param response the CreateGameResponse containing the game data
+     * @see CreateGameResponse
+     */
+    @Subscribe
+    public void onCreateGameResponseEvent(CreateGameResponse response) {
+        showGameScreen();
     }
 
     /**

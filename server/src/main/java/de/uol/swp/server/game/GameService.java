@@ -10,9 +10,13 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+
+import java.util.Optional;
 
 /**
  * Service responsible for managing game-related requests such as creating games.
@@ -21,14 +25,18 @@ import org.greenrobot.eventbus.Subscribe;
  */
 public class GameService extends AbstractService {
     GameManagement gameManagement = new GameManagement();
+
+    protected ILobbyManagement lobbyManagement;
+
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
      *
      * @param bus the EventBus to which the service will subscribe and post events
      */
     @Inject
-    public GameService(EventBus bus) {
+    public GameService(EventBus bus, ILobbyManagement lobbyManagement) {
         super(bus);
+        this.lobbyManagement = lobbyManagement;
     }
 
     /**
@@ -41,9 +49,10 @@ public class GameService extends AbstractService {
     @Subscribe
     public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException {
         IGame game = gameManagement.createAndInitializeGame(request);
-        if (game != null) {
+        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyCode());
+        if (game != null && lobby.isPresent()) {
             post(new CreateGameResponse(true,"Game erstellt", GameMapper.toDTO(game)));
-            sendToAllInLobby(request.getLobbyCode(), new StartGameEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
+            sendToAllInLobby(lobby.get(), new StartGameEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
         }
     }
     @Subscribe
