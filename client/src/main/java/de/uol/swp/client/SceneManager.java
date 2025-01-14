@@ -17,8 +17,8 @@ import de.uol.swp.client.main.event.ShowMainMenuEvent;
 import de.uol.swp.client.options.OptionsPresenter;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
-import de.uol.swp.common.message.response.CreatedGameResponse;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
@@ -426,16 +426,16 @@ public class SceneManager {
     }
 
     /**
-     * Handles CreatedGameResponse detected on the EventBus.
+     * Handles the CreateGameResponse event.
      * <p>
-     * If a CreatedGameResponse is detected on the EventBus, this method gets
-     * called. It calls a method to switch the current screen to the game screen.
+     * This method is called when a CreateGameResponse event is received. It switches
+     * the current screen to the game screen.
      *
-     * @param response The CreatedGameResponse detected on the EventBus
-     * @see de.uol.swp.common.message.response.CreatedGameResponse
+     * @param response the CreateGameResponse containing the game data
+     * @see CreateGameResponse
      */
     @Subscribe
-    public void onCreatedGameResponseEvent(CreatedGameResponse response) {
+    public void onCreateGameResponseEvent(CreateGameResponse response) {
         showGameScreen();
     }
 

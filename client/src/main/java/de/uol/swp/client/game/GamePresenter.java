@@ -13,7 +13,8 @@ import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.game.message.event.BoardUpdateMessage;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -639,32 +640,48 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Handles BoardUpdateMessage detected on the EventBus.
+     * Handles BoardUpdateEvent detected on the EventBus.
      * <p>
-     * If a BoardUpdateMessage is detected on the EventBus, this method gets
+     * If a BoardUpdateEvent is detected on the EventBus, this method gets
      * called. It updates the game board on the JavaFX Application Thread.
      *
-     * @param response The BoardUpdateMessage detected on the EventBus
-     * @see de.uol.swp.common.game.message.event.BoardUpdateMessage
+     * @param event The BoardUpdateEvent detected on the EventBus
+     * @see de.uol.swp.common.game.message.event.BoardUpdateEvent
      */
     @Subscribe
-    public void onBoardUpdateMessage(BoardUpdateMessage response) {
-        Platform.runLater(() -> updateBoard(response));
+    public void onBoardUpdateEvent(BoardUpdateEvent event) {
+        IGameDTO gameDTO = event.getGameDTO();
+
+        Platform.runLater(() -> updateBoard(gameDTO));
     }
 
     /**
-     * Updates the game board with the data from the BoardUpdateMessage.
+     * Handles the StartGameEvent.
      * <p>
-     * This method updates various aspects of the game board including cities,
-     * connections, regions, infection card discard pile, infection card draw pile,
-     * player card discard pile, player card draw pile, player hand cards, players,
-     * infection counter, escalation stage, and hospitals.
+     * This method is called when a StartGameEvent is received. It updates the players
+     * and the game board with the data from the event.
      *
-     * @param response The BoardUpdateMessage containing the game data
+     * @param event the StartGameEvent containing the game data
      */
-    private void updateBoard(BoardUpdateMessage response) {
-        IGameDTO gameDTO = response.getGameDTO();
+    @Subscribe
+    public void onStartGameEvent(StartGameEvent event) {
+        IGameDTO gameDTO = event.getGameDTO();
 
+        updatePlayers(gameDTO.getPlayers());
+        Platform.runLater(() -> updateBoard(gameDTO));
+    }
+
+    /**
+     * Updates the game board with the latest data from the game DTO.
+     * <p>
+     * This method updates various aspects of the game board, including cities, connections,
+     * regions, infection card discard pile, infection card draw pile, player card discard pile,
+     * player card draw pile, player hand cards, players in cities, infection counter, escalation stage,
+     * hospitals, and researched plagues.
+     *
+     * @param gameDTO the game data transfer object containing the latest game state
+     */
+    private void updateBoard(IGameDTO gameDTO) {
         updateCities(gameDTO.getCities());
         updateConnections(gameDTO.getConnections());
         updateRegions(gameDTO.getRegions());
@@ -673,7 +690,7 @@ public class GamePresenter extends AbstractPresenter {
         updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
         updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
         updatePlayerHandCards(gameDTO.getPlayers());
-        updatePlayers(gameDTO.getPlayers());
+        updatePlayersInCities(gameDTO.getPlayers());
         updateInfectionCounter(gameDTO.getInfectionCounter());
         updateEscalationStage(gameDTO.getEscalationStage());
         updateHospitals(gameDTO.getCities());
@@ -806,7 +823,6 @@ public class GamePresenter extends AbstractPresenter {
                 playerButtons.getChildren().add(new PlayerButton(player.getUsername(), this::onPlayerButtonClickedEvent));
             }
         }
-        updatePlayersInCities(players);
         updateCurrentUserRole(players);
     }
 
