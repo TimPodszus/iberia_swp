@@ -1,11 +1,8 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
-import de.uol.swp.common.user.IUserDTO;
 import org.greenrobot.eventbus.EventBus;
 
 /**
