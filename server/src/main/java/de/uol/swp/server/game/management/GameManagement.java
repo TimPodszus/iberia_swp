@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.management;
 
-import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
@@ -40,7 +40,8 @@ public class GameManagement implements IGameManagement {
      */
     public IGame createAndInitializeGame(CreateGameRequest request) {
         IGame game = new Game(request.getDifficulty());
-        GameStore.getInstance().addGame(request.getLobbyCode(), game);
+        GameStore.getInstance()
+                 .addGame(request.getLobbyCode(), game);
         initializing(game, UserMapper.toUser(request.getUsers()));
         return game;
     }
@@ -53,6 +54,7 @@ public class GameManagement implements IGameManagement {
      * @param users The list of users participating in the game
      */
     void initializing(IGame game, List<IUser> users) {
+        game.setState(new WaitForPositioning());
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
@@ -67,6 +69,7 @@ public class GameManagement implements IGameManagement {
      * @param game  The game instance to add players to
      */
     private void createPlayers(List<IUser> users, IGame game) {
+        List<Card> playerCardDrawPile = game.getPlayerCardDrawPile();
         for (IUser user : users) {
             Player player = new Player(user);
             game.getPlayers()
@@ -78,7 +81,8 @@ public class GameManagement implements IGameManagement {
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                drawPlayerCard();
+                player.getCards()
+                      .add(playerCardDrawPile.remove(0));
             }
         }
 
@@ -152,35 +156,38 @@ public class GameManagement implements IGameManagement {
      * if the game is currently in a state that allows setting positioning.
      * Updates the game state if all players have been positioned.
      *
-     * @param user      The user whose position is to be set
-     * @param lobbyCode The lobby code of the game
-     * @param cityDTO   The city to position the player at
+     * @param request The request with where the position is to be set
      */
-    public void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO) {
-        IGame game = getGame(lobbyCode);
+    public IGame setPositioning(PositioningRequest request) throws GameManagementException {
+        IGame game = getGame(request.getLobbyCode());
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<Player> players = game.getPlayers();
             Player requestPlayer = null;
             for (Player player : players) {
                 if (player.getUser()
                           .getUsername()
-                          .equals(user.getUsername()) && player.getCurrentPosition() == null) {
+                          .equals(request.getSession()
+                                         .get()
+                                         .getUser()
+                                         .getUsername()) && player.getCurrentPosition() == null) {
                     requestPlayer = player;
                     break;
                 }
             }
             try {
                 assert requestPlayer != null;
-                requestPlayer.setStartingPosition(cityDTO.getName());
+                requestPlayer.setStartingPosition(request.getCity()
+                                                         .getName());
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
             } catch (Exception e) {
-                // StatusResponse
+                throw new GameManagementException("Failed to set Position");
             }
             if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
                                                                       .size()) {
                 game.setState(new PlayerTurnState());
             }
         }
+        return game;
     }
 
     /**
@@ -192,14 +199,6 @@ public class GameManagement implements IGameManagement {
     private IGame getGame(String lobbyCode) {
         return GameStore.getInstance()
                         .getGame(lobbyCode);
-    }
-
-    /**
-     * Draws a player card from the deck.
-     * This method needs to be implemented to define how player cards are drawn.
-     */
-    public void drawPlayerCard() {
-        // TODO Implement Method
     }
 
     /**
