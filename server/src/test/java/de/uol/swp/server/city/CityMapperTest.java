@@ -54,7 +54,7 @@ class CityMapperTest {
         ICityDTO cityDTO = CityMapper.toDTO(firstCity);
 
         assertNotNull(cityDTO);
-        assertEquals(firstCity.getName().toString(), cityDTO.getName());
+        assertEquals(firstCity.getName(), cityDTO.getName());
         assertEquals(firstCity.getFoundationDate(), cityDTO.getFoundationDate());
         assertEquals(firstCity.getPlagueName(), cityDTO.getPlagueName());
         assertEquals(firstCity.isHarbourCity(), cityDTO.isHarbourCity());
@@ -76,12 +76,12 @@ class CityMapperTest {
 
         ICityDTO firstCityDTO = cityDTOList.get(0);
         assertEquals(firstCity.getPlagueName(), firstCityDTO.getPlagueName());
-        assertEquals(firstCity.getName().toString(), firstCityDTO.getName());
+        assertEquals(firstCity.getName(), firstCityDTO.getName());
         assertEquals(firstCity.getFoundationDate(), firstCityDTO.getFoundationDate());
 
         ICityDTO secondCityDTO = cityDTOList.get(1);
         assertEquals(secondCity.getPlagueName(), secondCityDTO.getPlagueName());
-        assertEquals(secondCity.getName().toString(), secondCityDTO.getName());
+        assertEquals(secondCity.getName(), secondCityDTO.getName());
         assertEquals(secondCity.getFoundationDate(), secondCityDTO.getFoundationDate());
     }
 }
