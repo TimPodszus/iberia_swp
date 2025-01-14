@@ -1788,13 +1788,13 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
                                 <children>
-                                    <Circle id="outbreakLevel0" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level" />
+                                    <Circle id="escalationStage0" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level" />
                                     <Text strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
                                 </children>
                             </StackPane>
                             <StackPane layoutX="15.0" layoutY="90.0">
                                 <children>
-                                    <Circle id="outbreakLevel2" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
+                                    <Circle id="escalationStage2" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
                                         <StackPane.margin>
                                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                         </StackPane.margin>
@@ -1804,7 +1804,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="115.0">
                                 <children>
-                                    <Circle id="outbreakLevel4" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" stroke="black" strokeType="INSIDE" strokeWidth="0.0" styleClass="outbreak-level">
+                                    <Circle id="escalationStage4" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" stroke="black" strokeType="INSIDE" strokeWidth="0.0" styleClass="outbreak-level">
                                         <StackPane.margin>
                                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                         </StackPane.margin>
@@ -1814,7 +1814,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="135.0">
                                 <children>
-                                    <Circle id="outbreakLevel6" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
+                                    <Circle id="escalationStage6" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
                                         <StackPane.margin>
                                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                         </StackPane.margin>
@@ -1824,7 +1824,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="155.0">
                                 <children>
-                                    <Circle id="outbreakLevel8" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
+                                    <Circle id="escalationStage8" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
                                         <StackPane.margin>
                                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                         </StackPane.margin>
@@ -1842,7 +1842,7 @@
                         <children>
                             <StackPane>
                                 <children>
-                                    <Circle id="outbreakLevel1" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
+                                    <Circle id="escalationStage1" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
                                         <StackPane.margin>
                                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                         </StackPane.margin>
@@ -1852,7 +1852,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="110.0">
                                 <children>
-                                    <Circle id="outbreakLevel3" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
+                                    <Circle id="escalationStage3" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
                                         <StackPane.margin>
                                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                         </StackPane.margin>
@@ -1862,7 +1862,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="135.0">
                                 <children>
-                                    <Circle id="outbreakLevel5" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
+                                    <Circle id="escalationStage5" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
                                         <StackPane.margin>
                                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                         </StackPane.margin>
@@ -1872,7 +1872,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="160.0">
                                 <children>
-                                    <Circle id="outbreakLevel7" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
+                                    <Circle id="escalationStage7" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="20.0" styleClass="outbreak-level">
                                         <StackPane.margin>
                                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                         </StackPane.margin>

@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class GamePresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/GameScreen.fxml";
     private static final String INFECTION_GRADE_ID = "#infectionGrade";
-    private static final String OUTBREAK_LEVEL_ID = "#outbreakLevel";
+    private static final String ESCALATION_STAGE_ID = "#escalationStage";
     private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";

@@ -8,11 +8,11 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
 public class RoleCard extends AbstractCard {
-    public RoleCard(RoleEnum roleCard) {
+    public RoleCard(RoleEnum role) {
         this.setPrefSize(100, 150);
-        this.setStyle("-fx-background-color: " + roleCard.getColorCode() + ";");
+        this.setStyle("-fx-background-color: " + role.getColorCode() + ";");
 
-        Text roleText = new Text(roleCard.getName());
+        Text roleText = new Text(role.getName());
         StackPane roleStackPane = new StackPane();
         roleStackPane.setStyle(TEXT_BACKGROUND_COLOR);
         roleStackPane.getChildren().add(roleText);
@@ -21,7 +21,7 @@ public class RoleCard extends AbstractCard {
         AnchorPane.setLeftAnchor(roleStackPane, 0.0);
         AnchorPane.setRightAnchor(roleStackPane, 0.0);
 
-        Text descriptionText = new Text(roleCard.getDescription());
+        Text descriptionText = new Text(role.getDescription());
         descriptionText.setFont(new Font(10));
         descriptionText.setWrappingWidth(78.0);
         descriptionText.setTextAlignment(TextAlignment.CENTER);
