@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
  * Test class for PlayerMapper.
  */
 class PlayerMapperTest {
-    private static final String TEST_CITY_NAME = "A_CORUNA";
+    private static final CityName TEST_CITY_NAME = CityName.A_CORUNA;
     private static final String TEST_ROLE_NAME = "POLITICIAN";
     private static final String TEST_USER_NAME = "testUser";
     private Player mockPlayer;
