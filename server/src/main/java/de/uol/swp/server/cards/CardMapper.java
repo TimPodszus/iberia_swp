@@ -55,8 +55,9 @@ public class CardMapper {
      * @return a CityCardDTO object containing data from the provided CityCard and its associated City
      */
     static CityCardDTO toCityCardDTO(CityCard cityCard) {
-        CityDTO cityDTO = new CityDTO(cityCard.getCity()
-                                              .getId(),
+        CityDTO cityDTO = new CityDTO(
+                cityCard.getCity()
+                        .getId(),
                 cityCard.getCity()
                         .getPlagueName(),
                 cityCard.getCity()
@@ -70,7 +71,7 @@ public class CardMapper {
                 InfectionMapper.toDTOList(cityCard.getCity()
                                                   .getInfections())
         );
-        return new CityCardDTO(cityCard.getId(), cityCard.getTitle(), cityCard.getType(), cityDTO);
+        return new CityCardDTO(cityCard.getId(), cityCard.getTitle(), cityDTO);
     }
 
     /**
@@ -80,11 +81,7 @@ public class CardMapper {
      * @return an EpidemicCardDTO containing data from the EpidemicCard
      */
     static EpidemicCardDTO toEpidemicCardDTO(EpidemicCard epidemicCard) {
-        return new EpidemicCardDTO(epidemicCard.getId(),
-                epidemicCard.getTitle(),
-                epidemicCard.getType(),
-                epidemicCard.getDescription()
-        );
+        return new EpidemicCardDTO(epidemicCard.getId(), epidemicCard.getTitle(), epidemicCard.getDescription());
     }
 
     /**
@@ -94,8 +91,9 @@ public class CardMapper {
      * @return an InfectionCardDTO containing data from the InfectionCard and its associated City
      */
     static InfectionCardDTO toInfectionCardDTO(InfectionCard infectionCard) {
-        CityDTO cityDTO = new CityDTO(infectionCard.getCity()
-                                                   .getId(),
+        CityDTO cityDTO = new CityDTO(
+                infectionCard.getCity()
+                             .getId(),
                 infectionCard.getCity()
                              .getPlagueName(),
                 infectionCard.getCity()
@@ -109,7 +107,7 @@ public class CardMapper {
                 InfectionMapper.toDTOList(infectionCard.getCity()
                                                        .getInfections())
         );
-        return new InfectionCardDTO(infectionCard.getId(), infectionCard.getTitle(), infectionCard.getType(), cityDTO);
+        return new InfectionCardDTO(infectionCard.getId(), infectionCard.getTitle(), cityDTO);
     }
 
     /**

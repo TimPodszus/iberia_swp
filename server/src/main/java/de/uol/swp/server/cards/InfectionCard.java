@@ -10,8 +10,8 @@ import lombok.Getter;
 public class InfectionCard extends Card {
     private final City city;
 
-    public InfectionCard(int id, String title, CardType type, City city) {
-        super(id, title, type);
+    public InfectionCard(int id, String title, City city) {
+        super(id, title, CardType.INFECTION_CARD);
         this.city = city;
     }
 }

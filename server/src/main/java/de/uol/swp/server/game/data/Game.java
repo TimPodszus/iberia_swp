@@ -180,7 +180,6 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    CardType.INFECTION_CARD,
                     city
             );
             infectionCardDrawPile.add(infectionCard);
@@ -203,7 +202,7 @@ public class Game implements IGame {
     }
 
     public EpidemicCard createEpidemicCard(int id) {
-        return new EpidemicCard(id, "Epidemiekarte", CardType.EPIDEMIC_CARD, "");
+        return new EpidemicCard(id, "Epidemiekarte", "");
     }
 
     public void gameStartShuffle(int numSubDecks) {

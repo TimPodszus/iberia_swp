@@ -9,8 +9,8 @@ import lombok.Getter;
 public class InfectionCardDTO extends CardDTO {
     private final CityDTO city;
 
-    public InfectionCardDTO(int id, String title, CardType type, CityDTO city) {
-        super(id, title, type);
+    public InfectionCardDTO(int id, String title, CityDTO city) {
+        super(id, title, CardType.INFECTION_CARD);
         this.city = city;
     }
 }

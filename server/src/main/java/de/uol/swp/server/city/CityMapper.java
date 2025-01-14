@@ -14,7 +14,6 @@ public class CityMapper {
     public static ICityDTO toDTO(City city) {
         return new CityDTO(
                 city.getId(),
-                city.getId(),
                 city.getPlagueName(),
                 city.getName(),
                 city.getFoundationDate(),
