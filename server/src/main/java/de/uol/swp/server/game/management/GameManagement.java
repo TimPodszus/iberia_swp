@@ -39,7 +39,7 @@ public class GameManagement implements IGameManagement {
      * @return The newly created game
      */
     public IGame createAndInitializeGame(CreateGameRequest request) {
-        IGame game = new Game(request.getDifficulty());
+        IGame game = new Game(request.getDifficulty(), request.getLobbyCode());
         GameStore.getInstance().addGame(request.getLobbyCode(), game);
         initializing(game, UserMapper.toUser(request.getUsers()));
         return game;
@@ -69,6 +69,7 @@ public class GameManagement implements IGameManagement {
     private void createPlayers(List<IUser> users, IGame game) {
         for (IUser user : users) {
             Player player = new Player(user);
+
             game.getPlayers()
                 .add(player);
             int cardsToDraw = switch (game.getPlayers()

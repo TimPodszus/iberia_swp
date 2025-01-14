@@ -5,7 +5,7 @@ import lombok.*;
 
 @AllArgsConstructor
 @Getter
-public class Infection {
+public class Infection implements IInfection {
     @Setter
     private int severity;
     private final Plague plague;

@@ -1,6 +1,6 @@
 package de.uol.swp.server.connection;
 
-import de.uol.swp.server.city.CityName;
+import de.uol.swp.common.city.CityName;
 import lombok.Getter;
 
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package de.uol.swp.server.region;
 
-import de.uol.swp.server.city.CityName;
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.city.CityRepository;
 import lombok.Getter;
 

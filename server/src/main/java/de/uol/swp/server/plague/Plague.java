@@ -8,8 +8,7 @@ import lombok.Setter;
 
 @AllArgsConstructor
 @Getter
-public class Plague
-{
+public class Plague implements IPlague {
     private final PlagueName name;
     @Setter
     private int cubesRemaining;
