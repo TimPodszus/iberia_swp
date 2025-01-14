@@ -13,9 +13,5 @@ public interface ICityManagement {
             int amount
     ) throws CityManagementException;
 
-    void infectCityWithOneCube(IGame game, InfectionCard infectionCard, PlagueName plagueName);
-
     void infectCityWithOwnPlague(IGame game, InfectionCard infectionCard, int amount);
-
-    void infectCityWithOneCubeAndOwnPlague(IGame game, InfectionCard infectionCard);
 }
