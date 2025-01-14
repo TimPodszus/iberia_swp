@@ -1,9 +1,6 @@
 package de.uol.swp.server.communication;
 
-
-import de.uol.swp.common.game.message.event.BoardUpdateMessage;
 import de.uol.swp.common.message.request.RequestMessage;
-import de.uol.swp.common.message.response.CreatedGameResponse;
 import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.message.response.ResponseMessage;
 import de.uol.swp.common.message.ServerMessage;
@@ -200,36 +197,6 @@ public class ServerHandler implements ServerHandlerDelegate {
         Optional<MessageContext> ctx = getCtx(msg);
         ctx.ifPresent(this::removeSession);
         sendMessage(msg);
-    }
-
-    /**
-     * Handles BoardUpdateMessage events found on the EventBus.
-     * <p>
-     * If a BoardUpdateMessage is detected on the EventBus, this method is called.
-     * It sends the BoardUpdateMessage to all connected clients.
-     *
-     * @param msg The BoardUpdateMessage found on the EventBus
-     * @see de.uol.swp.server.communication.ServerHandler#sendMessage(ServerMessage)
-     * @since 2019-11-20
-     */
-    @Subscribe
-    public void onBoardUpdateMessage(BoardUpdateMessage msg) {
-        sendMessage(msg);
-    }
-
-    /**
-     * Handles CreatedGameResponse events found on the EventBus.
-     * <p>
-     * If a CreatedGameResponse is detected on the EventBus, this method is called.
-     * It sends the CreatedGameResponse to all connected clients.
-     *
-     * @param response The CreatedGameResponse found on the EventBus
-     * @see de.uol.swp.server.communication.ServerHandler#sendMessage(ServerMessage)
-     * @since 2019-11-20
-     */
-    @Subscribe
-    public void onCreatedGameResponse(CreatedGameResponse response) {
-        sendMessage(response);
     }
 
     // -------------------------------------------------------------------------------
