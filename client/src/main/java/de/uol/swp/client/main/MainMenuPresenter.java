@@ -59,38 +59,6 @@ public class MainMenuPresenter extends AbstractPresenter {
     }
 
     /**
-     * Method called when the create lobby button is pressed
-     * <p>
-     * If the create lobby button is pressed, this method requests the lobby service
-     * to create a new lobby. Therefore it currently uses the lobby name "test"
-     * and an user called "ich"
-     *
-     * @param event The ActionEvent created by pressing the create lobby button
-     * @see de.uol.swp.client.lobby.LobbyService
-     * @since 2019-11-20
-     */
-    @FXML
-    void onCreateLobby(ActionEvent event) {
-        lobbyService.createNewLobby("test", new UserDTO("ich", ""));
-    }
-
-    /**
-     * Method called when the join lobby button is pressed
-     * <p>
-     * If the join lobby button is pressed, this method requests the lobby service
-     * to join a specified lobby. Therefore it currently uses the lobby name "test"
-     * and an user called "ich"
-     *
-     * @param event The ActionEvent created by pressing the join lobby button
-     * @see de.uol.swp.client.lobby.LobbyService
-     * @since 2019-11-20
-     */
-    @FXML
-    void onJoinLobby(ActionEvent event) {
-        lobbyService.joinLobby("test", new UserDTO("ich", ""));
-    }
-
-    /**
      * Handles the event when the current games button is pressed.
      * <p>
      * Posts a ShowCurrentGamesViewEvent to the EventBus to switch the current screen
