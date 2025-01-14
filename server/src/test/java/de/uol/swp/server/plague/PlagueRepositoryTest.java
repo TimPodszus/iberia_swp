@@ -1,6 +1,8 @@
 package de.uol.swp.server.plague;
 
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.plague.data.IPlague;
+import de.uol.swp.server.plague.data.PlagueRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +36,7 @@ class PlagueRepositoryTest {
      */
     @Test
     void testGetPlaguesReturnsCorrectSize() {
-        List<Plague> plagues = plagueRepository.getPlagues();
+        List<IPlague> plagues = plagueRepository.getPlagues();
         assertEquals(4, plagues.size());
     }
 
@@ -43,8 +45,9 @@ class PlagueRepositoryTest {
      */
     @Test
     void testGetPlaguesContainsYellowFever() {
-        List<Plague> plagues = plagueRepository.getPlagues();
-        assertTrue(plagues.stream().anyMatch(p -> p.getName() == PlagueName.YELLOW_FEVER));
+        List<IPlague> plagues = plagueRepository.getPlagues();
+        assertTrue(plagues.stream()
+                          .anyMatch(p -> p.getName() == PlagueName.YELLOW_FEVER));
     }
 
     /**
@@ -52,8 +55,9 @@ class PlagueRepositoryTest {
      */
     @Test
     void testGetPlaguesContainsCholera() {
-        List<Plague> plagues = plagueRepository.getPlagues();
-        assertTrue(plagues.stream().anyMatch(p -> p.getName() == PlagueName.CHOLERA));
+        List<IPlague> plagues = plagueRepository.getPlagues();
+        assertTrue(plagues.stream()
+                          .anyMatch(p -> p.getName() == PlagueName.CHOLERA));
     }
 
     /**
@@ -61,8 +65,9 @@ class PlagueRepositoryTest {
      */
     @Test
     void testGetPlaguesContainsMalaria() {
-        List<Plague> plagues = plagueRepository.getPlagues();
-        assertTrue(plagues.stream().anyMatch(p -> p.getName() == PlagueName.MALARIA));
+        List<IPlague> plagues = plagueRepository.getPlagues();
+        assertTrue(plagues.stream()
+                          .anyMatch(p -> p.getName() == PlagueName.MALARIA));
     }
 
     /**
@@ -70,7 +75,8 @@ class PlagueRepositoryTest {
      */
     @Test
     void testGetPlaguesContainsTyphus() {
-        List<Plague> plagues = plagueRepository.getPlagues();
-        assertTrue(plagues.stream().anyMatch(p -> p.getName() == PlagueName.TYPHUS));
+        List<IPlague> plagues = plagueRepository.getPlagues();
+        assertTrue(plagues.stream()
+                          .anyMatch(p -> p.getName() == PlagueName.TYPHUS));
     }
 }

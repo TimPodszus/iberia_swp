@@ -2,6 +2,9 @@ package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.CityName;
+import de.uol.swp.server.city.data.ICity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -40,7 +43,7 @@ class CityMapperTest {
     }
 
     /**
-     * Tests the {@link CityMapper#toDTO(City)} method.
+     * Tests the {@link CityMapper#toDTO(ICity)} method.
      * Verifies that a {@link City} object is correctly mapped to an {@link ICityDTO} object.
      */
     @Test
@@ -67,7 +70,7 @@ class CityMapperTest {
      */
     @Test
     void testToDTOList() {
-        List<City> cities = Arrays.asList(firstCity, secondCity);
+        List<ICity> cities = Arrays.asList(firstCity, secondCity);
 
         List<ICityDTO> cityDTOList = CityMapper.toDTOList(cities);
 

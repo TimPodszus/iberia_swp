@@ -1,34 +1,20 @@
-package de.uol.swp.server.game.data;
+package de.uol.swp.server.Game.data;
 
-import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
-import de.uol.swp.server.city.City;
-import de.uol.swp.server.city.CityName;
-import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GameTest {
 
     private IGame game;
-    private CityRepository cityRepository;
-    private List<City> mockCities;
 
     @BeforeEach
     void setUp() {
-        cityRepository = new CityRepository();
-        mockCities = List.of(
-                new City(1, PlagueName.CHOLERA, CityName.BARCELONA, 1234, true),
-                new City(1, PlagueName.CHOLERA, CityName.ALBACETE, 111, false)
-        );
         game = new Game(3);
     }
 
@@ -67,7 +53,11 @@ class GameTest {
 
     @Test
     void testGameStartShuffle() {
-        assertEquals(48 + game.getDifficulty(), game.getPlayerCardDrawPile().size());
+        assertEquals(
+                48 + game.getDifficulty(),
+                game.getPlayerCardDrawPile()
+                    .size()
+        );
     }
 }
 

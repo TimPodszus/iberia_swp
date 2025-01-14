@@ -2,12 +2,13 @@ package de.uol.swp.server.region;
 
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.RegionDTO;
-import de.uol.swp.server.city.City;
-import de.uol.swp.server.city.CityName;
+import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.CityName;
+import de.uol.swp.server.region.data.IRegion;
+import de.uol.swp.server.region.data.Region;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Provides utility methods to convert Region objects into their Data Transfer Object (DTO) forms.
@@ -15,6 +16,11 @@ import java.util.stream.Collectors;
  * prevention measures, into a format suitable for client-server communication.
  */
 public class RegionMapper {
+
+    // Private constructor to prevent instantiation
+    private RegionMapper() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
 
     /**
      * Converts a Region object into a RegionDTO, encapsulating the region's data in a simpler,
@@ -31,7 +37,7 @@ public class RegionMapper {
                       .stream()
                       .map(City::getName)
                       .map(CityName::getDisplayName)
-                      .collect(Collectors.toList()),
+                      .toList(),
                 region.getWaterTreatments(),
                 region.isPreventionMarker()
         );
@@ -45,16 +51,16 @@ public class RegionMapper {
      * @param regions the list of Region objects to convert
      * @return a List of IRegionDTO representing the converted regions
      */
-    public static List<IRegionDTO> toDTOList(List<Region> regions) {
+    public static List<IRegionDTO> toDTOList(List<IRegion> regions) {
         List<IRegionDTO> regionDTOS = new ArrayList<>();
-        for (Region region : regions) {
+        for (IRegion region : regions) {
             RegionDTO regionDTO = new RegionDTO(
                     region.getId(),
                     region.getSurroundingCities()
                           .stream()
                           .map(City::getName)
                           .map(CityName::getDisplayName)
-                          .collect(Collectors.toList()),
+                          .toList(),
                     region.getWaterTreatments(),
                     region.isPreventionMarker()
             );

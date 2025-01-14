@@ -1,4 +1,4 @@
-package de.uol.swp.server.plague;
+package de.uol.swp.server.plague.data;
 
 import de.uol.swp.common.game.PlagueName;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 public class PlagueRepository {
-    private List<Plague> plagues;
+    private List<IPlague> plagues;
 
     /**
      * Constructs a new PlagueRepository and initializes the list of plagues.
@@ -34,7 +34,7 @@ public class PlagueRepository {
      * @param plagueName the name of the plague to retrieve
      * @return the plague with the specified name, or null if no such plague exists
      */
-    public Plague getPlagueByName(PlagueName plagueName) {
+    public IPlague getPlagueByName(PlagueName plagueName) {
         return plagues.stream()
                       .filter(plague -> plague.getName()
                                               .equals(plagueName))

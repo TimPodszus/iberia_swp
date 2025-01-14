@@ -27,10 +27,11 @@ public class InfectionState implements IGameState {
         int infectionCounter = game.getInfectionCounter();
 
         game.getCityManagement()
-            .infectCityWithOneCubeAndOwnPlague(
+            .infectCityWithOwnPlague(
                     game,
                     game.getGameManagement()
-                        .drawInfectionCard(game)
+                        .drawInfectionCard(game),
+                    1
             );
         infectedCities++;
 

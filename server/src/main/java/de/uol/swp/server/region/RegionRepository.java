@@ -1,7 +1,9 @@
 package de.uol.swp.server.region;
 
-import de.uol.swp.server.city.CityName;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.CityName;
+import de.uol.swp.server.region.data.IRegion;
+import de.uol.swp.server.region.data.Region;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -20,7 +22,7 @@ public class RegionRepository {
      * List of all regions.
      */
     @Getter
-    private List<Region> regions;
+    private List<IRegion> regions;
 
     /**
      * Constructor that initializes the region repository by creating all regions.
@@ -280,7 +282,7 @@ public class RegionRepository {
      * @param id the unique identifier of the region
      * @return the region with the specified id
      */
-    public Region getRegionByID(int id) {
+    public IRegion getRegionByID(int id) {
         return regions.stream()
                       .filter(region -> region.getId() == id)
                       .findFirst()
@@ -293,7 +295,7 @@ public class RegionRepository {
      * @param cityName the name of the city
      * @return a list of regions containing the specified city
      */
-    public List<Region> getRegionsByCityName(CityName cityName) {
+    public List<IRegion> getRegionsByCityName(CityName cityName) {
         return regions.stream()
                       .filter(region -> region.getSurroundingCities()
                                               .stream()

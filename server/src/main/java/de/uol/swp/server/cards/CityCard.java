@@ -1,7 +1,7 @@
 package de.uol.swp.server.cards;
 
 import de.uol.swp.common.cards.CardType;
-import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.data.City;
 import lombok.Getter;
 
 
