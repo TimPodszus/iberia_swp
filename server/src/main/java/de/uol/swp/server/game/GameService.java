@@ -1,6 +1,8 @@
 package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
@@ -19,7 +21,6 @@ import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.Optional;
 
 /**
  * Service responsible for managing game-related requests such as creating games.
@@ -57,12 +58,10 @@ public class GameService extends AbstractService {
     @Subscribe
     public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException {
         IGame game = gameManagement.createAndInitializeGame(request);
-        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyCode());
-        if (game != null && lobby.isPresent()) {
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyCode());
+        if (game != null) {
             post(new CreateGameResponse(true, "Game erstellt", GameMapper.toDTO(game)));
-            sendToAllInLobby(lobby.get(),
-                    new StartGameEvent(request.getLobbyCode(), GameMapper.toDTO(game))
-            );
+            sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
         }
     }
 
@@ -73,17 +72,23 @@ public class GameService extends AbstractService {
      * @param request the player move request containing session, lobby code, and city ID
      */
     @Subscribe
-    public void onMovePlayerRequest(MovePlayerRequest request) throws GameManagementException {
+    public void onMovePlayerRequest(MovePlayerRequest request) throws GameManagementException, LobbyManagementException, GameException {
         IUserDTO user = request.getSession()
                                .map(Session::getUser)
                                .orElse(null);
         if (user == null) {
-            throw new IllegalArgumentException("User is unknown");
+            throw new GameException("User is unknown");
         }
-        gameManagement.movePlayer(UserMapper.toUser(user),
+
+        gameManagement.movePlayer(
+                UserMapper.toUser(user),
                 request.getLobbyCode(),
                 cityManagement.getCity(request.getLobbyCode(), request.getCityId())
         );
+
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyCode()));
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyCode());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyCode(), gameDTO));
     }
 
     /**

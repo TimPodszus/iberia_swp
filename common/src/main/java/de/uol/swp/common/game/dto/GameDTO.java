@@ -12,6 +12,7 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @AllArgsConstructor
@@ -31,5 +32,50 @@ public class GameDTO implements IGameDTO, Serializable {
     private int waterTreatmentsLeft;
     private int tracksLeft;
     private int currentPlayerIndex;
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        GameDTO gameDTO = (GameDTO) object;
+        return infectionCounter == gameDTO.infectionCounter && escalationStage == gameDTO.escalationStage && waterTreatmentsLeft == gameDTO.waterTreatmentsLeft && tracksLeft == gameDTO.tracksLeft && currentPlayerIndex == gameDTO.currentPlayerIndex && Objects.equals(gameId,
+                gameDTO.gameId
+        ) && Objects.equals(cities, gameDTO.cities) && Objects.equals(connections,
+                gameDTO.connections
+        ) && Objects.equals(regions, gameDTO.regions) && Objects.equals(
+                plagues,
+                gameDTO.plagues
+        ) && Objects.equals(infectionCardDrawPile, gameDTO.infectionCardDrawPile) && Objects.equals(
+                infectionCardDiscardPile,
+                gameDTO.infectionCardDiscardPile
+        ) && Objects.equals(playerCardDrawPile, gameDTO.playerCardDrawPile) && Objects.equals(
+                playerCardDiscardPile,
+                gameDTO.playerCardDiscardPile
+        ) && Objects.equals(players, gameDTO.players);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(gameId,
+                cities,
+                connections,
+                regions,
+                plagues,
+                infectionCardDrawPile,
+                infectionCardDiscardPile,
+                playerCardDrawPile,
+                playerCardDiscardPile,
+                players,
+                infectionCounter,
+                escalationStage,
+                waterTreatmentsLeft,
+                tracksLeft,
+                currentPlayerIndex
+        );
+    }
 }
 

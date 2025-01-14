@@ -164,8 +164,7 @@ class LobbyManagementTest {
 
         when(lobbyStore.findLobby("testcode2")).thenReturn(mockLobby);
 
-        ILobby foundLobby = lobbyManagement.getLobby("testcode2")
-                                           .orElse(null);
+        ILobby foundLobby = lobbyManagement.getLobby("testcode2");
 
         assertNotNull(foundLobby);
         assertEquals(user1.getUsername(),
@@ -177,15 +176,16 @@ class LobbyManagementTest {
     /**
      * Tests the retrieval of a non-existent lobby.
      *
-     * @throws SQLException             if there is an SQL error
-     * @throws LobbyManagementException if there is an error in lobby management
+     * @throws SQLException if there is an SQL error
      */
     @Test
-    void getNonExistentLobbyTest() throws SQLException, LobbyManagementException {
+    void getNonExistentLobbyTest() throws SQLException {
         when(lobbyStore.findLobby("NonExistentLobby")).thenReturn(null);
 
-        assertTrue(lobbyManagement.getLobby("NonExistentLobby")
-                                  .isEmpty());
+        assertThrows(LobbyManagementException.class,
+                () -> lobbyManagement.getLobby("NonExistentLobby"),
+                "Should throw an exception when trying to get a non-existent lobby."
+        );
     }
 
     /**
@@ -238,8 +238,10 @@ class LobbyManagementTest {
         User user = new User("testUser", "testUser");
 
         when(lobby.getLobbyCode()).thenReturn("testLobbyCode"); // Mock the lobbyCode
-        doNothing().when(lobby).joinUser(user);
-        doNothing().when(lobbyStore).joinUser(anyString(), eq(user));
+        doNothing().when(lobby)
+                   .joinUser(user);
+        doNothing().when(lobbyStore)
+                   .joinUser(anyString(), eq(user));
 
         lobbyManagement.joinLobby(lobby, user);
 
@@ -308,7 +310,7 @@ class LobbyManagementTest {
      */
     @Test
     void updateLobbyTest() throws LobbyManagementException, SQLException {
-         lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
+        lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
 
         lobbyManagement.updateLobby(lobby);
 
@@ -320,7 +322,7 @@ class LobbyManagementTest {
      */
     @Test
     void failedUpdateLobbyTest() throws SQLException {
-         lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
+        lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
 
         when(lobbyStore.updateLobby(eq("testcode"),
                 eq("Test"),
@@ -342,7 +344,9 @@ class LobbyManagementTest {
     void joinLobby_LobbyNotFound() {
         User user = new User("testUser", "testUser");
 
-        LobbyManagementException thrown = assertThrows(LobbyManagementException.class, () -> lobbyManagement.joinLobby(null, user));
+        LobbyManagementException thrown = assertThrows(LobbyManagementException.class,
+                () -> lobbyManagement.joinLobby(null, user)
+        );
 
         assertEquals("Lobby not found!", thrown.getMessage());
     }

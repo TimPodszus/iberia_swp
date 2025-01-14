@@ -63,7 +63,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
      */
-    void initializing(IGame game, List<IUser> users) {
+    private void initializing(IGame game, List<IUser> users) {
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);

@@ -8,7 +8,6 @@ import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
 import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
 import de.uol.swp.common.lobby.message.response.LobbyListResponse;
-import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.EventBusBasedTest;
@@ -28,7 +27,6 @@ import org.mockito.Mock;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -49,9 +47,12 @@ public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * The lobby instance used for testing.
      */
-    static final ILobby lobby = new Lobby("testcode", "Test", UserMapper.toUser(List.of(firstOwner)),
+    static final ILobby lobby = new Lobby("testcode",
+            "Test",
+            UserMapper.toUser(List.of(firstOwner)),
             UserMapper.toUser(firstOwner),
-            4);
+            4
+    );
 
     /**
      * Mocked instance of ILobbyManagement.
@@ -97,8 +98,8 @@ public class LobbyServiceTest extends EventBusBasedTest {
      * method is called.
      *
      * @throws LobbyManagementException if an error occurs during lobby management
-     * @throws NoSuchFieldException if the authenticationService field is not found
-     * @throws IllegalAccessException if the authenticationService field is not accessible
+     * @throws NoSuchFieldException     if the authenticationService field is not found
+     * @throws IllegalAccessException   if the authenticationService field is not accessible
      */
     @BeforeEach
     public void setUp() throws LobbyManagementException, NoSuchFieldException, IllegalAccessException {
@@ -150,7 +151,7 @@ public class LobbyServiceTest extends EventBusBasedTest {
      */
     @Test
     void getLobbyTest() throws LobbyManagementException, InterruptedException {
-        when(lobbyManagement.getLobby("testcode")).thenReturn(Optional.of(lobby));
+        when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
 
         postAndWait(new GetLobbyRequest("testcode", firstOwner));
 

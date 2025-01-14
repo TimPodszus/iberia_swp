@@ -1,7 +1,7 @@
 package de.uol.swp.server.cards;
 
 import de.uol.swp.common.cards.*;
-import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.city.City;
 import de.uol.swp.common.city.CityName;
@@ -36,7 +36,7 @@ class CardMapperTest {
         assertEquals("City of London", cityCardDTO.getTitle());
         assertEquals(CardType.CITY_CARD, cityCardDTO.getType());
 
-        CityDTO cityDTO = cityCardDTO.getCity();
+        ICityDTO cityDTO = cityCardDTO.getCity();
         assertNotNull(cityDTO);
         assertEquals(1, cityDTO.getId());
         assertEquals(PlagueName.MALARIA, cityDTO.getPlagueName());
@@ -68,7 +68,7 @@ class CardMapperTest {
         assertEquals("Infection in Paris", infectionCardDTO.getTitle());
         assertEquals(CardType.INFECTION_CARD, infectionCardDTO.getType());
 
-        CityDTO cityDTO = infectionCardDTO.getCity();
+        ICityDTO cityDTO = infectionCardDTO.getCity();
         assertNotNull(cityDTO);
         assertEquals(1, cityDTO.getId());
         assertEquals(PlagueName.MALARIA, cityDTO.getPlagueName());

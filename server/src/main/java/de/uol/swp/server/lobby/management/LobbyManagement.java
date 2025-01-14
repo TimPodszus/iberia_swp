@@ -48,16 +48,21 @@ public class LobbyManagement implements ILobbyManagement {
 
     public void leaveLobby(String lobbyID, IUser user) throws SQLException, LobbyStoreException {
         ILobby lobbyToLeave = lobbyStore.findLobby(lobbyID);
-        lobbyToLeave.getUsers().remove(user);
+        lobbyToLeave.getUsers()
+                    .remove(user);
         lobbyStore.removeUser(lobbyID, user);
-        if (user.getUsername().equals(lobbyToLeave.getOwner().getUsername()) && !lobbyToLeave.getUsers().isEmpty()) {
+        if (user.getUsername()
+                .equals(lobbyToLeave.getOwner()
+                                    .getUsername()) && !lobbyToLeave.getUsers()
+                                                                    .isEmpty()) {
             List<IUser> remainingUsers = lobbyToLeave.getUsers();
             if (!remainingUsers.isEmpty()) {
                 IUser newOwner = remainingUsers.get(0);
                 lobbyToLeave.updateOwner(newOwner);
             }
         }
-        if (lobbyToLeave.getUsers().isEmpty()) {
+        if (lobbyToLeave.getUsers()
+                        .isEmpty()) {
             lobbyStore.removeLobby(lobbyID);
         }
     }
@@ -73,13 +78,14 @@ public class LobbyManagement implements ILobbyManagement {
         }
     }
 
-    public Optional<ILobby> getLobby(String lobbyID) throws LobbyManagementException {
+    public ILobby getLobby(String lobbyID) throws LobbyManagementException {
         try {
             ILobby lobby = lobbyStore.findLobby(lobbyID);
             if (lobby != null) {
-                return Optional.of(lobby);
+                return lobby;
+            } else {
+                throw new LobbyManagementException("Lobby not found");
             }
-            return Optional.empty();
         } catch (SQLException e) {
             throw new LobbyManagementException("Failed to get lobby");
         }
@@ -119,11 +125,11 @@ public class LobbyManagement implements ILobbyManagement {
     }
 
 
-        /**
-         * Generates a unique lobby code.
-         *
-         * @return a unique lobby code
-         */
+    /**
+     * Generates a unique lobby code.
+     *
+     * @return a unique lobby code
+     */
     private String generateLobbyID() throws SQLException {
         String code;
         do {

@@ -47,5 +47,13 @@ public interface IGameManagement {
      * @throws GameManagementException if moving the player fails
      */
     void movePlayer(IUser user, String lobbyCode, City cityId) throws GameManagementException;
+
+    /**
+     * Retrieves the game with the specified lobby code.
+     *
+     * @param lobbyCode the code of the lobby in which the game is happening
+     * @return the game with the specified lobby code
+     */
+    IGame getGame(String lobbyCode);
 }
 

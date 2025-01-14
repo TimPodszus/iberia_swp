@@ -16,7 +16,6 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Handles the lobby requests send by the users
@@ -63,9 +62,9 @@ public class LobbyService extends AbstractService {
         );
         LobbyCreatedResponse response = new LobbyCreatedResponse(LobbyMapper.toDTO(createdLobby));
         createLobbyRequest.getSession()
-               .ifPresent(response::setSession);
+                          .ifPresent(response::setSession);
         createLobbyRequest.getMessageContext()
-               .ifPresent(response::setMessageContext);
+                          .ifPresent(response::setMessageContext);
         post(response);
     }
 
@@ -82,17 +81,11 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws LobbyManagementException, SQLException {
-        Optional<ILobby> optionalLobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
-        if (optionalLobby.isPresent()) {
-            ILobby lobby = optionalLobby.get();
-            lobbyManagement.joinLobby(lobby, UserMapper.toUser(lobbyJoinUserRequest.getUser()));
-            sendToAllInLobby(
-                    lobby,
-                    new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser())
-            );
-        } else {
-            throw new LobbyManagementException("Lobby not found");
-        }
+        ILobby lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
+        lobbyManagement.joinLobby(lobby, UserMapper.toUser(lobbyJoinUserRequest.getUser()));
+        sendToAllInLobby(lobby,
+                new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser())
+        );
     }
 
     /**
@@ -108,18 +101,12 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) throws LobbyManagementException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getLobbyCode());
+        ILobby lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getLobbyCode());
 
-        if (lobby.isPresent()) {
-            lobby.get()
-                 .leaveUser(UserMapper.toUser(lobbyLeaveUserRequest.getUser()));
-            sendToAllInLobby(
-                    lobby.get(),
-                    new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
-            );
-        } else {
-            throw new LobbyManagementException("Lobby not found");
-        }
+        lobby.leaveUser(UserMapper.toUser(lobbyLeaveUserRequest.getUser()));
+        sendToAllInLobby(lobby,
+                new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
+        );
     }
 
     /**
@@ -159,17 +146,16 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onGetLobbyRequest(GetLobbyRequest request) throws LobbyManagementException {
-        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyCode());
-        if (lobby.isPresent()) {
-            ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby.get());
-            GetLobbyResponse response = new GetLobbyResponse(lobbyDTO);
-            request.getMessageContext()
-                   .ifPresent(response::setMessageContext);
-            request.getSession()
-                   .ifPresent(response::setSession);
-            post(response);
-        }
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyCode());
+        ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
+        GetLobbyResponse response = new GetLobbyResponse(lobbyDTO);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        request.getSession()
+               .ifPresent(response::setSession);
+        post(response);
     }
+
 
     /**
      * Handles UpdateLobbyRequests found on the EventBus.

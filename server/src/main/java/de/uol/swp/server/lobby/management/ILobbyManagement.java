@@ -2,6 +2,7 @@ package de.uol.swp.server.lobby.management;
 
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.usermanagement.IUser;
+
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -33,10 +34,10 @@ public interface ILobbyManagement {
      * Retrieves a lobby by its ID.
      *
      * @param lobbyId the ID of the lobby to retrieve
-     * @return an Optional containing the lobby if found, or an empty Optional if not found
+     * @return the lobby
      * @throws LobbyManagementException if an error occurs during lobby retrieval
      */
-    Optional<ILobby> getLobby(String lobbyId) throws LobbyManagementException;
+    ILobby getLobby(String lobbyId) throws LobbyManagementException;
 
     /**
      * Retrieves a list of all lobbies.
@@ -47,12 +48,12 @@ public interface ILobbyManagement {
     List<ILobby> getLobbies() throws LobbyManagementException;
 
 
-
-   /**
+    /**
      * Allows a user to join a specified lobby.
+     *
      * @param lobby an Optional containing the lobby to join
      * @throws LobbyManagementException if an error occurs during the join process
-     * @throws SQLException if a database access error occurs
+     * @throws SQLException             if a database access error occurs
      */
     void joinLobby(ILobby lobby, IUser user) throws LobbyManagementException, SQLException;
 
