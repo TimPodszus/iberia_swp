@@ -7,7 +7,9 @@ import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.data.Game;
-import de.uol.swp.server.usermanagement.AuthenticationService;
+import de.uol.swp.server.plague.management.IPlagueManagement;
+import de.uol.swp.server.plague.management.PlagueManagement;
+import de.uol.swp.server.plague.management.PlagueManagementException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -21,8 +23,8 @@ public class PlagueService extends AbstractService {
     /**
      * Constructor
      *
-     * @param plagueManagement       The management class for researching plagues
-     * @param eventBus               The server-wide EventBus
+     * @param plagueManagement The management class for researching plagues
+     * @param eventBus         The server-wide EventBus
      * @since 2024-10-04
      */
     @Inject
@@ -40,7 +42,10 @@ public class PlagueService extends AbstractService {
      * @since 2024-10-04
      */
     @Subscribe
-    public void onResearchPlagueRequest(ResearchPlagueRequest researchPlagueRequest, Game game) throws PlagueManagementException {
+    public void onResearchPlagueRequest(
+            ResearchPlagueRequest researchPlagueRequest,
+            Game game
+    ) throws PlagueManagementException {
         PlagueName name = researchPlagueRequest.getName();
 
         plagueManagement.researchPlague(name, game);

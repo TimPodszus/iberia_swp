@@ -2,6 +2,8 @@ package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.ICity;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -16,7 +18,7 @@ public class CityRepository {
     /**
      * List of all cities.
      */
-    private List<City> cities;
+    private List<ICity> cities;
 
     /**
      * Constructor that initializes the city repository by creating all cities.
@@ -90,7 +92,7 @@ public class CityRepository {
      * @param cityName the name of the city to retrieve
      * @return the city matching the specified name
      */
-    public City getCityByName(CityName cityName) {
+    public ICity getCityByName(CityName cityName) {
         return cities.stream()
                      .filter(city -> city.getName()
                                          .equals(cityName))
@@ -104,7 +106,7 @@ public class CityRepository {
      * @param cityNames the names of the cities to retrieve
      * @return a list of cities matching the specified names
      */
-    public List<City> getCitiesByNames(CityName... cityNames) {
+    public List<ICity> getCitiesByNames(CityName... cityNames) {
         return getCitiesByNames(Arrays.asList(cityNames));
     }
 
@@ -114,7 +116,7 @@ public class CityRepository {
      * @param cityNames the names of the cities to retrieve
      * @return a list of cities matching the given names
      */
-    public List<City> getCitiesByNames(List<CityName> cityNames) {
+    public List<ICity> getCitiesByNames(List<CityName> cityNames) {
         return cities.stream()
                      .filter(city -> cityNames.contains(city.getName()))
                      .toList();

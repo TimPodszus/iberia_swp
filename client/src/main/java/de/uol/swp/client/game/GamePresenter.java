@@ -1,5 +1,6 @@
 package de.uol.swp.client.game;
 
+import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
@@ -20,6 +21,7 @@ import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import javafx.application.Platform;
+import de.uol.swp.common.game.message.event.StartGameEvent;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -58,6 +60,10 @@ public class GamePresenter extends AbstractPresenter {
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
+    private String lobbyCode;
+
+    @Inject
+    protected GameService gameService;
 
     @FXML
     private AnchorPane gameScreen;
@@ -238,6 +244,28 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
+     * Handles the event when the player card pile is clicked.
+     * This method is triggered by a mouse click event on the player card pile.
+     *
+     * @param event the mouse event that triggered this handler
+     */
+    @FXML
+    private void onPlayerCardPileClickedEvent(MouseEvent event) {
+        gameService.drawPlayerCard(lobbyCode);
+    }
+
+    /**
+     * Event handler for the GameStartedEvent.
+     * This method is called when a game starts and sets the lobby code.
+     *
+     * @param event the GameStartedEvent containing the lobby code
+     */
+    @Subscribe
+    private void onStartGameEventEvent(StartGameEvent event) {
+        lobbyCode = event.getLobbyCode();
+    }
+
+    /**
      * Handles build train track action.
      *
      * @param event the action event
@@ -381,13 +409,13 @@ public class GamePresenter extends AbstractPresenter {
      * @param plagueName the name of the plague
      * @param cubes      the number of plague cubes to set
      */
-    public void setPlaqueCubesToCity(int cityId, PlagueName plagueName, int cubes) {
+    public void setPlagueCubesToCity(int cityId, PlagueName plagueName, int cubes) {
         VBox plagueDisplayVBox = (VBox) mapPane.lookup(PLAGUE_DISPLAY_CITY_ID + cityId);
 
-        ObservableList<Node> existingPlaques = plagueDisplayVBox.getChildren();
+        ObservableList<Node> existingPlagues = plagueDisplayVBox.getChildren();
 
-        HBox plaqueHBox = new HBox();
-        for (Node node : existingPlaques) {
+        HBox plagueHBox = new HBox();
+        for (Node node : existingPlagues) {
             if (node.getUserData() == plagueName) {
                 plagueDisplayVBox.getChildren()
                                .remove(node);
@@ -404,18 +432,18 @@ public class GamePresenter extends AbstractPresenter {
         text.setStrokeType(StrokeType.OUTSIDE);
         text.setStrokeWidth(0.0);
 
-        plaqueHBox.getChildren()
+        plagueHBox.getChildren()
                   .addAll(plagueCube, text);
         if (cubes == 3) {
-            plaqueHBox.getStyleClass()
+            plagueHBox.getStyleClass()
                       .add("plague-cubes-display-warning");
         } else {
-            plaqueHBox.getStyleClass()
+            plagueHBox.getStyleClass()
                       .add("plague-cubes-display");
         }
 
         plagueDisplayVBox.getChildren()
-                       .add(plaqueHBox);
+                       .add(plagueHBox);
     }
 
     /**
@@ -552,8 +580,10 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
 
         playerCardsHBox.getChildren()
-                       .add(playerCardsHBox.getChildren()
-                                           .size() - 1, cardSlot);
+                       .add(
+                               playerCardsHBox.getChildren()
+                                              .size() - 1, cardSlot
+                       );
     }
 
     /**
@@ -700,7 +730,7 @@ public class GamePresenter extends AbstractPresenter {
             IPlagueDTO plague = infection.getPlague();
             PlagueName plagueName = plague.getName();
             int severity = infection.getSeverity();
-            setPlaqueCubesToCity(city.getId(), plagueName, severity);
+            setPlagueCubesToCity(city.getId(), plagueName, severity);
         }
     }
 

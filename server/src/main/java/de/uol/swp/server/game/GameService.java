@@ -12,6 +12,7 @@ import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -24,10 +25,8 @@ import java.util.Optional;
  * and communicates the result back to the client through status responses.
  */
 public class GameService extends AbstractService {
-    GameManagement gameManagement = new GameManagement();
-
-    protected ILobbyManagement lobbyManagement;
-
+    IGameManagement gameManagement = new GameManagement();
+protected ILobbyManagement lobbyManagement;
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
      *

@@ -22,10 +22,13 @@ public interface IGameManagement {
     IGame setPositioning(PositioningRequest request) throws GameManagementException;
 
     /**
-     * Draws an infection card from the deck.
-     *
-     * @return the drawn infection card
+     * Draws a player card. The specific behavior of this method should be defined.
      */
-    InfectionCard drawInfectionCard();
+    InfectionCard drawInfectionCard(IGame game);
+
+    /**
+     * Adds an infection card to the infection card discard pile.
+     */
+    void discardInfectionCard(IGame game, InfectionCard infectionCard);
 }
 

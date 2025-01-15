@@ -2,7 +2,7 @@ package de.uol.swp.server.player;
 
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.usermanagement.IUser;
@@ -56,16 +56,6 @@ class PlayerTest {
         player.setCards(cards);
     }
 
-    /*
-    Auskommentiert, da die Methode nicht implementiert ist
-
-    @Test
-    void playCard_AddsCardToHand() {
-        Card card = mock(Card.class);
-        player.playCard(card);
-        assertTrue(player.getCards().contains(card));
-    }
-*/
     /**
      * Tests that the {@link Player#discardCard(Card)} method correctly removes a card from the player's hand.
      */
@@ -79,7 +69,7 @@ class PlayerTest {
     }
 
     /**
-     * Tests that the {@link Player#setStartingPosition(String)} method throws an exception
+     * Tests that the {@link Player#setStartingPosition(CityName)} method throws an exception
      * when the city name does not match any city card in the player's hand.
      */
     @Test

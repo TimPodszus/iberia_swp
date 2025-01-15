@@ -3,12 +3,12 @@ package de.uol.swp.server.player;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.cards.Card;
-import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.role.Role;
+import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

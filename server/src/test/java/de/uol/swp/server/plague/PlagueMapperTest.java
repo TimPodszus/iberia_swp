@@ -2,6 +2,8 @@ package de.uol.swp.server.plague;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.plague.IPlagueDTO;
+import de.uol.swp.server.plague.data.IPlague;
+import de.uol.swp.server.plague.data.Plague;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
