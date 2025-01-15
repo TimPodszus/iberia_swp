@@ -1,6 +1,6 @@
 package de.uol.swp.server.connection;
 
-import de.uol.swp.server.city.data.CityName;
+import de.uol.swp.common.city.CityName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

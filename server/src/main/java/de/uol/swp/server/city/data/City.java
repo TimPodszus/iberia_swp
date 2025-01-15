@@ -1,12 +1,14 @@
 package de.uol.swp.server.city.data;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.infection.data.Infection;
+import de.uol.swp.server.infection.IInfection;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,8 +50,7 @@ public class City implements ICity {
     private boolean hospitalBuilt;
 
     /**
-     * The infections in the city.
+     * The list of infections in the city.
      */
-    @Setter
-    private List<Infection> infections;
+    private List<IInfection> infections = new ArrayList<>();
 }

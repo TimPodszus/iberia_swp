@@ -2,7 +2,7 @@ package de.uol.swp.server.region;
 
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.city.data.City;
-import de.uol.swp.server.city.data.CityName;
+import de.uol.swp.common.city.data.CityName;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.region.data.Region;
 import org.junit.jupiter.api.BeforeEach;

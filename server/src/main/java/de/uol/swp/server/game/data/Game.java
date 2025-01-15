@@ -33,7 +33,11 @@ public class Game implements IGame {
      */
     private String gameId;
 
+    /**
+     * Repository for role-related data.
+     */
     private RoleRepository roleRepository;
+
     /**
      * Repository for city-related data.
      */
@@ -53,7 +57,6 @@ public class Game implements IGame {
      * Repository for the plagues.
      */
     private PlagueRepository plagueRepository;
-
 
     /**
      * Counter for the number of infections.
@@ -99,28 +102,60 @@ public class Game implements IGame {
      */
     private List<Card> playerCardDiscardPile;
 
+    /**
+     * List of players in the game.
+     */
     private List<Player> players;
+
+    /**
+     * Index of the current player.
+     */
     @Setter
     private int currentPlayerIndex;
+
+    /**
+     * Current state of the game.
+     */
     @Setter
     private IGameState state;
+
+    /**
+     * Previous state of the game.
+     */
     @Setter
     private IGameState previousState;
+
+    /**
+     * Management class for game-related operations.
+     */
     private GameManagement gameManagement;
+
+    /**
+     * Management class for player-related operations.
+     */
     private PlayerManagement playerManagement;
+
+    /**
+     * Management class for city-related operations.
+     */
     private CityManagement cityManagement;
+
+    /**
+     * Difficulty level of the game.
+     */
     private int difficulty;
 
     /**
      * Constructs a new Game instance with default values.
      * Initializes repositories and sets initial game state.
      */
-    public Game(int difficulty) {
+    public Game(int difficulty, String lobbyCode) {
+        this.gameId = lobbyCode;
         this.cityRepository = new CityRepository();
         this.regionRepository = new RegionRepository(this.cityRepository);
         this.connectionRepository = new ConnectionRepository();
         this.plagueRepository = new PlagueRepository();
-        this.infectionCounter = 2;
+        this.infectionCounter = 1;
         this.escalationStage = 0;
         this.waterTreatmentsLeft = 14;
         this.tracksLeft = 20;

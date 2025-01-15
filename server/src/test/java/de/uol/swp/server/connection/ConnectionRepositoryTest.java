@@ -1,6 +1,6 @@
 package de.uol.swp.server.connection;
 
-import de.uol.swp.server.city.data.CityName;
+import de.uol.swp.common.city.CityName;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

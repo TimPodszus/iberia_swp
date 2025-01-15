@@ -417,7 +417,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity1" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity1" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -435,7 +435,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity2" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity2" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -453,7 +453,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity3" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity3" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -471,7 +471,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity4" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity4" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -489,7 +489,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity5" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity5" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -507,7 +507,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity6" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity6" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -525,7 +525,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity7" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity7" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -543,7 +543,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity8" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity8" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -561,7 +561,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity9" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity9" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -579,7 +579,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity10" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity10" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -597,7 +597,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity11" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity11" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -615,7 +615,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity12" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity12" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -633,7 +633,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity13" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity13" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -651,7 +651,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity14" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity14" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -669,7 +669,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity15" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity15" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -687,7 +687,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity16" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity16" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -705,7 +705,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity17" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity17" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -723,7 +723,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity18" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity18" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -741,7 +741,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity19" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity19" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -759,7 +759,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity20" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity20" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -777,7 +777,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity21" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity21" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -795,7 +795,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity22" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity22" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -813,7 +813,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity23" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity23" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -831,7 +831,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity24" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity24" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -849,7 +849,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity25" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity25" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -867,7 +867,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity26" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity26" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -885,7 +885,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity27" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity27" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -903,7 +903,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity28" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity28" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -921,7 +921,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity29" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity29" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -939,7 +939,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity20" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity30" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -957,7 +957,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity31" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity31" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -975,7 +975,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity32" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity32" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -993,7 +993,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity33" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity33" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1011,7 +1011,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity34" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity34" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1029,7 +1029,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity35" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity35" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1047,7 +1047,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity36" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity36" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1065,7 +1065,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity37" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity37" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1083,7 +1083,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity38" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity38" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1101,7 +1101,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity39" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity39" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1119,7 +1119,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity30" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity40" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1137,7 +1137,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity41" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity41" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1155,7 +1155,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity42" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity42" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1173,7 +1173,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity43" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity43" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1191,7 +1191,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity44" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity44" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1209,7 +1209,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity45" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity45" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1227,7 +1227,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity46" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity46" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1245,7 +1245,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity47" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity47" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1263,7 +1263,7 @@
                                 </Circle>
                             </children>
                         </StackPane>
-                        <VBox id="cureDisplayCity48" mouseTransparent="true">
+                        <VBox id="plagueDisplayCity48" mouseTransparent="true">
                         </VBox>
                     </children>
                 </HBox>
@@ -1908,11 +1908,11 @@
                 </HBox.margin>
                 <Pane prefHeight="80.0" prefWidth="80.0">
                     <styleClass>
-                        <String fx:value="cure-marker"/>
-                        <String fx:value="cure-marker-red"/>
+                        <String fx:value="plague-marker"/>
+                        <String fx:value="plague-marker-red"/>
                     </styleClass>
                 </Pane>
-                <ImageView fx:id="cureMarkerRedImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
+                <ImageView fx:id="plagueMarkerRedImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
                            preserveRatio="true">
                     <Image url="@../img/magnifying-glass.png"/>
                 </ImageView>
@@ -1924,11 +1924,11 @@
                 </HBox.margin>
                 <Pane prefHeight="80.0" prefWidth="80.0">
                     <styleClass>
-                        <String fx:value="cure-marker"/>
-                        <String fx:value="cure-marker-blue"/>
+                        <String fx:value="plague-marker"/>
+                        <String fx:value="plague-marker-blue"/>
                     </styleClass>
                 </Pane>
-                <ImageView fx:id="cureMarkerBlueImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
+                <ImageView fx:id="plagueMarkerBlueImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
                            preserveRatio="true">
                     <Image url="@../img/magnifying-glass.png"/>
                 </ImageView>
@@ -1940,11 +1940,11 @@
                 </HBox.margin>
                 <Pane prefHeight="80.0" prefWidth="80.0">
                     <styleClass>
-                        <String fx:value="cure-marker"/>
-                        <String fx:value="cure-marker-black"/>
+                        <String fx:value="plague-marker"/>
+                        <String fx:value="plague-marker-black"/>
                     </styleClass>
                 </Pane>
-                <ImageView fx:id="cureMarkerBlackImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
+                <ImageView fx:id="plagueMarkerBlackImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
                            preserveRatio="true">
                     <Image url="@../img/magnifying-glass.png"/>
                 </ImageView>
@@ -1956,14 +1956,14 @@
                 </HBox.margin>
                 <Pane prefHeight="80.0" prefWidth="80.0">
                     <styleClass>
-                        <String fx:value="cure-marker"/>
-                        <String fx:value="cure-marker-yellow"/>
+                        <String fx:value="plague-marker"/>
+                        <String fx:value="plague-marker-yellow"/>
                     </styleClass>
                     <StackPane.margin>
                         <Insets/>
                     </StackPane.margin>
                 </Pane>
-                <ImageView fx:id="cureMarkerYellowImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
+                <ImageView fx:id="plagueMarkerYellowImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
                            preserveRatio="true">
                     <Image url="@../img/magnifying-glass.png"/>
                 </ImageView>
@@ -1990,26 +1990,7 @@
                     <Insets right="20.0"/>
                 </HBox.margin>
             </StackPane>
-            <Button mnemonicParsing="false" onAction="#onPlayerButtonClickedEvent" prefHeight="40.0"
-                    styleClass="action-button" text="Player 1" userData="1">
-                <HBox.margin>
-                    <Insets right="20.0"/>
-                </HBox.margin>
-            </Button>
-            <Button mnemonicParsing="false" onAction="#onPlayerButtonClickedEvent" prefHeight="40.0"
-                    styleClass="action-button" text="Player 2" userData="2">
-                <HBox.margin>
-                    <Insets right="20.0"/>
-                </HBox.margin>
-            </Button>
-            <Button mnemonicParsing="false" onAction="#onPlayerButtonClickedEvent" prefHeight="40.0"
-                    styleClass="action-button" text="Player 3" userData="3">
-                <HBox.margin>
-                    <Insets right="20.0"/>
-                </HBox.margin>
-            </Button>
-            <Button layoutX="253.0" layoutY="15.0" mnemonicParsing="false" onAction="#onPlayerButtonClickedEvent"
-                    prefHeight="40.0" styleClass="action-button" text="Player 4" userData="4"/>
+         <HBox fx:id="playerButtons"/>
         </children>
         <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
@@ -2042,7 +2023,7 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                 </VBox.margin>
                             </Button>
-                            <Button mnemonicParsing="false" onAction="#onTreatCure" prefHeight="30.0" prefWidth="150.0"
+                            <Button mnemonicParsing="false" onAction="#onTreatPlague" prefHeight="30.0" prefWidth="150.0"
                                     styleClass="action-button" text="Seuche behandeln">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
@@ -2058,7 +2039,7 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                 </VBox.margin>
                             </Button>
-                            <Button mnemonicParsing="false" onAction="#onResearchCure" prefHeight="30.0"
+                            <Button mnemonicParsing="false" onAction="#onResearchPlague" prefHeight="30.0"
                                     prefWidth="150.0" styleClass="action-button" text="Seuche erforschen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
@@ -2260,7 +2241,7 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                 </VBox.margin>
                                 <children>
-                                    <Circle id="outbreakLevel0" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
+                                    <Circle id="escalationStage0" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
                                             onMouseExited="#onMouseExitedEvent" radius="20.0"
                                             styleClass="outbreak-level"/>
                                     <Text strokeType="OUTSIDE" strokeWidth="0.0" text="0"/>
@@ -2268,7 +2249,7 @@
                             </StackPane>
                             <StackPane layoutX="15.0" layoutY="90.0">
                                 <children>
-                                    <Circle id="outbreakLevel2" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
+                                    <Circle id="escalationStage2" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
                                             onMouseExited="#onMouseExitedEvent" radius="20.0"
                                             styleClass="outbreak-level">
                                         <StackPane.margin>
@@ -2280,7 +2261,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="115.0">
                                 <children>
-                                    <Circle id="outbreakLevel4" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
+                                    <Circle id="escalationStage4" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
                                             onMouseExited="#onMouseExitedEvent" radius="20.0" stroke="black"
                                             strokeType="INSIDE" strokeWidth="0.0" styleClass="outbreak-level">
                                         <StackPane.margin>
@@ -2292,7 +2273,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="135.0">
                                 <children>
-                                    <Circle id="outbreakLevel6" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
+                                    <Circle id="escalationStage6" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
                                             onMouseExited="#onMouseExitedEvent" radius="20.0"
                                             styleClass="outbreak-level">
                                         <StackPane.margin>
@@ -2304,7 +2285,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="155.0">
                                 <children>
-                                    <Circle id="outbreakLevel8" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
+                                    <Circle id="escalationStage8" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
                                             onMouseExited="#onMouseExitedEvent" radius="20.0"
                                             styleClass="outbreak-level">
                                         <StackPane.margin>
@@ -2325,7 +2306,7 @@
                         <children>
                             <StackPane>
                                 <children>
-                                    <Circle id="outbreakLevel1" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
+                                    <Circle id="escalationStage1" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
                                             onMouseExited="#onMouseExitedEvent" radius="20.0"
                                             styleClass="outbreak-level">
                                         <StackPane.margin>
@@ -2337,7 +2318,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="110.0">
                                 <children>
-                                    <Circle id="outbreakLevel3" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
+                                    <Circle id="escalationStage3" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
                                             onMouseExited="#onMouseExitedEvent" radius="20.0"
                                             styleClass="outbreak-level">
                                         <StackPane.margin>
@@ -2349,7 +2330,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="135.0">
                                 <children>
-                                    <Circle id="outbreakLevel5" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
+                                    <Circle id="escalationStage5" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
                                             onMouseExited="#onMouseExitedEvent" radius="20.0"
                                             styleClass="outbreak-level">
                                         <StackPane.margin>
@@ -2361,7 +2342,7 @@
                             </StackPane>
                             <StackPane layoutX="10.0" layoutY="160.0">
                                 <children>
-                                    <Circle id="outbreakLevel7" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
+                                    <Circle id="escalationStage7" fill="#ffffff00" onMouseEntered="#onMouseEnteredEvent"
                                             onMouseExited="#onMouseExitedEvent" radius="20.0"
                                             styleClass="outbreak-level">
                                         <StackPane.margin>

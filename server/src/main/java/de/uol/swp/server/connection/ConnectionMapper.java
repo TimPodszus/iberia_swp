@@ -2,17 +2,14 @@ package de.uol.swp.server.connection;
 
 import de.uol.swp.common.connectiom.ConnectionDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
-import de.uol.swp.server.city.data.CityName;
+import de.uol.swp.common.city.data.CityName;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class ConnectionMapper {
-
-    // Private constructor to hide the implicit public one
-    private ConnectionMapper() {
-        throw new UnsupportedOperationException("Utility class");
-    }
 
     public static IConnectionDTO toDTO(Connection connection) {
         return new ConnectionDTO(

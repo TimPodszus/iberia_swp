@@ -2,6 +2,7 @@ package de.uol.swp.server.lobby;
 
 
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
+import de.uol.swp.common.lobby.message.request.CreateLobbyRequest;
 import de.uol.swp.common.lobby.message.request.GetLobbyRequest;
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
@@ -9,12 +10,14 @@ import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
 import de.uol.swp.common.lobby.message.response.LobbyListResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
+import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,10 +59,8 @@ public class LobbyServiceTest extends EventBusBasedTest {
     @Mock
     private ILobbyManagement lobbyManagement;
 
-    /**
-     * List of users for testing purposes.
-     */
-    List<IUserDTO> userList = new ArrayList<>();
+    @Mock
+    private AuthenticationService authenticationService;
 
     /**
      * The LobbyService instance used for testing.
@@ -87,14 +89,28 @@ public class LobbyServiceTest extends EventBusBasedTest {
 
     /**
      * Sets up the test environment before each test.
+     * <p>
+     * This method initializes the mocked instances of ILobbyManagement and AuthenticationService,
+     * creates a new instance of LobbyService, and sets the authenticationService field in the
+     * AbstractService class to the mocked AuthenticationService instance. It also sets up the
+     * behavior of the mocked lobbyManagement to return a predefined lobby when the createLobby
+     * method is called.
      *
-     * @throws LobbyManagementException if an error occurs during setup
+     * @throws LobbyManagementException if an error occurs during lobby management
+     * @throws NoSuchFieldException if the authenticationService field is not found
+     * @throws IllegalAccessException if the authenticationService field is not accessible
      */
     @BeforeEach
-    public void setUp() throws LobbyManagementException {
+    public void setUp() throws LobbyManagementException, NoSuchFieldException, IllegalAccessException {
         lobbyManagement = mock(LobbyManagement.class);
-        lobbyService = new LobbyService(getBus());
-        lobbyService.setLobbyManagement(lobbyManagement);
+        authenticationService = mock(AuthenticationService.class);
+        lobbyService = new LobbyService(getBus(), lobbyManagement);
+
+        Field authServiceField = AbstractService.class.getDeclaredField("authenticationService");
+        authServiceField.setAccessible(true);
+        authServiceField.set(lobbyService, authenticationService);
+
+        when(lobbyManagement.createLobby("Test", UserMapper.toUser(firstOwner))).thenReturn(lobby);
     }
 
     /**
@@ -104,7 +120,11 @@ public class LobbyServiceTest extends EventBusBasedTest {
      */
     @Test
     void createLobbyTest() throws LobbyManagementException {
-        //TODO Test wird mit dem Ticket: https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/163 behoben
+        final CreateLobbyRequest request = new CreateLobbyRequest("Test", firstOwner);
+
+        post(request);
+
+        verify(lobbyManagement, atLeast(1)).createLobby("Test", UserMapper.toUser(firstOwner));
     }
 
     /**
