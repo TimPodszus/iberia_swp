@@ -21,7 +21,6 @@ import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import javafx.application.Platform;
-import de.uol.swp.common.game.message.event.StartGameEvent;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -418,7 +417,7 @@ public class GamePresenter extends AbstractPresenter {
         for (Node node : existingPlagues) {
             if (node.getUserData() == plagueName) {
                 plagueDisplayVBox.getChildren()
-                               .remove(node);
+                                 .remove(node);
                 break;
             }
         }
@@ -443,7 +442,7 @@ public class GamePresenter extends AbstractPresenter {
         }
 
         plagueDisplayVBox.getChildren()
-                       .add(plagueHBox);
+                         .add(plagueHBox);
     }
 
     /**
@@ -491,7 +490,7 @@ public class GamePresenter extends AbstractPresenter {
                     .add("hospital");
 
         plagueDisplayVBox.getChildren()
-                       .add(0, hospitalHBox);
+                         .add(0, hospitalHBox);
     }
 
     private void removeHospitalFromCity(int cityId) {
@@ -501,7 +500,7 @@ public class GamePresenter extends AbstractPresenter {
             if (node instanceof HBox hbox && hbox.getStyleClass()
                                                  .contains("hospital")) {
                 plagueDisplayVBox.getChildren()
-                               .remove(hbox);
+                                 .remove(hbox);
                 break;
             }
         }
@@ -580,10 +579,8 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
 
         playerCardsHBox.getChildren()
-                       .add(
-                               playerCardsHBox.getChildren()
-                                              .size() - 1, cardSlot
-                       );
+                       .add(playerCardsHBox.getChildren()
+                                           .size() - 1, cardSlot);
     }
 
     /**
@@ -592,11 +589,11 @@ public class GamePresenter extends AbstractPresenter {
      * have the style class "pile", and do not have the ID "roleCard".
      */
     public void removePlayerHandCards() {
-        playerCardsHBox.getChildren().removeIf(node ->
-                node instanceof Pane && node.getStyleClass().contains("pile") && !Objects.equals(node.getId(),
-                        "roleCard"
-                )
-        );
+        playerCardsHBox.getChildren()
+                       .removeIf(node -> node instanceof Pane && node.getStyleClass()
+                                                                     .contains("pile") && !Objects.equals(node.getId(),
+                               "roleCard"
+                       ));
     }
 
     /**
@@ -698,7 +695,12 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayerHandCards(List<IPlayerDTO> players) {
         removePlayerHandCards();
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(), UserStore.getInstance().getUser().getUsername())) {
+            if (Objects.equals(
+                    player.getUsername(),
+                    UserStore.getInstance()
+                             .getUser()
+                             .getUsername()
+            )) {
                 List<ICardDTO> playerHand = player.getCards();
                 for (ICardDTO card : playerHand) {
                     AbstractCard abstractCard = createCard(card);
@@ -767,8 +769,12 @@ public class GamePresenter extends AbstractPresenter {
     private void updateInfectionCardDiscardPile(List<InfectionCardDTO> infectionCardDiscardPileList) {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
-            setInfectionCardDiscardPile(new InfectionCard(infectionCard.getCity().getPlagueName(),
-                    infectionCard.getCity().getName().getDisplayName()));
+            setInfectionCardDiscardPile(new InfectionCard(infectionCard.getCity()
+                                                                       .getPlagueName(),
+                    infectionCard.getCity()
+                                 .getName()
+                                 .getDisplayName()
+            ));
         }
     }
 
@@ -809,10 +815,17 @@ public class GamePresenter extends AbstractPresenter {
      * @param players the list of players
      */
     private void updatePlayers(List<IPlayerDTO> players) {
-        playerButtons.getChildren().clear();
+        playerButtons.getChildren()
+                     .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(player.getUsername(), UserStore.getInstance().getUser().getUsername())) {
-                playerButtons.getChildren().add(new PlayerButton(player.getUsername(), this::onPlayerButtonClickedEvent));
+            if (!Objects.equals(
+                    player.getUsername(),
+                    UserStore.getInstance()
+                             .getUser()
+                             .getUsername()
+            )) {
+                playerButtons.getChildren()
+                             .add(new PlayerButton(player.getUsername(), this::onPlayerButtonClickedEvent));
             }
         }
         updateCurrentUserRole(players);
@@ -827,9 +840,13 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayersInCities(List<IPlayerDTO> players) {
         removeAllGameFigures();
         Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
-                                                              .collect(Collectors.groupingBy(player -> player.getCurrentPosition().getId()));
+                                                              .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
+                                                                                                             .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId, playersInCity)));
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
+                cityId,
+                playersInCity
+        )));
     }
 
     /**
@@ -839,8 +856,14 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(), UserStore.getInstance().getUser().getUsername())) {
-                setRoleCard(new RoleCard(player.getRole().getName()));
+            if (Objects.equals(
+                    player.getUsername(),
+                    UserStore.getInstance()
+                             .getUser()
+                             .getUsername()
+            )) {
+                setRoleCard(new RoleCard(player.getRole()
+                                               .getName()));
             }
         }
     }
@@ -919,10 +942,19 @@ public class GamePresenter extends AbstractPresenter {
      * @return the created city card
      */
     private static AbstractCard createCityCard(CityCardDTO cityCard) {
-        String foundationDate = cityCard.getCity().getFoundationDate() < 0
-                ? cityCard.getCity().getFoundationDate() + " v. Chr."
-                : String.valueOf(cityCard.getCity().getFoundationDate());
-        return new CityCard(cityCard.getCity().getName().getDisplayName(), foundationDate, cityCard.getCity().getPlagueName());
+        String foundationDate = cityCard.getCity()
+                                        .getFoundationDate() < 0 ? cityCard.getCity()
+                                                                           .getFoundationDate() + " v. Chr." : String.valueOf(
+                cityCard.getCity()
+                        .getFoundationDate());
+        return new CityCard(
+                cityCard.getCity()
+                        .getName()
+                        .getDisplayName(),
+                foundationDate,
+                cityCard.getCity()
+                        .getPlagueName()
+        );
     }
 
     /**

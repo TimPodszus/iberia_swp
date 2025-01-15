@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.data.IPlayer;
 
 /**
  * Represents the state in the game where cities are infected based on drawn infection cards.
@@ -23,7 +23,7 @@ public class InfectionState implements IGameState {
      * @param game   the game context in which the infection is being handled
      * @param player the player whose turn initiated the infection process
      */
-    public void handleAction(IGame game, Player player) {
+    public void handleAction(IGame game, IPlayer player) {
         int infectionCounter = game.getInfectionCounter();
 
         game.getCityManagement()

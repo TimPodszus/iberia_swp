@@ -10,6 +10,7 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
@@ -99,8 +100,8 @@ public class GameManagement implements IGameManagement {
 
     private void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
-        Player startingPlayer = null;
-        for (Player player : game.getPlayers()) {
+        IPlayer startingPlayer = null;
+        for (IPlayer player : game.getPlayers()) {
             for (Card card : player.getCards()) {
                 if (card instanceof CityCard cityCard && cityCard.getCity()
                                                                  .getFoundationDate() < foundingDate) {
@@ -165,9 +166,9 @@ public class GameManagement implements IGameManagement {
     public void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO) {
         IGame game = getGame(lobbyCode);
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
-            List<Player> players = game.getPlayers();
-            Player requestPlayer = null;
-            for (Player player : players) {
+            List<IPlayer> players = game.getPlayers();
+            IPlayer requestPlayer = null;
+            for (IPlayer player : players) {
                 if (player.getUser()
                           .getUsername()
                           .equals(user.getUsername()) && player.getCurrentPosition() == null) {

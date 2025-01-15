@@ -10,7 +10,7 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 import lombok.AllArgsConstructor;
 
@@ -22,18 +22,16 @@ public class PlayerManagement implements IPlayerManagement {
     private IGame game;
 
     public ICardDTO drawPlayerCard(IGame game, IUser user) throws PlayerManagementException {
-        Player player = game.getPlayers()
-                            .stream()
-                            .filter(p -> Objects.equals(
-                                    p.getUser()
-                                     .getUsername(), user.getUsername()
-                            ))
-                            .findFirst()
-                            .orElseThrow(() -> new PlayerManagementException("Player not found for the given user"));
+        IPlayer player = game.getPlayers()
+                             .stream()
+                             .filter(p -> Objects.equals(p.getUser()
+                                                          .getUsername(), user.getUsername()))
+                             .findFirst()
+                             .orElseThrow(() -> new PlayerManagementException("Player not found for the given user"));
         return drawPlayerCard(game, player);
     }
 
-    public ICardDTO drawPlayerCard(IGame game, Player player) throws PlayerManagementException {
+    public ICardDTO drawPlayerCard(IGame game, IPlayer player) throws PlayerManagementException {
         this.game = game;
 
         Card card = getCard(player);
@@ -58,7 +56,7 @@ public class PlayerManagement implements IPlayerManagement {
         return CardMapper.toDTO(card);
     }
 
-    private Card getCard(Player player) throws PlayerManagementException {
+    private Card getCard(IPlayer player) throws PlayerManagementException {
         if (!player.equals(game.getPlayers()
                                .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState)) {
             throw new PlayerManagementException();

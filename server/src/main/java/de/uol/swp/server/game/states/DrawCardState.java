@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagementException;
 
 /**
@@ -22,7 +22,7 @@ public class DrawCardState implements IGameState {
      * @param game   the game in which this action is being processed
      * @param player the player who is drawing the card
      */
-    public void handleAction(IGame game, Player player) {
+    public void handleAction(IGame game, IPlayer player) {
         try {
             game.getPlayerManagement()
                 .drawPlayerCard(game, player);

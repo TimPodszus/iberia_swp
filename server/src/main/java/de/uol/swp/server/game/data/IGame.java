@@ -8,7 +8,7 @@ import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.plague.data.PlagueRepository;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.RegionRepository;
 
@@ -139,7 +139,7 @@ public interface IGame {
 
     List<Card> getPlayerCardDiscardPile();
 
-    List<Player> getPlayers();
+    List<IPlayer> getPlayers();
 
     ICityManagement getCityManagement();
 
@@ -161,5 +161,5 @@ public interface IGame {
 
     int getDifficulty();
 
-    Player getCurrentPlayer();
+    IPlayer getCurrentPlayer();
 }
