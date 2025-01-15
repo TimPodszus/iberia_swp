@@ -11,7 +11,6 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.Player;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -37,11 +36,7 @@ public class GameManagement implements IGameManagement {
         IGame game = new Game(request.getDifficulty(), request.getLobbyCode());
         GameStore.getInstance()
                  .addGame(request.getLobbyCode(), game);
-        try {
-            initializing(game, UserMapper.toUser(request.getUsers()));
-        } catch (PlayerManagementException e) {
-            //TODO: irgendwo Fehler anzeigen "Fehler beim Initialisieren des Spiels"
-        }
+        initializing(game, UserMapper.toUser(request.getUsers()));
         return game;
     }
 
@@ -71,7 +66,6 @@ public class GameManagement implements IGameManagement {
         List<Card> playerCardDrawPile = game.getPlayerCardDrawPile();
         for (IUser user : users) {
             Player player = new Player(user);
-
             game.getPlayers()
                 .add(player);
             int cardsToDraw = switch (game.getPlayers()
@@ -169,15 +163,15 @@ public class GameManagement implements IGameManagement {
                           .equals(request.getSession()
                                          .get()
                                          .getUser()
-                                         .getUsername()) && player.getCurrentPosition() == null) {
+                                         .getUsername())) {
                     requestPlayer = player;
                     break;
                 }
             }
             try {
                 assert requestPlayer != null;
-                requestPlayer.setStartingPosition(request.getCity()
-                                                         .getName());
+                requestPlayer.setStartingPosition(game.getCityRepository()
+                                                      .getCityNameById(request.getCityId()));
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
             } catch (Exception e) {
                 throw new GameManagementException("Failed to set Position");

@@ -27,7 +27,7 @@ public class Player {
     @Setter
     private List<Card> cards = new ArrayList<>();
     private final IUser user;
-    CityRepository cityRepository;
+    CityRepository cityRepository = new CityRepository();
 
     public void setStartingPosition(CityName cityName) throws Exception {
         boolean validRequest = false;

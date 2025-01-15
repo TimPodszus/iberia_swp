@@ -40,5 +40,7 @@ public interface IGameDTO {
     int getTracksLeft();
 
     int getCurrentPlayerIndex();
+
+    String getState();
 }
 

@@ -177,7 +177,7 @@ public class Game implements IGame {
         createInfectionCards(cityRepository.getCities());
         createPlayerCards(cityRepository.getCities());
         Collections.shuffle(getInfectionCardDrawPile());
-        gameStartShuffle(difficulty);
+        gameStartShuffle(difficulty + 3);
     }
 
     public void createInfectionCards(List<ICity> cities) {

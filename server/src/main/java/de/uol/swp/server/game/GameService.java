@@ -57,8 +57,9 @@ protected ILobbyManagement lobbyManagement;
     @Subscribe
     public void onPositionRequest(PositioningRequest request) throws LobbyManagementException, GameManagementException {
         IGame game = gameManagement.setPositioning(request);
-        if (game != null) {
-            sendToAllInLobby(request.getLobbyCode(), new BoardUpdateEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
+        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyCode());
+        if (game != null && lobby.isPresent()) {
+            sendToAllInLobby(lobby.get(), new BoardUpdateEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
         }
     }
 }

@@ -1,25 +1,30 @@
 package de.uol.swp.common.game.message.request;
 
-import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.message.AbstractGameRequest;
 import lombok.Getter;
 
+import java.util.Objects;
+
 @Getter
 public class PositioningRequest extends AbstractGameRequest {
-    CityDTO city;
+    int cityId;
 
-    public PositioningRequest(String lobbyCode, CityDTO city) {
+    public PositioningRequest(String lobbyCode, int cityId) {
         super(lobbyCode);
-        this.city = city;
+        this.cityId = cityId;
     }
 
     @Override
     public boolean equals(Object o) {
-        return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        PositioningRequest that = (PositioningRequest) o;
+        return getCityId() == that.getCityId();
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return Objects.hashCode(getCityId());
     }
 }
