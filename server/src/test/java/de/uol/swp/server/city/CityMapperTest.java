@@ -3,7 +3,9 @@ package de.uol.swp.server.city;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.infection.IInfection;
+import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.infection.data.IInfection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -46,7 +48,7 @@ class CityMapperTest {
     }
 
     /**
-     * Tests the {@link CityMapper#toDTO(City)} method.
+     * Tests the {@link CityMapper#toDTO(ICity)} method.
      * Verifies that a {@link City} object is correctly mapped to an {@link ICityDTO} object.
      */
     @Test
@@ -54,9 +56,15 @@ class CityMapperTest {
         ICityDTO cityDTO = CityMapper.toDTO(firstCity);
 
         assertNotNull(cityDTO);
-        assertEquals(firstCity.getName(), cityDTO.getName());
+        assertEquals(
+                firstCity.getName()
+                         , cityDTO.getName()
+        );
         assertEquals(firstCity.getFoundationDate(), cityDTO.getFoundationDate());
-        assertEquals(firstCity.getPlagueName(), cityDTO.getPlagueName());
+        assertEquals(
+                firstCity.getPlagueName()
+                         , cityDTO.getPlagueName()
+        );
         assertEquals(firstCity.isHarbourCity(), cityDTO.isHarbourCity());
         assertEquals(firstCity.isHospitalBuilt(), cityDTO.isHospitalBuild());
     }
@@ -67,7 +75,7 @@ class CityMapperTest {
      */
     @Test
     void testToDTOList() {
-        List<City> cities = Arrays.asList(firstCity, secondCity);
+        List<ICity> cities = Arrays.asList(firstCity, secondCity);
 
         List<ICityDTO> cityDTOList = CityMapper.toDTOList(cities);
 
@@ -75,13 +83,25 @@ class CityMapperTest {
         assertEquals(2, cityDTOList.size());
 
         ICityDTO firstCityDTO = cityDTOList.get(0);
-        assertEquals(firstCity.getPlagueName(), firstCityDTO.getPlagueName());
-        assertEquals(firstCity.getName(), firstCityDTO.getName());
+        assertEquals(
+                firstCity.getPlagueName()
+                         , firstCityDTO.getPlagueName()
+        );
+        assertEquals(
+                firstCity.getName()
+                         , firstCityDTO.getName()
+        );
         assertEquals(firstCity.getFoundationDate(), firstCityDTO.getFoundationDate());
 
         ICityDTO secondCityDTO = cityDTOList.get(1);
-        assertEquals(secondCity.getPlagueName(), secondCityDTO.getPlagueName());
-        assertEquals(secondCity.getName(), secondCityDTO.getName());
+        assertEquals(
+                secondCity.getPlagueName()
+                          , secondCityDTO.getPlagueName()
+        );
+        assertEquals(
+                secondCity.getName()
+                          , secondCityDTO.getName()
+        );
         assertEquals(secondCity.getFoundationDate(), secondCityDTO.getFoundationDate());
     }
 }

@@ -2,9 +2,9 @@ package de.uol.swp.server.player.data;
 
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.city.City;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameException;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.usermanagement.IUser;
@@ -23,7 +23,7 @@ public class Player {
     @Setter
     private Role role;
     @Setter
-    private City currentPosition;
+    private ICity currentPosition;
     @Setter
     private List<Card> cards = new ArrayList<>();
     private final IUser user;
@@ -43,12 +43,11 @@ public class Player {
             }
         }
         if (validRequest || cityCardCount == 0) {
-            City city = cityRepository.getCitiesByNames(cityName)
-                                      .get(0);
+            ICity city = cityRepository.getCitiesByNames(cityName)
+                                       .get(0);
             setCurrentPosition(city);
         } else {
-            throw new GameException("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast " +
-                    "auswählen!");
+            throw new GameException("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast " + "auswählen!");
         }
     }
 

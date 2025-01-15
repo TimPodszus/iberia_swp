@@ -6,6 +6,7 @@ import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardResponse;
+import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
@@ -13,6 +14,7 @@ import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -44,7 +46,9 @@ public class PlayerService extends AbstractService {
         IGame game = GameStore.getInstance()
                               .getGame(request.getLobbyCode());
         try {
-            ICardDTO card = playerManagement.drawPlayerCard(game, request);
+            Session session = request.getSession()
+                                     .orElseThrow(() -> new IllegalStateException("Session not present"));
+            ICardDTO card = playerManagement.drawPlayerCard(game, UserMapper.toUser(session.getUser()));
             response = new DrawPlayerCardResponse(true, "Card drawn successfully", card);
         } catch (PlayerManagementException e) {
             response = new StatusResponse(false, "Error drawing a player card");

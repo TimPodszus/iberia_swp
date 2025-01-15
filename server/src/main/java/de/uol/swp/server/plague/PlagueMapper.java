@@ -2,6 +2,7 @@ package de.uol.swp.server.plague;
 
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.plague.PlagueDTO;
+import de.uol.swp.server.plague.data.IPlague;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class PlagueMapper {
         );
     }
 
-    public static List<IPlagueDTO> toDTOList(List<Plague> plagues) {
+    public static List<IPlagueDTO> toDTOList(List<IPlague> plagues) {
         List<IPlagueDTO> plagueDTOS = new ArrayList<>();
         for (IPlague plague : plagues) {
             PlagueDTO plagueDTO = new PlagueDTO(
