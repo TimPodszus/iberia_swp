@@ -3,7 +3,7 @@ package de.uol.swp.server.cards;
 import de.uol.swp.common.cards.*;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.common.city.CityName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

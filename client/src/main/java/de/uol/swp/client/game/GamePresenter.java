@@ -730,7 +730,7 @@ public class GamePresenter extends AbstractPresenter {
             IPlagueDTO plague = infection.getPlague();
             PlagueName plagueName = plague.getName();
             int severity = infection.getSeverity();
-            setPlaqueCubesToCity(city.getId(), plagueName, severity);
+            setPlagueCubesToCity(city.getId(), plagueName, severity);
         }
     }
 

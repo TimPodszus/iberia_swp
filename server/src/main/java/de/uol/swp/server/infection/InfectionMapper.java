@@ -2,6 +2,7 @@ package de.uol.swp.server.infection;
 
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.infection.InfectionDTO;
+import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.plague.PlagueMapper;
 import lombok.NoArgsConstructor;
 

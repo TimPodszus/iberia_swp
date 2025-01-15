@@ -3,7 +3,6 @@ package de.uol.swp.server.city;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.city.data.City;
-import de.uol.swp.server.city.data.CityName;
 import de.uol.swp.server.city.data.ICity;
 import lombok.Getter;
 

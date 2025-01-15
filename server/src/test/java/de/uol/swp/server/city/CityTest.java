@@ -2,9 +2,11 @@ package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.infection.IInfection;
+import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.infection.Infection;
-import de.uol.swp.server.plague.Plague;
+import de.uol.swp.server.infection.data.IInfection;
+import de.uol.swp.server.plague.data.Plague;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit tests for the City class.
  */
 class CityTest {
-    private City city;
+    private ICity city;
 
     /**
      * Sets up the test environment before each test.

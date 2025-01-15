@@ -1,9 +1,9 @@
 package de.uol.swp.server.region;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.RegionDTO;
-import de.uol.swp.server.city.data.CityName;
-import de.uol.swp.common.city.data.ICity;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.region.data.Region;
 

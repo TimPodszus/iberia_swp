@@ -1,8 +1,8 @@
 package de.uol.swp.server.city.management;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.InfectionCard;
-import de.uol.swp.server.city.data.CityName;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;

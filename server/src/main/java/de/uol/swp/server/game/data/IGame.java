@@ -10,7 +10,6 @@ import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
-import de.uol.swp.server.plague.PlagueRepository;
 import de.uol.swp.server.region.RegionRepository;
 
 import java.util.List;

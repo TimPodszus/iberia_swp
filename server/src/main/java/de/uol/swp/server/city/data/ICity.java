@@ -1,7 +1,8 @@
 package de.uol.swp.server.city.data;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.infection.data.Infection;
+import de.uol.swp.server.infection.data.IInfection;
 
 import java.util.List;
 
@@ -64,12 +65,12 @@ public interface ICity {
      *
      * @return the list of infections in the city
      */
-    List<Infection> getInfections();
+    List<IInfection> getInfections();
 
     /**
      * Sets the list of infections in the city.
      *
      * @param infections the list of infections to set
      */
-    void setInfections(List<Infection> infections);
+    void setInfections(List<IInfection> infections);
 }

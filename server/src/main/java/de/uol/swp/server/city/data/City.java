@@ -2,7 +2,7 @@ package de.uol.swp.server.city.data;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.infection.IInfection;
+import de.uol.swp.server.infection.data.IInfection;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +52,6 @@ public class City implements ICity {
     /**
      * The list of infections in the city.
      */
+    @Setter
     private List<IInfection> infections = new ArrayList<>();
 }
