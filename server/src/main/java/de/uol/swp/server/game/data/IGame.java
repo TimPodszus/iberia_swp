@@ -7,7 +7,9 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.RegionRepository;
 
 import java.util.List;
@@ -44,6 +46,13 @@ public interface IGame {
      * @return the connection repository
      */
     ConnectionRepository getConnectionRepository();
+
+    /**
+     * Gets the plague repository.
+     *
+     * @return the plague repository
+     */
+    PlagueRepository getPlagueRepository();
 
     /**
      * Gets the infection counter.
@@ -134,11 +143,13 @@ public interface IGame {
 
     ICityManagement getCityManagement();
 
-    Object getState();
+    IGameState getState();
 
     void setState(IGameState state);
 
     IGameManagement getGameManagement();
+
+    IPlayerManagement getPlayerManagement();
 
     IGameState getPreviousState();
 

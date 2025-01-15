@@ -1,10 +1,15 @@
-package de.uol.swp.server.city;
+package de.uol.swp.server.city.data;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.infection.data.IInfection;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a city in the game, with attributes such as plague name, city name, foundation date,
@@ -13,7 +18,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Getter
-public class City {
+public class City implements ICity {
     /**
      * The id of the city.
      */
@@ -43,4 +48,10 @@ public class City {
      */
     @Setter
     private boolean hospitalBuilt;
+
+    /**
+     * The list of infections in the city.
+     */
+    @Setter
+    private List<IInfection> infections = new ArrayList<>();
 }

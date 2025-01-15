@@ -1,5 +1,7 @@
 package de.uol.swp.server.city;
 
+import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.city.data.ICity;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CityRepositoryTest {
     static CityRepository repository;
-    static List<City> cities;
+    static List<ICity> cities;
 
     @BeforeAll
     static void create() {
@@ -25,7 +27,7 @@ class CityRepositoryTest {
 
     @Test
     void testGetCityByName() {
-        List<City> city = repository.getCitiesByNames(CityName.MADRID);
+        List<ICity> city = repository.getCitiesByNames(CityName.MADRID);
         assertNotNull(city);
         assertEquals(
                 CityName.MADRID,

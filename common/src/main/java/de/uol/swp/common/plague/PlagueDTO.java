@@ -1,18 +1,15 @@
-package de.uol.swp.server.plague;
+package de.uol.swp.common.plague;
 
 import de.uol.swp.common.game.PlagueName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
+import java.io.Serializable;
 
-@AllArgsConstructor
 @Getter
-public class Plague
-{
+@AllArgsConstructor
+public class PlagueDTO implements IPlagueDTO, Serializable {
     private final PlagueName name;
-    @Setter
     private int cubesRemaining;
-    @Setter
     private boolean researched;
 }

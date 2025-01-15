@@ -1,4 +1,4 @@
-package de.uol.swp.server.plague;
+package de.uol.swp.server.plague.management;
 
 /**
  * A custom exception class for handling plague management errors.

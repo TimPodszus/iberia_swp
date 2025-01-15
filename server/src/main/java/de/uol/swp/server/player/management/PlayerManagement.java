@@ -1,31 +1,54 @@
 package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.ICardDTO;
-import de.uol.swp.common.player.request.DrawPlayerCardRequest;
-
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.EpidemicCard;
+import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.management.GameManagement;
+import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.DrawCardState;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.usermanagement.IUser;
-import de.uol.swp.server.usermanagement.UserMapper;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 
 @AllArgsConstructor
-public class PlayerManagement implements IPlayerManagement
-{
+public class PlayerManagement implements IPlayerManagement {
     private IGame game;
 
-    public ICardDTO drawPlayerCard(IGame game, DrawPlayerCardRequest request) throws PlayerManagementException
-    {
+    public ICardDTO drawPlayerCard(IGame game, IUser user) throws PlayerManagementException {
+        Player player = game.getPlayers()
+                            .stream()
+                            .filter(p -> Objects.equals(
+                                    p.getUser()
+                                     .getUsername(), user.getUsername()
+                            ))
+                            .findFirst()
+                            .orElseThrow(() -> new PlayerManagementException("Player not found for the given user"));
+        return drawPlayerCard(game, player);
+    }
+
+    public ICardDTO drawPlayerCard(IGame game, Player player) throws PlayerManagementException {
         this.game = game;
 
-        Card card = getCard(request);
+        Card card = getCard(player);
 
         if (card instanceof EpidemicCard) {
-            //TODO: implement city infection
+            game.setInfectionCounter(game.getInfectionCounter() + 1);
+
+            IGameManagement gameManagement = new GameManagement();
+            InfectionCard epidemicCard = gameManagement.drawInfectionCard(game);
+
+            CityManagement cityManagement = new CityManagement();
+            cityManagement.infectCityWithOwnPlague(game, epidemicCard, 3);
+
+            game.getPlayerCardDiscardPile()
+                .add(card);
         } else {
             game.getPlayers()
                 .get(game.getCurrentPlayerIndex())
@@ -35,15 +58,9 @@ public class PlayerManagement implements IPlayerManagement
         return CardMapper.toDTO(card);
     }
 
-    private Card getCard(DrawPlayerCardRequest request) throws PlayerManagementException
-    {
-        IUser user = UserMapper.toUser(request.getSession()
-                                              .orElseThrow(() -> new IllegalStateException("Session not present"))
-                                              .getUser());
-
-        if (!user.equals(game.getPlayers()
-                             .get(game.getCurrentPlayerIndex())
-                             .getUser())) {
+    private Card getCard(Player player) throws PlayerManagementException {
+        if (!player.equals(game.getPlayers()
+                               .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState)) {
             throw new PlayerManagementException();
         }
 

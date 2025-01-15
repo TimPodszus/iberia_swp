@@ -1,22 +1,22 @@
 package de.uol.swp.server.player;
 
-import de.uol.swp.common.city.CityDTO;
-import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.PlayerDTO;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.role.RoleMapper;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Contains static utility methods to convert player model objects into their Data Transfer Object (DTO) forms.
  * This class is crucial for abstracting the player details that need to be sent over the network.
  * It handles the conversion of player data, including their current city and held cards, into a transferable format.
  */
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class PlayerMapper {
 
     /**
@@ -30,13 +30,12 @@ public class PlayerMapper {
         return new PlayerDTO(
                 player.getUser()
                       .getUsername(),
-                player.getRole()
-                      .getName(),
-                (ICityDTO) CityMapper.toDTO(player.getCurrentPosition()),
+                RoleMapper.toRoleDTO(player.getRole()),
+                CityMapper.toDTO(player.getCurrentPosition()),
                 player.getCards()
                       .stream()
                       .map(CardMapper::toDTO)
-                      .collect(Collectors.toList())
+                      .toList()
         );
     }
 
@@ -54,9 +53,8 @@ public class PlayerMapper {
             PlayerDTO playerDTO = new PlayerDTO(
                     player.getUser()
                           .getUsername(),
-                    player.getRole()
-                          .getName(),
-                    (CityDTO) CityMapper.toDTO(player.getCurrentPosition()),
+                    RoleMapper.toRoleDTO(player.getRole()),
+                    CityMapper.toDTO(player.getCurrentPosition()),
                     player.getCards()
                           .stream()
                           .map(CardMapper::toDTO)

@@ -5,6 +5,8 @@ import de.uol.swp.common.cards.EpidemicCardDTO;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.server.infection.InfectionMapper;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 
@@ -13,16 +15,8 @@ import java.util.List;
  * This class is part of the server-side cards package, which interacts with various card-related data.
  * It includes conversions for CityCards, EpidemicCards, and InfectionCards.
  */
+@AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class CardMapper {
-
-    /**
-     * Private constructor to prevent instantiation of the utility class.
-     * Throws an UnsupportedOperationException if called.
-     */
-    private CardMapper() {
-        throw new UnsupportedOperationException("Utility class");
-    }
-
     /**
      * Converts a list of Card objects into a list of mixed CardDTOs.
      *
@@ -60,20 +54,22 @@ public class CardMapper {
      * @param cityCard the CityCard to convert
      * @return a CityCardDTO object containing data from the provided CityCard and its associated City
      */
-    private static CityCardDTO toCityCardDTO(CityCard cityCard) {
+    static CityCardDTO toCityCardDTO(CityCard cityCard) {
         CityDTO cityDTO = new CityDTO(
                 cityCard.getCity()
-                        .getPlagueName()
-                        .toString(),
+                        .getId(),
                 cityCard.getCity()
-                        .getName()
-                        .getDisplayName(),
+                        .getPlagueName(),
+                cityCard.getCity()
+                        .getName(),
                 cityCard.getCity()
                         .getFoundationDate(),
                 cityCard.getCity()
                         .isHarbourCity(),
                 cityCard.getCity()
-                        .isHospitalBuilt()
+                        .isHospitalBuilt(),
+                InfectionMapper.toDTOList(cityCard.getCity()
+                                                  .getInfections())
         );
         return new CityCardDTO(cityCard.getId(), cityCard.getTitle(), cityCard.getType(), cityDTO);
     }
@@ -84,7 +80,7 @@ public class CardMapper {
      * @param epidemicCard the EpidemicCard to convert
      * @return an EpidemicCardDTO containing data from the EpidemicCard
      */
-    private static EpidemicCardDTO toEpidemicCardDTO(EpidemicCard epidemicCard) {
+    static EpidemicCardDTO toEpidemicCardDTO(EpidemicCard epidemicCard) {
         return new EpidemicCardDTO(
                 epidemicCard.getId(),
                 epidemicCard.getTitle(),
@@ -99,20 +95,22 @@ public class CardMapper {
      * @param infectionCard the InfectionCard to convert
      * @return an InfectionCardDTO containing data from the InfectionCard and its associated City
      */
-    private static InfectionCardDTO toInfectionCardDTO(InfectionCard infectionCard) {
+    static InfectionCardDTO toInfectionCardDTO(InfectionCard infectionCard) {
         CityDTO cityDTO = new CityDTO(
                 infectionCard.getCity()
-                             .getPlagueName()
-                             .toString(),
+                             .getId(),
                 infectionCard.getCity()
-                             .getName()
-                             .getDisplayName(),
+                             .getPlagueName(),
+                infectionCard.getCity()
+                             .getName(),
                 infectionCard.getCity()
                              .getFoundationDate(),
                 infectionCard.getCity()
                              .isHarbourCity(),
                 infectionCard.getCity()
-                             .isHospitalBuilt()
+                             .isHospitalBuilt(),
+                InfectionMapper.toDTOList(infectionCard.getCity()
+                                                       .getInfections())
         );
         return new InfectionCardDTO(infectionCard.getId(), infectionCard.getTitle(), infectionCard.getType(), cityDTO);
     }

@@ -18,22 +18,20 @@ public interface IGameManagement {
     /**
      * Sets the initial positioning of a player in the game based on the provided city.
      *
-     * @param user the user for whom the positioning is being set
+     * @param user      the user for whom the positioning is being set
      * @param lobbyCode the code of the lobby in which the game is happening
-     * @param cityDTO the city where the player will be positioned
+     * @param cityDTO   the city where the player will be positioned
      */
     void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO);
 
     /**
      * Draws a player card. The specific behavior of this method should be defined.
      */
-    void drawPlayerCard();
+    InfectionCard drawInfectionCard(IGame game);
 
     /**
-     * Draws an infection card from the deck.
-     *
-     * @return the drawn infection card
+     * Adds an infection card to the infection card discard pile.
      */
-    InfectionCard drawInfectionCard();
+    void discardInfectionCard(IGame game, InfectionCard infectionCard);
 }
 

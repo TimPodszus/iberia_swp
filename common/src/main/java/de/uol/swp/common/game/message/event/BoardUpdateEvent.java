@@ -2,6 +2,7 @@ package de.uol.swp.common.game.message.event;
 
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameEvent;
+import lombok.Getter;
 
 import java.util.Objects;
 
@@ -11,6 +12,7 @@ import java.util.Objects;
  * This class represents an event message that is sent when the game board is updated.
  * It extends the AbstractGameEvent class and includes additional information about the game.
  */
+@Getter
 public class BoardUpdateEvent extends AbstractGameEvent {
     private final IGameDTO gameDTO;
     /**

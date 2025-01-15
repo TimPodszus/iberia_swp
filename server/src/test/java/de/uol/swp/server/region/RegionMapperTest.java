@@ -1,17 +1,17 @@
 package de.uol.swp.server.region;
 
 import de.uol.swp.common.region.IRegionDTO;
-import de.uol.swp.server.city.City;
-import de.uol.swp.server.city.CityName;
+import de.uol.swp.server.city.data.City;
+import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.region.data.IRegion;
+import de.uol.swp.server.region.data.Region;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -81,7 +81,7 @@ class RegionMapperTest {
         when(mockRegion2.getWaterTreatments()).thenReturn(1);
         when(mockRegion2.isPreventionMarker()).thenReturn(false);
 
-        List<Region> regions = Arrays.asList(mockRegion, mockRegion2);
+        List<IRegion> regions = Arrays.asList(mockRegion, mockRegion2);
 
         List<IRegionDTO> regionDTOs = RegionMapper.toDTOList(regions);
 

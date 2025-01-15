@@ -3,6 +3,7 @@ package de.uol.swp.common.user;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 
@@ -19,7 +20,7 @@ import java.util.Objects;
 
 @Getter
 @AllArgsConstructor
-public class UserDTO implements IUserDTO {
+public class UserDTO implements IUserDTO, Serializable {
     private String username;
 
     private String password;

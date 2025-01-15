@@ -1,6 +1,6 @@
 package de.uol.swp.server.connection;
 
-import de.uol.swp.server.city.CityName;
+import de.uol.swp.common.city.CityName;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -121,6 +121,20 @@ public class ConnectionRepository {
     public Connection getConnectionByID(int id) {
         return connections.stream()
                           .filter(connection -> connection.getId() == id)
+                          .findFirst()
+                          .orElse(null);
+    }
+
+    /**
+     * Retrieves the names of cities connected to the specified city.
+     *
+     * @param cityName the name of the city for which to find connected cities
+     * @return a list of city names connected to the specified city, or null if no connections are found
+     */
+    public List<CityName> getCityNamesOfConnectedCitiesByCityName(CityName cityName) {
+        return connections.stream()
+                          .map(Connection::getCityNames)
+                          .filter(cityNames -> cityNames.contains(cityName))
                           .findFirst()
                           .orElse(null);
     }
