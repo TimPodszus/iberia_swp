@@ -1,4 +1,4 @@
-package de.uol.swp.server.Game.management;
+package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -11,8 +11,6 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
-import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;

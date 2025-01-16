@@ -1,4 +1,4 @@
-package de.uol.swp.server.Game;
+package de.uol.swp.server.game;
 
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -7,7 +7,6 @@ import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
-import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
