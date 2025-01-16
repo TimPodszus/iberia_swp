@@ -148,8 +148,9 @@ public interface IGame {
      * Gets the city management.
      *
      * @return the city management
+     * @deprecated
      */
-    @Deprecated
+    @Deprecated(since = "16.01.25", forRemoval = true)
     ICityManagement getCityManagement();
 
     /**
@@ -170,8 +171,9 @@ public interface IGame {
      * Gets the game management.
      *
      * @return the game management
+     * @deprecated
      */
-    @Deprecated
+    @Deprecated(since = "16.01.25", forRemoval = true)
     IGameManagement getGameManagement();
 
     /**
