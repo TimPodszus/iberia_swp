@@ -10,6 +10,7 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
+import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.usermanagement.IUser;
 import lombok.AllArgsConstructor;
@@ -60,7 +61,7 @@ public class PlayerManagement implements IPlayerManagement {
 
     private Card getCard(Player player) throws PlayerManagementException {
         if (!player.equals(game.getPlayers()
-                               .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState)) {
+                               .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState) && !(game.getState() instanceof StartState)) {
             throw new PlayerManagementException();
         }
 

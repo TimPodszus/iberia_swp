@@ -170,7 +170,7 @@ public class Game implements IGame {
         this.playerManagement = new PlayerManagement(this);
         this.cityManagement = new CityManagement();
         this.state = new StartState();
-        state.handleAction(this, null);
+        initializeGame(difficulty);
     }
 
     public void initializeGame(int difficulty) {

@@ -16,11 +16,11 @@ public class PositioningRequest extends AbstractGameRequest {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         PositioningRequest that = (PositioningRequest) o;
-        return getCityId() == that.getCityId();
+        return getCityId() == that.getCityId() &&
+                Objects.equals(getLobbyCode(), that.getLobbyCode());
     }
 
     @Override

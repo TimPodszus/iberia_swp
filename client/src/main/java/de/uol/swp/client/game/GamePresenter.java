@@ -223,7 +223,9 @@ public class GamePresenter extends AbstractPresenter {
     private void onCityClickedEvent(MouseEvent event) {
         if (gameDTO.getState()
                    .equals("WaitForPositioning")) {
-            gameService.setPosition(gameDTO.getGameId(), event);
+            Node source = (Node) event.getSource();
+            int cityId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+            gameService.setPosition(gameDTO.getGameId(), cityId);
         }
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
     }

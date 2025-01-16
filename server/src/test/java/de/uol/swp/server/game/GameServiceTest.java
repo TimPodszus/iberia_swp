@@ -1,0 +1,138 @@
+package de.uol.swp.server.Game;
+
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.user.IUserDTO;
+import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.game.GameService;
+import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.management.GameManagement;
+import de.uol.swp.server.game.management.GameManagementException;
+import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.lobby.management.LobbyManagementException;
+import de.uol.swp.server.player.management.PlayerManagementException;
+import org.greenrobot.eventbus.Subscribe;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+/**
+ * Test class for the GameService.
+ */
+class GameServiceTest extends EventBusBasedTest {
+
+    private static final String LOBBY_CODE = "lobby123";
+    private static final int GAME_ID = 1;
+
+    @Mock
+    private IGameManagement gameManagement;
+
+    @Mock
+    private ILobbyManagement lobbyManagement;
+
+    private GameService gameService;
+
+    private IGame game;
+    private ILobby lobby;
+
+    private CreateGameRequest createGameRequest;
+    private PositioningRequest positioningRequest;
+
+    /**
+     * Handles BoardUpdateEvent.
+     *
+     * @param event the BoardUpdateEvent
+     */
+    @Subscribe
+    public void onBoardUpdateEvent(BoardUpdateEvent event) {
+        handleEvent(event);
+    }
+
+    /**
+     * Handles CreateGameResponse.
+     *
+     * @param response the CreateGameResponse
+     */
+    @Subscribe
+    public void onCreateGameResponse(CreateGameResponse response) {
+        handleEvent(response);
+    }
+
+    @BeforeEach
+    void setUp() throws LobbyManagementException, PlayerManagementException, GameManagementException {
+        gameManagement = mock(GameManagement.class);
+        lobbyManagement = mock(ILobbyManagement.class);
+
+        gameService = new GameService(getBus(), lobbyManagement);
+        setPrivateField(gameService, "gameManagement", gameManagement);
+
+        List<IUserDTO> users = new ArrayList<>();
+        users.add(new UserDTO("test", "test"));
+
+        createGameRequest = new CreateGameRequest(LOBBY_CODE, GAME_ID, users);
+        positioningRequest = mock(PositioningRequest.class);
+
+        game = mock(IGame.class);
+        lobby = mock(ILobby.class);
+
+        when(gameManagement.createAndInitializeGame(createGameRequest)).thenReturn(game);
+        when(gameManagement.setPositioning(positioningRequest)).thenReturn(game);
+        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.of(lobby));
+
+    }
+
+    /**
+     * Tests setting player positioning when the lobby is not found.
+     */
+    @Test
+    void testOnPositionRequest_LobbyNotFound() throws LobbyManagementException, GameManagementException {
+        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.empty());
+        when(positioningRequest.getLobbyCode()).thenReturn(LOBBY_CODE);
+
+        post(positioningRequest);
+
+        verify(gameManagement, times(1)).setPositioning(positioningRequest);
+        verify(lobbyManagement, times(1)).getLobby(LOBBY_CODE);
+        assertNull(event, "No event should be posted when the lobby is not found.");
+    }
+
+    /**
+     * Tests setting player positioning when the game is null.
+     */
+    @Test
+    void testOnPositionRequest_GameIsNull() throws LobbyManagementException, GameManagementException {
+        when(gameManagement.setPositioning(positioningRequest)).thenReturn(null);
+        when(positioningRequest.getLobbyCode()).thenReturn(LOBBY_CODE);
+
+        post(positioningRequest);
+
+        verify(gameManagement, times(1)).setPositioning(positioningRequest);
+        assertNull(event, "No event should be posted when the game is null.");
+    }
+
+    /**
+     * Utility to set private fields via reflection.
+     */
+    private void setPrivateField(Object target, String fieldName, Object value) {
+        try {
+            Field field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to set private field: " + fieldName, e);
+        }
+    }
+}

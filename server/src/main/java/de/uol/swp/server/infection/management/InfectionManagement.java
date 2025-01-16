@@ -11,6 +11,7 @@ import de.uol.swp.server.plague.data.PlagueRepository;
 import java.util.Optional;
 
 public class InfectionManagement implements IInfectionManagement {
+
     public IInfection findInfection(ICity city, PlagueName plagueName) throws InfectionManagementException {
         PlagueRepository plagueRepository = new PlagueRepository();
 

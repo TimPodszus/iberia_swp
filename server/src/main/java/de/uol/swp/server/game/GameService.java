@@ -14,6 +14,7 @@ import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -46,7 +47,7 @@ protected ILobbyManagement lobbyManagement;
      * @param request the game creation request containing necessary game initialization parameters
      */
     @Subscribe
-    public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException {
+    public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException, PlayerManagementException {
         IGame game = gameManagement.createAndInitializeGame(request);
         Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyCode());
         if (game != null && lobby.isPresent()) {

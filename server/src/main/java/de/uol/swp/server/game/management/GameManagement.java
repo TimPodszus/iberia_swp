@@ -11,6 +11,8 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -32,7 +34,7 @@ public class GameManagement implements IGameManagement {
      * @param request The request containing the necessary data to create the game
      * @return The newly created game
      */
-    public IGame createAndInitializeGame(CreateGameRequest request) {
+    public IGame createAndInitializeGame(CreateGameRequest request) throws PlayerManagementException {
         IGame game = new Game(request.getDifficulty(), request.getLobbyCode());
         GameStore.getInstance()
                  .addGame(request.getLobbyCode(), game);
@@ -47,12 +49,12 @@ public class GameManagement implements IGameManagement {
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
      */
-    void initializing(IGame game, List<IUser> users) {
-        game.setState(new WaitForPositioning());
+    void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
         initiateInfections(game);
+        game.setState(new WaitForPositioning());
     }
 
     /**
@@ -62,8 +64,8 @@ public class GameManagement implements IGameManagement {
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
      */
-    private void createPlayers(List<IUser> users, IGame game) {
-        List<Card> playerCardDrawPile = game.getPlayerCardDrawPile();
+    private void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
+        PlayerManagement playerManagement = new PlayerManagement(game);
         for (IUser user : users) {
             Player player = new Player(user);
             game.getPlayers()
@@ -75,9 +77,9 @@ public class GameManagement implements IGameManagement {
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                player.getCards()
-                      .add(playerCardDrawPile.remove(0));
+                playerManagement.drawPlayerCard(game, player);
             }
+            game.setCurrentPlayerIndex(game.getCurrentPlayerIndex() + 1);
         }
 
     }
@@ -179,6 +181,7 @@ public class GameManagement implements IGameManagement {
             if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
                                                                       .size()) {
                 game.setState(new PlayerTurnState());
+                game.setCurrentPlayerIndex(0);
             }
         }
         return game;
