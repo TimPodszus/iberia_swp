@@ -22,7 +22,9 @@ import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -66,7 +68,8 @@ public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * The LobbyService instance used for testing.
      */
-    LobbyService lobbyService;
+    @InjectMocks
+    LobbyService lobbyService = new LobbyService(getBus(), lobbyManagement);
 
     /**
      * Handles LobbyListResponse events.
@@ -103,13 +106,7 @@ public class LobbyServiceTest extends EventBusBasedTest {
      */
     @BeforeEach
     public void setUp() throws LobbyManagementException, NoSuchFieldException, IllegalAccessException {
-        lobbyManagement = mock(LobbyManagement.class);
-        authenticationService = mock(AuthenticationService.class);
-        lobbyService = new LobbyService(getBus(), lobbyManagement);
-
-        Field authServiceField = AbstractService.class.getDeclaredField("authenticationService");
-        authServiceField.setAccessible(true);
-        authServiceField.set(lobbyService, authenticationService);
+        MockitoAnnotations.openMocks(this);
 
         when(lobbyManagement.createLobby("Test", UserMapper.toUser(firstOwner))).thenReturn(lobby);
     }

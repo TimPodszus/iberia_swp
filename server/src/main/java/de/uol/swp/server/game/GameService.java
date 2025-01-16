@@ -30,11 +30,7 @@ import org.greenrobot.eventbus.Subscribe;
 public class GameService extends AbstractService {
 
     protected ILobbyManagement lobbyManagement;
-
-    @Inject
     IGameManagement gameManagement;
-
-    @Inject
     ICityManagement cityManagement;
 
     /**
@@ -43,9 +39,16 @@ public class GameService extends AbstractService {
      * @param bus the EventBus to which the service will subscribe and post events
      */
     @Inject
-    public GameService(EventBus bus, ILobbyManagement lobbyManagement) {
+    public GameService(
+            EventBus bus,
+            ILobbyManagement lobbyManagement,
+            IGameManagement gameManagement,
+            ICityManagement cityManagement
+    ) {
         super(bus);
         this.lobbyManagement = lobbyManagement;
+        this.gameManagement = gameManagement;
+        this.cityManagement = cityManagement;
     }
 
     /**

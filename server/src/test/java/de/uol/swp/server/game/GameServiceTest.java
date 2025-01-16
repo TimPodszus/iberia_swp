@@ -49,7 +49,7 @@ public class GameServiceTest extends EventBusBasedTest {
     private ILobbyManagement lobbyManagement;
 
     @InjectMocks
-    GameService gameService = new GameService(getBus(), lobbyManagement);
+    GameService gameService = new GameService(getBus(), lobbyManagement, gameManagement, cityManagement);
 
     @Mock
     private AuthenticationService authenticationService;
@@ -73,10 +73,6 @@ public class GameServiceTest extends EventBusBasedTest {
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
         MockitoAnnotations.openMocks(this);
-
-        Field authServiceField = AbstractService.class.getDeclaredField("authenticationService");
-        authServiceField.setAccessible(true);
-        authServiceField.set(gameService, authenticationService);
     }
 
     /**
