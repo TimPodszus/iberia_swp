@@ -30,7 +30,6 @@ class GameManagementTest {
 
     @InjectMocks
     private GameManagement gameManagement;
-
     @Test
     void testGameManagementException() {
         GameManagementException exception = assertThrows(GameManagementException.class, () -> {

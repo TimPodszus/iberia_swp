@@ -3,6 +3,7 @@ package de.uol.swp.server.chat;
 import de.uol.swp.common.chat.ChatRequest;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import jakarta.inject.Inject;
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 public class ChatService extends AbstractService {
     private final Chat chat;
-    private final LobbyManagement lobbyManagement;
+    private final ILobbyManagement lobbyManagement;
 
     @Inject
     public ChatService(Chat chat, EventBus bus, LobbyManagement lobbyManagement) {

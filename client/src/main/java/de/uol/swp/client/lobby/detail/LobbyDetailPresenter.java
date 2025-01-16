@@ -109,11 +109,14 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage message) {
-        lobbyService.getLobby(message.getLobbyCode(),
-                UserStore.getInstance()
-                         .getUser()
-        );
+        if (lobbyDTO != null && message.getLobbyCode().equals(lobbyDTO.getLobbyCode())) {
+            String chatMessage = "Spieler " + message.getUser().getUsername() + " hat die Lobby betreten.";
+            appendToChat(chatMessage);
+
+            lobbyService.getLobby(message.getLobbyCode(), UserStore.getInstance().getUser());
+        }
     }
+
 
     /**
      * Handles the response when the lobby data is received.
@@ -254,5 +257,9 @@ public class LobbyDetailPresenter extends AbstractPresenter {
         Platform.runLater(() -> chatArea.appendText(chatMessage.getSender() + ": " + chatMessage.getMessage() + "\n"));
     }
 
+
+    private void appendToChat(String message) {
+        Platform.runLater(() -> chatArea.appendText("[System] " + message + "\n"));
+    }
 
 }

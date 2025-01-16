@@ -1,17 +1,20 @@
 package de.uol.swp.common.chat;
 
 import de.uol.swp.common.message.AbstractServerMessage;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Objects;
-
+@Getter
 public class AbstractChatMessage extends AbstractServerMessage {
+    @Setter
     String lobbyCode;
+
+    @Setter
     String sender;
+
+    @Setter
     String message;
-
-    public AbstractChatMessage() {
-
-    }
 
     public AbstractChatMessage(String lobbyCode, String sender, String message) {
         this.lobbyCode = lobbyCode;
@@ -19,29 +22,6 @@ public class AbstractChatMessage extends AbstractServerMessage {
         this.message = message;
     }
 
-    public String getLobbyCode() {
-        return lobbyCode;
-    }
-
-    public void setLobbyCode(String lobbyCode) {
-        this.lobbyCode = lobbyCode;
-    }
-
-    public String getSender() {
-        return sender;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     @Override
     public boolean equals(Object o) {

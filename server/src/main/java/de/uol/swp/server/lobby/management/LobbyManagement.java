@@ -2,6 +2,7 @@ package de.uol.swp.server.lobby.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
+import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.store.ILobbyStore;
