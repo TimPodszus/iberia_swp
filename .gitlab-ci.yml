@@ -20,6 +20,8 @@ build-job:
   artifacts:
     paths:
       - target/
+    expire_in: 1 week
+
 
 unit-test-job:
   image: maven:3.8.6-openjdk-18
@@ -31,8 +33,10 @@ unit-test-job:
     when: always
     paths:
       - target/
+    expire_in: 1 week
     reports:
       junit: "**/target/surefire-reports/*.xml"
+
   coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
 
 
