@@ -149,6 +149,7 @@ public interface IGame {
      *
      * @return the city management
      */
+    @Deprecated
     ICityManagement getCityManagement();
 
     /**
@@ -170,6 +171,7 @@ public interface IGame {
      *
      * @return the game management
      */
+    @Deprecated
     IGameManagement getGameManagement();
 
     /**
