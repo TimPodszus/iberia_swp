@@ -159,4 +159,11 @@ class GameManagementTest {
         verify(mockGame).setCurrentPlayerIndex(0);
     }
 
+    @Test
+    void testGameManagementException() {
+        GameManagementException exception = assertThrows(GameManagementException.class, () -> {
+            throw new GameManagementException("Test Exception");
+        });
+        assertEquals("Test Exception", exception.getMessage());
+    }
 }
