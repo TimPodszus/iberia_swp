@@ -50,10 +50,10 @@ public class GameManagement implements IGameManagement {
      * @param users The list of users participating in the game
      */
     void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
+        initiateInfections(game);
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
-        initiateInfections(game);
         game.setState(new WaitForPositioning());
     }
 
