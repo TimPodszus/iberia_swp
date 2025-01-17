@@ -254,32 +254,32 @@ public class GameManagement implements IGameManagement {
     }
 
     private boolean areTrainTracksBuildable() {
-        //TODO: Implement logic
+        //TODO: Implement logic in #86
         return true;
     }
 
     private boolean isHospitalBuildable() {
-        //TODO: Implement logic
+        //TODO: Implement logic in #85
         return true;
     }
 
     private boolean isKnowledgeShareable() {
-        //TODO: Implement logic
+        //TODO: Implement logic in #87
         return true;
     }
 
     private boolean isInfectionTreatable() {
-        //TODO: Implement logic
+        //TODO: Implement logic in #88
         return true;
     }
 
     private boolean isPlagueResearchable() {
-        //TODO: Implement logic
+        //TODO: Implement logic in #179
         return true;
     }
 
     private boolean isWaterTreatmentPlaceable() {
-        //TODO: Implement logic
+        //TODO: Implement logic in #84
         return true;
     }
 }
