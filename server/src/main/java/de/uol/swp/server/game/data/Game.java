@@ -12,9 +12,8 @@ import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
-import de.uol.swp.server.plague.data.PlagueRepository;
+import de.uol.swp.server.plague.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
-import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
@@ -203,7 +202,6 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    CardType.CITY_CARD,
                     city
             );
             playerCardDrawPile.add(citycard);
