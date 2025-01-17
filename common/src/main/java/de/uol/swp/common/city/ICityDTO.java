@@ -1,23 +1,35 @@
 package de.uol.swp.common.city;
 
+import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.infection.IInfectionDTO;
+
+import java.util.List;
+
 /**
  * Interface representing a City Data Transfer Object (DTO).
  */
 public interface ICityDTO {
 
     /**
+     * Gets the id of the city.
+     *
+     * @return the id of the city
+     */
+    int getId();
+
+    /**
      * Gets the name of the city.
      *
      * @return the name of the city
      */
-    String getName();
+    CityName getName();
 
     /**
      * Gets the name of the plague associated with the city.
      *
      * @return the name of the plague
      */
-    String getPlagueName();
+    PlagueName getPlagueName();
 
     /**
      * Gets the foundation date of the city.
@@ -39,4 +51,11 @@ public interface ICityDTO {
      * @return true if a hospital is built, false otherwise
      */
     boolean isHospitalBuild();
+
+    /**
+     * Gets the list of infections in the city.
+     *
+     * @return the list of infections
+     */
+    List<IInfectionDTO> getInfections();
 }

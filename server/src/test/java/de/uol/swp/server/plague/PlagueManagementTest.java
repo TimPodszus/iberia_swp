@@ -3,9 +3,13 @@ package de.uol.swp.server.plague;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.plague.data.Plague;
+import de.uol.swp.server.plague.data.PlagueRepository;
+import de.uol.swp.server.plague.management.PlagueManagement;
+import de.uol.swp.server.plague.management.PlagueManagementException;
 import de.uol.swp.server.player.data.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +42,6 @@ class PlagueManagementTest {
     private Plague plague;
     @InjectMocks
     private PlagueManagement plagueManagement;
-    private List<Card> playerCards;
 
     /**
      * Sets up the test environment before each test.
@@ -47,7 +50,7 @@ class PlagueManagementTest {
     public void setup() {
         MockitoAnnotations.openMocks(this);
 
-        playerCards = List.of(
+        List<Card> playerCards = List.of(
                 mockCityCard(PlagueName.CHOLERA),
                 mockCityCard(PlagueName.CHOLERA),
                 mockCityCard(PlagueName.CHOLERA),

@@ -1,6 +1,7 @@
 package de.uol.swp.server.region;
 
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.region.data.IRegion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class RegionRepositoryTest {
     static RegionRepository repository;
-    static List<Region> regions;
+    static List<IRegion> regions;
 
     @BeforeAll
     static void create() {
@@ -27,7 +28,7 @@ class RegionRepositoryTest {
 
     @Test
     void testGetRegionByID() {
-        Region region = repository.getRegionByID(1);
+        IRegion region = repository.getRegionByID(1);
         assertNotNull(region);
     }
 }

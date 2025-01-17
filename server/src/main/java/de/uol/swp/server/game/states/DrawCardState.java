@@ -2,6 +2,7 @@ package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.management.PlayerManagementException;
 
 /**
  * Represents the state in a game where players draw cards.
@@ -22,8 +23,12 @@ public class DrawCardState implements IGameState {
      * @param player the player who is drawing the card
      */
     public void handleAction(IGame game, Player player) {
-        game.getGameManagement()
-            .drawPlayerCard();
+        try {
+            game.getPlayerManagement()
+                .drawPlayerCard(game, player);
+        } catch (PlayerManagementException e) {
+            throw new RuntimeException(e);
+        }
         cardsDrawn++;
         if (cardsDrawn == 2 && player.getCards()
                                      .size() <= 7) {

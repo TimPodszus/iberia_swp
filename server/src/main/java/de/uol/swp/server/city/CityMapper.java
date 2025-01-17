@@ -2,35 +2,39 @@ package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.server.infection.InfectionMapper;
+import lombok.NoArgsConstructor;
+import de.uol.swp.server.city.data.ICity;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class CityMapper {
 
-    public static ICityDTO toDTO(City city) {
+    public static ICityDTO toDTO(ICity city) {
         return new CityDTO(
-                city.getPlagueName()
-                    .toString(),
-                city.getName()
-                    .toString(),
+                city.getId(),
+                city.getPlagueName(),
+                city.getName(),
                 city.getFoundationDate(),
                 city.isHarbourCity(),
-                city.isHospitalBuilt()
+                city.isHospitalBuilt(),
+                InfectionMapper.toDTOList(city.getInfections())
         );
     }
 
-    public static List<ICityDTO> toDTOList(List<City> cities) {
+    public static List<ICityDTO> toDTOList(List<ICity> cities) {
         List<ICityDTO> citiesDto = new ArrayList<>();
-        for (City city : cities) {
+        for (ICity city : cities) {
             CityDTO cityDTO = new CityDTO(
-                    city.getPlagueName()
-                        .toString(),
-                    city.getName()
-                        .toString(),
+                    city.getId(),
+                    city.getPlagueName(),
+                    city.getName(),
                     city.getFoundationDate(),
                     city.isHarbourCity(),
-                    city.isHospitalBuilt()
+                    city.isHospitalBuilt(),
+                    InfectionMapper.toDTOList(city.getInfections())
             );
             citiesDto.add(cityDTO);
         }

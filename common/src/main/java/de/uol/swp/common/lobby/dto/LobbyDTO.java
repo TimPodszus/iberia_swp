@@ -6,6 +6,7 @@ import de.uol.swp.common.user.IUserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,7 +22,7 @@ import java.util.Objects;
  */
 @Getter
 @AllArgsConstructor
-public class LobbyDTO implements ILobbyDTO {
+public class LobbyDTO implements ILobbyDTO, Serializable {
 
 
     private final String lobbyCode;
