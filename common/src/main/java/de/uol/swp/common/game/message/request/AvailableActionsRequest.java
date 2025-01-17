@@ -33,7 +33,7 @@ public class AvailableActionsRequest extends AbstractGameRequest {
             return false;
         }
         AvailableActionsRequest that = (AvailableActionsRequest) o;
-        return Objects.equals(super.getLobbyCode(), that.getLobbyCode());
+        return Objects.equals(super.getLobbyId(), that.getLobbyId());
     }
 
     /**
@@ -43,6 +43,6 @@ public class AvailableActionsRequest extends AbstractGameRequest {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(super.getLobbyCode());
+        return Objects.hash(super.getLobbyId());
     }
 }

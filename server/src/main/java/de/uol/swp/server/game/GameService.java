@@ -23,7 +23,8 @@ import java.util.Optional;
  */
 public class GameService extends AbstractService {
     IGameManagement gameManagement = new GameManagement();
-protected ILobbyManagement lobbyManagement;
+    protected ILobbyManagement lobbyManagement;
+
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
      *
@@ -45,10 +46,10 @@ protected ILobbyManagement lobbyManagement;
     @Subscribe
     public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException {
         IGame game = gameManagement.createAndInitializeGame(request);
-        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyCode());
+        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null && lobby.isPresent()) {
-            post(new CreateGameResponse(true,"Game erstellt", GameMapper.toDTO(game)));
-            sendToAllInLobby(lobby.get(), new StartGameEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
+            post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
+            sendToAllInLobby(lobby.get(), new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
     }
 

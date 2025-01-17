@@ -39,9 +39,9 @@ public class GameManagement implements IGameManagement {
      * @return The newly created game
      */
     public IGame createAndInitializeGame(CreateGameRequest request) {
-        IGame game = new Game(request.getDifficulty(), request.getLobbyCode());
+        IGame game = new Game(request.getDifficulty(), request.getLobbyId());
         GameStore.getInstance()
-                 .addGame(request.getLobbyCode(), game);
+                 .addGame(request.getLobbyId(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
         } catch (PlayerManagementException e) {

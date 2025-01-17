@@ -17,7 +17,7 @@ public class AvailableActionsRequestTest {
     @Test
     void testAvailableActionsRequest() {
         AvailableActionsRequest availableActionsRequest = new AvailableActionsRequest("LobbyCode");
-        assertEquals("LobbyCode", availableActionsRequest.getLobbyCode());
+        assertEquals("LobbyCode", availableActionsRequest.getLobbyId());
     }
 
     /**
