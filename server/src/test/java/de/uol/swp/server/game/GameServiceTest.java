@@ -55,6 +55,7 @@ public class GameServiceTest extends EventBusBasedTest {
 
     @InjectMocks
     GameService gameService = new GameService(super.getBus(), lobbyManagement, gameManagement);
+
     private IGame game;
     private ILobby lobby;
 
@@ -76,25 +77,24 @@ public class GameServiceTest extends EventBusBasedTest {
      * Handles CreateGameResponse.
      *
      * @param response the CreateGameResponse
-     * @param event the AvailableActionsResponse event
      */
     @Subscribe
     public void onCreateGameResponse(CreateGameResponse response) {
         handleEvent(response);
+    }
+
+    @Subscribe
     public void onEvent(AvailableActionsResponse event) {
         super.handleEvent(event);
     }
 
-    /**
-     * Sets up the test environment.
-     */
     @BeforeEach
     void setUp() throws LobbyManagementException, PlayerManagementException, GameManagementException {
+        MockitoAnnotations.openMocks(this);
         gameManagement = mock(GameManagement.class);
         lobbyManagement = mock(ILobbyManagement.class);
 
-        gameService = new GameService(getBus(), lobbyManagement);
-        setPrivateField(gameService, "gameManagement", gameManagement);
+        gameService = new GameService(getBus(), lobbyManagement, gameManagement);
 
         List<IUserDTO> users = new ArrayList<>();
         users.add(new UserDTO("test", "test"));
@@ -109,32 +109,43 @@ public class GameServiceTest extends EventBusBasedTest {
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(game);
         when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.of(lobby));
 
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
     }
 
     /**
-     * Tests setting player positioning when the lobby is not found.
+     * Tests setting player positioning when the game is null.
+     */
+    /**
      * Tests the handling of AvailableActionsRequest.
      *
      * @throws InterruptedException if the thread is interrupted
      */
     @Test
-    void testOnPositionRequest_LobbyNotFound() throws LobbyManagementException, GameManagementException {
-        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.empty());
-        when(positioningRequest.getLobbyCode()).thenReturn(LOBBY_CODE);
-
-        post(positioningRequest);
     void testOnAvailableActionsRequest() throws InterruptedException {
         IUser user = new User("username", "password");
         Session session = UUIDSession.create(user);
+
+        AvailableActionsRequest request = new AvailableActionsRequest("lobbyId");
+        request.setSession(session);
+
+        super.postAndWait(request);
+
+        verify(gameManagement, atLeast(1)).getAvailableActions("lobbyId", user);
+        assertInstanceOf(AvailableActionsResponse.class, event);
+    }
+    /**
+     * Tests setting player positioning when the lobby is not found.
+     */
+    @Test
+    void testOnPositionRequest_LobbyNotFound() throws LobbyManagementException, GameManagementException {
+        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.empty());
+        when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
+
+        post(positioningRequest);
 
         verify(gameManagement, times(1)).setPositioning(positioningRequest);
         verify(lobbyManagement, times(1)).getLobby(LOBBY_CODE);
         assertNull(event, "No event should be posted when the lobby is not found.");
     }
-        AvailableActionsRequest request = new AvailableActionsRequest("lobbyId");
-        request.setSession(session);
 
     /**
      * Tests setting player positioning when the game is null.
@@ -142,8 +153,7 @@ public class GameServiceTest extends EventBusBasedTest {
     @Test
     void testOnPositionRequest_GameIsNull() throws LobbyManagementException, GameManagementException {
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(null);
-        when(positioningRequest.getLobbyCode()).thenReturn(LOBBY_CODE);
-        super.postAndWait(request);
+        when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
 
         post(positioningRequest);
 
@@ -162,7 +172,6 @@ public class GameServiceTest extends EventBusBasedTest {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Failed to set private field: " + fieldName, e);
         }
-        verify(gameManagement, atLeast(1)).getAvailableActions("lobbyId", user);
-        assertInstanceOf(AvailableActionsResponse.class, event);
     }
+
 }

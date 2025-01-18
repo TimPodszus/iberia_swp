@@ -1,6 +1,5 @@
 package de.uol.swp.server.game.management;
 
-import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
@@ -13,13 +12,13 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.Player;
-import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
-import jakarta.inject.Inject;
+import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -165,7 +164,7 @@ public class GameManagement implements IGameManagement {
      * @param request The request with where the position is to be set
      */
     public IGame setPositioning(PositioningRequest request) throws GameManagementException {
-        IGame game = getGame(request.getLobbyCode());
+        IGame game = getGame(request.getLobbyId());
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<Player> players = game.getPlayers();
             Player requestPlayer = null;

@@ -12,7 +12,6 @@ import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -64,13 +63,21 @@ public class GameService extends AbstractService {
             sendToAllInLobby(lobby.get(), new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
     }
+    /**
+     * Handles incoming requests to set a players position. This method initializes the position
+     * through the GameManagement class, checks if the positioning was successful,
+     * and sends an appropriate status response to the requester.
+     *
+     * @param request the game PositioningRequest containing necessary initialization parameters
+     */
     @Subscribe
     public void onPositionRequest(PositioningRequest request) throws LobbyManagementException, GameManagementException {
         IGame game = gameManagement.setPositioning(request);
-        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyCode());
+        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null && lobby.isPresent()) {
-            sendToAllInLobby(lobby.get(), new BoardUpdateEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
+            sendToAllInLobby(lobby.get(), new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
+    }
 
     /**
      * Handles incoming requests to retrieve available actions for a user in a game.

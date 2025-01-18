@@ -18,7 +18,7 @@ class PositioningRequestTest {
 
     @Test
     void testConstructorAndGetter() {
-        assertEquals("lobby123", positioningRequest.getLobbyCode());
+        assertEquals("lobby123", positioningRequest.getLobbyId());
         assertEquals(5, positioningRequest.getCityId());
     }
 

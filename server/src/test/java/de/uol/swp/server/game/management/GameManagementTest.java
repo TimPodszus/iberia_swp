@@ -62,7 +62,7 @@ class GameManagementTest {
         UserDTO userDTO2 = new UserDTO("test2", "test2");
 
         when(createGameRequest.getDifficulty()).thenReturn(1);
-        when(createGameRequest.getLobbyCode()).thenReturn("lobby123");
+        when(createGameRequest.getLobbyId()).thenReturn("lobby123");
         when(createGameRequest.getUsers()).thenReturn(List.of(userDTO1, userDTO2));
     }
 
@@ -86,7 +86,7 @@ class GameManagementTest {
     @Test
     void testSetPositioning_InvalidLobbyCode() {
         when(gameStore.getGame("invalidLobby")).thenReturn(null);
-        when(positioningRequest.getLobbyCode()).thenReturn("invalidLobby");
+        when(positioningRequest.getLobbyId()).thenReturn("invalidLobby");
 
         assertThrows(NullPointerException.class, () -> gameManagement.setPositioning(positioningRequest));
     }
@@ -95,7 +95,7 @@ class GameManagementTest {
         IGame mockGame = mock(IGame.class);
         when(gameStore.getGame("lobby123")).thenReturn(mockGame);
         when(mockGame.getState()).thenReturn(mock(PlayerTurnState.class));
-        when(positioningRequest.getLobbyCode()).thenReturn("lobby123");
+        when(positioningRequest.getLobbyId()).thenReturn("lobby123");
 
         gameManagement.setPositioning(positioningRequest);
         verify(mockGame, never()).getPlayers();
@@ -111,7 +111,7 @@ class GameManagementTest {
         when(gameStore.getGame("lobby123")).thenReturn(mockGame);
         when(mockGame.getState()).thenReturn(mockState);
         when(mockGame.getPlayers()).thenReturn(List.of());
-        when(positioningRequest.getLobbyCode()).thenReturn("lobby123");
+        when(positioningRequest.getLobbyId()).thenReturn("lobby123");
         when(mockSession.getUser()).thenReturn(mockUser);
         when(mockUser.getUsername()).thenReturn("testUsername");
         when(positioningRequest.getSession()).thenReturn(Optional.of(mockSession));
@@ -154,7 +154,7 @@ class GameManagementTest {
         when(mockPlayer.getUser()).thenReturn(mockUser);
         when(mockUser.getUsername()).thenReturn("testUsername");
 
-        when(positioningRequest.getLobbyCode()).thenReturn("lobby123");
+        when(positioningRequest.getLobbyId()).thenReturn("lobby123");
         when(positioningRequest.getCityId()).thenReturn(34);
         when(mockSession.getUser()).thenReturn(mockUserDTO);
         when(positioningRequest.getSession()).thenReturn(Optional.of(mockSession));

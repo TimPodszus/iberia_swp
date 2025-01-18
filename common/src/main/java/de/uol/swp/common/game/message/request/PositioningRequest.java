@@ -20,7 +20,7 @@ public class PositioningRequest extends AbstractGameRequest {
         if (o == null || getClass() != o.getClass()) return false;
         PositioningRequest that = (PositioningRequest) o;
         return getCityId() == that.getCityId() &&
-                Objects.equals(getLobbyCode(), that.getLobbyCode());
+                Objects.equals(getLobbyId(), that.getLobbyId());
     }
 
     @Override

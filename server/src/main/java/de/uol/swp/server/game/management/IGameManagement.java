@@ -1,12 +1,12 @@
 package de.uol.swp.server.game.management;
 
-import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
 
