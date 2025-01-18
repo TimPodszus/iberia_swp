@@ -52,7 +52,7 @@ public class UserDTO implements IUserDTO, Serializable {
             return false;
         }
         UserDTO userDTO = (UserDTO) obj;
-        return Objects.equals(username, userDTO.username);
+        return Objects.equals(username, userDTO.username) && Objects.equals(password, userDTO.password);
     }
 
     @Override
