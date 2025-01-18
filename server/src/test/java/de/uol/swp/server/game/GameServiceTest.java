@@ -1,19 +1,18 @@
 package de.uol.swp.server.game;
 
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.user.IUserDTO;
-import de.uol.swp.common.user.UserDTO;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.user.Session;
+import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
-import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
-import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.communication.UUIDSession;
+import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -28,16 +27,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.*;
 
 /**
  * Test class for GameService.
@@ -91,10 +87,6 @@ public class GameServiceTest extends EventBusBasedTest {
     @BeforeEach
     void setUp() throws LobbyManagementException, PlayerManagementException, GameManagementException {
         MockitoAnnotations.openMocks(this);
-        gameManagement = mock(GameManagement.class);
-        lobbyManagement = mock(ILobbyManagement.class);
-
-        gameService = new GameService(getBus(), lobbyManagement, gameManagement);
 
         List<IUserDTO> users = new ArrayList<>();
         users.add(new UserDTO("test", "test"));
@@ -132,6 +124,7 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, atLeast(1)).getAvailableActions("lobbyId", user);
         assertInstanceOf(AvailableActionsResponse.class, event);
     }
+
     /**
      * Tests setting player positioning when the lobby is not found.
      */
@@ -160,18 +153,4 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, times(1)).setPositioning(positioningRequest);
         assertNull(event, "No event should be posted when the game is null.");
     }
-
-    /**
-     * Utility to set private fields via reflection.
-     */
-    private void setPrivateField(Object target, String fieldName, Object value) {
-        try {
-            Field field = target.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(target, value);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("Failed to set private field: " + fieldName, e);
-        }
-    }
-
 }
