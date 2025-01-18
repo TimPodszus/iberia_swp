@@ -1,5 +1,7 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.Card;
@@ -17,7 +19,8 @@ import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
-
+import jakarta.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,6 +30,9 @@ import java.util.List;
  */
 public class GameManagement implements IGameManagement {
 
+    @Inject
+    private IPlayerManagement playerManagement;
+
     /**
      * Creates and initializes a game based on the provided creation request.
      * It sets up the game with specified users and difficulty level, and registers it in the game store.
@@ -34,11 +40,15 @@ public class GameManagement implements IGameManagement {
      * @param request The request containing the necessary data to create the game
      * @return The newly created game
      */
-    public IGame createAndInitializeGame(CreateGameRequest request) throws PlayerManagementException {
-        IGame game = new Game(request.getDifficulty(), request.getLobbyCode());
+    public IGame createAndInitializeGame(CreateGameRequest request) {
+        IGame game = new Game(request.getDifficulty(), request.getLobbyId());
         GameStore.getInstance()
-                 .addGame(request.getLobbyCode(), game);
-        initializing(game, UserMapper.toUser(request.getUsers()));
+                 .addGame(request.getLobbyId(), game);
+        try {
+            initializing(game, UserMapper.toUser(request.getUsers()));
+        } catch (PlayerManagementException e) {
+            //TODO: irgendwo Fehler anzeigen "Fehler beim Initialisieren des Spiels"
+        }
         return game;
     }
 
@@ -65,9 +75,9 @@ public class GameManagement implements IGameManagement {
      * @param game  The game instance to add players to
      */
     private void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
-        PlayerManagement playerManagement = new PlayerManagement(game);
         for (IUser user : users) {
             Player player = new Player(user);
+
             game.getPlayers()
                 .add(player);
             int cardsToDraw = switch (game.getPlayers()
@@ -224,5 +234,58 @@ public class GameManagement implements IGameManagement {
         List<InfectionCard> infectionCardDiscardPile = game.getInfectionCardDiscardPile();
 
         infectionCardDiscardPile.add(infectionCard);
+    }
+
+    public List<GameActions> getAvailableActions(String lobbyCode, IUser user) {
+        List<GameActions> actions = new ArrayList<>();
+        if (areTrainTracksBuildable()) {
+            actions.add(GameActions.BUILD_TRAIN_TRACKS);
+        }
+        if (isHospitalBuildable()) {
+            actions.add(GameActions.BUILD_HOSPITAL);
+        }
+        if (isKnowledgeShareable()) {
+            actions.add(GameActions.SHARE_KNOWLEDGE);
+        }
+        if (isInfectionTreatable()) {
+            actions.add(GameActions.TREAT_INFECTION);
+        }
+        if (isPlagueResearchable()) {
+            actions.add(GameActions.RESEARCH_PLAGUE);
+        }
+        if (isWaterTreatmentPlaceable()) {
+            actions.add(GameActions.TREAT_WATER);
+        }
+        return actions;
+    }
+
+    private boolean areTrainTracksBuildable() {
+        //TODO: Implement logic in #86
+        return true;
+    }
+
+    private boolean isHospitalBuildable() {
+        //TODO: Implement logic in #85
+        return true;
+    }
+
+    private boolean isKnowledgeShareable() {
+        //TODO: Implement logic in #87
+        return true;
+    }
+
+    private boolean isInfectionTreatable() {
+        //TODO: Implement logic in #88
+        return true;
+    }
+
+    private boolean isPlagueResearchable() {
+        //TODO: Implement logic in #179
+        return true;
+    }
+
+    private boolean isWaterTreatmentPlaceable() {
+        //TODO: Implement logic in #84
+        return true;
     }
 }

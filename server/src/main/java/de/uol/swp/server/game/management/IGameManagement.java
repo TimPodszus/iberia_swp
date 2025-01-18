@@ -1,10 +1,14 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.management.PlayerManagementException;
+
+import java.util.List;
 
 public interface IGameManagement {
     /**
@@ -31,5 +35,13 @@ public interface IGameManagement {
      * Adds an infection card to the infection card discard pile.
      */
     void discardInfectionCard(IGame game, InfectionCard infectionCard);
+
+    /**
+     * Retrieves the list of available actions for a given lobby.
+     *
+     * @param lobbyId the ID of the lobby for which to retrieve available actions
+     * @return a list of available game actions
+     */
+    List<GameActions> getAvailableActions(String lobbyId, IUser user);
 }
 

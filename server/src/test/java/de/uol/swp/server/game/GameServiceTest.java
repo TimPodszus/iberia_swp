@@ -6,19 +6,27 @@ import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.game.message.response.AvailableActionsResponse;
+import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
+import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.User;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -27,23 +35,26 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
 
 /**
- * Test class for the GameService.
+ * Test class for GameService.
  */
-class GameServiceTest extends EventBusBasedTest {
+public class GameServiceTest extends EventBusBasedTest {
 
     private static final String LOBBY_CODE = "lobby123";
     private static final int GAME_ID = 1;
 
     @Mock
-    private IGameManagement gameManagement;
+    ILobbyManagement lobbyManagement;
 
     @Mock
-    private ILobbyManagement lobbyManagement;
+    IGameManagement gameManagement;
 
-    private GameService gameService;
-
+    @InjectMocks
+    GameService gameService = new GameService(super.getBus(), lobbyManagement, gameManagement);
     private IGame game;
     private ILobby lobby;
 
@@ -52,6 +63,7 @@ class GameServiceTest extends EventBusBasedTest {
 
     /**
      * Handles BoardUpdateEvent.
+     * Handles AvailableActionsResponse events.
      *
      * @param event the BoardUpdateEvent
      */
@@ -64,12 +76,18 @@ class GameServiceTest extends EventBusBasedTest {
      * Handles CreateGameResponse.
      *
      * @param response the CreateGameResponse
+     * @param event the AvailableActionsResponse event
      */
     @Subscribe
     public void onCreateGameResponse(CreateGameResponse response) {
         handleEvent(response);
+    public void onEvent(AvailableActionsResponse event) {
+        super.handleEvent(event);
     }
 
+    /**
+     * Sets up the test environment.
+     */
     @BeforeEach
     void setUp() throws LobbyManagementException, PlayerManagementException, GameManagementException {
         gameManagement = mock(GameManagement.class);
@@ -91,10 +109,15 @@ class GameServiceTest extends EventBusBasedTest {
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(game);
         when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.of(lobby));
 
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     /**
      * Tests setting player positioning when the lobby is not found.
+     * Tests the handling of AvailableActionsRequest.
+     *
+     * @throws InterruptedException if the thread is interrupted
      */
     @Test
     void testOnPositionRequest_LobbyNotFound() throws LobbyManagementException, GameManagementException {
@@ -102,11 +125,16 @@ class GameServiceTest extends EventBusBasedTest {
         when(positioningRequest.getLobbyCode()).thenReturn(LOBBY_CODE);
 
         post(positioningRequest);
+    void testOnAvailableActionsRequest() throws InterruptedException {
+        IUser user = new User("username", "password");
+        Session session = UUIDSession.create(user);
 
         verify(gameManagement, times(1)).setPositioning(positioningRequest);
         verify(lobbyManagement, times(1)).getLobby(LOBBY_CODE);
         assertNull(event, "No event should be posted when the lobby is not found.");
     }
+        AvailableActionsRequest request = new AvailableActionsRequest("lobbyId");
+        request.setSession(session);
 
     /**
      * Tests setting player positioning when the game is null.
@@ -115,6 +143,7 @@ class GameServiceTest extends EventBusBasedTest {
     void testOnPositionRequest_GameIsNull() throws LobbyManagementException, GameManagementException {
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(null);
         when(positioningRequest.getLobbyCode()).thenReturn(LOBBY_CODE);
+        super.postAndWait(request);
 
         post(positioningRequest);
 
@@ -133,5 +162,7 @@ class GameServiceTest extends EventBusBasedTest {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Failed to set private field: " + fieldName, e);
         }
+        verify(gameManagement, atLeast(1)).getAvailableActions("lobbyId", user);
+        assertInstanceOf(AvailableActionsResponse.class, event);
     }
 }

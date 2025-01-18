@@ -44,18 +44,18 @@ public class PlayerService extends AbstractService {
     public void onDrawPlayerCardRequest(DrawPlayerCardRequest request) {
         AbstractResponseMessage response;
         IGame game = GameStore.getInstance()
-                              .getGame(request.getLobbyCode());
+                              .getGame(request.getLobbyId());
         try {
             Session session = request.getSession()
                                      .orElseThrow(() -> new IllegalStateException("Session not present"));
             ICardDTO card = playerManagement.drawPlayerCard(game, UserMapper.toUser(session.getUser()));
-            response = new DrawPlayerCardResponse(true, "Card drawn successfully", card);
+            response = new DrawPlayerCardResponse(request.getLobbyId(), true, "Card drawn successfully", card);
         } catch (PlayerManagementException e) {
-            response = new StatusResponse(false, "Error drawing a player card");
+            response = new StatusResponse(request.getLobbyId(), false, "Error drawing a player card");
         }
         response.setSession(request.getSession()
                                    .orElseThrow(() -> new IllegalStateException("Session not present")));
         post(response);
-        post(new BoardUpdateEvent(request.getLobbyCode(), GameMapper.toDTO(game)));
+        post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 }

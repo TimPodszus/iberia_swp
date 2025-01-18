@@ -1,5 +1,6 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
@@ -25,10 +26,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static de.uol.swp.common.city.CityName.ALBACETE;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the {@link GameManagement} class.
+ * This class ensures the correct functionality of game management methods, such as creating players,
+ * setting the starting player, assigning roles, and initiating infections.
+ */
 class GameManagementTest {
 
     @Mock
@@ -164,6 +174,13 @@ class GameManagementTest {
         GameManagementException exception = assertThrows(GameManagementException.class, () -> {
             throw new GameManagementException("Test Exception");
         });
+
         assertEquals("Test Exception", exception.getMessage());
+    }
+
+    @Test
+    void testGetAvailableActions() {
+        List<GameActions> actions = gameManagement.getAvailableActions("LobbyId", null);
+        assertEquals(6, actions.size());
     }
 }
