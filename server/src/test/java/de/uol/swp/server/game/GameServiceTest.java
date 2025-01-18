@@ -31,8 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -129,7 +128,7 @@ public class GameServiceTest extends EventBusBasedTest {
      * Tests setting player positioning when the lobby is not found.
      */
     @Test
-    void testOnPositionRequest_LobbyNotFound() throws LobbyManagementException, GameManagementException {
+    void testOnPositionRequest_LobbyNotFound() throws LobbyManagementException, GameManagementException, PlayerManagementException {
         when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.empty());
         when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
 
@@ -144,7 +143,7 @@ public class GameServiceTest extends EventBusBasedTest {
      * Tests setting player positioning when the game is null.
      */
     @Test
-    void testOnPositionRequest_GameIsNull() throws LobbyManagementException, GameManagementException {
+    void testOnPositionRequest_GameIsNull() throws LobbyManagementException, GameManagementException, PlayerManagementException {
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(null);
         when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
 
@@ -153,4 +152,20 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, times(1)).setPositioning(positioningRequest);
         assertNull(event, "No event should be posted when the game is null.");
     }
+    /**
+     * Tests create game  when the game is null.
+     */
+    @Test
+    void testOnCreateGameRequest_GameIsNull() throws LobbyManagementException, PlayerManagementException {
+        when(gameManagement.createAndInitializeGame(createGameRequest)).thenReturn(null);
+        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.of(lobby));
+
+        gameService.onCreateGameRequest(createGameRequest);
+
+        verify(gameManagement, times(1)).createAndInitializeGame(createGameRequest);
+        verify(lobbyManagement, times(1)).getLobby(LOBBY_CODE);
+        assertNull(event, "No event should be posted when the game creation fails.");
+    }
+
+
 }

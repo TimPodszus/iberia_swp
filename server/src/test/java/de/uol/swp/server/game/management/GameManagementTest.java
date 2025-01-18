@@ -16,6 +16,7 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +50,9 @@ class GameManagementTest {
 
     @Mock
     private PositioningRequest positioningRequest;
+
+    @Mock
+    private PlayerManagement playerManagement;
 
     @InjectMocks
     private GameManagement gameManagement;
@@ -91,7 +95,7 @@ class GameManagementTest {
         assertThrows(NullPointerException.class, () -> gameManagement.setPositioning(positioningRequest));
     }
     @Test
-    void testSetPositioning_InvalidGameState() throws GameManagementException {
+    void testSetPositioning_InvalidGameState() throws GameManagementException, PlayerManagementException {
         IGame mockGame = mock(IGame.class);
         when(gameStore.getGame("lobby123")).thenReturn(mockGame);
         when(mockGame.getState()).thenReturn(mock(PlayerTurnState.class));
@@ -120,7 +124,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testSetPositioning_AllPlayersPositioned() throws Exception {
+    void testSetPositioning_AllPlayersPositioned() throws Exception, PlayerManagementException {
         IGame mockGame = mock(IGame.class);
         WaitForPositioning mockState = mock(WaitForPositioning.class);
         Player mockPlayer = spy(new Player(mock(IUser.class)));

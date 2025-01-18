@@ -71,7 +71,7 @@ public class GameService extends AbstractService {
      * @param request the game PositioningRequest containing necessary initialization parameters
      */
     @Subscribe
-    public void onPositionRequest(PositioningRequest request) throws LobbyManagementException, GameManagementException {
+    public void onPositionRequest(PositioningRequest request) throws LobbyManagementException, GameManagementException, PlayerManagementException {
         IGame game = gameManagement.setPositioning(request);
         Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null && lobby.isPresent()) {

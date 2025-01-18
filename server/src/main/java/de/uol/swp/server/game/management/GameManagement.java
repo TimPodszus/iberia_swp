@@ -163,7 +163,7 @@ public class GameManagement implements IGameManagement {
      *
      * @param request The request with where the position is to be set
      */
-    public IGame setPositioning(PositioningRequest request) throws GameManagementException {
+    public IGame setPositioning(PositioningRequest request) throws GameManagementException, PlayerManagementException {
         IGame game = getGame(request.getLobbyId());
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<Player> players = game.getPlayers();
@@ -181,11 +181,11 @@ public class GameManagement implements IGameManagement {
             }
             try {
                 assert requestPlayer != null;
-                requestPlayer.setStartingPosition(game.getCityRepository()
-                                                      .getCityNameById(request.getCityId()));
+                playerManagement.setStartingPosition(game.getCityRepository()
+                                                      .getCityNameById(request.getCityId()), requestPlayer);
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
-            } catch (Exception e) {
-                throw new GameManagementException("Failed to set Position");
+            } catch (PlayerManagementException e) {
+                throw new PlayerManagementException("Failed to set Position");
             }
             if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
                                                                       .size()) {

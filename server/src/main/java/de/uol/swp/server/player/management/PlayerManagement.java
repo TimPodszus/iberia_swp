@@ -1,10 +1,10 @@
 package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.ICardDTO;
-import de.uol.swp.server.cards.Card;
-import de.uol.swp.server.cards.CardMapper;
-import de.uol.swp.server.cards.EpidemicCard;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.cards.*;
+import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
@@ -73,5 +73,29 @@ public class PlayerManagement implements IPlayerManagement {
 
         // if 0 is the top card of the draw pile
         return playerCardDrawPile.remove(0);
+    }
+
+    public void setStartingPosition(CityName cityName, Player player) throws PlayerManagementException {
+        boolean validRequest = false;
+        int cityCardCount = 0;
+        CityRepository cityRepository = new CityRepository();
+        for (Card card : player.getCards()) {
+            if (card instanceof CityCard cityCard) {
+                cityCardCount++;
+                if (cityCard.getCity()
+                            .getName()
+                            .equals(cityName)) {
+                    validRequest = true;
+                }
+            }
+        }
+        if (validRequest || cityCardCount == 0) {
+            ICity city = cityRepository.getCitiesByNames(cityName)
+                                       .get(0);
+            player.setCurrentPosition(city);
+        } else {
+            throw new PlayerManagementException("Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast " + "ausw" +
+                    "ählen!");
+        }
     }
 }

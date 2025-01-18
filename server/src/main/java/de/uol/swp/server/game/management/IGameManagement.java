@@ -24,7 +24,7 @@ public interface IGameManagement {
      *
      * @param request      The request with where the position is to be set
      */
-    IGame setPositioning(PositioningRequest request) throws GameManagementException;
+    IGame setPositioning(PositioningRequest request) throws GameManagementException, PlayerManagementException;
 
     /**
      * Draws a player card. The specific behavior of this method should be defined.
