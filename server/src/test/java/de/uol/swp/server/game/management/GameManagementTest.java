@@ -1,11 +1,14 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.common.game.GameActions;
 import de.uol.swp.server.game.data.IGame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,5 +40,11 @@ class GameManagementTest {
         });
 
         assertEquals("Test Exception", exception.getMessage());
+    }
+
+    @Test
+    void testGetAvailableActions() {
+        List<GameActions> actions = gameManagement.getAvailableActions("LobbyId", null);
+        assertEquals(6, actions.size());
     }
 }

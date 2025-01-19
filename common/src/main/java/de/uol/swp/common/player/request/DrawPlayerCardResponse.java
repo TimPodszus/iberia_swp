@@ -10,8 +10,8 @@ import java.util.Objects;
 public class DrawPlayerCardResponse extends AbstractGameResponse {
     private final ICardDTO card;
 
-    public DrawPlayerCardResponse(boolean success, String description, ICardDTO card) {
-        super(success, description);
+    public DrawPlayerCardResponse(String lobbyId, boolean success, String description, ICardDTO card) {
+        super(lobbyId, success, description);
         this.card = card;
     }
 

@@ -1,6 +1,7 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
@@ -19,6 +20,7 @@ import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import jakarta.inject.Inject;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,9 +41,9 @@ public class GameManagement implements IGameManagement {
      * @return The newly created game
      */
     public IGame createAndInitializeGame(CreateGameRequest request) {
-        IGame game = new Game(request.getDifficulty(), request.getLobbyCode());
+        IGame game = new Game(request.getDifficulty(), request.getLobbyId());
         GameStore.getInstance()
-                 .addGame(request.getLobbyCode(), game);
+                 .addGame(request.getLobbyId(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
         } catch (PlayerManagementException e) {
@@ -226,5 +228,58 @@ public class GameManagement implements IGameManagement {
         List<InfectionCard> infectionCardDiscardPile = game.getInfectionCardDiscardPile();
 
         infectionCardDiscardPile.add(infectionCard);
+    }
+
+    public List<GameActions> getAvailableActions(String lobbyCode, IUser user) {
+        List<GameActions> actions = new ArrayList<>();
+        if (areTrainTracksBuildable()) {
+            actions.add(GameActions.BUILD_TRAIN_TRACKS);
+        }
+        if (isHospitalBuildable()) {
+            actions.add(GameActions.BUILD_HOSPITAL);
+        }
+        if (isKnowledgeShareable()) {
+            actions.add(GameActions.SHARE_KNOWLEDGE);
+        }
+        if (isInfectionTreatable()) {
+            actions.add(GameActions.TREAT_INFECTION);
+        }
+        if (isPlagueResearchable()) {
+            actions.add(GameActions.RESEARCH_PLAGUE);
+        }
+        if (isWaterTreatmentPlaceable()) {
+            actions.add(GameActions.TREAT_WATER);
+        }
+        return actions;
+    }
+
+    private boolean areTrainTracksBuildable() {
+        //TODO: Implement logic in #86
+        return true;
+    }
+
+    private boolean isHospitalBuildable() {
+        //TODO: Implement logic in #85
+        return true;
+    }
+
+    private boolean isKnowledgeShareable() {
+        //TODO: Implement logic in #87
+        return true;
+    }
+
+    private boolean isInfectionTreatable() {
+        //TODO: Implement logic in #88
+        return true;
+    }
+
+    private boolean isPlagueResearchable() {
+        //TODO: Implement logic in #179
+        return true;
+    }
+
+    private boolean isWaterTreatmentPlaceable() {
+        //TODO: Implement logic in #84
+        return true;
     }
 }
