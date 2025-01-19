@@ -33,7 +33,7 @@ class PlayerManagementTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        playerManagement = new PlayerManagement(game);
+        playerManagement = new PlayerManagement();
     }
 
 

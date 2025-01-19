@@ -13,12 +13,11 @@ import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.usermanagement.IUser;
-import lombok.AllArgsConstructor;
 
 import java.util.List;
 import java.util.Objects;
 
-@AllArgsConstructor
+
 public class PlayerManagement implements IPlayerManagement {
     private IGame game;
 
