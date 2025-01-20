@@ -13,7 +13,7 @@ public class ChatTest {
     @Test
     void handleOnChatRequest() throws LobbyManagementException {
         // Arrange
-        ChatRequest chatRequest = new ChatRequest("lobby1", "player1", "Moin Leute");
+        ChatRequest chatRequest = new ChatRequest("lobby1", "Moin Leute");
         EventBus eventBus = new EventBus();
         ChatService chatService = mock(ChatService.class);
         ChatController chatController = new ChatController(chatService, eventBus);

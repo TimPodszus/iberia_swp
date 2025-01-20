@@ -6,7 +6,7 @@ import jakarta.inject.Inject;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-public class ChatController{
+public class ChatController {
     private final ChatService chatService;
     private final EventBus eventBus;
 
