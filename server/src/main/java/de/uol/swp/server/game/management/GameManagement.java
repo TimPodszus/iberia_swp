@@ -58,7 +58,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                  .addGame(request.getLobbyId(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
-        } catch (PlayerManagementException e) {
+        } catch (PlayerManagementException | GameManagementException e) {
             //TODO: irgendwo Fehler anzeigen "Fehler beim Initialisieren des Spiels"
         }
         return game;
@@ -71,7 +71,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
      */
-    private void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
+    private void initializing(IGame game, List<IUser> users) throws PlayerManagementException, GameManagementException {
         initiateInfections(game);
         createPlayers(users, game);
         assignRoles(game);
@@ -86,7 +86,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
      */
-    private void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
+    private void createPlayers(
+            List<IUser> users, IGame game
+    ) throws PlayerManagementException {
         for (IUser user : users) {
             Player player = new Player(user);
 
@@ -158,7 +160,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param game The game instance where city infections will be initiated
      */
 
-    void initiateInfections(IGame game) {
+    private void initiateInfections(IGame game) {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
             game.getCityManagement()
@@ -176,7 +178,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param request The request with where the position is to be set
      */
-    public IGame setPositioning(PositioningRequest request) throws PlayerManagementException {
+    public IGame setPositioning(PositioningRequest request) throws GameManagementException {
         IGame game = getGame(request.getLobbyId());
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<IPlayer> players = game.getPlayers();
@@ -198,13 +200,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                          .getCityNameById(request.getCityId()), requestPlayer);
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
             } catch (PlayerManagementException e) {
-                throw new PlayerManagementException("Failed to set Position");
+                throw new GameManagementException("Failed to set Position");
             }
             if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
                                                                       .size()) {
                 game.setState(new PlayerTurnState());
                 game.setCurrentPlayerIndex(0);
             }
+        } else {
+            throw new GameManagementException("Game is not in a state that allows setting positioning");
         }
         return game;
     }
@@ -348,18 +352,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
         Card cityCard = player.getCityCard(city);
-
-        if (cityCard == null) {
-            LOG.error(
-                    "[LobbyID: {}] Failed to sail to {}. {} does not have a city card for this city",
-                    lobbyId,
-                    city.getName()
-                        .getDisplayName(),
-                    player.getUser()
-                          .getUsername()
-            );
-            throw new GameManagementException("Player does not have a city card for this city");
-        }
 
         boolean playerIsSailor = player.getRole()
                                        .getName()

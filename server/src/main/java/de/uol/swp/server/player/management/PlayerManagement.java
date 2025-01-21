@@ -29,7 +29,9 @@ public class PlayerManagement implements IPlayerManagement {
         return drawPlayerCard(game, player);
     }
 
-    public ICardDTO drawPlayerCard(IGame game, IPlayer player) throws PlayerManagementException {
+    public ICardDTO drawPlayerCard(
+            IGame game, IPlayer player
+    ) throws PlayerManagementException {
         Card card = getCard(game, player);
 
         if (card instanceof EpidemicCard) {

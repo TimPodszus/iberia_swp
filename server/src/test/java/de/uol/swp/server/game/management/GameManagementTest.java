@@ -1,41 +1,44 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityName;
-import de.uol.swp.server.cards.Card;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.city.CityRepository;
-import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.communication.UUIDSession;
+import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.role.Nurse;
 import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
-import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.states.WaitForPositioning;
-import de.uol.swp.server.player.data.IPlayer;
-import de.uol.swp.server.player.management.PlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 import static de.uol.swp.common.city.CityName.ALBACETE;
+import static de.uol.swp.common.city.CityName.ALICANTE;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -45,14 +48,7 @@ import static org.mockito.Mockito.*;
  */
 class GameManagementTest {
 
-    @Mock
-    private GameStore gameStore;
-
-    @Mock
-    private CreateGameRequest createGameRequest;
-
-    @Mock
-    private PositioningRequest positioningRequest;
+    private static final String LOBBY_CODE = "lobbyCode";
 
     @Mock
     private PlayerManagement playerManagement;
@@ -72,112 +68,124 @@ class GameManagementTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         GameStore.getInstance()
-                 .addGame("lobbyCode", game);
+                 .addGame(LOBBY_CODE, game);
         cityRepository = new CityRepository();
-
-        UserDTO userDTO1 = new UserDTO("test", "test");
-        UserDTO userDTO2 = new UserDTO("test2", "test2");
-
-        when(createGameRequest.getDifficulty()).thenReturn(1);
-        when(createGameRequest.getLobbyId()).thenReturn("lobby123");
-        when(createGameRequest.getUsers()).thenReturn(List.of(userDTO1, userDTO2));
     }
 
     @Test
     void testCreateAndInitializeGame() {
-        ArgumentCaptor<IGame> gameCaptor = ArgumentCaptor.forClass(IGame.class);
-        gameManagement.createAndInitializeGame(createGameRequest);
-        verify(gameStore).addGame(eq("lobby123"), gameCaptor.capture());
-        IGame capturedGame = gameCaptor.getValue();
-        assertNotNull(capturedGame);
-        assertEquals(1, capturedGame.getDifficulty());
-        assertEquals("lobby123", capturedGame.getGameId());
+        List<IUserDTO> testUsers = List.of(new UserDTO("test", "test"), new UserDTO("test2", "test2"));
+        CreateGameRequest request = new CreateGameRequest("lobby123", 1, testUsers);
+
+        IGame createdGame = gameManagement.createAndInitializeGame(request);
+
+        assertEquals(createdGame,
+                GameStore.getInstance()
+                         .getGame("lobby123")
+        );
     }
 
     @Test
     void testSetPositioning_InvalidLobbyCode() {
-        when(gameStore.getGame("invalidLobby")).thenReturn(null);
-        when(positioningRequest.getLobbyId()).thenReturn("invalidLobby");
+        PositioningRequest request = new PositioningRequest("lobby123", 12);
 
-        assertThrows(NullPointerException.class, () -> gameManagement.setPositioning(positioningRequest));
+        assertThrows(NullPointerException.class, () -> gameManagement.setPositioning(request));
     }
 
     @Test
-    void testSetPositioning_InvalidGameState() throws PlayerManagementException {
-        IGame mockGame = mock(IGame.class);
-        when(gameStore.getGame("lobby123")).thenReturn(mockGame);
-        when(mockGame.getState()).thenReturn(mock(PlayerTurnState.class));
-        when(positioningRequest.getLobbyId()).thenReturn("lobby123");
+    void testSetPositioning_InvalidGameState() {
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
+        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
 
-        gameManagement.setPositioning(positioningRequest);
-        verify(mockGame, never()).getPlayers();
+        assertThrows(GameManagementException.class,
+                () -> gameManagement.setPositioning(request),
+                "Expected GameManagementException"
+        );
     }
 
     @Test
     void testSetPositioning_PlayerNotFound() {
-        IGame mockGame = mock(IGame.class);
+        IUser testUser = new User("test", "test");
+        Session session = UUIDSession.create(testUser);
+        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
+        request.setSession(session);
         WaitForPositioning mockState = mock(WaitForPositioning.class);
-        Session mockSession = mock(Session.class);
-        IUserDTO mockUser = mock(IUserDTO.class);
+        when(game.getState()).thenReturn(mockState);
+        when(game.getPlayers()).thenReturn(List.of());
 
-        when(gameStore.getGame("lobby123")).thenReturn(mockGame);
-        when(mockGame.getState()).thenReturn(mockState);
-        when(mockGame.getPlayers()).thenReturn(List.of());
-        when(positioningRequest.getLobbyId()).thenReturn("lobby123");
-        when(mockSession.getUser()).thenReturn(mockUser);
-        when(mockUser.getUsername()).thenReturn("testUsername");
-        when(positioningRequest.getSession()).thenReturn(Optional.of(mockSession));
-
-        assertThrows(AssertionError.class, () -> gameManagement.setPositioning(positioningRequest));
+        assertThrows(AssertionError.class, () -> gameManagement.setPositioning(request));
     }
 
     @Test
-    void testSetPositioning_AllPlayersPositioned() throws PlayerManagementException {
-        IGame mockGame = mock(IGame.class);
+    void testSetPositioning_AllPlayersPositioned() throws GameManagementException {
         WaitForPositioning mockState = mock(WaitForPositioning.class);
-        Player mockPlayer = spy(new Player(mock(IUser.class)));
-        IUser mockUser = mock(IUser.class);
-        IUserDTO mockUserDTO = mock(IUserDTO.class);
-        Session mockSession = mock(Session.class);
-        CityRepository mockCityRepository = mock(CityRepository.class);
-
-        when(mockUser.getUsername()).thenReturn("testUsername");
-        when(mockUserDTO.getUsername()).thenReturn("testUsername");
-
-        CityCard mockCityCard = mock(CityCard.class);
-        ICity mockCity = mock(ICity.class);
-        when(mockCity.getName()).thenReturn(ALBACETE);
-        when(mockCityCard.getCity()).thenReturn(mockCity);
-
-        List<Card> cards = new ArrayList<>();
-        cards.add(mockCityCard);
-        when(mockPlayer.getCards()).thenReturn(cards);
-
-        List<IPlayer> playerList = new ArrayList<>();
-        playerList.add(mockPlayer);
-
-        when(gameStore.getGame("lobby123")).thenReturn(mockGame);
-        when(mockGame.getState()).thenReturn(mockState);
-        when(mockGame.getPlayers()).thenReturn(playerList);
-        when(mockGame.getCityRepository()).thenReturn(mockCityRepository);
-        when(mockCityRepository.getCitiesByNames(any(CityName.class))).thenReturn(List.of(mockCity));
-
-        when(mockPlayer.getUser()).thenReturn(mockUser);
-        when(mockUser.getUsername()).thenReturn("testUsername");
-
-        when(positioningRequest.getLobbyId()).thenReturn("lobby123");
-        when(positioningRequest.getCityId()).thenReturn(34);
-        when(mockSession.getUser()).thenReturn(mockUserDTO);
-        when(positioningRequest.getSession()).thenReturn(Optional.of(mockSession));
-
-        when(mockCityRepository.getCityNameById(34)).thenReturn(ALBACETE);
-
         when(mockState.getPositionedPlayersCount()).thenReturn(1);
+        when(game.getState()).thenReturn(mockState);
 
-        gameManagement.setPositioning(positioningRequest);
+        IUser testUser = new User("test", "test");
+        Session session = UUIDSession.create(testUser);
+        IPlayer player = new Player(testUser);
+        when(game.getPlayers()).thenReturn(List.of(player));
 
-        verify(mockGame).setState(any(PlayerTurnState.class));
-        verify(mockGame).setCurrentPlayerIndex(0);
+        ICity albacete = cityRepository.getCityByName(ALBACETE);
+        CityCard cityCard = new CityCard(albacete.getId(),
+                albacete.getName()
+                        .toString(),
+                albacete
+        );
+        player.addCard(cityCard);
+
+        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 34);
+        request.setSession(session);
+
+        when(game.getCityRepository()).thenReturn(cityRepository);
+
+        gameManagement.setPositioning(request);
+
+        verify(game).setState(any(PlayerTurnState.class));
+        verify(game).setCurrentPlayerIndex(0);
+    }
+
+    @Test
+    void testSetPositioningWithPlayerManagementException() throws PlayerManagementException {
+        WaitForPositioning mockState = mock(WaitForPositioning.class);
+        when(mockState.getPositionedPlayersCount()).thenReturn(1);
+        when(game.getState()).thenReturn(mockState);
+
+        IUser testUser = new User("test", "test");
+        Session session = UUIDSession.create(testUser);
+        IPlayer player = new Player(testUser);
+        when(game.getPlayers()).thenReturn(List.of(player));
+        doThrow(PlayerManagementException.class).when(playerManagement)
+                                                .setStartingPosition(ALBACETE, player);
+
+        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 34);
+        request.setSession(session);
+
+        when(game.getCityRepository()).thenReturn(cityRepository);
+
+        assertThrows(GameManagementException.class, () -> gameManagement.setPositioning(request));
+    }
+
+    @Test
+    void testDrawInfectionCard() {
+        InfectionCard infectionCard1 = new InfectionCard(1,
+                "InfectionCard",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard", cityRepository.getCityByName(ALICANTE));
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard1, infectionCard2)));
+
+        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
+
+        assertEquals(infectionCard1, drawnCard, "Expected Barcelona infection card to be drawn");
+    }
+
+    @Test
+    void testDrawInfectionCardWithEmptyInfectionDeck() {
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>());
+
+        assertThrows(IllegalStateException.class, () -> gameManagement.drawInfectionCard(game));
     }
 
     @Test

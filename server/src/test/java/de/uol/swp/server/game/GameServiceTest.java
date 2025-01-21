@@ -62,7 +62,7 @@ public class GameServiceTest extends EventBusBasedTest {
     private AuthenticationService authenticationService;
 
     @InjectMocks
-    GameService gameService = new GameService(getBus(), lobbyManagement, gameManagement);
+    GameService gameService = new GameService(getBus(), lobbyManagement, gameManagement, cityManagement);
 
     /**
      * Handles BoardUpdateEvent.
@@ -109,10 +109,10 @@ public class GameServiceTest extends EventBusBasedTest {
     void testOnMovePlayerRequest() throws InterruptedException, GameManagementException, LobbyManagementException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", "12");
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12);
         movePlayerRequest.setSession(session);
-        ICity city = new CityRepository().getCity("12");
-        when(cityManagement.getCity("lobbycode", "12")).thenReturn(city);
+        ICity city = new CityRepository().getCity(12);
+        when(cityManagement.getCity("lobbycode", 12)).thenReturn(city);
         IGame game = new Game(2, "lobbycode");
         when(gameManagement.getGame("lobbycode")).thenReturn(game);
         ILobby lobby = new Lobby("lobbycode", "Test", List.of(user), user, 4);
@@ -129,7 +129,7 @@ public class GameServiceTest extends EventBusBasedTest {
      */
     @Test
     void testOnMovePlayerRequestWithUnknownUser() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", "12");
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12);
         movePlayerRequest.setSession(null);
 
         assertThrows(GameException.class, () -> gameService.onMovePlayerRequest(movePlayerRequest));
