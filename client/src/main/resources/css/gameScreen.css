@@ -56,7 +56,7 @@
 }
 
 .city-highlight {
-    -fx-stroke: #3c3c3c;
+    -fx-stroke: whitesmoke;
     -fx-stroke-width: 1;
     -fx-effect: dropshadow(gaussian, whitesmoke, 4, 0, 0, 1);
 }

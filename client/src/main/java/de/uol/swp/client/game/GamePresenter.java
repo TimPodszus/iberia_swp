@@ -63,12 +63,11 @@ public class GamePresenter extends AbstractPresenter {
     private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
-    private static final String CITY_ID = "#stackPaneCity";
+    private static final String CITY_ID = "#city";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
     private String lobbyId;
 
-    private final IUserDTO user = UserStore.getInstance()
-                                           .getUser();
+    private IUserDTO user;
 
     @Inject
     private GameService gameService;
@@ -250,19 +249,16 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
-        StackPane stackPane = (StackPane) event.getSource();
+        Node source = (Node) event.getSource();
+        int cityId = Integer.parseInt(source.getId()
+                                            .replaceAll("\\D+", ""));
         if (gameDTO.getState()
                    .equals("WaitForPositioning")) {
-            Node source = (Node) event.getSource();
-            int cityId = Integer.parseInt(source.getId()
-                                                .replaceAll("\\D+", ""));
             gameService.setPosition(gameDTO.getGameId(), cityId);
         }
-        if (stackPane.getStyleClass()
-                     .contains("city-highlighted")) {
-            String id = stackPane.getId()
-                                 .substring(0, CITY_ID.length() - 1);
-            gameService.movePlayerToCity("lobbyId", id);
+        if (source.getStyleClass()
+                  .contains("city-highlighted")) {
+            gameService.movePlayerToCity(this.lobbyId, String.valueOf(cityId));
         }
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
     }
@@ -549,7 +545,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param players the roles of the players to be added to the city
      */
     public void setPlayerInCity(int cityId, List<IPlayerDTO> players) {
-        StackPane stackPaneCity = (StackPane) mapPane.lookup(CITY_ID + cityId);
+        StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + cityId);
 
 
         List<Color> playerColors = new ArrayList<>();
@@ -571,7 +567,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void removeAllGameFigures() {
         for (int i = 1; i <= 48; i++) {
-            StackPane stackPaneCity = (StackPane) mapPane.lookup(CITY_ID + i);
+            StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + i);
             stackPaneCity.getChildren()
                          .removeIf(GameFigure.class::isInstance);
         }
@@ -690,6 +686,8 @@ public class GamePresenter extends AbstractPresenter {
     public void onStartGameEvent(StartGameEvent event) {
         this.gameDTO = event.getGameDTO();
         this.lobbyId = event.getLobbyCode();
+        this.user = UserStore.getInstance()
+                             .getUser();
 
         Platform.runLater(() -> {
             updateBoard(gameDTO);
@@ -723,9 +721,10 @@ public class GamePresenter extends AbstractPresenter {
         updateResearchedPlagues(gameDTO.getPlagues());
 
         disableActionButtons();
-        if (gameDTO.getCurrentPlayer()
-                   .getUsername()
-                   .equals(user.getUsername())) {
+        if (!Objects.equals(gameDTO.getState(), "WaitForPositioning") && Objects.equals(gameDTO.getCurrentPlayer()
+                                                                                               .getUsername(),
+                user.getUsername()
+        )) {
             gameService.requestAvailableDestination(this.lobbyId,
                     String.valueOf(gameDTO.getCurrentPlayer()
                                           .getCurrentPosition()
@@ -765,7 +764,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCities(List<ICityDTO> cities) {
         for (ICityDTO city : cities) {
-            StackPane stackPane = (StackPane) mapPane.lookup(CITY_ID + city.getId());
+            Node stackPane = mapPane.lookup(CITY_ID + city.getId());
             stackPane.getStyleClass()
                      .remove("city-highlighted");
             stackPane.getStyleClass()
@@ -891,6 +890,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updatePlayersInCities(List<IPlayerDTO> players) {
         removeAllGameFigures();
+        if (gameDTO.getState()
+                   .equals("WaitForPositioning")) {
+            return;
+        }
         Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
@@ -1099,12 +1102,12 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setAvailableDestinations() {
         for (Map.Entry<ICityDTO, Boolean> entry : availableDestinations.entrySet()) {
-            StackPane stackPaneCity = (StackPane) mapPane.lookup(CITY_ID + entry.getKey()
-                                                                                .getId());
-            stackPaneCity.getStyleClass()
-                         .remove("city");
-            stackPaneCity.getStyleClass()
-                         .add("city-highlighted");
+            Node node = mapPane.lookup(CITY_ID + entry.getKey()
+                                                      .getId());
+            node.getStyleClass()
+                .removeAll("city");
+            node.getStyleClass()
+                .add("city-highlighted");
         }
     }
 }

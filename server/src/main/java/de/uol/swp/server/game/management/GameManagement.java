@@ -347,12 +347,19 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             return;
         }
 
-        Card cityCard = new CityCard(
-                city.getId(),
-                city.getName()
-                    .toString(),
-                city
-        );
+        Card cityCard = player.getCityCard(city);
+
+        if (cityCard == null) {
+            LOG.error(
+                    "[LobbyID: {}] Failed to sail to {}. {} does not have a city card for this city",
+                    lobbyCode,
+                    city.getName()
+                        .getDisplayName(),
+                    player.getUser()
+                          .getUsername()
+            );
+            throw new GameManagementException("Player does not have a city card for this city");
+        }
 
         boolean playerIsSailor = player.getRole()
                                        .getName()

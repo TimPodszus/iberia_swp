@@ -24,6 +24,8 @@ import de.uol.swp.server.lobby.management.LobbyManagementException;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -35,6 +37,7 @@ import java.util.List;
  * and communicates the result back to the client through status responses.
  */
 public class GameService extends AbstractService {
+    private static final Logger LOG = LogManager.getLogger(GameService.class);
     IGameManagement gameManagement;
     protected ILobbyManagement lobbyManagement;
     ICityManagement cityManagement;
@@ -45,10 +48,16 @@ public class GameService extends AbstractService {
      * @param bus the EventBus to which the service will subscribe and post events
      */
     @Inject
-    public GameService(EventBus bus, ILobbyManagement lobbyManagement, IGameManagement gameManagement) {
+    public GameService(
+            EventBus bus,
+            ILobbyManagement lobbyManagement,
+            IGameManagement gameManagement,
+            ICityManagement cityManagement
+    ) {
         super(bus);
         this.lobbyManagement = lobbyManagement;
         this.gameManagement = gameManagement;
+        this.cityManagement = cityManagement;
     }
 
     /**
@@ -60,9 +69,11 @@ public class GameService extends AbstractService {
      */
     @Subscribe
     public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException, PlayerManagementException {
+        LOG.debug("Got CreateGameRequest for lobby {}", request.getLobbyId());
         IGame game = gameManagement.createAndInitializeGame(request);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null) {
+            LOG.debug("Game created for lobby {}", request.getLobbyId());
             post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
             sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
