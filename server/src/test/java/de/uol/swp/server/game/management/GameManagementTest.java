@@ -11,6 +11,7 @@ import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
@@ -23,13 +24,10 @@ import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -56,6 +54,9 @@ class GameManagementTest {
     @Mock
     private PlayerManagement playerManagement;
 
+    @Mock
+    private CityManagement cityManagement;
+
     @InjectMocks
     private GameManagement gameManagement;
 
@@ -79,7 +80,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testCreateAndInitializeGame() throws Exception, PlayerManagementException {
+    void testCreateAndInitializeGame() throws PlayerManagementException {
         ArgumentCaptor<IGame> gameCaptor = ArgumentCaptor.forClass(IGame.class);
         gameManagement.createAndInitializeGame(createGameRequest);
         verify(gameStore).addGame(eq("lobby123"), gameCaptor.capture());

@@ -6,6 +6,7 @@ import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -20,6 +21,7 @@ import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import com.google.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +34,9 @@ public class GameManagement implements IGameManagement {
 
     @Inject
     private IPlayerManagement playerManagement;
+
+    @Inject
+    private ICityManagement cityManagement;
 
     /**
      * Creates and initializes a game based on the provided creation request.
@@ -149,8 +154,7 @@ public class GameManagement implements IGameManagement {
     void initiateInfections(IGame game) {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
-            game.getCityManagement()
-                .infectCityWithOwnPlague(game, drawInfectionCard(game), infectionAmount);
+            cityManagement.infectCityWithOwnPlague(game, drawInfectionCard(game), infectionAmount);
             if (i % 3 == 0) {
                 infectionAmount--;
             }
@@ -164,7 +168,7 @@ public class GameManagement implements IGameManagement {
      *
      * @param request The request with where the position is to be set
      */
-    public IGame setPositioning(PositioningRequest request) throws GameManagementException, PlayerManagementException {
+    public IGame setPositioning(PositioningRequest request) throws PlayerManagementException {
         IGame game = getGame(request.getLobbyId());
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<IPlayer> players = game.getPlayers();
@@ -182,8 +186,10 @@ public class GameManagement implements IGameManagement {
             }
             try {
                 assert requestPlayer != null;
-                playerManagement.setStartingPosition(game.getCityRepository()
-                                                      .getCityNameById(request.getCityId()), requestPlayer);
+                playerManagement.setStartingPosition(
+                        game.getCityRepository()
+                            .getCityNameById(request.getCityId()), requestPlayer
+                );
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
             } catch (PlayerManagementException e) {
                 throw new PlayerManagementException("Failed to set Position");
