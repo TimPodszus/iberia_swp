@@ -19,8 +19,6 @@ import java.util.Objects;
 
 
 public class PlayerManagement implements IPlayerManagement {
-    private IGame game;
-
     public ICardDTO drawPlayerCard(IGame game, IUser user) throws PlayerManagementException {
         Player player = game.getPlayers()
                             .stream()
@@ -34,9 +32,7 @@ public class PlayerManagement implements IPlayerManagement {
     }
 
     public ICardDTO drawPlayerCard(IGame game, Player player) throws PlayerManagementException {
-        this.game = game;
-
-        Card card = getCard(player);
+        Card card = getCard(game, player);
 
         if (card instanceof EpidemicCard) {
             game.setInfectionCounter(game.getInfectionCounter() + 1);
@@ -58,7 +54,7 @@ public class PlayerManagement implements IPlayerManagement {
         return CardMapper.toDTO(card);
     }
 
-    private Card getCard(Player player) throws PlayerManagementException {
+    private Card getCard(IGame game, Player player) throws PlayerManagementException {
         if (!player.equals(game.getPlayers()
                                .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState) && !(game.getState() instanceof StartState)) {
             throw new PlayerManagementException();

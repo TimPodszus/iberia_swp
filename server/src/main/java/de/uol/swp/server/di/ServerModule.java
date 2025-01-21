@@ -13,7 +13,6 @@ import org.greenrobot.eventbus.EventBus;
 import com.google.inject.AbstractModule;
 import de.uol.swp.server.usermanagement.store.UserStore;
 
-
 /**
  * Module that provides classes needed by the Server.
  *
