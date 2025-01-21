@@ -8,6 +8,8 @@ import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.connection.management.IConnectionManagement;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class ConnectionService extends AbstractService {
+    private static final Logger LOG = LogManager.getLogger(ConnectionService.class);
+
     IConnectionManagement connectionManagement;
 
     /**
@@ -39,6 +43,11 @@ public class ConnectionService extends AbstractService {
      */
     @Subscribe
     public void onAvailableDestinationsRequest(AvailableDestinationsRequest request) {
+        LOG.debug(
+                "[Lobby: {}] Got AvailableDestinationsRequest for city {}",
+                request.getLobbyId(),
+                request.getCityId()
+        );
         Map<ICityDTO, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyId(),
                                                                                    request.getCityId()
                                                                            )

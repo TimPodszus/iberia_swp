@@ -11,6 +11,8 @@ import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.data.IPlayer;
 import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -19,6 +21,8 @@ import java.util.*;
  */
 @AllArgsConstructor
 public class ConnectionManagement extends AbstractManagement implements IConnectionManagement {
+
+    private static final Logger LOG = LogManager.getLogger(ConnectionManagement.class);
 
     @Override
     public Map<ICity, Boolean> getAvailableDestinations(String lobbyId, String cityId) {
@@ -29,12 +33,21 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         Map<ICity, Boolean> availableDestinations = getByLandConnectedCities(lobbyId, startCity);
 
         if (startCity.isHarbourCity()) {
+            LOG.debug("[Lobby: {}] City {} is a harbour city, continuing to retrieve available harbour cities",
+                    lobbyId,
+                    startCity.getName()
+            );
             Map<ICity, Boolean> seaConnections = getBySeaConnectedCities(lobbyId);
             for (Map.Entry<ICity, Boolean> entry : seaConnections.entrySet()) {
                 availableDestinations.putIfAbsent(entry.getKey(), entry.getValue());
             }
         }
 
+        LOG.debug("[Lobby: {}] Successfully retrieved {} available destinations for city {}",
+                lobbyId,
+                availableDestinations.size(),
+                startCity.getName()
+        );
         return availableDestinations;
     }
 
@@ -63,6 +76,11 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
             }
         }
 
+        LOG.debug("[Lobby: {}] Successfully retrieved {} available land connections for city {}",
+                lobbyId,
+                availableDestinations.size(),
+                startCity.getName()
+        );
         return availableDestinations;
     }
 
@@ -136,6 +154,11 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                 }
             }
         }
+
+        LOG.debug("[Lobby: {}] Successfully retrieved {} available sea connections for the current player",
+                lobbyId,
+                availableConnections.size()
+        );
         return availableConnections;
     }
 }
