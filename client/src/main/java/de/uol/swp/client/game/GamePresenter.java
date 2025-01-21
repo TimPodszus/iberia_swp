@@ -30,7 +30,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -64,6 +66,7 @@ public class GamePresenter extends AbstractPresenter {
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final String CITY_ID = "#city";
+    private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
     private String lobbyId;
 
@@ -72,7 +75,7 @@ public class GamePresenter extends AbstractPresenter {
     @Inject
     private GameService gameService;
 
-    private Map<ICityDTO, Boolean> availableDestinations = new HashMap<>();
+    private Map<Integer, Boolean> availableDestinations = new HashMap<>();
 
     @FXML
     private AnchorPane gameScreen;
@@ -257,10 +260,27 @@ public class GamePresenter extends AbstractPresenter {
             gameService.setPosition(gameDTO.getGameId(), cityId);
         }
         if (source.getStyleClass()
-                  .contains("city-highlighted")) {
+                  .contains(CITY_HIGHLIGHTED_CLASS)) {
+            if (Boolean.TRUE.equals(availableDestinations.get(cityId)) && !showSailingDialog()) {
+                return;
+            }
             gameService.movePlayerToCity(this.lobbyId, String.valueOf(cityId));
         }
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
+    }
+
+    /**
+     * Displays a confirmation dialog for sailing to a destination.
+     *
+     * @return true if the user confirms the action, false otherwise
+     */
+    private boolean showSailingDialog() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Schiffahrt");
+        alert.setHeaderText(null);
+        alert.setContentText("Möchtest Du dorthin mit dem Schiff fahren? Dafür musst Du die Stadtkarte " + "ablegen.");
+        Optional<ButtonType> result = alert.showAndWait();
+
+        return result.isPresent() && result.get() == ButtonType.OK;
     }
 
     /**
@@ -766,7 +786,7 @@ public class GamePresenter extends AbstractPresenter {
         for (ICityDTO city : cities) {
             Node stackPane = mapPane.lookup(CITY_ID + city.getId());
             stackPane.getStyleClass()
-                     .remove("city-highlighted");
+                     .remove(CITY_HIGHLIGHTED_CLASS);
             stackPane.getStyleClass()
                      .add("city");
             updateInfections(city);
@@ -1088,10 +1108,23 @@ public class GamePresenter extends AbstractPresenter {
             }
         }
     }
-
+    
+    /**
+     * Handles the AvailableDestinationsResponse.
+     * This method is called when an AvailableDestinationsResponse is received.
+     * It updates the available destinations map and highlights the available destination cities on the game map.
+     *
+     * @param response the AvailableDestinationsResponse containing the available destinations
+     */
     @Subscribe
     public void onAvailableDestinationsResponse(AvailableDestinationsResponse response) {
-        availableDestinations = response.getCities();
+        Map<Integer, Boolean> destinations = new HashMap<>();
+        for (Map.Entry<ICityDTO, Boolean> entry : response.getCities()
+                                                          .entrySet()) {
+            destinations.put(entry.getKey()
+                                  .getId(), entry.getValue());
+        }
+        this.availableDestinations = destinations;
         this.setAvailableDestinations();
     }
 
@@ -1101,13 +1134,12 @@ public class GamePresenter extends AbstractPresenter {
      * of the corresponding city StackPane to indicate it is a highlighted destination.
      */
     public void setAvailableDestinations() {
-        for (Map.Entry<ICityDTO, Boolean> entry : availableDestinations.entrySet()) {
-            Node node = mapPane.lookup(CITY_ID + entry.getKey()
-                                                      .getId());
+        for (Map.Entry<Integer, Boolean> entry : availableDestinations.entrySet()) {
+            Node node = mapPane.lookup(CITY_ID + entry.getKey());
             node.getStyleClass()
                 .removeAll("city");
             node.getStyleClass()
-                .add("city-highlighted");
+                .add(CITY_HIGHLIGHTED_CLASS);
         }
     }
 }
