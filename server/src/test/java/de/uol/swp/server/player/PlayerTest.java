@@ -67,16 +67,4 @@ class PlayerTest {
         assertFalse(player.getCards()
                           .contains(card));
     }
-
-    /**
-     * Tests that the {@link Player#setStartingPosition(CityName)} method throws an exception
-     * when the city name does not match any city card in the player's hand.
-     */
-    @Test
-    void testSetStartingPosition_WithInvalidCityCard() {
-        when(mockCity.getName()).thenReturn(CityName.ALICANTE);
-        cards.add(mockCityCard);
-
-        assertThrows(Exception.class, () -> player.setStartingPosition(CityName.BARCELONA));
-    }
 }

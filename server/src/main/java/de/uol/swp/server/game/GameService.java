@@ -1,19 +1,23 @@
 package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
@@ -51,12 +55,27 @@ public class GameService extends AbstractService {
      * @param request the game creation request containing necessary game initialization parameters
      */
     @Subscribe
-    public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException {
+    public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException, PlayerManagementException {
         IGame game = gameManagement.createAndInitializeGame(request);
         Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null && lobby.isPresent()) {
             post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
             sendToAllInLobby(lobby.get(), new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        }
+    }
+    /**
+     * Handles incoming requests to set a players position. This method initializes the position
+     * through the GameManagement class, checks if the positioning was successful,
+     * and sends an appropriate status response to the requester.
+     *
+     * @param request the game PositioningRequest containing necessary initialization parameters
+     */
+    @Subscribe
+    public void onPositionRequest(PositioningRequest request) throws LobbyManagementException, GameManagementException, PlayerManagementException {
+        IGame game = gameManagement.setPositioning(request);
+        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyId());
+        if (game != null && lobby.isPresent()) {
+            sendToAllInLobby(lobby.get(), new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
     }
 
@@ -87,13 +106,5 @@ public class GameService extends AbstractService {
                .ifPresent(response::setMessageContext);
         post(response);
 
-    }
-
-    /**
-     * Placeholder for sending a positioning request to initialize player positions in the game.
-     * This method needs to be implemented to handle the game setup and positioning of players.
-     */
-    public void sendPositioningRequest() {
-        // TODO: Implement method to handle player positioning initialization
     }
 }
