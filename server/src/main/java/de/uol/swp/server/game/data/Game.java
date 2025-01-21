@@ -167,7 +167,7 @@ public class Game implements IGame {
         this.players = new ArrayList<>();
         this.currentPlayerIndex = 0;
         this.gameManagement = new GameManagement();
-        this.playerManagement = new PlayerManagement(this);
+        this.playerManagement = new PlayerManagement();
         this.cityManagement = new CityManagement();
         this.state = new StartState();
         state.handleAction(this, null);
