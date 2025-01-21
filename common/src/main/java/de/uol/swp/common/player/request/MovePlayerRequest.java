@@ -29,11 +29,11 @@ public class MovePlayerRequest extends AbstractGameRequest {
             return false;
         }
         MovePlayerRequest that = (MovePlayerRequest) object;
-        return Objects.equals(super.getLobbyCode(), that.getLobbyCode()) && Objects.equals(cityId, that.cityId);
+        return Objects.equals(super.getLobbyId(), that.getLobbyId()) && Objects.equals(cityId, that.cityId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.getLobbyCode(), cityId);
+        return Objects.hash(super.getLobbyId(), cityId);
     }
 }

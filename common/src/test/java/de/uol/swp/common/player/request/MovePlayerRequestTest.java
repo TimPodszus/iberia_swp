@@ -15,7 +15,7 @@ public class MovePlayerRequestTest {
     @Test
     void testRequest() {
         MovePlayerRequest movePlayerRequest = new MovePlayerRequest("testLobbyCode", "testCityId");
-        assertEquals("testLobbyCode", movePlayerRequest.getLobbyCode());
+        assertEquals("testLobbyCode", movePlayerRequest.getLobbyId());
         assertEquals("testCityId", movePlayerRequest.getCityId());
     }
 

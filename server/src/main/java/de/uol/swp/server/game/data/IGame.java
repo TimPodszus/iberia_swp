@@ -7,8 +7,9 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.IGameState;
-import de.uol.swp.server.player.data.Player;
-import de.uol.swp.server.plague.PlagueRepository;
+import de.uol.swp.server.plague.data.PlagueRepository;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.RegionRepository;
 
 import java.util.List;
@@ -142,7 +143,7 @@ public interface IGame {
      *
      * @return the list of players
      */
-    List<Player> getPlayers();
+    List<IPlayer> getPlayers();
 
     /**
      * Gets the city management.
@@ -158,7 +159,7 @@ public interface IGame {
      *
      * @return the current state of the game
      */
-    Object getState();
+    IGameState getState();
 
     /**
      * Sets the current state of the game.
@@ -175,6 +176,15 @@ public interface IGame {
      */
     @Deprecated(since = "16.01.25", forRemoval = true)
     IGameManagement getGameManagement();
+
+    /**
+     * Gets the player management.
+     *
+     * @return the player management
+     * @deprecated
+     */
+    @Deprecated(since = "16.01.25", forRemoval = true)
+    IPlayerManagement getPlayerManagement();
 
     /**
      * Gets the previous state of the game.
@@ -211,5 +221,5 @@ public interface IGame {
      */
     int getDifficulty();
 
-    Player getCurrentPlayer();
+    IPlayer getCurrentPlayer();
 }

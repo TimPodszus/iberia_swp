@@ -1,7 +1,9 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.data.IPlayer;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Represents the state in a game where players draw cards.
@@ -9,6 +11,8 @@ import de.uol.swp.server.player.data.Player;
  * It ensures that each player draws two cards and then transitions the game state to InfectionState,
  * provided the player holds seven or fewer cards.
  */
+@Getter
+@Setter
 public class DrawCardState implements IGameState {
     private int cardsDrawn = 0;
 
@@ -21,13 +25,7 @@ public class DrawCardState implements IGameState {
      * @param game   the game in which this action is being processed
      * @param player the player who is drawing the card
      */
-    public void handleAction(IGame game, Player player) {
-        game.getGameManagement()
-            .drawPlayerCard();
-        cardsDrawn++;
-        if (cardsDrawn == 2 && player.getCards()
-                                     .size() <= 7) {
-            game.setState(new InfectionState());
-        }
+    public void handleAction(IGame game, IPlayer player) {
+        //TODO: Überarbeiten der States
     }
 }

@@ -1,19 +1,19 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.common.cards.CardType;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
 import de.uol.swp.server.cards.InfectionCard;
-import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
-import de.uol.swp.server.plague.PlagueRepository;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.plague.data.PlagueRepository;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
 import lombok.AllArgsConstructor;
@@ -104,7 +104,7 @@ public class Game implements IGame {
     /**
      * List of players in the game.
      */
-    private List<Player> players;
+    private List<IPlayer> players;
 
     /**
      * Index of the current player.
@@ -128,6 +128,11 @@ public class Game implements IGame {
      * Management class for game-related operations.
      */
     private GameManagement gameManagement;
+
+    /**
+     * Management class for player-related operations.
+     */
+    private PlayerManagement playerManagement;
 
     /**
      * Management class for city-related operations.
@@ -161,21 +166,22 @@ public class Game implements IGame {
         this.players = new ArrayList<>();
         this.currentPlayerIndex = 0;
         this.gameManagement = new GameManagement();
+        this.playerManagement = new PlayerManagement();
         this.cityManagement = new CityManagement();
         this.state = new StartState();
-        state.handleAction(this, null);
+        initializeGame(difficulty);
     }
 
     public void initializeGame(int difficulty) {
         createInfectionCards(cityRepository.getCities());
         createPlayerCards(cityRepository.getCities());
         Collections.shuffle(getInfectionCardDrawPile());
-        gameStartShuffle(difficulty);
+        gameStartShuffle(difficulty + 3);
     }
 
-    public void createInfectionCards(List<City> cities) {
+    public void createInfectionCards(List<ICity> cities) {
         int i = 0;
-        for (City city : cities) {
+        for (ICity city : cities) {
             InfectionCard infectionCard = new InfectionCard(
                     i,
                     city.getName()
@@ -187,9 +193,9 @@ public class Game implements IGame {
         }
     }
 
-    public void createPlayerCards(List<City> cities) {
+    public void createPlayerCards(List<ICity> cities) {
         int i = 1;
-        for (City city : cities) {
+        for (ICity city : cities) {
             CityCard citycard = new CityCard(
                     i,
                     city.getName()
@@ -238,9 +244,9 @@ public class Game implements IGame {
     /**
      * Retrieves the current player whose turn it is in the game.
      *
-     * @return the {@link Player} object representing the current player
+     * @return the {@link IPlayer} object representing the current player
      */
-    public Player getCurrentPlayer() {
+    public IPlayer getCurrentPlayer() {
         return this.players.get(currentPlayerIndex);
     }
 }

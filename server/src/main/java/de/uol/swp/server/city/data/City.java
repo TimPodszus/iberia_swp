@@ -1,8 +1,8 @@
-package de.uol.swp.server.city;
+package de.uol.swp.server.city.data;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.infection.IInfection;
+import de.uol.swp.server.infection.data.IInfection;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Getter
-public class City {
+public class City implements ICity {
     /**
      * The id of the city.
      */
@@ -52,6 +52,7 @@ public class City {
     /**
      * The list of infections in the city.
      */
+    @Setter
     private List<IInfection> infections = new ArrayList<>();
 
     @Override

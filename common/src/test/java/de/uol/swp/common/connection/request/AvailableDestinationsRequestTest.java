@@ -19,7 +19,7 @@ public class AvailableDestinationsRequestTest {
         AvailableDestinationsRequest availableDestinationsRequest = new AvailableDestinationsRequest(LOBBY_CODE,
                 CITY_ID
         );
-        assertEquals(LOBBY_CODE, availableDestinationsRequest.getLobbyCode());
+        assertEquals(LOBBY_CODE, availableDestinationsRequest.getLobbyId());
         assertEquals(CITY_ID, availableDestinationsRequest.getCityId());
     }
 

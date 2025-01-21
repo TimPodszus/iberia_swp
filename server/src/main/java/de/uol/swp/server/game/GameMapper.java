@@ -42,7 +42,8 @@ public class GameMapper {
                 game.getEscalationStage(),
                 game.getWaterTreatmentsLeft(),
                 game.getTracksLeft(),
-                game.getCurrentPlayerIndex()
+                game.getCurrentPlayerIndex(),
+                game.getState().getClass().getSimpleName()
         );
     }
 }

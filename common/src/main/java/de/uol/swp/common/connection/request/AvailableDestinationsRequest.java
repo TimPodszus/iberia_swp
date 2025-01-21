@@ -24,11 +24,11 @@ public class AvailableDestinationsRequest extends AbstractGameRequest {
             return false;
         }
         AvailableDestinationsRequest request = (AvailableDestinationsRequest) object;
-        return Objects.equals(cityId, request.cityId) && Objects.equals(getLobbyCode(), request.getLobbyCode());
+        return Objects.equals(cityId, request.cityId) && Objects.equals(getLobbyId(), request.getLobbyId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cityId, getLobbyCode());
+        return Objects.hash(cityId, getLobbyId());
     }
 }

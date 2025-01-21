@@ -5,13 +5,16 @@ import de.uol.swp.common.city.ICityDTO;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import de.uol.swp.server.infection.InfectionMapper;
+import de.uol.swp.server.city.data.ICity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CityMapper {
-    public static ICityDTO toDTO(City city) {
+
+    public static ICityDTO toDTO(ICity city) {
+        if (city == null) return null;
         return new CityDTO(
                 city.getId(),
                 city.getPlagueName(),
@@ -23,9 +26,9 @@ public class CityMapper {
         );
     }
 
-    public static List<ICityDTO> toDTOList(List<City> cities) {
+    public static List<ICityDTO> toDTOList(List<ICity> cities) {
         List<ICityDTO> citiesDto = new ArrayList<>();
-        for (City city : cities) {
+        for (ICity city : cities) {
             CityDTO cityDTO = new CityDTO(
                     city.getId(),
                     city.getPlagueName(),

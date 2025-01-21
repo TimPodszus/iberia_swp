@@ -39,7 +39,7 @@ public class ConnectionService extends AbstractService {
      */
     @Subscribe
     public void onAvailableDestinationsRequest(AvailableDestinationsRequest request) {
-        Map<ICityDTO, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyCode(),
+        Map<ICityDTO, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyId(),
                                                                                    request.getCityId()
                                                                            )
                                                                            .entrySet()

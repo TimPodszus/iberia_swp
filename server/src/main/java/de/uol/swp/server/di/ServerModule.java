@@ -10,6 +10,8 @@ import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagement;
 import de.uol.swp.server.lobby.store.ILobbyStore;
 import de.uol.swp.server.lobby.store.LobbyStore;
+import de.uol.swp.server.player.management.IPlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.AbstractModule;
@@ -38,5 +40,7 @@ public class ServerModule extends AbstractModule {
         bind(IConnectionManagement.class).to(ConnectionManagement.class);
         bind(IGameManagement.class).to(GameManagement.class);
         bind(ICityManagement.class).to(CityManagement.class);
+        bind(IGameManagement.class).to(GameManagement.class);
+        bind(IPlayerManagement.class).to(PlayerManagement.class);
     }
 }

@@ -13,10 +13,12 @@ import de.uol.swp.common.cards.*;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
+import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -28,6 +30,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -62,14 +65,13 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CONNECTION_ID = "#connection";
     private static final String CITY_ID = "#stackPaneCity";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
+    private String lobbyId;
+
+    private final IUserDTO user = UserStore.getInstance()
+                                           .getUser();
 
     @Inject
     private GameService gameService;
-
-    private String lobbyCode;
-
-    private IUserDTO user = UserStore.getInstance()
-                                     .getUser();
 
     private Map<ICityDTO, Boolean> availableDestinations = new HashMap<>();
 
@@ -118,9 +120,29 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private HBox playerButtons;
 
+    @FXML
+    private Button buildTrainTracksButton;
+
+    @FXML
+    private Button buildHospitalButton;
+
+    @FXML
+    private Button researchPlagueButton;
+
+    @FXML
+    private Button treatWaterButton;
+
+    @FXML
+    private Button treatInfectionButton;
+
+    @FXML
+    private Button shareKnowledgeButton;
+
     private double mouseX;
 
     private double mouseY;
+
+    private IGameDTO gameDTO;
 
     /**
      * Initializes the game screen presenter.
@@ -229,12 +251,20 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
         StackPane stackPane = (StackPane) event.getSource();
+        if (gameDTO.getState()
+                   .equals("WaitForPositioning")) {
+            Node source = (Node) event.getSource();
+            int cityId = Integer.parseInt(source.getId()
+                                                .replaceAll("\\D+", ""));
+            gameService.setPosition(gameDTO.getGameId(), cityId);
+        }
         if (stackPane.getStyleClass()
                      .contains("city-highlighted")) {
             String id = stackPane.getId()
                                  .substring(0, CITY_ID.length() - 1);
             gameService.movePlayerToCity("lobbyId", id);
         }
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
     }
 
     /**
@@ -255,6 +285,17 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onRegionClickedEvent(MouseEvent event) {
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
+    }
+
+    /**
+     * Handles the event when the player card pile is clicked.
+     * This method is triggered by a mouse click event on the player card pile.
+     *
+     * @param event the mouse event that triggered this handler
+     */
+    @FXML
+    private void onPlayerCardPileClickedEvent(MouseEvent event) {
+        gameService.drawPlayerCard(lobbyId);
     }
 
     /**
@@ -401,13 +442,13 @@ public class GamePresenter extends AbstractPresenter {
      * @param plagueName the name of the plague
      * @param cubes      the number of plague cubes to set
      */
-    public void setPlaqueCubesToCity(int cityId, PlagueName plagueName, int cubes) {
+    public void setPlagueCubesToCity(int cityId, PlagueName plagueName, int cubes) {
         VBox plagueDisplayVBox = (VBox) mapPane.lookup(PLAGUE_DISPLAY_CITY_ID + cityId);
 
-        ObservableList<Node> existingPlaques = plagueDisplayVBox.getChildren();
+        ObservableList<Node> existingPlagues = plagueDisplayVBox.getChildren();
 
-        HBox plaqueHBox = new HBox();
-        for (Node node : existingPlaques) {
+        HBox plagueHBox = new HBox();
+        for (Node node : existingPlagues) {
             if (node.getUserData() == plagueName) {
                 plagueDisplayVBox.getChildren()
                                  .remove(node);
@@ -424,18 +465,19 @@ public class GamePresenter extends AbstractPresenter {
         text.setStrokeType(StrokeType.OUTSIDE);
         text.setStrokeWidth(0.0);
 
-        plaqueHBox.getChildren()
+        plagueHBox.getChildren()
                   .addAll(plagueCube, text);
+        plagueHBox.setUserData(plagueName);
         if (cubes == 3) {
-            plaqueHBox.getStyleClass()
+            plagueHBox.getStyleClass()
                       .add("plague-cubes-display-warning");
         } else {
-            plaqueHBox.getStyleClass()
+            plagueHBox.getStyleClass()
                       .add("plague-cubes-display");
         }
 
         plagueDisplayVBox.getChildren()
-                         .add(plaqueHBox);
+                         .add(plagueHBox);
     }
 
     /**
@@ -631,7 +673,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onBoardUpdateEvent(BoardUpdateEvent event) {
-        IGameDTO gameDTO = event.getGameDTO();
+        this.gameDTO = event.getGameDTO();
 
         Platform.runLater(() -> updateBoard(gameDTO));
     }
@@ -646,7 +688,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
-        IGameDTO gameDTO = event.getGameDTO();
+        this.gameDTO = event.getGameDTO();
+        this.lobbyId = event.getLobbyCode();
 
         Platform.runLater(() -> {
             updateBoard(gameDTO);
@@ -679,17 +722,16 @@ public class GamePresenter extends AbstractPresenter {
         updateHospitals(gameDTO.getCities());
         updateResearchedPlagues(gameDTO.getPlagues());
 
-        boolean playerIsCurrentPlayer = gameDTO.getPlayers()
-                                               .get(gameDTO.getCurrentPlayerIndex())
-                                               .getUsername()
-                                               .equals(user.getUsername());
-        if (playerIsCurrentPlayer) {
-            gameService.requestAvailableDestination(this.lobbyCode,
-                    String.valueOf(gameDTO.getPlayers()
-                                          .get(gameDTO.getCurrentPlayerIndex())
+        disableActionButtons();
+        if (gameDTO.getCurrentPlayer()
+                   .getUsername()
+                   .equals(user.getUsername())) {
+            gameService.requestAvailableDestination(this.lobbyId,
+                    String.valueOf(gameDTO.getCurrentPlayer()
                                           .getCurrentPosition()
                                           .getId())
             );
+            gameService.sendAvailableActionsRequest(this.lobbyId);
         }
     }
 
@@ -743,7 +785,7 @@ public class GamePresenter extends AbstractPresenter {
             IPlagueDTO plague = infection.getPlague();
             PlagueName plagueName = plague.getName();
             int severity = infection.getSeverity();
-            setPlaqueCubesToCity(city.getId(), plagueName, severity);
+            setPlagueCubesToCity(city.getId(), plagueName, severity);
         }
     }
 
@@ -990,6 +1032,58 @@ public class GamePresenter extends AbstractPresenter {
                                                 .map(IPlagueDTO::getName)
                                                 .toArray(PlagueName[]::new);
         setResearchedPlagues(researchedPlagues);
+    }
+
+    /**
+     * Disables all action buttons on the game screen.
+     * This method sets the disable property of each action button to true,
+     * preventing the user from interacting with them.
+     */
+    private void disableActionButtons() {
+        buildTrainTracksButton.setDisable(true);
+        buildHospitalButton.setDisable(true);
+        researchPlagueButton.setDisable(true);
+        treatWaterButton.setDisable(true);
+        treatInfectionButton.setDisable(true);
+        shareKnowledgeButton.setDisable(true);
+    }
+
+    /**
+     * Event handler for the AvailableActionsResponse.
+     * This method is called when an AvailableActionsResponse is received.
+     * It enables the appropriate action buttons based on the available actions.
+     *
+     * @param response the AvailableActionsResponse containing the available actions
+     */
+    @Subscribe
+    public void onAvailableActionsResponse(AvailableActionsResponse response) {
+        if (!response.getLobbyId()
+                     .equals(lobbyId)) {
+            return;
+        }
+
+        for (GameActions action : response.getAvailableActions()) {
+            switch (action) {
+                case BUILD_TRAIN_TRACKS:
+                    buildTrainTracksButton.setDisable(false);
+                    break;
+                case BUILD_HOSPITAL:
+                    buildHospitalButton.setDisable(false);
+                    break;
+                case TREAT_INFECTION:
+                    treatInfectionButton.setDisable(false);
+                    break;
+                case SHARE_KNOWLEDGE:
+                    shareKnowledgeButton.setDisable(false);
+                    break;
+                case RESEARCH_PLAGUE:
+                    researchPlagueButton.setDisable(false);
+                    break;
+                case TREAT_WATER:
+                    treatWaterButton.setDisable(false);
+                    break;
+            }
+        }
     }
 
     @Subscribe

@@ -134,7 +134,7 @@ public class GameDTOTest {
                 escalationStage,
                 waterTreatmentsLeft,
                 tracksLeft,
-                currentPlayerIndex
+                currentPlayerIndex, "active"
         );
     }
 }

@@ -3,8 +3,9 @@ package de.uol.swp.server.connection;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.city.City;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
@@ -50,8 +51,8 @@ class ConnectionManagementTest {
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCards()).thenReturn(new ArrayList<>());
 
-        City city = new City(29, PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true);
-        Map<City, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
+        ICity city = new City(29, PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true);
+        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
                 String.valueOf(city.getId())
         );
 
@@ -60,8 +61,8 @@ class ConnectionManagementTest {
 
     @Test
     void testAvailableDestinationsWithTrainTracks() {
-        City evora = game.getCityRepository()
-                         .getCityByName(CityName.EVORA);
+        ICity evora = game.getCityRepository()
+                          .getCityByName(CityName.EVORA);
         game.getConnectionRepository()
             .getConnectionByID(19)
             .buildTrainTracks(true);
@@ -78,7 +79,7 @@ class ConnectionManagementTest {
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCards()).thenReturn(new ArrayList<>());
 
-        Map<City, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
+        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
                 String.valueOf(evora.getId())
         );
 
@@ -87,10 +88,10 @@ class ConnectionManagementTest {
 
     @Test
     void testAvailableDestinationsWithHarbourConnections() {
-        City city = game.getCityRepository()
-                        .getCityByName(CityName.PALMA_DE_MALLORCA);
-        City harbourCity = game.getCityRepository()
-                               .getCityByName(CityName.ALICANTE);
+        ICity city = game.getCityRepository()
+                         .getCityByName(CityName.PALMA_DE_MALLORCA);
+        ICity harbourCity = game.getCityRepository()
+                                .getCityByName(CityName.ALICANTE);
 
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCards()).thenReturn(List.of(new CityCard(harbourCity.getId(),
@@ -100,7 +101,7 @@ class ConnectionManagementTest {
         )));
         when(player.getRole()).thenReturn(new Nurse());
 
-        Map<City, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
+        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
                 String.valueOf(city.getId())
         );
 
@@ -114,10 +115,10 @@ class ConnectionManagementTest {
 
     @Test
     void testAvailableDestinationsWithHarbourConnectionsAndPlayerRoleSailor() {
-        City city = game.getCityRepository()
-                        .getCityByName(CityName.PALMA_DE_MALLORCA);
-        City harbourCity = game.getCityRepository()
-                               .getCityByName(CityName.ALICANTE);
+        ICity city = game.getCityRepository()
+                         .getCityByName(CityName.PALMA_DE_MALLORCA);
+        ICity harbourCity = game.getCityRepository()
+                                .getCityByName(CityName.ALICANTE);
 
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCards()).thenReturn(List.of(new CityCard(harbourCity.getId(),
@@ -127,7 +128,7 @@ class ConnectionManagementTest {
         )));
         when(player.getRole()).thenReturn(new Sailor());
 
-        Map<City, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
+        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
                 String.valueOf(city.getId())
         );
 

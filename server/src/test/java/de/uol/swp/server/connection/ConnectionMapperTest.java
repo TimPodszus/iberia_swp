@@ -10,9 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for the ConnectionMapper utility class.
@@ -36,7 +34,8 @@ class ConnectionMapperTest {
     @BeforeEach
     void setUp() {
         firstCityConnection = new Connection(1, Arrays.asList(CityName.BARCELONA, CityName.ALICANTE), true, true);
-        IConnection secondCityConnection = new Connection(2,
+        IConnection secondCityConnection = new Connection(
+                2,
                 Arrays.asList(CityName.ZARAGOZA, CityName.GIRONA),
                 false,
                 false

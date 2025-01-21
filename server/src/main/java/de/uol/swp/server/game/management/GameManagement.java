@@ -1,13 +1,14 @@
 package de.uol.swp.server.game.management;
 
-import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
-import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.Game;
@@ -15,7 +16,10 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.management.IPlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -23,6 +27,9 @@ import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.inject.Inject;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +41,9 @@ import java.util.Map;
 public class GameManagement extends AbstractManagement implements IGameManagement {
     static final Logger LOG = LogManager.getLogger(GameManagement.class);
 
-    /**
-     * Constructs a new GameManagement object.
-     */
-    public GameManagement() {
-        //Todo: SpielInitialisierung
-    }
+
+    @Inject
+    private IPlayerManagement playerManagement;
 
     /**
      * Creates and initializes a game based on the provided creation request.
@@ -49,10 +53,14 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @return The newly created game
      */
     public IGame createAndInitializeGame(CreateGameRequest request) {
-        IGame game = new Game(request.getDifficulty(), request.getLobbyCode());
+        IGame game = new Game(request.getDifficulty(), request.getLobbyId());
         GameStore.getInstance()
-                 .addGame(request.getLobbyCode(), game);
-        initializing(game, UserMapper.toUser(request.getUsers()));
+                 .addGame(request.getLobbyId(), game);
+        try {
+            initializing(game, UserMapper.toUser(request.getUsers()));
+        } catch (PlayerManagementException e) {
+            //TODO: irgendwo Fehler anzeigen "Fehler beim Initialisieren des Spiels"
+        }
         return game;
     }
 
@@ -63,11 +71,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
      */
-    private void initializing(IGame game, List<IUser> users) {
+    private void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
+        initiateInfections(game);
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
-        initiateInfections(game);
+        game.setState(new WaitForPositioning());
     }
 
     /**
@@ -77,7 +86,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
      */
-    private void createPlayers(List<IUser> users, IGame game) {
+    private void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
         for (IUser user : users) {
             Player player = new Player(user);
 
@@ -90,8 +99,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                drawPlayerCard();
+                playerManagement.drawPlayerCard(game, player);
             }
+            game.setCurrentPlayerIndex(game.getCurrentPlayerIndex() + 1);
         }
 
     }
@@ -105,8 +115,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     private void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
-        Player startingPlayer = null;
-        for (Player player : game.getPlayers()) {
+        IPlayer startingPlayer = null;
+        for (IPlayer player : game.getPlayers()) {
             for (Card card : player.getCards()) {
                 if (card instanceof CityCard cityCard && cityCard.getCity()
                                                                  .getFoundationDate() < foundingDate) {
@@ -152,7 +162,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
             game.getCityManagement()
-                .infectCity(drawInfectionCard(), infectionAmount);
+                .infectCityWithOwnPlague(game, drawInfectionCard(game), infectionAmount);
             if (i % 3 == 0) {
                 infectionAmount--;
             }
@@ -164,35 +174,39 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * if the game is currently in a state that allows setting positioning.
      * Updates the game state if all players have been positioned.
      *
-     * @param user      The user whose position is to be set
-     * @param lobbyCode The lobby code of the game
-     * @param cityDTO   The city to position the player at
+     * @param request The request with where the position is to be set
      */
-    public void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO) {
-        IGame game = getGame(lobbyCode);
+    public IGame setPositioning(PositioningRequest request) throws PlayerManagementException {
+        IGame game = getGame(request.getLobbyId());
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
-            List<Player> players = game.getPlayers();
-            Player requestPlayer = null;
-            for (Player player : players) {
+            List<IPlayer> players = game.getPlayers();
+            IPlayer requestPlayer = null;
+            for (IPlayer player : players) {
                 if (player.getUser()
                           .getUsername()
-                          .equals(user.getUsername()) && player.getCurrentPosition() == null) {
+                          .equals(request.getSession()
+                                         .get()
+                                         .getUser()
+                                         .getUsername())) {
                     requestPlayer = player;
                     break;
                 }
             }
             try {
                 assert requestPlayer != null;
-                requestPlayer.setStartingPosition(cityDTO.getName());
+                playerManagement.setStartingPosition(game.getCityRepository()
+                                                         .getCityNameById(request.getCityId()), requestPlayer);
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
-            } catch (Exception e) {
-                // StatusResponse
+            } catch (PlayerManagementException e) {
+                throw new PlayerManagementException("Failed to set Position");
             }
             if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
                                                                       .size()) {
                 game.setState(new PlayerTurnState());
+                game.setCurrentPlayerIndex(0);
             }
         }
+        return game;
     }
 
     /**
@@ -208,14 +222,86 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @return The drawn infection card, or null if no card can be drawn
      */
-    public InfectionCard drawInfectionCard() {
-        return null; // This method needs proper implementation
+    public InfectionCard drawInfectionCard(IGame game) {
+        List<InfectionCard> infectionCardDrawPile = game.getInfectionCardDrawPile();
+
+        if (infectionCardDrawPile.isEmpty()) {
+            throw new IllegalStateException("Infection card draw pile is empty");
+        }
+
+        return infectionCardDrawPile.remove(0);
+    }
+
+
+    /**
+     * Discards an infection card by adding it to the infection card discard pile of the specified game.
+     *
+     * @param game          The game from which the infection card is to be discarded
+     * @param infectionCard The infection card to be discarded
+     */
+    public void discardInfectionCard(IGame game, InfectionCard infectionCard) {
+        List<InfectionCard> infectionCardDiscardPile = game.getInfectionCardDiscardPile();
+
+        infectionCardDiscardPile.add(infectionCard);
+    }
+
+    public List<GameActions> getAvailableActions(String lobbyCode, IUser user) {
+        List<GameActions> actions = new ArrayList<>();
+        if (areTrainTracksBuildable()) {
+            actions.add(GameActions.BUILD_TRAIN_TRACKS);
+        }
+        if (isHospitalBuildable()) {
+            actions.add(GameActions.BUILD_HOSPITAL);
+        }
+        if (isKnowledgeShareable()) {
+            actions.add(GameActions.SHARE_KNOWLEDGE);
+        }
+        if (isInfectionTreatable()) {
+            actions.add(GameActions.TREAT_INFECTION);
+        }
+        if (isPlagueResearchable()) {
+            actions.add(GameActions.RESEARCH_PLAGUE);
+        }
+        if (isWaterTreatmentPlaceable()) {
+            actions.add(GameActions.TREAT_WATER);
+        }
+        return actions;
+    }
+
+    private boolean areTrainTracksBuildable() {
+        //TODO: Implement logic in #86
+        return true;
+    }
+
+    private boolean isHospitalBuildable() {
+        //TODO: Implement logic in #85
+        return true;
+    }
+
+    private boolean isKnowledgeShareable() {
+        //TODO: Implement logic in #87
+        return true;
+    }
+
+    private boolean isInfectionTreatable() {
+        //TODO: Implement logic in #88
+        return true;
+    }
+
+    private boolean isPlagueResearchable() {
+        //TODO: Implement logic in #179
+        return true;
+    }
+
+    private boolean isWaterTreatmentPlaceable() {
+        //TODO: Implement logic in #84
+        return true;
     }
 
     @Override
-    public void movePlayer(IUser user, String lobbyCode, City city) throws GameManagementException {
+    public void movePlayer(IUser user, String lobbyCode, ICity city) throws GameManagementException {
         IGame game = super.getGame(lobbyCode);
-        Player player = game.getCurrentPlayer();
+        IPlayer player = game.getCurrentPlayer();
         if (!player.getUser()
                    .equals(user)) {
             LOG.error("[LobbyID: {}] {} is not the current player", lobbyCode, user.getUsername());
@@ -223,7 +309,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
         IConnectionManagement connectionManagement = new ConnectionManagement();
-        Map<City, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(
+        Map<ICity, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(
                 lobbyCode,
                 String.valueOf(player.getCurrentPosition()
                                      .getId())

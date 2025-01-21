@@ -1,16 +1,16 @@
 package de.uol.swp.server.cards;
 
 import de.uol.swp.common.cards.CardType;
-import de.uol.swp.server.city.City;
+import de.uol.swp.server.city.data.ICity;
 import lombok.Getter;
 
 
 @Getter
 
 public class CityCard extends Card {
-    private final City city;
+    private final ICity city;
 
-    public CityCard(int id, String title, City city) {
+    public CityCard(int id, String title, ICity city) {
         super(id, title, CardType.CITY_CARD);
         this.city = city;
     }

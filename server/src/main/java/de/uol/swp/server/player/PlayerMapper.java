@@ -4,7 +4,7 @@ import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.PlayerDTO;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.city.CityMapper;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.role.RoleMapper;
 import lombok.NoArgsConstructor;
 
@@ -26,7 +26,7 @@ public class PlayerMapper {
      * @param player the Player object to be converted into a DTO
      * @return a PlayerDTO containing simplified, transferable data about the player
      */
-    public static IPlayerDTO toDTO(Player player) {
+    public static IPlayerDTO toDTO(IPlayer player) {
         return new PlayerDTO(
                 player.getUser()
                       .getUsername(),
@@ -47,9 +47,9 @@ public class PlayerMapper {
      * @param players the list of Player objects to convert
      * @return a List of IPlayerDTO representing the converted players
      */
-    public static List<IPlayerDTO> toDTOList(List<Player> players) {
+    public static List<IPlayerDTO> toDTOList(List<IPlayer> players) {
         List<IPlayerDTO> playerDTOS = new ArrayList<>();
-        for (Player player : players) {
+        for (IPlayer player : players) {
             PlayerDTO playerDTO = new PlayerDTO(
                     player.getUser()
                           .getUsername(),

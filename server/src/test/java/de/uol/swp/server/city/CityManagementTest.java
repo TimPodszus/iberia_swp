@@ -1,5 +1,6 @@
 package de.uol.swp.server.city;
 
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
@@ -39,7 +40,7 @@ public class CityManagementTest {
     void testGetCity() {
         when(game.getCityRepository()).thenReturn(new CityRepository());
 
-        City city = cityManagement.getCity("lobbyCode", "1");
+        ICity city = cityManagement.getCity("lobbyCode", "1");
 
         assertEquals(1, city.getId());
     }

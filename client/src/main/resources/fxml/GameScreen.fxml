@@ -17,7 +17,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane fx:id="gameScreen" onMouseDragged="#onMouseDraggedEvent" onMousePressed="#onMousePressedEvent" onScroll="#onScrollEvent" stylesheets="@../css/gameScreen.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.game.GamePresenter">
+<AnchorPane fx:id="gameScreen" onMouseDragged="#onMouseDraggedEvent" onMousePressed="#onMousePressedEvent" onScroll="#onScrollEvent" stylesheets="@../css/gameScreen.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.game.GamePresenter">
     <StackPane fx:id="mapPane" minWidth="1400.0" prefWidth="1400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1050.0" prefWidth="1300.0" style="-fx-background-color: #c6ecff;" />
         <AnchorPane id="zoomPane" fx:id="zoomPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" StackPane.alignment="TOP_CENTER">
@@ -1477,22 +1477,22 @@
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </HBox.margin>
             </Pane>
-            <Pane fx:id="playerCardDrawPile" prefHeight="150.0" prefWidth="100.0" styleClass="pile">
+            <Pane fx:id="playerCardDrawPile" onMouseClicked="#onPlayerCardPileClickedEvent" prefHeight="150.0" prefWidth="100.0" styleClass="pile">
                 <HBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </HBox.margin>
-            <children>
-               <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
-                  <image>
-                     <Image url="@../img/player-card-back.png" />
-                  </image>
-               </ImageView>
-               <Text fx:id="playerCardDrawPileCounter" layoutX="50.0" layoutY="15.0" strokeType="OUTSIDE" strokeWidth="0.0" text="48" textAlignment="RIGHT" wrappingWidth="50.0">
-                  <font>
-                     <Font name="System Bold" size="18.0" />
-                  </font>
-               </Text>
-            </children>
+                <children>
+                    <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@../img/player-card-back.png" />
+                        </image>
+                    </ImageView>
+                    <Text fx:id="playerCardDrawPileCounter" layoutX="50.0" layoutY="15.0" strokeType="OUTSIDE" strokeWidth="0.0" text="48" textAlignment="RIGHT" wrappingWidth="50.0">
+                        <font>
+                            <Font name="System Bold" size="18.0" />
+                        </font>
+                    </Text>
+                </children>
             </Pane>
         </HBox>
         <HBox>
@@ -1595,17 +1595,17 @@
                 <children>
                     <VBox alignment="CENTER">
                         <children>
-                            <Button mnemonicParsing="false" onAction="#onBuildTrainTrack" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Schienen bauen">
+                            <Button fx:id="buildTrainTracksButton" mnemonicParsing="false" onAction="#onBuildTrainTrack" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Schienen bauen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
                             </Button>
-                            <Button mnemonicParsing="false" onAction="#onBuildHospital" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Krankenhaus bauen">
+                            <Button fx:id="buildHospitalButton" mnemonicParsing="false" onAction="#onBuildHospital" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Krankenhaus bauen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
                             </Button>
-                            <Button mnemonicParsing="false" onAction="#onTreatPlague" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Seuche behandeln">
+                            <Button fx:id="treatInfectionButton" mnemonicParsing="false" onAction="#onTreatPlague" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Seuche behandeln">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
@@ -1614,17 +1614,17 @@
                     </VBox>
                     <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0">
                         <children>
-                            <Button mnemonicParsing="false" onAction="#onShareKnowledge" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Wissen teilen">
+                            <Button fx:id="shareKnowledgeButton" mnemonicParsing="false" onAction="#onShareKnowledge" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Wissen teilen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
                             </Button>
-                            <Button mnemonicParsing="false" onAction="#onResearchPlague" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Seuche erforschen">
+                            <Button fx:id="researchPlagueButton" mnemonicParsing="false" onAction="#onResearchPlague" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Seuche erforschen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
                             </Button>
-                            <Button mnemonicParsing="false" onAction="#onPlaceWaterTreatment" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Wasser aufbereiten">
+                            <Button fx:id="treatWaterButton" mnemonicParsing="false" onAction="#onPlaceWaterTreatment" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Wasser aufbereiten">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
@@ -1751,18 +1751,18 @@
                                 <HBox.margin>
                                     <Insets />
                                 </HBox.margin>
-                        <children>
-                           <ImageView fitHeight="100.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
-                              <image>
-                                 <Image url="@../img/infection-card-back.png" />
-                              </image>
-                           </ImageView>
-                           <Text fx:id="infectionCardDrawPileCounter" fill="WHITE" layoutY="15.0" strokeType="OUTSIDE" strokeWidth="0.0" text="48" wrappingWidth="50.0">
-                              <font>
-                                 <Font name="System Bold" size="18.0" />
-                              </font>
-                           </Text>
-                        </children>
+                                <children>
+                                    <ImageView fitHeight="100.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
+                                        <image>
+                                            <Image url="@../img/infection-card-back.png" />
+                                        </image>
+                                    </ImageView>
+                                    <Text fx:id="infectionCardDrawPileCounter" fill="WHITE" layoutY="15.0" strokeType="OUTSIDE" strokeWidth="0.0" text="48" wrappingWidth="50.0">
+                                        <font>
+                                            <Font name="System Bold" size="18.0" />
+                                        </font>
+                                    </Text>
+                                </children>
                             </Pane>
                             <Pane fx:id="infectionCardDiscardPile" layoutX="330.0" layoutY="10.0" prefHeight="100.0" prefWidth="150.0" styleClass="pile">
                                 <HBox.margin>
