@@ -2,7 +2,6 @@ package de.uol.swp.server.lobby;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.chat.ChatRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.lobby.message.response.*;
@@ -27,7 +26,7 @@ import java.util.Optional;
  */
 @Singleton
 public class LobbyService extends AbstractService {
-    protected EventBus eventBus;
+
     /**
      * The LobbyManagement instance used for managing lobbies.
      * This field is injected by the dependency injection framework.
@@ -45,7 +44,6 @@ public class LobbyService extends AbstractService {
     @Inject
     public LobbyService(EventBus eventBus, ILobbyManagement lobbyManagement) {
         super(eventBus);
-        this.eventBus = eventBus;
         this.lobbyManagement = lobbyManagement;
     }
 
@@ -90,9 +88,6 @@ public class LobbyService extends AbstractService {
             ILobby lobby = optionalLobby.get();
             lobbyManagement.joinLobby(lobby, UserMapper.toUser(lobbyJoinUserRequest.getUser()));
 
-            UserJoinedLobbyMessage message = new UserJoinedLobbyMessage(lobby.getLobbyCode(), lobbyJoinUserRequest.getUser());
-            eventBus.post(message);
-
             sendToAllInLobby(
                     lobby,
                     new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser())
@@ -120,9 +115,6 @@ public class LobbyService extends AbstractService {
         if (lobby.isPresent()) {
             lobby.get()
                  .leaveUser(UserMapper.toUser(lobbyLeaveUserRequest.getUser()));
-
-            UserLeftLobbyMessage message = new UserLeftLobbyMessage(lobby.get().getLobbyCode(), lobbyLeaveUserRequest.getUser());
-            eventBus.post(message);
 
             sendToAllInLobby(
                     lobby.get(),

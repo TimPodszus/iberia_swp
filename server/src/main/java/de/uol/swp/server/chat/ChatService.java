@@ -1,6 +1,6 @@
 package de.uol.swp.server.chat;
 
-import de.uol.swp.common.chat.ChatRequest;
+import de.uol.swp.common.chat.PlayerChatMessage;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -26,20 +26,20 @@ public class ChatService extends AbstractService {
     /**
      * Fügt eine Nachricht zur Lobby hinzu und sendet sie an alle Spieler.
      *
-     * @param chatRequest Die Chat-Nachricht
+     * @param playerChatMessage Die Chat-Nachricht
      */
     @Subscribe
-    public void onChatRequest(ChatRequest chatRequest) throws LobbyManagementException {
-        Optional<ILobby> optionalLobby = lobbyManagement.getLobby(chatRequest.getLobbyCode());
+    public void onChatRequest(PlayerChatMessage playerChatMessage) throws LobbyManagementException {
+        Optional<ILobby> optionalLobby = lobbyManagement.getLobby(playerChatMessage.getLobbyCode());
 
         if (optionalLobby.isEmpty()) {
-            throw new LobbyManagementException("Lobby not found for code: " + chatRequest.getLobbyCode());
+            throw new LobbyManagementException("Lobby not found for code: " + playerChatMessage.getLobbyCode());
         }
 
         ILobby lobby = optionalLobby.get();
 
-        chat.addMessage(chatRequest);
+        chat.addMessage(playerChatMessage);
 
-        sendToAllInLobby(lobby, chatRequest);
+        sendToAllInLobby(lobby, playerChatMessage);
     }
 }

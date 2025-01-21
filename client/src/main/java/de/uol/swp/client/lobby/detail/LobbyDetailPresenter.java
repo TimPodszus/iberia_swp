@@ -6,7 +6,7 @@ import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.chat.AbstractChatMessage;
-import de.uol.swp.common.chat.ChatRequest;
+import de.uol.swp.common.chat.PlayerChatMessage;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
@@ -244,17 +244,17 @@ public class LobbyDetailPresenter extends AbstractPresenter {
             return;
         }
 
-        ChatRequest chatRequest = new ChatRequest(lobbyDTO.getLobbyCode(),
+        PlayerChatMessage playerChatMessage = new PlayerChatMessage(lobbyDTO.getLobbyCode(),
                 UserStore.getInstance().getUser().getUsername(),
                 message);
 
-        eventBus.post(chatRequest);
+        eventBus.post(playerChatMessage);
         chatInput.clear();
     }
 
     @Subscribe
     public void onChatMessageReceived(AbstractChatMessage chatMessage) {
-        Platform.runLater(() -> chatArea.appendText(chatMessage.getSender() + ": " + chatMessage.getMessage() + "\n"));
+        Platform.runLater(() -> chatArea.appendText(chatMessage.getSession().get().getUser() + ": " + chatMessage.getMessage() + "\n"));
     }
 
 

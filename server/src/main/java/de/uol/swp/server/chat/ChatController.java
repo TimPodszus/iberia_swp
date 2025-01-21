@@ -1,6 +1,6 @@
 package de.uol.swp.server.chat;
 
-import de.uol.swp.common.chat.ChatRequest;
+import de.uol.swp.common.chat.PlayerChatMessage;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
 import jakarta.inject.Inject;
 import org.greenrobot.eventbus.EventBus;
@@ -20,11 +20,11 @@ public class ChatController {
     /**
      * Empfängt eine Chat-Nachricht von einem Spieler und verteilt sie an die Lobby.
      *
-     * @param chatRequest Die empfangene Nachricht
+     * @param playerChatMessage Die empfangene Nachricht
      */
     @Subscribe
-    public void handleChatRequest(ChatRequest chatRequest) throws LobbyManagementException {
-        chatService.onChatRequest(chatRequest);
+    public void handleChatRequest(PlayerChatMessage playerChatMessage) throws LobbyManagementException {
+        chatService.onChatRequest(playerChatMessage);
     }
 
     /**
