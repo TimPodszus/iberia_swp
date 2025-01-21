@@ -7,7 +7,7 @@ import java.util.Objects;
 
 @Getter
 public class MovePlayerRequest extends AbstractGameRequest {
-    private final String cityId;
+    private final int cityId;
 
     /**
      * Constructs a new MovePlayerRequest.
@@ -15,7 +15,7 @@ public class MovePlayerRequest extends AbstractGameRequest {
      * @param lobbyCode the code of the lobby
      * @param cityId    the ID of the city
      */
-    public MovePlayerRequest(String lobbyCode, String cityId) {
+    public MovePlayerRequest(String lobbyCode, int cityId) {
         super(lobbyCode);
         this.cityId = cityId;
     }

@@ -8,9 +8,9 @@ import java.util.Objects;
 
 @Getter
 public class AvailableDestinationsRequest extends AbstractGameRequest {
-    private final String cityId;
+    private final int cityId;
 
-    public AvailableDestinationsRequest(String lobbyCode, String cityId) {
+    public AvailableDestinationsRequest(String lobbyCode, int cityId) {
         super(lobbyCode);
         this.cityId = cityId;
     }

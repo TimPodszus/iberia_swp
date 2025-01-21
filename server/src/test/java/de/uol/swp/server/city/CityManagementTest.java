@@ -40,7 +40,7 @@ public class CityManagementTest {
     void testGetCity() {
         when(game.getCityRepository()).thenReturn(new CityRepository());
 
-        ICity city = cityManagement.getCity("lobbyCode", "1");
+        ICity city = cityManagement.getCity("lobbyCode", 1);
 
         assertEquals(1, city.getId());
     }

@@ -299,27 +299,27 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void movePlayer(IUser user, String lobbyCode, ICity city) throws GameManagementException {
-        IGame game = super.getGame(lobbyCode);
+    public void movePlayer(IUser user, String lobbyId, ICity city) throws GameManagementException {
+        IGame game = super.getGame(lobbyId);
         IPlayer player = game.getCurrentPlayer();
         if (!player.getUser()
                    .equals(user)) {
-            LOG.error("[LobbyID: {}] {} is not the current player", lobbyCode, user.getUsername());
+            LOG.error("[LobbyID: {}] {} is not the current player", lobbyId, user.getUsername());
             throw new GameManagementException("Player is not the current player");
         }
 
         IConnectionManagement connectionManagement = new ConnectionManagement();
         Map<ICity, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(
-                lobbyCode,
-                String.valueOf(player.getCurrentPosition()
-                                     .getId())
+                lobbyId,
+                player.getCurrentPosition()
+                      .getId()
         );
         boolean citiesConnectedByLand = availableDestinations.containsKey(city) && !availableDestinations.get(city);
         boolean citiesConnectedBySea = availableDestinations.containsKey(city) && availableDestinations.get(city);
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error(
                     "[LobbyID: {}] Failed to move {}.There is no available connection between {} and {}",
-                    lobbyCode,
+                    lobbyId,
                     player.getUser()
                           .getUsername(),
                     player.getCurrentPosition()
@@ -337,7 +337,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (citiesConnectedByLand) {
             LOG.debug(
                     "[LobbyID: {}] Moving {} to city {}",
-                    lobbyCode,
+                    lobbyId,
                     player.getUser()
                           .getUsername(),
                     city.getName()
@@ -352,7 +352,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (cityCard == null) {
             LOG.error(
                     "[LobbyID: {}] Failed to sail to {}. {} does not have a city card for this city",
-                    lobbyCode,
+                    lobbyId,
                     city.getName()
                         .getDisplayName(),
                     player.getUser()
@@ -370,7 +370,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
         LOG.debug(
                 "[LobbyID: {}] {} sails to {}",
-                lobbyCode,
+                lobbyId,
                 player.getUser()
                       .getUsername(),
                 city.getName()

@@ -25,7 +25,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     private static final Logger LOG = LogManager.getLogger(ConnectionManagement.class);
 
     @Override
-    public Map<ICity, Boolean> getAvailableDestinations(String lobbyId, String cityId) {
+    public Map<ICity, Boolean> getAvailableDestinations(String lobbyId, int cityId) {
         CityRepository cityRepository = super.getGame(lobbyId)
                                              .getCityRepository();
         ICity startCity = cityRepository.getCity(cityId);

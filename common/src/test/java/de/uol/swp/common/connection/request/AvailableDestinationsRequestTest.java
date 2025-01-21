@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class AvailableDestinationsRequestTest {
     private static final String LOBBY_CODE = "1";
-    private static final String CITY_ID = "1";
+    private static final int CITY_ID = 1;
 
     /**
      * Tests the creation of AvailableDestinationsRequest and its getters.

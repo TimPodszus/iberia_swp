@@ -16,5 +16,5 @@ public interface IConnectionManagement {
      * @param cityId  the city from which to get available destinations
      * @return a map of available destinations, and whether they are only accessible when the player discards the city card
      */
-    Map<ICity, Boolean> getAvailableDestinations(String lobbyId, String cityId);
+    Map<ICity, Boolean> getAvailableDestinations(String lobbyId, int cityId);
 }

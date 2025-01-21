@@ -8,13 +8,10 @@ import de.uol.swp.server.game.data.IGame;
 public interface ICityManagement {
 
     void infectCity(
-            IGame game,
-            InfectionCard infectionCard,
-            PlagueName plagueName,
-            int amount
+            IGame game, InfectionCard infectionCard, PlagueName plagueName, int amount
     ) throws CityManagementException;
 
-    ICity getCity(String lobbyId, String cityId);
+    ICity getCity(String lobbyId, int cityId);
 
     void infectCityWithOwnPlague(IGame game, InfectionCard infectionCard, int amount);
 }

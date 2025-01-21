@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,20 +51,20 @@ public class ConnectionServiceTest extends EventBusBasedTest {
      */
     @Test
     void testOnAvailableDestinationsRequest() throws InterruptedException {
-        AvailableDestinationsRequest request = new AvailableDestinationsRequest("", "");
-        when(connectionManagement.getAvailableDestinations("", "")).thenReturn(Map.of(cityRepository.getCity("1"),
-                true
-        ));
+        AvailableDestinationsRequest request = new AvailableDestinationsRequest("", 1);
+        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(cityRepository.getCity(1), true));
 
         postAndWait(request);
 
         assertInstanceOf(AvailableDestinationsResponse.class, event, "Expected an AvailableDestinationsResponse");
-        assertEquals(1,
+        assertEquals(
+                1,
                 ((AvailableDestinationsResponse) event).getCities()
                                                        .size(),
                 "Expected 1 available destination"
         );
-        assertEquals(CityMapper.toDTO(cityRepository.getCity("1")),
+        assertEquals(
+                CityMapper.toDTO(cityRepository.getCity(1)),
                 ((AvailableDestinationsResponse) event).getCities()
                                                        .keySet()
                                                        .iterator()

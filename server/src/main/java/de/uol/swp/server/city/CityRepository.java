@@ -128,9 +128,9 @@ public class CityRepository {
      * @param cityId the ID of the city to retrieve
      * @return the city with the given ID, or null if no city is found
      */
-    public ICity getCity(String cityId) {
+    public ICity getCity(int cityId) {
         return cities.stream()
-                     .filter(city -> city.getId() == Integer.parseInt(cityId))
+                     .filter(city -> city.getId() == cityId)
                      .findFirst()
                      .orElse(null);
     }

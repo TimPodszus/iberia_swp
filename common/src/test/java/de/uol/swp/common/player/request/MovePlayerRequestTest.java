@@ -8,15 +8,17 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit tests for the MovePlayerRequest class.
  */
 public class MovePlayerRequestTest {
+    private static final String LOBBY_CODE = "testLobbyCode";
+    private static final int CITY_ID = 1;
 
     /**
      * Tests the creation of a MovePlayerRequest and verifies its fields.
      */
     @Test
     void testRequest() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("testLobbyCode", "testCityId");
-        assertEquals("testLobbyCode", movePlayerRequest.getLobbyId());
-        assertEquals("testCityId", movePlayerRequest.getCityId());
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
+        assertEquals(LOBBY_CODE, movePlayerRequest.getLobbyId());
+        assertEquals(CITY_ID, movePlayerRequest.getCityId());
     }
 
     /**
@@ -24,8 +26,8 @@ public class MovePlayerRequestTest {
      */
     @Test
     void testEquals() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("testLobbyCode", "testCityId");
-        MovePlayerRequest movePlayerRequest1 = new MovePlayerRequest("testLobbyCode", "testCityId");
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
+        MovePlayerRequest movePlayerRequest1 = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
         assertEquals(movePlayerRequest, movePlayerRequest1);
     }
 
@@ -34,7 +36,7 @@ public class MovePlayerRequestTest {
      */
     @Test
     void testEqualsWithSameObject() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("testLobbyCode", "testCityId");
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
         assertEquals(movePlayerRequest, movePlayerRequest);
     }
 
@@ -43,7 +45,7 @@ public class MovePlayerRequestTest {
      */
     @Test
     void testEqualsWithOtherClass() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("testLobbyCode", "testCityId");
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
         assertNotEquals(movePlayerRequest, new Object());
     }
 
@@ -52,8 +54,8 @@ public class MovePlayerRequestTest {
      */
     @Test
     void testHashCode() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("testLobbyCode", "testCityId");
-        MovePlayerRequest movePlayerRequest1 = new MovePlayerRequest("testLobbyCode", "testCityId");
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
+        MovePlayerRequest movePlayerRequest1 = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
         assertEquals(movePlayerRequest.hashCode(), movePlayerRequest1.hashCode());
     }
 }

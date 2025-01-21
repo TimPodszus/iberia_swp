@@ -52,9 +52,7 @@ class ConnectionManagementTest {
         when(player.getCards()).thenReturn(new ArrayList<>());
 
         ICity city = new City(29, PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true);
-        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
-                String.valueOf(city.getId())
-        );
+        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode", city.getId());
 
         assertEquals(2, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
     }
@@ -79,9 +77,7 @@ class ConnectionManagementTest {
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCards()).thenReturn(new ArrayList<>());
 
-        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
-                String.valueOf(evora.getId())
-        );
+        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode", evora.getId());
 
         assertEquals(6, cities.size(), "Expected 5 available destinations for Evora");
     }
@@ -101,9 +97,7 @@ class ConnectionManagementTest {
         )));
         when(player.getRole()).thenReturn(new Nurse());
 
-        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
-                String.valueOf(city.getId())
-        );
+        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode", city.getId());
 
         assertEquals(3, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
         assertTrue(cities.containsKey(harbourCity), "Expected Alicante to be an available destination");
@@ -128,9 +122,7 @@ class ConnectionManagementTest {
         )));
         when(player.getRole()).thenReturn(new Sailor());
 
-        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode",
-                String.valueOf(city.getId())
-        );
+        Map<ICity, Boolean> cities = connectionManagement.getAvailableDestinations("lobbyCode", city.getId());
 
         assertEquals(19, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
         assertTrue(cities.containsKey(harbourCity), "Expected Alicante to be an available destination");
