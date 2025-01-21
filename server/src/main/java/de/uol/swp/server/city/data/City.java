@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a city in the game, with attributes such as plague name, city name, foundation date,
@@ -54,4 +56,20 @@ public class City implements ICity {
      */
     @Setter
     private List<IInfection> infections = new ArrayList<>();
+
+    private final Map<PlagueName, Integer> plagueCubes = new HashMap<>();
+
+    public void removePlagueCubes(PlagueName plagueName, int count) {
+        int currentCount = plagueCubes.getOrDefault(plagueName, 0);
+        if (currentCount < count) {
+            throw new IllegalArgumentException("Not enough plague cubes to remove.");
+        }
+        plagueCubes.put(plagueName, currentCount - count);
+    }
+    public boolean hasPlague(PlagueName plagueName) {
+        return plagueCubes.getOrDefault(plagueName, 0) > 0;
+    }
+    public int getPlagueCubes(PlagueName plagueName) {
+        return plagueCubes.getOrDefault(plagueName, 0);
+    }
 }

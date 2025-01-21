@@ -11,6 +11,8 @@ import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.region.data.Region;
+import de.uol.swp.server.role.CountryDoctor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -171,5 +173,57 @@ class PlagueManagementTest {
         when(cityCard.getCity()).thenReturn(city);
 
         return cityCard;
+    }
+
+    @Test
+    void treatPlagueHasNoPlagueInCityThrowsPlagueManagementException() {
+        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
+        when(currentPlayer.getCurrentPosition()).thenReturn(currentCity);
+        when(currentCity.hasPlague(PlagueName.CHOLERA)).thenReturn(false);
+        City secondCity = mock(City.class);
+        PlagueName plagueToTreatInSecondCity = PlagueName.CHOLERA;
+        PlagueManagementException exception = assertThrows(
+                PlagueManagementException.class,
+                () -> plagueManagement.treatPlague(PlagueName.CHOLERA, secondCity, plagueToTreatInSecondCity, game)
+        );
+        assertEquals("The selected plague is not present in the current city.", exception.getMessage());
+    }
+    @Test
+    void treatPlagueNoCubesInCityThrowsPlagueManagementException() {
+        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
+        when(currentPlayer.getCurrentPosition()).thenReturn(currentCity);
+        when(currentCity.hasPlague(PlagueName.CHOLERA)).thenReturn(true);
+        City secondCity = mock(City.class);
+        PlagueName plagueToTreatInSecondCity = PlagueName.CHOLERA;
+        when(currentCity.getPlagueCubes(PlagueName.CHOLERA)).thenReturn(0);
+        PlagueManagementException exception = assertThrows(
+                PlagueManagementException.class,
+                () -> plagueManagement.treatPlague(PlagueName.CHOLERA, secondCity, plagueToTreatInSecondCity, game)
+        );
+        assertEquals("No plague cubes to remove for the selected plague.", exception.getMessage());
+    }
+    @Test
+    void treatPlagueWithNullInputThrowsIllegalArgumentException() {
+        City secondCity = mock(City.class);
+        PlagueName plagueToTreatInSecondCity = PlagueName.CHOLERA;
+        assertThrows(IllegalArgumentException.class,
+                () -> plagueManagement.treatPlague(null, secondCity, plagueToTreatInSecondCity, game));
+    }
+    @Test
+    void countryDoctorTreatsPlagueInAdjacentCitySuccessfully() throws PlagueManagementException {
+        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
+        when(currentPlayer.getCurrentPosition()).thenReturn(currentCity);
+        when(currentPlayer.getRole()).thenReturn(new CountryDoctor());
+        City secondCity = mock(City.class);
+        Region currentRegion = mock(Region.class);
+        when(game.getRegionRepository().getRegions()).thenReturn(List.of(currentRegion));
+        when(currentRegion.getSurroundingCities()).thenReturn(List.of(currentCity));
+        when(game.getRegionRepository().getCitiesInAdjacentRegions(currentRegion)).thenReturn(List.of(secondCity));
+        when(currentCity.hasPlague(PlagueName.CHOLERA)).thenReturn(true);
+        when(currentCity.getPlagueCubes(PlagueName.CHOLERA)).thenReturn(2);
+        when(secondCity.getPlagueCubes(PlagueName.TYPHUS)).thenReturn(2);
+        plagueManagement.treatPlague(PlagueName.CHOLERA, secondCity, PlagueName.TYPHUS, game);
+        verify(currentCity).removePlagueCubes(PlagueName.CHOLERA, 1);
+        verify(secondCity).removePlagueCubes(PlagueName.TYPHUS, 1);
     }
 }

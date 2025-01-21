@@ -2,6 +2,8 @@ package de.uol.swp.server.region;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.region.data.Region;
 import lombok.Getter;
@@ -302,5 +304,10 @@ public class RegionRepository {
                                               .anyMatch(city -> city.getName()
                                                                     .equals(cityName)))
                       .toList();
+    }
+
+    public List<ICity> getCitiesInAdjacentRegions(IRegion region) {
+        List<ICity> adjacentCities = new ArrayList<>(region.getSurroundingCities());
+        return adjacentCities;
     }
 }
