@@ -30,7 +30,7 @@ public class GameService {
      * @param lobbyCode the lobby code of the game for which available destinations are to be requested
      * @param cityId    the ID of the city for which available destinations are to be requested
      */
-    public void requestAvailableDestination(String lobbyCode, String cityId) {
+    public void requestAvailableDestination(String lobbyCode, int cityId) {
         AvailableDestinationsRequest request = new AvailableDestinationsRequest(lobbyCode, cityId);
         eventBus.post(request);
     }
@@ -41,7 +41,7 @@ public class GameService {
      * @param lobbyId the lobby ID of the game in which the player is to be moved
      * @param cityId  the city to which the player is to be moved
      */
-    public void movePlayerToCity(String lobbyId, String cityId) {
+    public void movePlayerToCity(String lobbyId, int cityId) {
         eventBus.post(new MovePlayerRequest(lobbyId, cityId));
     }
 

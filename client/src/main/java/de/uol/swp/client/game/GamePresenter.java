@@ -264,7 +264,7 @@ public class GamePresenter extends AbstractPresenter {
             if (Boolean.TRUE.equals(availableDestinations.get(cityId)) && !showSailingDialog()) {
                 return;
             }
-            gameService.movePlayerToCity(this.lobbyId, String.valueOf(cityId));
+            gameService.movePlayerToCity(this.lobbyId, cityId);
         }
     }
 
@@ -746,9 +746,9 @@ public class GamePresenter extends AbstractPresenter {
                 user.getUsername()
         )) {
             gameService.requestAvailableDestination(this.lobbyId,
-                    String.valueOf(gameDTO.getCurrentPlayer()
-                                          .getCurrentPosition()
-                                          .getId())
+                    gameDTO.getCurrentPlayer()
+                           .getCurrentPosition()
+                           .getId()
             );
             gameService.sendAvailableActionsRequest(this.lobbyId);
         }
@@ -1108,7 +1108,7 @@ public class GamePresenter extends AbstractPresenter {
             }
         }
     }
-    
+
     /**
      * Handles the AvailableDestinationsResponse.
      * This method is called when an AvailableDestinationsResponse is received.
