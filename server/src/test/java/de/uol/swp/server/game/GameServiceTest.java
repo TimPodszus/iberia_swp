@@ -35,6 +35,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -109,6 +110,7 @@ public class GameServiceTest extends EventBusBasedTest {
     void testOnMovePlayerRequest() throws InterruptedException, GameManagementException, LobbyManagementException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
         MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12);
         movePlayerRequest.setSession(session);
         ICity city = new CityRepository().getCity(12);
