@@ -1,7 +1,8 @@
 package de.uol.swp.server.game.management;
 
-import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
@@ -18,8 +19,8 @@ import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
-import jakarta.inject.Inject;
-
+import com.google.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,9 +41,9 @@ public class GameManagement implements IGameManagement {
      * @return The newly created game
      */
     public IGame createAndInitializeGame(CreateGameRequest request) {
-        IGame game = new Game(request.getDifficulty(), request.getLobbyCode());
+        IGame game = new Game(request.getDifficulty(), request.getLobbyId());
         GameStore.getInstance()
-                 .addGame(request.getLobbyCode(), game);
+                 .addGame(request.getLobbyId(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
         } catch (PlayerManagementException e) {
@@ -59,10 +60,11 @@ public class GameManagement implements IGameManagement {
      * @param users The list of users participating in the game
      */
     void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
+        initiateInfections(game);
         createPlayers(users, game);
         assignRoles(game);
         setStartingPlayer(game);
-        initiateInfections(game);
+        game.setState(new WaitForPositioning());
     }
 
     /**
@@ -87,6 +89,7 @@ public class GameManagement implements IGameManagement {
             for (int i = 0; i < cardsToDraw; i++) {
                 playerManagement.drawPlayerCard(game, player);
             }
+            game.setCurrentPlayerIndex(game.getCurrentPlayerIndex() + 1);
         }
 
     }
@@ -159,35 +162,39 @@ public class GameManagement implements IGameManagement {
      * if the game is currently in a state that allows setting positioning.
      * Updates the game state if all players have been positioned.
      *
-     * @param user      The user whose position is to be set
-     * @param lobbyCode The lobby code of the game
-     * @param cityDTO   The city to position the player at
+     * @param request The request with where the position is to be set
      */
-    public void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO) {
-        IGame game = getGame(lobbyCode);
+    public IGame setPositioning(PositioningRequest request) throws GameManagementException, PlayerManagementException {
+        IGame game = getGame(request.getLobbyId());
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<IPlayer> players = game.getPlayers();
             IPlayer requestPlayer = null;
             for (IPlayer player : players) {
                 if (player.getUser()
                           .getUsername()
-                          .equals(user.getUsername()) && player.getCurrentPosition() == null) {
+                          .equals(request.getSession()
+                                         .get()
+                                         .getUser()
+                                         .getUsername())) {
                     requestPlayer = player;
                     break;
                 }
             }
             try {
                 assert requestPlayer != null;
-                requestPlayer.setStartingPosition(cityDTO.getName());
+                playerManagement.setStartingPosition(game.getCityRepository()
+                                                      .getCityNameById(request.getCityId()), requestPlayer);
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
-            } catch (Exception e) {
-                // StatusResponse
+            } catch (PlayerManagementException e) {
+                throw new PlayerManagementException("Failed to set Position");
             }
             if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
                                                                       .size()) {
                 game.setState(new PlayerTurnState());
+                game.setCurrentPlayerIndex(0);
             }
         }
+        return game;
     }
 
     /**
@@ -227,5 +234,58 @@ public class GameManagement implements IGameManagement {
         List<InfectionCard> infectionCardDiscardPile = game.getInfectionCardDiscardPile();
 
         infectionCardDiscardPile.add(infectionCard);
+    }
+
+    public List<GameActions> getAvailableActions(String lobbyCode, IUser user) {
+        List<GameActions> actions = new ArrayList<>();
+        if (areTrainTracksBuildable()) {
+            actions.add(GameActions.BUILD_TRAIN_TRACKS);
+        }
+        if (isHospitalBuildable()) {
+            actions.add(GameActions.BUILD_HOSPITAL);
+        }
+        if (isKnowledgeShareable()) {
+            actions.add(GameActions.SHARE_KNOWLEDGE);
+        }
+        if (isInfectionTreatable()) {
+            actions.add(GameActions.TREAT_INFECTION);
+        }
+        if (isPlagueResearchable()) {
+            actions.add(GameActions.RESEARCH_PLAGUE);
+        }
+        if (isWaterTreatmentPlaceable()) {
+            actions.add(GameActions.TREAT_WATER);
+        }
+        return actions;
+    }
+
+    private boolean areTrainTracksBuildable() {
+        //TODO: Implement logic in #86
+        return true;
+    }
+
+    private boolean isHospitalBuildable() {
+        //TODO: Implement logic in #85
+        return true;
+    }
+
+    private boolean isKnowledgeShareable() {
+        //TODO: Implement logic in #87
+        return true;
+    }
+
+    private boolean isInfectionTreatable() {
+        //TODO: Implement logic in #88
+        return true;
+    }
+
+    private boolean isPlagueResearchable() {
+        //TODO: Implement logic in #179
+        return true;
+    }
+
+    private boolean isWaterTreatmentPlaceable() {
+        //TODO: Implement logic in #84
+        return true;
     }
 }

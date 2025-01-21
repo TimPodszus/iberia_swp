@@ -1,6 +1,5 @@
 package de.uol.swp.server.player.data;
 
-import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
@@ -65,14 +64,6 @@ public interface IPlayer {
      * @return the city repository
      */
     CityRepository getCityRepository();
-
-    /**
-     * Sets the starting position of the player.
-     *
-     * @param cityName the name of the city to set as the starting position
-     * @throws Exception if an error occurs while setting the starting position
-     */
-    void setStartingPosition(CityName cityName) throws Exception;
 
     /**
      * Adds a card to the player's hand.

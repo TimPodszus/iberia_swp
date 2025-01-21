@@ -12,20 +12,24 @@ import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.*;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
+import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
+import de.uol.swp.common.user.IUserDTO;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -59,7 +63,10 @@ public class GamePresenter extends AbstractPresenter {
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
-    private String lobbyCode;
+    private String lobbyId;
+
+    private final IUserDTO user = UserStore.getInstance()
+                                           .getUser();
 
     @Inject
     protected GameService gameService;
@@ -109,9 +116,29 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private HBox playerButtons;
 
+    @FXML
+    private Button buildTrainTracksButton;
+
+    @FXML
+    private Button buildHospitalButton;
+
+    @FXML
+    private Button researchPlagueButton;
+
+    @FXML
+    private Button treatWaterButton;
+
+    @FXML
+    private Button treatInfectionButton;
+
+    @FXML
+    private Button shareKnowledgeButton;
+
     private double mouseX;
 
     private double mouseY;
+
+    private IGameDTO gameDTO;
 
     /**
      * Initializes the game screen presenter.
@@ -219,6 +246,12 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
+        if (gameDTO.getState()
+                   .equals("WaitForPositioning")) {
+            Node source = (Node) event.getSource();
+            int cityId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+            gameService.setPosition(gameDTO.getGameId(), cityId);
+        }
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
     }
 
@@ -250,7 +283,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onPlayerCardPileClickedEvent(MouseEvent event) {
-        gameService.drawPlayerCard(lobbyCode);
+        gameService.drawPlayerCard(lobbyId);
     }
 
     /**
@@ -261,7 +294,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     private void onStartGameEventEvent(StartGameEvent event) {
-        lobbyCode = event.getLobbyCode();
+        lobbyId = event.getLobbyCode();
     }
 
     /**
@@ -433,6 +466,7 @@ public class GamePresenter extends AbstractPresenter {
 
         plagueHBox.getChildren()
                   .addAll(plagueCube, text);
+        plagueHBox.setUserData(plagueName);
         if (cubes == 3) {
             plagueHBox.getStyleClass()
                       .add("plague-cubes-display-warning");
@@ -637,7 +671,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onBoardUpdateEvent(BoardUpdateEvent event) {
-        IGameDTO gameDTO = event.getGameDTO();
+        this.gameDTO = event.getGameDTO();
 
         Platform.runLater(() -> updateBoard(gameDTO));
     }
@@ -652,7 +686,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
-        IGameDTO gameDTO = event.getGameDTO();
+        this.gameDTO = event.getGameDTO();
 
         Platform.runLater(() -> {
             updateBoard(gameDTO);
@@ -684,6 +718,13 @@ public class GamePresenter extends AbstractPresenter {
         updateEscalationStage(gameDTO.getEscalationStage());
         updateHospitals(gameDTO.getCities());
         updateResearchedPlagues(gameDTO.getPlagues());
+
+        disableActionButtons();
+        if (gameDTO.getCurrentPlayer()
+                   .getUsername()
+                   .equals(user.getUsername())) {
+            gameService.sendAvailableActionsRequest(this.lobbyId);
+        }
     }
 
     /**
@@ -983,5 +1024,57 @@ public class GamePresenter extends AbstractPresenter {
                                                 .map(IPlagueDTO::getName)
                                                 .toArray(PlagueName[]::new);
         setResearchedPlagues(researchedPlagues);
+    }
+
+    /**
+     * Disables all action buttons on the game screen.
+     * This method sets the disable property of each action button to true,
+     * preventing the user from interacting with them.
+     */
+    private void disableActionButtons() {
+        buildTrainTracksButton.setDisable(true);
+        buildHospitalButton.setDisable(true);
+        researchPlagueButton.setDisable(true);
+        treatWaterButton.setDisable(true);
+        treatInfectionButton.setDisable(true);
+        shareKnowledgeButton.setDisable(true);
+    }
+
+    /**
+     * Event handler for the AvailableActionsResponse.
+     * This method is called when an AvailableActionsResponse is received.
+     * It enables the appropriate action buttons based on the available actions.
+     *
+     * @param response the AvailableActionsResponse containing the available actions
+     */
+    @Subscribe
+    public void onAvailableActionsResponse(AvailableActionsResponse response) {
+        if (!response.getLobbyId()
+                     .equals(lobbyId)) {
+            return;
+        }
+
+        for (GameActions action : response.getAvailableActions()) {
+            switch (action) {
+                case BUILD_TRAIN_TRACKS:
+                    buildTrainTracksButton.setDisable(false);
+                    break;
+                case BUILD_HOSPITAL:
+                    buildHospitalButton.setDisable(false);
+                    break;
+                case TREAT_INFECTION:
+                    treatInfectionButton.setDisable(false);
+                    break;
+                case SHARE_KNOWLEDGE:
+                    shareKnowledgeButton.setDisable(false);
+                    break;
+                case RESEARCH_PLAGUE:
+                    researchPlagueButton.setDisable(false);
+                    break;
+                case TREAT_WATER:
+                    treatWaterButton.setDisable(false);
+                    break;
+            }
+        }
     }
 }

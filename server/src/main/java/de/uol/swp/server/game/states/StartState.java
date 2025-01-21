@@ -23,7 +23,6 @@ public class StartState implements IGameState {
      *               is generally independent of specific player actions
      */
     public void handleAction(IGame game, IPlayer player) {
-        game.initializeGame(game.getDifficulty());
-        game.setState(new WaitForPositioning());
+        // TODO issue zur überarbeitung der states
     }
 }

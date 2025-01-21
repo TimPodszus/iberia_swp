@@ -13,6 +13,7 @@ import java.util.List;
 public class CityMapper {
 
     public static ICityDTO toDTO(ICity city) {
+        if (city == null) return null;
         return new CityDTO(
                 city.getId(),
                 city.getPlagueName(),

@@ -166,17 +166,17 @@ public class Game implements IGame {
         this.players = new ArrayList<>();
         this.currentPlayerIndex = 0;
         this.gameManagement = new GameManagement();
-        this.playerManagement = new PlayerManagement(this);
+        this.playerManagement = new PlayerManagement();
         this.cityManagement = new CityManagement();
         this.state = new StartState();
-        state.handleAction(this, null);
+        initializeGame(difficulty);
     }
 
     public void initializeGame(int difficulty) {
         createInfectionCards(cityRepository.getCities());
         createPlayerCards(cityRepository.getCities());
         Collections.shuffle(getInfectionCardDrawPile());
-        gameStartShuffle(difficulty);
+        gameStartShuffle(difficulty + 3);
     }
 
     public void createInfectionCards(List<ICity> cities) {

@@ -1,9 +1,7 @@
-package de.uol.swp.server.Game.data;
+package de.uol.swp.server.game.data;
 
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
-import de.uol.swp.server.game.data.Game;
-import de.uol.swp.server.game.data.IGame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +40,7 @@ class GameTest {
     @Test
     void testCreatePlayerCards() {
         assertEquals(
-                48 + game.getDifficulty(),
+                48 + game.getDifficulty() + 3,
                 game.getPlayerCardDrawPile()
                     .size()
         );
@@ -54,7 +52,7 @@ class GameTest {
     @Test
     void testGameStartShuffle() {
         assertEquals(
-                48 + game.getDifficulty(),
+                48 + game.getDifficulty() + 3,
                 game.getPlayerCardDrawPile()
                     .size()
         );
