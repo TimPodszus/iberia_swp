@@ -12,15 +12,11 @@ import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.usermanagement.IUser;
-import lombok.AllArgsConstructor;
 
 import java.util.List;
 import java.util.Objects;
 
-@AllArgsConstructor
 public class PlayerManagement implements IPlayerManagement {
-    private IGame game;
-
     public ICardDTO drawPlayerCard(IGame game, IUser user) throws PlayerManagementException {
         Player player = game.getPlayers()
                             .stream()
@@ -34,9 +30,7 @@ public class PlayerManagement implements IPlayerManagement {
     }
 
     public ICardDTO drawPlayerCard(IGame game, Player player) throws PlayerManagementException {
-        this.game = game;
-
-        Card card = getCard(player);
+        Card card = getCard(game, player);
 
         if (card instanceof EpidemicCard) {
             game.setInfectionCounter(game.getInfectionCounter() + 1);
@@ -58,7 +52,7 @@ public class PlayerManagement implements IPlayerManagement {
         return CardMapper.toDTO(card);
     }
 
-    private Card getCard(Player player) throws PlayerManagementException {
+    private Card getCard(IGame game, Player player) throws PlayerManagementException {
         if (!player.equals(game.getPlayers()
                                .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState)) {
             throw new PlayerManagementException();
