@@ -458,6 +458,7 @@ public class GamePresenter extends AbstractPresenter {
 
         plagueHBox.getChildren()
                   .addAll(plagueCube, text);
+        plagueHBox.setUserData(plagueName);
         if (cubes == 3) {
             plagueHBox.getStyleClass()
                       .add("plague-cubes-display-warning");
