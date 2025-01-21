@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.data.IPlayer;
 
 /**
  * Represents the initial state of the game where essential setup actions are performed.
@@ -22,7 +22,7 @@ public class StartState implements IGameState {
      * @param player the player initiating the setup; typically this parameter is not used as setup
      *               is generally independent of specific player actions
      */
-    public void handleAction(IGame game, Player player) {
+    public void handleAction(IGame game, IPlayer player) {
         // TODO issue zur überarbeitung der states
     }
 }

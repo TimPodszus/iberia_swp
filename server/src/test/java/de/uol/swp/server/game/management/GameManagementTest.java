@@ -15,6 +15,7 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
@@ -22,6 +23,7 @@ import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +96,7 @@ class GameManagementTest {
 
         assertThrows(NullPointerException.class, () -> gameManagement.setPositioning(positioningRequest));
     }
+
     @Test
     void testSetPositioning_InvalidGameState() throws GameManagementException, PlayerManagementException {
         IGame mockGame = mock(IGame.class);
@@ -145,15 +148,14 @@ class GameManagementTest {
         cards.add(mockCityCard);
         when(mockPlayer.getCards()).thenReturn(cards);
 
-        List<Player> playerList = new ArrayList<>();
+        List<IPlayer> playerList = new ArrayList<>();
         playerList.add(mockPlayer);
 
         when(gameStore.getGame("lobby123")).thenReturn(mockGame);
         when(mockGame.getState()).thenReturn(mockState);
         when(mockGame.getPlayers()).thenReturn(playerList);
         when(mockGame.getCityRepository()).thenReturn(mockCityRepository);
-        when(mockCityRepository.getCitiesByNames(any(CityName.class)))
-                .thenReturn(List.of(mockCity));
+        when(mockCityRepository.getCitiesByNames(any(CityName.class))).thenReturn(List.of(mockCity));
 
         when(mockPlayer.getUser()).thenReturn(mockUser);
         when(mockUser.getUsername()).thenReturn("testUsername");

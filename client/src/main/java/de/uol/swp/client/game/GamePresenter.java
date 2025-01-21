@@ -859,7 +859,8 @@ public class GamePresenter extends AbstractPresenter {
         playerButtons.getChildren()
                      .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(player.getUsername(),
+            if (!Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -883,7 +884,8 @@ public class GamePresenter extends AbstractPresenter {
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
+                cityId,
                 playersInCity
         )));
     }
@@ -895,7 +897,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
+            if (Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -985,9 +988,10 @@ public class GamePresenter extends AbstractPresenter {
                                                                            .getFoundationDate() + " v. Chr." : String.valueOf(
                 cityCard.getCity()
                         .getFoundationDate());
-        return new CityCard(cityCard.getCity()
-                                    .getName()
-                                    .getDisplayName(),
+        return new CityCard(
+                cityCard.getCity()
+                        .getName()
+                        .getDisplayName(),
                 foundationDate,
                 cityCard.getCity()
                         .getPlagueName()

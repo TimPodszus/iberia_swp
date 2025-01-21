@@ -15,6 +15,7 @@ import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+
 import java.util.List;
 
 class PlayerManagementTest {
@@ -67,7 +68,7 @@ class PlayerManagementTest {
         ICity heldCityObject = mock(ICity.class);
         when(heldCityObject.getName()).thenReturn(heldCity);
 
-        CityCard heldCityCard = new CityCard(1, "test", CardType.CITY_CARD, heldCityObject);
+        CityCard heldCityCard = new CityCard(1, "test", heldCityObject);
         when(player.getCards()).thenReturn(List.of(heldCityCard));
 
         when(cityRepository.getCityByName(requestedCity)).thenReturn(null);

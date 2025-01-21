@@ -1,6 +1,5 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.common.cards.CardType;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
@@ -13,7 +12,7 @@ import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.plague.data.PlagueRepository;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
@@ -105,7 +104,7 @@ public class Game implements IGame {
     /**
      * List of players in the game.
      */
-    private List<Player> players;
+    private List<IPlayer> players;
 
     /**
      * Index of the current player.
@@ -187,7 +186,6 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    CardType.INFECTION_CARD,
                     city
             );
             infectionCardDrawPile.add(infectionCard);
@@ -202,7 +200,6 @@ public class Game implements IGame {
                     i,
                     city.getName()
                         .toString(),
-                    CardType.CITY_CARD,
                     city
             );
             playerCardDrawPile.add(citycard);
@@ -211,7 +208,7 @@ public class Game implements IGame {
     }
 
     public EpidemicCard createEpidemicCard(int id) {
-        return new EpidemicCard(id, "Epidemiekarte", CardType.EPIDEMIC_CARD, "");
+        return new EpidemicCard(id, "Epidemiekarte", "");
     }
 
     public void gameStartShuffle(int numSubDecks) {
@@ -247,9 +244,9 @@ public class Game implements IGame {
     /**
      * Retrieves the current player whose turn it is in the game.
      *
-     * @return the {@link Player} object representing the current player
+     * @return the {@link IPlayer} object representing the current player
      */
-    public Player getCurrentPlayer() {
+    public IPlayer getCurrentPlayer() {
         return this.players.get(currentPlayerIndex);
     }
 }
