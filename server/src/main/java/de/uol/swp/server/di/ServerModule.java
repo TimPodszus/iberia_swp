@@ -1,5 +1,7 @@
 package de.uol.swp.server.di;
 
+import de.uol.swp.server.city.management.CityManagement;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -35,5 +37,6 @@ public class ServerModule extends AbstractModule {
         bind(ILobbyStore.class).to(LobbyStore.class);
         bind(IGameManagement.class).to(GameManagement.class);
         bind(IPlayerManagement.class).to(PlayerManagement.class);
+        bind(ICityManagement.class).to(CityManagement.class);
     }
 }

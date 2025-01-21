@@ -24,21 +24,6 @@ public class InfectionState implements IGameState {
      * @param player the player whose turn initiated the infection process
      */
     public void handleAction(IGame game, IPlayer player) {
-        int infectionCounter = game.getInfectionCounter();
-
-        game.getCityManagement()
-            .infectCityWithOwnPlague(
-                    game,
-                    game.getGameManagement()
-                        .drawInfectionCard(game),
-                    1
-            );
-        infectedCities++;
-
-        if (infectedCities == infectionCounter) {
-            game.setCurrentPlayerIndex((game.getCurrentPlayerIndex() + 1) % game.getPlayers()
-                                                                                .size());
-            game.setState(new PlayerTurnState());
-        }
+       //Todo: Ticket zur überarbeitung der GameStates
     }
 }
