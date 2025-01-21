@@ -1,4 +1,4 @@
-package de.uol.swp.server.Game.data;
+package de.uol.swp.server.game.data;
 
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
