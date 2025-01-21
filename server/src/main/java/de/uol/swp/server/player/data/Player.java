@@ -1,6 +1,7 @@
 package de.uol.swp.server.player.data;
 
 import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.role.IRole;
@@ -45,6 +46,16 @@ public class Player implements IPlayer {
 
         //Für Unittest:
         cards.remove(card);
+    }
+
+    public CityCard getCityCard(ICity city) {
+        for (Card card : cards) {
+            if (card instanceof CityCard cityCard && cityCard.getCity()
+                                                             .equals(city)) {
+                return cityCard;
+            }
+        }
+        return null;
     }
 }
 
