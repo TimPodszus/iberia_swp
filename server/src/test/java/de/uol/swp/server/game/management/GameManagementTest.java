@@ -92,8 +92,9 @@ class GameManagementTest {
     @Test
     void testSetPositioning_InvalidLobbyCode() {
         PositioningRequest request = new PositioningRequest("lobby123", 12);
+        when(game.getState()).thenReturn(mock(WaitForPositioning.class));
 
-        assertThrows(NullPointerException.class, () -> gameManagement.setPositioning(request));
+        assertThrows(GameManagementException.class, () -> gameManagement.setPositioning(request));
     }
 
     @Test

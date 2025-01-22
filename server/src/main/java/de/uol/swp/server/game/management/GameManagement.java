@@ -62,7 +62,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                  .addGame(request.getLobbyId(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
-        } catch (PlayerManagementException | GameManagementException e) {
+        } catch (PlayerManagementException e) {
             //TODO: irgendwo Fehler anzeigen "Fehler beim Initialisieren des Spiels"
         }
         return game;
@@ -75,7 +75,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
      */
-    private void initializing(IGame game, List<IUser> users) throws PlayerManagementException, GameManagementException {
+    private void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
         initiateInfections(game);
         createPlayers(users, game);
         assignRoles(game);
@@ -183,6 +183,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      */
     public IGame setPositioning(PositioningRequest request) throws GameManagementException {
         IGame game = getGame(request.getLobbyId());
+
+        if (game == null) {
+            throw new GameManagementException("Game not found");
+        }
+
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<IPlayer> players = game.getPlayers();
             IPlayer requestPlayer = null;
