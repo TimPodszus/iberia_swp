@@ -3,13 +3,10 @@ package de.uol.swp.server.game.data;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
-import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
-import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
-import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.RegionRepository;
 
 import java.util.List;
@@ -145,20 +142,6 @@ public interface IGame {
      */
     List<IPlayer> getPlayers();
 
-    /**
-     * Gets the city management.
-     *
-     * @return the city management
-     * @deprecated
-     */
-    @Deprecated(since = "16.01.25", forRemoval = true)
-    ICityManagement getCityManagement();
-
-    /**
-     * Gets the current state of the game.
-     *
-     * @return the current state of the game
-     */
     IGameState getState();
 
     /**
@@ -168,29 +151,6 @@ public interface IGame {
      */
     void setState(IGameState state);
 
-    /**
-     * Gets the game management.
-     *
-     * @return the game management
-     * @deprecated
-     */
-    @Deprecated(since = "16.01.25", forRemoval = true)
-    IGameManagement getGameManagement();
-
-    /**
-     * Gets the player management.
-     *
-     * @return the player management
-     * @deprecated
-     */
-    @Deprecated(since = "16.01.25", forRemoval = true)
-    IPlayerManagement getPlayerManagement();
-
-    /**
-     * Gets the previous state of the game.
-     *
-     * @return the previous state of the game
-     */
     IGameState getPreviousState();
 
     /**

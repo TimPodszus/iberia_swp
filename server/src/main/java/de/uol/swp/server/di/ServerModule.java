@@ -42,5 +42,6 @@ public class ServerModule extends AbstractModule {
         bind(ICityManagement.class).to(CityManagement.class);
         bind(IGameManagement.class).to(GameManagement.class);
         bind(IPlayerManagement.class).to(PlayerManagement.class);
+        bind(ICityManagement.class).to(CityManagement.class);
     }
 }

@@ -12,6 +12,7 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.IGame;
@@ -52,6 +53,9 @@ class GameManagementTest {
 
     @Mock
     private PlayerManagement playerManagement;
+
+    @Mock
+    private CityManagement cityManagement;
 
     @InjectMocks
     private GameManagement gameManagement;

@@ -6,14 +6,11 @@ import de.uol.swp.server.cards.EpidemicCard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.connection.ConnectionRepository;
-import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
-import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
 import lombok.AllArgsConstructor;
@@ -125,21 +122,6 @@ public class Game implements IGame {
     private IGameState previousState;
 
     /**
-     * Management class for game-related operations.
-     */
-    private GameManagement gameManagement;
-
-    /**
-     * Management class for player-related operations.
-     */
-    private PlayerManagement playerManagement;
-
-    /**
-     * Management class for city-related operations.
-     */
-    private CityManagement cityManagement;
-
-    /**
      * Difficulty level of the game.
      */
     private int difficulty;
@@ -165,9 +147,6 @@ public class Game implements IGame {
         this.playerCardDiscardPile = new ArrayList<>();
         this.players = new ArrayList<>();
         this.currentPlayerIndex = 0;
-        this.gameManagement = new GameManagement();
-        this.playerManagement = new PlayerManagement();
-        this.cityManagement = new CityManagement();
         this.state = new StartState();
         initializeGame(difficulty);
     }

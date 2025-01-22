@@ -11,6 +11,7 @@ import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -44,6 +45,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     @Inject
     private IPlayerManagement playerManagement;
+
+    @Inject
+    private ICityManagement cityManagement;
 
     /**
      * Creates and initializes a game based on the provided creation request.
@@ -163,8 +167,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private void initiateInfections(IGame game) {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
-            game.getCityManagement()
-                .infectCityWithOwnPlague(game, drawInfectionCard(game), infectionAmount);
+            cityManagement.infectCityWithOwnPlague(game, drawInfectionCard(game), infectionAmount);
             if (i % 3 == 0) {
                 infectionAmount--;
             }
