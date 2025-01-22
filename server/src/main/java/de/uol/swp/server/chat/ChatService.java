@@ -23,11 +23,6 @@ public class ChatService extends AbstractService {
         this.lobbyManagement = lobbyManagement;
     }
 
-    /**
-     * Fügt eine Nachricht zur Lobby hinzu und sendet sie an alle Spieler.
-     *
-     * @param playerChatMessage Die Chat-Nachricht
-     */
     @Subscribe
     public void onChatRequest(PlayerChatMessage playerChatMessage) throws LobbyManagementException {
         Optional<ILobby> optionalLobby = lobbyManagement.getLobby(playerChatMessage.getLobbyCode());
