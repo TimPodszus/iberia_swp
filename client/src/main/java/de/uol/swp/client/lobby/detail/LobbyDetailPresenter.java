@@ -2,11 +2,10 @@ package de.uol.swp.client.lobby.detail;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
+import de.uol.swp.client.chat.detail.ChatDetailPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.chat.AbstractChatMessage;
-import de.uol.swp.common.chat.PlayerChatMessage;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
@@ -17,7 +16,11 @@ import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -58,15 +61,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     @FXML
     public TableView<UserListItem> userTable;
 
-    @FXML
-    private TextArea chatArea;
-
-    @FXML
-    private TextField chatInput;
-
-    @FXML
-    private Button sendChatButton;
-
+    @Inject
+    private ChatDetailPresenter chatDetailPresenter;
 
     /**
      * Initializes the Lobby Screen.
@@ -98,7 +94,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
                  .setCellValueFactory(new PropertyValueFactory<>("name"));
         userTable.setPlaceholder(new Label("Keine Spieler in der Lobby"));
 
-        sendChatButton.setOnAction(event -> onSendChat());
+        chatDetailPresenter.setLobbyDTO(lobbyDTO);
 
     }
 
@@ -111,12 +107,11 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage message) {
         if (lobbyDTO != null && message.getLobbyCode().equals(lobbyDTO.getLobbyCode())) {
             String chatMessage = "Spieler " + message.getUser().getUsername() + " hat die Lobby betreten.";
-            appendToChat(chatMessage);
+            chatDetailPresenter.appendToChat(chatMessage);
 
             lobbyService.getLobby(message.getLobbyCode(), UserStore.getInstance().getUser());
         }
     }
-
 
     /**
      * Handles the response when the lobby data is received.
@@ -238,28 +233,5 @@ public class LobbyDetailPresenter extends AbstractPresenter {
         eventBus.post(new ShowLastSceneEvent());
     }
 
-    public void onSendChat() {
-        String message = chatInput.getText();
-        if (message == null || message.trim().isEmpty()) {
-            return;
-        }
-
-        PlayerChatMessage playerChatMessage = new PlayerChatMessage(lobbyDTO.getLobbyCode(),
-                UserStore.getInstance().getUser().getUsername(),
-                message);
-
-        eventBus.post(playerChatMessage);
-        chatInput.clear();
-    }
-
-    @Subscribe
-    public void onChatMessageReceived(AbstractChatMessage chatMessage) {
-        Platform.runLater(() -> chatArea.appendText(chatMessage.getSession().get().getUser() + ": " + chatMessage.getMessage() + "\n"));
-    }
-
-
-    private void appendToChat(String message) {
-        Platform.runLater(() -> chatArea.appendText("[System] " + message + "\n"));
-    }
 
 }

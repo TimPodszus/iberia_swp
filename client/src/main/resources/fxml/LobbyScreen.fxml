@@ -65,18 +65,8 @@
                      </children>
                   </HBox>
 
-                  <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
-                     <children>
-                        <!-- Chat-Nachrichtenanzeige -->
-                        <TextArea fx:id="chatArea" editable="false" prefHeight="200.0" wrapText="true" />
-
-                        <!-- Eingabebereich für Chat -->
-                        <HBox spacing="10.0">
-                           <TextField fx:id="chatInput" promptText="Nachricht eingeben..." HBox.hgrow="ALWAYS" />
-                           <Button fx:id="sendChatButton" mnemonicParsing="false" text="Senden" onAction="#onSendChat" />
-                        </HBox>
-                     </children>
-                  </VBox>
+                  <!-- Einbinden des Chats -->
+                  <fx:include source="ChatScreen.fxml" />
 
                </children>
             </VBox>
