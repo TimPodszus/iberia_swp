@@ -14,6 +14,7 @@ import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
@@ -247,7 +248,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
         if (gameDTO.getState()
-                   .equals("WaitForPositioning")) {
+                   .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
             Node source = (Node) event.getSource();
             int cityId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
             gameService.setPosition(gameDTO.getGameId(), cityId);

@@ -146,7 +146,6 @@ class PlagueManagementTest {
         when(game.getPlayerCardDiscardPile()).thenReturn(discardPile);
 
         IGameState gameState = mock(IGameState.class);
-        when(game.getState()).thenReturn(gameState);
 
         plagueManagement.researchPlague(PlagueName.CHOLERA, game);
 
@@ -154,7 +153,6 @@ class PlagueManagementTest {
         assertEquals(5, discardPile.size());
 
         verify(plague).setResearched(true);
-        verify(gameState).handleAction(game, currentPlayer);
     }
 
     /**

@@ -1,12 +1,10 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.common.game.StateType;
 
 public class EventState implements IGameState {
-    public void handleAction(IGame game, IPlayer player) {
-        //Event ausführen
 
-        game.setState(game.getPreviousState());
+    public StateType getStateType() {
+        return StateType.EVENT_STATE;
     }
 }
