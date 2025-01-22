@@ -10,8 +10,8 @@ import lombok.Getter;
 public class EpidemicCard extends Card {
     private final String description;
 
-    public EpidemicCard(int id, String title, CardType type, String description) {
-        super(id, title, type);
+    public EpidemicCard(int id, String title, String description) {
+        super(id, title, CardType.EPIDEMIC_CARD);
         this.description = description;
     }
 }

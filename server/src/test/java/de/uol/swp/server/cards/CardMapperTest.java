@@ -22,9 +22,9 @@ class CardMapperTest {
     @BeforeEach
     void setUp() {
         City city = new City(1, PlagueName.MALARIA, CityName.A_CORUNA, 1000, true, false, new ArrayList<>());
-        cityCard = new CityCard(101, "City of London", CardType.CITY_CARD, city);
-        epidemicCard = new EpidemicCard(202, "Severe Epidemic", CardType.EPIDEMIC_CARD, "Spreads rapidly.");
-        infectionCard = new InfectionCard(303, "Infection in Paris", CardType.INFECTION_CARD, city);
+        cityCard = new CityCard(101, "City of London", city);
+        epidemicCard = new EpidemicCard(202, "Severe Epidemic", "Spreads rapidly.");
+        infectionCard = new InfectionCard(303, "Infection in Paris", city);
     }
 
     @Test
@@ -103,12 +103,10 @@ class CardMapperTest {
     void testToCityCardDTOList() {
         CityCard cityCard1 = new CityCard(101,
                 "Test",
-                CardType.CITY_CARD,
                 new City(1, PlagueName.MALARIA, CityName.A_CORUNA, 1000, true, false, new ArrayList<>())
         );
         CityCard cityCard2 = new CityCard(102,
                 "Test",
-                CardType.CITY_CARD,
                 new City(2, PlagueName.MALARIA, CityName.ALICANTE, 2000, false, true, new ArrayList<>())
         );
 
@@ -121,11 +119,10 @@ class CardMapperTest {
 
     @Test
     void testToEpidemicCardDTOList() {
-        EpidemicCard epidemicCard1 = new EpidemicCard(1, "Test", CardType.EPIDEMIC_CARD, "Test");
-        EpidemicCard epidemicCard2 = new EpidemicCard(1, "Test", CardType.EPIDEMIC_CARD, "Test");
+        EpidemicCard epidemicCard1 = new EpidemicCard(1, "Test", "Test");
+        EpidemicCard epidemicCard2 = new EpidemicCard(1, "Test", "Test");
 
-        List<EpidemicCardDTO> epidemicCardDTOs = CardMapper.toEpidemicCardDTOList(List.of(
-                epidemicCard1,
+        List<EpidemicCardDTO> epidemicCardDTOs = CardMapper.toEpidemicCardDTOList(List.of(epidemicCard1,
                 epidemicCard2
         ));
 
@@ -136,22 +133,17 @@ class CardMapperTest {
 
     @Test
     void testToInfectionCardDTOList() {
-        InfectionCard infectionCard1 = new InfectionCard(
-                1,
+        InfectionCard infectionCard1 = new InfectionCard(1,
                 "Test",
-                CardType.INFECTION_CARD,
                 new City(1, PlagueName.MALARIA, CityName.A_CORUNA, 1000, true, false, new ArrayList<>())
         );
-        InfectionCard infectionCard2 = new InfectionCard(
-                1,
+        InfectionCard infectionCard2 = new InfectionCard(1,
                 "Test",
-                CardType.INFECTION_CARD,
                 new City(2, PlagueName.MALARIA, CityName.ALICANTE, 2000, false, true, new ArrayList<>())
         );
 
 
-        List<InfectionCardDTO> infectionCardDTOs = CardMapper.toInfectionCardDTOList(List.of(
-                infectionCard1,
+        List<InfectionCardDTO> infectionCardDTOs = CardMapper.toInfectionCardDTOList(List.of(infectionCard1,
                 infectionCard2
         ));
 

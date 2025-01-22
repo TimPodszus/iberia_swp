@@ -31,6 +31,7 @@ public class GameDTO implements IGameDTO, Serializable {
     private int waterTreatmentsLeft;
     private int tracksLeft;
     private int currentPlayerIndex;
+    private String state;
 
     public IPlayerDTO getCurrentPlayer() {
         return players.get(currentPlayerIndex);

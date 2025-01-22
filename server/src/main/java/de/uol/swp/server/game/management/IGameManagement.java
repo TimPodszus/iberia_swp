@@ -1,10 +1,11 @@
 package de.uol.swp.server.game.management;
 
-import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
@@ -16,16 +17,14 @@ public interface IGameManagement {
      * @param request the game creation request containing user and difficulty information
      * @return the newly created game
      */
-    IGame createAndInitializeGame(CreateGameRequest request);
+    IGame createAndInitializeGame(CreateGameRequest request) throws PlayerManagementException;
 
     /**
      * Sets the initial positioning of a player in the game based on the provided city.
      *
-     * @param user      the user for whom the positioning is being set
-     * @param lobbyCode the code of the lobby in which the game is happening
-     * @param cityDTO   the city where the player will be positioned
+     * @param request      The request with where the position is to be set
      */
-    void setPositioning(IUser user, String lobbyCode, CityDTO cityDTO);
+    IGame setPositioning(PositioningRequest request) throws GameManagementException, PlayerManagementException;
 
     /**
      * Draws a player card. The specific behavior of this method should be defined.

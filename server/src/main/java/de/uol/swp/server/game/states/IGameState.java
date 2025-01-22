@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.player.data.IPlayer;
 
 /**
  * Represents a state within the game state machine.
@@ -19,5 +19,5 @@ public interface IGameState {
      *
      * @param player the player who performed the action
      */
-    void handleAction(IGame game, Player player);
+    void handleAction(IGame game, IPlayer player);
 }

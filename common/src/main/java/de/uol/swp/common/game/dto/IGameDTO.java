@@ -120,6 +120,8 @@ public interface IGameDTO {
      */
     int getCurrentPlayerIndex();
 
+    String getState();
+
     /**
      * Gets the current player.
      *

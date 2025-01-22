@@ -138,6 +138,8 @@ public class GamePresenter extends AbstractPresenter {
 
     private double mouseY;
 
+    private IGameDTO gameDTO;
+
     /**
      * Initializes the game screen presenter.
      */
@@ -244,6 +246,12 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
+        if (gameDTO.getState()
+                   .equals("WaitForPositioning")) {
+            Node source = (Node) event.getSource();
+            int cityId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+            gameService.setPosition(gameDTO.getGameId(), cityId);
+        }
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
     }
 
@@ -458,6 +466,7 @@ public class GamePresenter extends AbstractPresenter {
 
         plagueHBox.getChildren()
                   .addAll(plagueCube, text);
+        plagueHBox.setUserData(plagueName);
         if (cubes == 3) {
             plagueHBox.getStyleClass()
                       .add("plague-cubes-display-warning");
@@ -662,7 +671,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onBoardUpdateEvent(BoardUpdateEvent event) {
-        IGameDTO gameDTO = event.getGameDTO();
+        this.gameDTO = event.getGameDTO();
 
         Platform.runLater(() -> updateBoard(gameDTO));
     }
@@ -677,7 +686,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
-        IGameDTO gameDTO = event.getGameDTO();
+        this.gameDTO = event.getGameDTO();
 
         Platform.runLater(() -> {
             updateBoard(gameDTO);
@@ -727,7 +736,8 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayerHandCards(List<IPlayerDTO> players) {
         removePlayerHandCards();
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
+            if (Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -849,7 +859,8 @@ public class GamePresenter extends AbstractPresenter {
         playerButtons.getChildren()
                      .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(player.getUsername(),
+            if (!Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -873,7 +884,8 @@ public class GamePresenter extends AbstractPresenter {
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
+                cityId,
                 playersInCity
         )));
     }
@@ -885,7 +897,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
+            if (Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -975,9 +988,10 @@ public class GamePresenter extends AbstractPresenter {
                                                                            .getFoundationDate() + " v. Chr." : String.valueOf(
                 cityCard.getCity()
                         .getFoundationDate());
-        return new CityCard(cityCard.getCity()
-                                    .getName()
-                                    .getDisplayName(),
+        return new CityCard(
+                cityCard.getCity()
+                        .getName()
+                        .getDisplayName(),
                 foundationDate,
                 cityCard.getCity()
                         .getPlagueName()
