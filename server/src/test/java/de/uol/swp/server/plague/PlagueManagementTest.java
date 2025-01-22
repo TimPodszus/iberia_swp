@@ -11,6 +11,7 @@ import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.region.data.Region;
 import de.uol.swp.server.role.CountryDoctor;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,8 @@ class PlagueManagementTest {
     @Mock
     private PlagueRepository plagueRepository;
     @Mock
+    private RegionRepository regionRepository;
+    @Mock
     private Plague plague;
     @InjectMocks
     private PlagueManagement plagueManagement;
@@ -63,9 +66,13 @@ class PlagueManagementTest {
         when(game.getCurrentPlayer()).thenReturn(currentPlayer);
         when(currentPlayer.getCards()).thenReturn(playerCards);
 
+        when(game.getRegionRepository()).thenReturn(regionRepository);
         when(game.getPlagueRepository()).thenReturn(plagueRepository);
         when(plagueRepository.getPlagues()).thenReturn(List.of(plague));
         when(plague.getName()).thenReturn(PlagueName.CHOLERA);
+
+        IGameState gameState = mock(IGameState.class);
+        when(game.getState()).thenReturn(gameState);
     }
 
     /**
