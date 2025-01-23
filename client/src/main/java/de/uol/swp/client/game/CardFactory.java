@@ -27,9 +27,9 @@ public class CardFactory {
         if (playerCard instanceof CityCardDTO cityCard) {
             return createCityCard(cityCard);
         } else if (playerCard instanceof EpidemicCardDTO) {
-            return new EpidemicCard();
+            return new EpidemicCard(playerCard.getId());
         } else if (playerCard instanceof EventCardDTO eventCard) {
-            return new EventCard(eventCard.getTitle(), eventCard.getAction());
+            return new EventCard(playerCard.getId(), eventCard.getTitle(), eventCard.getAction());
         } else {
             throw new IllegalArgumentException("Unknown card type.");
         }

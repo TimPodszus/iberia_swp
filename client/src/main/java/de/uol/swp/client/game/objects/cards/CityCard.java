@@ -7,15 +7,29 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
+/**
+ * Represents a CityCard in the game.
+ */
 public class CityCard extends AbstractCard {
-    public CityCard(String city, String year, PlagueName plagueName) {
+
+    /**
+     * Constructs a CityCard with the specified id, city, year, and plague name.
+     *
+     * @param id         the unique identifier of the card
+     * @param city       the name of the city
+     * @param year       the year associated with the card
+     * @param plagueName the name of the plague associated with the card
+     */
+    public CityCard(int id, String city, String year, PlagueName plagueName) {
+        super(id);
         this.setPrefSize(100, 150);
         this.setStyle("-fx-background-color: " + plagueName.getColorCode() + ";");
 
         Text cityText = new Text(city);
         StackPane cityStackPane = new StackPane();
         cityStackPane.setStyle(TEXT_BACKGROUND_COLOR);
-        cityStackPane.getChildren().add(cityText);
+        cityStackPane.getChildren()
+                     .add(cityText);
 
         AnchorPane.setTopAnchor(cityStackPane, 5.0);
         AnchorPane.setLeftAnchor(cityStackPane, 0.0);
@@ -25,7 +39,8 @@ public class CityCard extends AbstractCard {
         yearText.setFont(new Font(10));
         StackPane yearStackPane = new StackPane();
         yearStackPane.setStyle(TEXT_BACKGROUND_COLOR);
-        yearStackPane.getChildren().add(yearText);
+        yearStackPane.getChildren()
+                     .add(yearText);
 
         AnchorPane.setTopAnchor(yearStackPane, 25.0);
         AnchorPane.setLeftAnchor(yearStackPane, 0.0);

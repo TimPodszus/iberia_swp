@@ -810,12 +810,7 @@ public class GamePresenter extends AbstractPresenter {
     private void updateInfectionCardDiscardPile(List<InfectionCardDTO> infectionCardDiscardPileList) {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
-            setInfectionCardDiscardPile(new InfectionCard(infectionCard.getCity()
-                                                                       .getPlagueName(),
-                    infectionCard.getCity()
-                                 .getName()
-                                 .getDisplayName()
-            ));
+            setInfectionCardDiscardPile(CardFactory.createCard(infectionCard));
         }
     }
 
