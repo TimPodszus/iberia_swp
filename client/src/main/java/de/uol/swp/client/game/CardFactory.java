@@ -1,13 +1,7 @@
 package de.uol.swp.client.game;
 
-import de.uol.swp.client.game.objects.cards.AbstractCard;
-import de.uol.swp.client.game.objects.cards.CityCard;
-import de.uol.swp.client.game.objects.cards.EpidemicCard;
-import de.uol.swp.client.game.objects.cards.EventCard;
-import de.uol.swp.common.cards.CityCardDTO;
-import de.uol.swp.common.cards.EpidemicCardDTO;
-import de.uol.swp.common.cards.EventCardDTO;
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.client.game.objects.cards.*;
+import de.uol.swp.common.cards.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -20,16 +14,25 @@ public class CardFactory {
     /**
      * Creates an abstract card from the given card data.
      *
-     * @param playerCard the card data
+     * @param card the card data
      * @return the created abstract card
      */
-    public static AbstractCard createCard(ICardDTO playerCard) {
-        if (playerCard instanceof CityCardDTO cityCard) {
+    public static AbstractCard createCard(ICardDTO card) {
+        if (card instanceof CityCardDTO cityCard) {
             return createCityCard(cityCard);
-        } else if (playerCard instanceof EpidemicCardDTO) {
-            return new EpidemicCard(playerCard.getId());
-        } else if (playerCard instanceof EventCardDTO eventCard) {
-            return new EventCard(playerCard.getId(), eventCard.getTitle(), eventCard.getAction());
+        } else if (card instanceof EpidemicCardDTO) {
+            return new EpidemicCard(card.getId());
+        } else if (card instanceof EventCardDTO eventCard) {
+            return new EventCard(card.getId(), eventCard.getTitle(), eventCard.getAction());
+        } else if (card instanceof InfectionCardDTO infectionCardDTO) {
+            return new InfectionCard(
+                    card.getId(),
+                    infectionCardDTO.getCity()
+                                    .getPlagueName(),
+                    infectionCardDTO.getCity()
+                                    .getName()
+                                    .getDisplayName()
+            );
         } else {
             throw new IllegalArgumentException("Unknown card type.");
         }
