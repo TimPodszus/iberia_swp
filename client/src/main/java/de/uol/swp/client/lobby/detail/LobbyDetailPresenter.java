@@ -186,7 +186,11 @@ public class LobbyDetailPresenter extends AbstractPresenter {
         boolean isOwner = lobbyDTO.getOwner()
                                   .equals(UserStore.getInstance()
                                                    .getUser());
-        startGameButton.setDisable(!isOwner);
+
+        boolean moreThanOnePlayer = lobbyDTO.getUsers()
+                                            .size() > 1;
+
+        startGameButton.setDisable(!isOwner || !moreThanOnePlayer);
         lobbyPasswordField.setDisable(!isOwner);
         difficultyDropdown.setDisable(!isOwner);
     }

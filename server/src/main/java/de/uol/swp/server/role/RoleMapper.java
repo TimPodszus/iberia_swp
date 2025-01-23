@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class RoleMapper {
-    public static IRoleDTO toRoleDTO(Role role) {
+    public static IRoleDTO toRoleDTO(IRole role) {
         return new RoleDTO(role.getName(), role.getDescription());
     }
 }

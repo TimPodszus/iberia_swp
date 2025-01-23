@@ -121,4 +121,12 @@ public class CityRepository {
                      .filter(city -> cityNames.contains(city.getName()))
                      .toList();
     }
+
+    public CityName getCityNameById(int cityId) {
+        return cities.stream()
+                     .filter(city -> city.getId() == cityId)
+                     .findFirst()
+                     .map(ICity::getName)
+                     .orElse(null);
+    }
 }
