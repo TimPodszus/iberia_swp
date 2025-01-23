@@ -7,6 +7,7 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.infection.management.InfectionManagement;
@@ -88,6 +89,9 @@ public class CityManagement implements ICityManagement {
                              .getPlagueByName(plagueName);
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
+        if(game.getState() instanceof InfectionState infectionState){
+            infectionState.increaseInfectedCities(game);
+        }
     }
 
     /**

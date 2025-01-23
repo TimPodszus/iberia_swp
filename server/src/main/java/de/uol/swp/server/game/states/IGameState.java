@@ -9,6 +9,5 @@ import de.uol.swp.common.game.StateType;
  * for handling actions based on the current game context.
  */
 public interface IGameState {
-
     StateType getStateType();
 }

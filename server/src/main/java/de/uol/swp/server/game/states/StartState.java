@@ -11,6 +11,6 @@ import de.uol.swp.common.game.StateType;
  */
 public class StartState implements IGameState {
     public StateType getStateType() {
-        return StateType.PLAYER_TURN_STATE;
+        return StateType.START_STATE;
     }
 }

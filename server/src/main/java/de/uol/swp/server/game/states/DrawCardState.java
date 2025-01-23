@@ -1,8 +1,8 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.common.game.StateType;
+import de.uol.swp.server.game.data.IGame;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Represents the state in a game where players draw cards.
@@ -11,11 +11,16 @@ import lombok.Setter;
  * provided the player holds seven or fewer cards.
  */
 @Getter
-@Setter
 public class DrawCardState implements IGameState {
     private int cardsDrawn = 0;
-
     public StateType getStateType() {
         return StateType.DRAW_CARD_STATE;
+    }
+
+    public void increaseCardsDrawn(IGame game) {
+        cardsDrawn++;
+        if(cardsDrawn == 2){
+            game.setState(new InfectionState());
+        }
     }
 }

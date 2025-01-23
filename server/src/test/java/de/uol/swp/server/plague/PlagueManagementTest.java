@@ -5,7 +5,6 @@ import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.game.data.Game;
-import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.plague.data.Plague;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.plague.management.PlagueManagement;
@@ -145,7 +144,6 @@ class PlagueManagementTest {
         List<Card> discardPile = new ArrayList<>();
         when(game.getPlayerCardDiscardPile()).thenReturn(discardPile);
 
-        IGameState gameState = mock(IGameState.class);
 
         plagueManagement.researchPlague(PlagueName.CHOLERA, game);
 

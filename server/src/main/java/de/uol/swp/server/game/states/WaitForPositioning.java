@@ -13,7 +13,6 @@ import lombok.Setter;
 @Setter
 public class WaitForPositioning implements IGameState {
     private int positionedPlayersCount = 0;
-
     public StateType getStateType() {
         return StateType.WAIT_FOR_POSITIONING_STATE;
     }

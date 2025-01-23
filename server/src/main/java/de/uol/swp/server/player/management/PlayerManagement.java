@@ -48,7 +48,9 @@ public class PlayerManagement implements IPlayerManagement {
                 .get(game.getCurrentPlayerIndex())
                 .addCard(card);
         }
-
+        if(game.getState() instanceof DrawCardState drawCardState) {
+            drawCardState.increaseCardsDrawn(game);
+        }
         return CardMapper.toDTO(card);
     }
 
