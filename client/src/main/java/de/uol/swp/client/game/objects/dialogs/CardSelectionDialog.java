@@ -14,12 +14,14 @@ import java.util.List;
 
 /**
  * A dialog for selecting a card from a list of player cards.
+ * Returns the selected card as result
  */
 public class CardSelectionDialog extends Dialog<ICardDTO> {
     private static final String HEADER = "Karte auswählen";
     private final boolean dismissible;
     private final List<ICardDTO> playerCards;
-    private ICardDTO selectedCard;
+    private final List<AbstractCard> displayedPlayerCards;
+    private AbstractCard selectedCard;
 
     /**
      * Constructs a CardSelectionDialog.
@@ -30,10 +32,18 @@ public class CardSelectionDialog extends Dialog<ICardDTO> {
     public CardSelectionDialog(boolean dismissible, List<ICardDTO> playerCards) {
         this.dismissible = dismissible;
         this.playerCards = playerCards;
+        this.displayedPlayerCards = createCards();
         super.initStyle(StageStyle.DECORATED);
         super.setHeaderText(HEADER);
         this.setContent();
         this.setButtons();
+        super.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                return convertToCardDTO(this.selectedCard);
+            } else {
+                return null;
+            }
+        });
     }
 
     /**
@@ -41,17 +51,27 @@ public class CardSelectionDialog extends Dialog<ICardDTO> {
      */
     private void setContent() {
         HBox cardBox = new HBox();
-        List<AbstractCard> cards = createCards();
-        for (AbstractCard card : cards) {
-            card.setOnMouseClicked(mouseEvent -> this.setSelectedCard(card.getCardId()));
+        for (AbstractCard card : this.displayedPlayerCards) {
+            card.setOnMouseClicked(mouseEvent -> onCardClicked(card.getCardId()));
             cardBox.getChildren()
                    .add(card);
         }
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(cardBox);
+    }
 
-        super.setResultConverter(dialogButton -> dialogButton == ButtonType.OK ? this.selectedCard : null);
+    /**
+     * Handles the event when a card is clicked.
+     * Unselects the currently selected card, sets the new selected card,
+     * and then selects the new card.
+     *
+     * @param id the ID of the clicked card
+     */
+    private void onCardClicked(int id) {
+        this.selectedCard.unselect();
+        setSelectedCard(id);
+        this.selectedCard.select();
     }
 
     /**
@@ -88,11 +108,26 @@ public class CardSelectionDialog extends Dialog<ICardDTO> {
      * @param cardId the ID of the selected card
      */
     private void setSelectedCard(int cardId) {
-        for (ICardDTO playerCard : this.playerCards) {
-            if (playerCard.getId() == cardId) {
+        for (AbstractCard playerCard : this.displayedPlayerCards) {
+            if (playerCard.getCardId() == cardId) {
                 this.selectedCard = playerCard;
                 break;
             }
         }
+    }
+
+    /**
+     * Converts an AbstractCard to an ICardDTO.
+     *
+     * @param card the AbstractCard to convert
+     * @return the corresponding ICardDTO, or null if not found
+     */
+    private ICardDTO convertToCardDTO(AbstractCard card) {
+        for (ICardDTO playerCard : this.playerCards) {
+            if (playerCard.getId() == card.getCardId()) {
+                return playerCard;
+            }
+        }
+        return null;
     }
 }

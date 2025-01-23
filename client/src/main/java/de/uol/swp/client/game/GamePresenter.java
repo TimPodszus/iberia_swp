@@ -7,6 +7,7 @@ import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
 import de.uol.swp.client.game.objects.cards.*;
+import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
@@ -19,6 +20,7 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
+import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
@@ -1044,5 +1046,11 @@ public class GamePresenter extends AbstractPresenter {
     public void onCardSelectionResponse(CardSelectionResponse response) {
         CardSelectionDialog dialog = new CardSelectionDialog(response.isDismissible(), response.getCards());
         Optional<ICardDTO> result = dialog.showAndWait();
+    }
+
+    @Subscribe
+    public void onCardExchangeResponse(CardExchangeResponse response) {
+        CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
+        Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
 }
