@@ -7,6 +7,7 @@ import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
 import de.uol.swp.client.game.objects.cards.*;
+import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.*;
@@ -18,6 +19,7 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
+import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -249,7 +251,8 @@ public class GamePresenter extends AbstractPresenter {
         if (gameDTO.getState()
                    .equals("WaitForPositioning")) {
             Node source = (Node) event.getSource();
-            int cityId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+            int cityId = Integer.parseInt(source.getId()
+                                                .replaceAll("\\D+", ""));
             gameService.setPosition(gameDTO.getGameId(), cityId);
         }
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
@@ -854,8 +857,7 @@ public class GamePresenter extends AbstractPresenter {
         playerButtons.getChildren()
                      .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(
-                    player.getUsername(),
+            if (!Objects.equals(player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -879,8 +881,7 @@ public class GamePresenter extends AbstractPresenter {
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
-                cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
                 playersInCity
         )));
     }
@@ -892,8 +893,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(
-                    player.getUsername(),
+            if (Objects.equals(player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -1031,5 +1031,18 @@ public class GamePresenter extends AbstractPresenter {
                     break;
             }
         }
+    }
+
+    /**
+     * Event handler for the CardSelectionResponse.
+     * This method is called when a CardSelectionResponse is received.
+     * It displays a dialog for the user to select a card.
+     *
+     * @param response the CardSelectionResponse containing the cards to be selected
+     */
+    @Subscribe
+    public void onCardSelectionResponse(CardSelectionResponse response) {
+        CardSelectionDialog dialog = new CardSelectionDialog(response.isDismissible(), response.getCards());
+        Optional<ICardDTO> result = dialog.showAndWait();
     }
 }
