@@ -750,7 +750,6 @@ public class GamePresenter extends AbstractPresenter {
                 for (ICardDTO card : playerHand) {
                     AbstractCard abstractCard = CardFactory.createCard(card);
                     addPlayerHandCard(abstractCard);
-                    addPlayerHandCard(abstractCard);
                 }
             }
         }
