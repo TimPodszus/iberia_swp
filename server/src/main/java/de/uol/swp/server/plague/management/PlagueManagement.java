@@ -100,6 +100,22 @@ public class PlagueManagement implements IPlagueManagement {
             .handleAction(game, game.getCurrentPlayer());
     }
 
+    /**
+     * Treats a specified plague in the current city of the player, and optionally in a second city if the player
+     * is a Country Doctor. The method removes plague cubes from the cities and validates the action according to
+     * the game's rules.
+     *
+     * @param plagueToTreat the plague to be treated in the player's current city.
+     * @param secondCity the second city where a plague should also be treated (used only if the player is a Country Doctor).
+     * @param plagueToTreatInSecondCity the plague to be treated in the second city.
+     * @param game the current game instance.
+     * @throws IllegalArgumentException if any of the input parameters (plague, city, or game) are {@code null}.
+     * @throws PlagueManagementException if:
+     * - The player is a Country Doctor but the second city is not in an adjacent region.
+     * - The specified plague is not present in the current city or the second city.
+     * - There are no plague cubes to remove for the specified plague.
+     *
+     */
     public void treatPlague(PlagueName plagueToTreat, City secondCity, PlagueName plagueToTreatInSecondCity, Game game) throws PlagueManagementException {
         if (plagueToTreat == null || secondCity == null || plagueToTreatInSecondCity == null || game == null) {
             throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");

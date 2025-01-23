@@ -9,9 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents a city in the game, with attributes such as plague name, city name, foundation date,
@@ -57,19 +55,54 @@ public class City implements ICity {
     @Setter
     private List<IInfection> infections = new ArrayList<>();
 
-    private final Map<PlagueName, Integer> plagueCubes = new HashMap<>();
-
+    /**
+     * Removes a specified number of plague cubes from the infections of the given plague.
+     *
+     * @param plagueName the name of the plague from which cubes should be removed.
+     * @param count the number of plague cubes to remove.
+     * @throws IllegalArgumentException if there are not enough plague cubes to remove.
+     */
     public void removePlagueCubes(PlagueName plagueName, int count) {
-        int currentCount = plagueCubes.getOrDefault(plagueName, 0);
-        if (currentCount < count) {
-            throw new IllegalArgumentException("Not enough plague cubes to remove.");
+        int currentCount;
+        for (IInfection infection : infections) {
+            if (infection.getPlague().getName().equals(plagueName)) {
+                currentCount = infection.getSeverity();
+                if (currentCount < count) {
+                    throw new IllegalArgumentException("Not enough plague cubes to remove.");
+                }
+                infection.setSeverity(currentCount - count);
+                infection.getPlague().setCubesRemaining(infection.getPlague().getCubesRemaining() - count);
+            }
         }
-        plagueCubes.put(plagueName, currentCount - count);
     }
+
+    /**
+     * Checks if a plague with the specified name exists in the current infections.
+     *
+     * @param plagueName the name of the plague to check.
+     * @return {@code true} if the plague exists, {@code false} otherwise.
+     */
     public boolean hasPlague(PlagueName plagueName) {
-        return plagueCubes.getOrDefault(plagueName, 0) > 0;
+        boolean hasPlague = false;
+        for (IInfection infection : infections) {
+            hasPlague = infection.getPlague().getName().equals(plagueName);
+        }
+        return hasPlague;
     }
+
+    /**
+     * Retrieves the number of plague cubes for a specific plague.
+     *
+     * @param plagueName the name of the plague for which to get the cube count.
+     * @return the number of cubes associated with the specified plague. If the plague is not found, returns 0.
+     */
     public int getPlagueCubes(PlagueName plagueName) {
-        return plagueCubes.getOrDefault(plagueName, 0);
+        int plagueCubes = 0;
+        for (IInfection infection : infections) {
+            if (infection.getPlague().getName().equals(plagueName)) {
+                plagueCubes = infection.getSeverity();
+            }
+        }
+        return plagueCubes;
     }
 }
