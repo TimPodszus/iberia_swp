@@ -43,7 +43,7 @@ public class GameMapper {
                 game.getWaterTreatmentsLeft(),
                 game.getTracksLeft(),
                 game.getCurrentPlayerIndex(),
-                game.getState().getClass().getSimpleName()
+                game.getState().getStateType()
         );
     }
 }
