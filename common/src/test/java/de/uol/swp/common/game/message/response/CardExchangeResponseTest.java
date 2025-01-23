@@ -1,6 +1,5 @@
 package de.uol.swp.common.game.message.response;
 
-import de.uol.swp.common.cards.CardType;
 import de.uol.swp.common.cards.CityCardDTO;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.city.CityDTO;
@@ -25,7 +24,6 @@ public class CardExchangeResponseTest {
                 1,
                 cityDTO.getName()
                        .getDisplayName(),
-                CardType.CITY_CARD,
                 cityDTO
         ));
         Map<String, List<ICardDTO>> playerCards = Map.of("player", cards);
