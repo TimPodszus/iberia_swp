@@ -736,15 +736,15 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayerHandCards(List<IPlayerDTO> players) {
         removePlayerHandCards();
         for (IPlayerDTO player : players) {
-            if (Objects.equals(
-                    player.getUsername(),
+            if (Objects.equals(player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
             )) {
                 List<ICardDTO> playerHand = player.getCards();
                 for (ICardDTO card : playerHand) {
-                    AbstractCard abstractCard = createCard(card);
+                    AbstractCard abstractCard = CardFactory.createCard(card);
+                    addPlayerHandCard(abstractCard);
                     addPlayerHandCard(abstractCard);
                 }
             }
@@ -955,47 +955,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private static AbstractCard getCard(List<ICardDTO> playerCardDiscardPileList) {
         ICardDTO playerCard = playerCardDiscardPileList.get(playerCardDiscardPileList.size() - 1);
-        return createCard(playerCard);
-    }
-
-    /**
-     * Creates an abstract card from the given card data.
-     *
-     * @param playerCard the card data
-     * @return the created abstract card
-     */
-    private static AbstractCard createCard(ICardDTO playerCard) {
-        if (playerCard instanceof CityCardDTO cityCard) {
-            return createCityCard(cityCard);
-        } else if (playerCard instanceof EpidemicCardDTO) {
-            return new EpidemicCard();
-        } else if (playerCard instanceof EventCardDTO eventCard) {
-            return new EventCard(eventCard.getTitle(), eventCard.getAction());
-        } else {
-            throw new IllegalArgumentException("Unknown card type.");
-        }
-    }
-
-    /**
-     * Creates a city card from the given city card data.
-     *
-     * @param cityCard the city card data
-     * @return the created city card
-     */
-    private static AbstractCard createCityCard(CityCardDTO cityCard) {
-        String foundationDate = cityCard.getCity()
-                                        .getFoundationDate() < 0 ? cityCard.getCity()
-                                                                           .getFoundationDate() + " v. Chr." : String.valueOf(
-                cityCard.getCity()
-                        .getFoundationDate());
-        return new CityCard(
-                cityCard.getCity()
-                        .getName()
-                        .getDisplayName(),
-                foundationDate,
-                cityCard.getCity()
-                        .getPlagueName()
-        );
+        return CardFactory.createCard(playerCard);
     }
 
     /**
