@@ -12,11 +12,23 @@ import javafx.stage.Stage;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * A utility class for displaying a confirmation dialog.
+ */
 public class ConfirmationDialog {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private ConfirmationDialog() {
     }
 
+    /**
+     * Displays a confirmation dialog with the specified title.
+     *
+     * @param title the title of the dialog
+     * @return true if the user clicks "Accept", false otherwise
+     */
     public static boolean showConfirmationDialog(String title) {
         AtomicBoolean userResponse = new AtomicBoolean(false);
         Stage dialog = new Stage();
