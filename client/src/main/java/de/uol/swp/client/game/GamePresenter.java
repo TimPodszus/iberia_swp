@@ -30,7 +30,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -118,22 +119,22 @@ public class GamePresenter extends AbstractPresenter {
     private HBox playerButtons;
 
     @FXML
-    private Button buildTrainTracksButton;
+    private ToggleButton buildTrainTracksButton;
 
     @FXML
-    private Button buildHospitalButton;
+    private ToggleButton buildHospitalButton;
 
     @FXML
-    private Button researchPlagueButton;
+    private ToggleButton researchPlagueButton;
 
     @FXML
-    private Button treatWaterButton;
+    private ToggleButton treatWaterButton;
 
     @FXML
-    private Button treatInfectionButton;
+    private ToggleButton treatInfectionButton;
 
     @FXML
-    private Button shareKnowledgeButton;
+    private ToggleButton shareKnowledgeButton;
 
     private double mouseX;
 
@@ -147,6 +148,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     public void initialize() {
         loadSvgIntoWebView();
+        setToggleGroup();
     }
 
     /**
@@ -305,7 +307,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onBuildTrainTrack(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+        if (buildTrainTracksButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+        } else {
+
+        }
     }
 
     /**
@@ -315,7 +321,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onBuildHospital(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
+        if (buildHospitalButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
+        } else {
+
+        }
     }
 
     /**
@@ -325,7 +335,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onTreatPlague(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
+        if (treatInfectionButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
+        } else {
+
+        }
     }
 
     /**
@@ -335,7 +349,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onShareKnowledge(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/87
+        if (shareKnowledgeButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
+        } else {
+
+        }
     }
 
     /**
@@ -345,7 +363,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onResearchPlague(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
+        if (researchPlagueButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
+        } else {
+
+        }
     }
 
     /**
@@ -355,7 +377,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onPlaceWaterTreatment(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
+        if (treatWaterButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
+        } else {
+
+        }
     }
 
     /**
@@ -393,6 +419,35 @@ public class GamePresenter extends AbstractPresenter {
         } catch (IOException e) {
             LOG.error(e);
         }
+    }
+
+    /**
+     * Sets the toggle group for the action buttons.
+     * <p>
+     * This method initializes a new ToggleGroup and assigns it to the action buttons.
+     * It also sets a listener to handle the selection changes within the toggle group.
+     */
+    private void setToggleGroup() {
+        ToggleGroup toggleGroup = new ToggleGroup();
+
+        buildTrainTracksButton.setToggleGroup(toggleGroup);
+        buildHospitalButton.setToggleGroup(toggleGroup);
+        researchPlagueButton.setToggleGroup(toggleGroup);
+        treatWaterButton.setToggleGroup(toggleGroup);
+        treatInfectionButton.setToggleGroup(toggleGroup);
+        shareKnowledgeButton.setToggleGroup(toggleGroup);
+
+        toggleGroup.selectedToggleProperty()
+                   .addListener((observable, oldToggle, newToggle) -> {
+                       if (newToggle == null) {
+                           oldToggle.setSelected(false);
+                       }
+                       if (newToggle != null && oldToggle instanceof ToggleButton toggleButton && toggleButton.getOnAction() != null) {
+                           toggleButton.getOnAction()
+                                       .handle(new ActionEvent(toggleButton, null));
+                       }
+
+                   });
     }
 
     /**
