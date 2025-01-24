@@ -6,15 +6,29 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 
+/**
+ * Represents an infection card in the game.
+ * This card displays the city name and an image associated with the infection.
+ */
 public class InfectionCard extends AbstractCard {
-    public InfectionCard(PlagueName plagueName, String city) {
+
+    /**
+     * Constructs an InfectionCard with the specified id, plague name, and city.
+     *
+     * @param id         the unique identifier for the card
+     * @param plagueName the name of the plague associated with the card
+     * @param city       the name of the city displayed on the card
+     */
+    public InfectionCard(int id, PlagueName plagueName, String city) {
+        super(id);
         this.setPrefSize(150, 100);
         this.setStyle("-fx-background-color: " + plagueName.getColorCode() + ";");
 
         Text cityText = new Text(city);
         StackPane cityStackPane = new StackPane();
         cityStackPane.setStyle(TEXT_BACKGROUND_COLOR);
-        cityStackPane.getChildren().add(cityText);
+        cityStackPane.getChildren()
+                     .add(cityText);
 
         AnchorPane.setTopAnchor(cityStackPane, 10.0);
         AnchorPane.setLeftAnchor(cityStackPane, 0.0);
@@ -31,6 +45,7 @@ public class InfectionCard extends AbstractCard {
         AnchorPane.setLeftAnchor(imageView, 10.0);
         AnchorPane.setRightAnchor(imageView, 10.0);
 
-        this.getChildren().addAll(cityStackPane, imageView);
+        this.getChildren()
+            .addAll(cityStackPane, imageView);
     }
 }

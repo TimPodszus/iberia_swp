@@ -7,6 +7,8 @@ import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
 import de.uol.swp.client.game.objects.cards.*;
+import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
+import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.*;
@@ -19,6 +21,8 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
+import de.uol.swp.common.game.message.response.CardExchangeResponse;
+import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -250,7 +254,8 @@ public class GamePresenter extends AbstractPresenter {
         if (gameDTO.getState()
                    .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
             Node source = (Node) event.getSource();
-            int cityId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+            int cityId = Integer.parseInt(source.getId()
+                                                .replaceAll("\\D+", ""));
             gameService.setPosition(gameDTO.getGameId(), cityId);
         }
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
@@ -737,15 +742,14 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayerHandCards(List<IPlayerDTO> players) {
         removePlayerHandCards();
         for (IPlayerDTO player : players) {
-            if (Objects.equals(
-                    player.getUsername(),
+            if (Objects.equals(player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
             )) {
                 List<ICardDTO> playerHand = player.getCards();
                 for (ICardDTO card : playerHand) {
-                    AbstractCard abstractCard = createCard(card);
+                    AbstractCard abstractCard = CardFactory.createCard(card);
                     addPlayerHandCard(abstractCard);
                 }
             }
@@ -811,12 +815,7 @@ public class GamePresenter extends AbstractPresenter {
     private void updateInfectionCardDiscardPile(List<InfectionCardDTO> infectionCardDiscardPileList) {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
-            setInfectionCardDiscardPile(new InfectionCard(infectionCard.getCity()
-                                                                       .getPlagueName(),
-                    infectionCard.getCity()
-                                 .getName()
-                                 .getDisplayName()
-            ));
+            setInfectionCardDiscardPile(CardFactory.createCard(infectionCard));
         }
     }
 
@@ -860,8 +859,7 @@ public class GamePresenter extends AbstractPresenter {
         playerButtons.getChildren()
                      .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(
-                    player.getUsername(),
+            if (!Objects.equals(player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -885,8 +883,7 @@ public class GamePresenter extends AbstractPresenter {
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
-                cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
                 playersInCity
         )));
     }
@@ -898,8 +895,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(
-                    player.getUsername(),
+            if (Objects.equals(player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -956,47 +952,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private static AbstractCard getCard(List<ICardDTO> playerCardDiscardPileList) {
         ICardDTO playerCard = playerCardDiscardPileList.get(playerCardDiscardPileList.size() - 1);
-        return createCard(playerCard);
-    }
-
-    /**
-     * Creates an abstract card from the given card data.
-     *
-     * @param playerCard the card data
-     * @return the created abstract card
-     */
-    private static AbstractCard createCard(ICardDTO playerCard) {
-        if (playerCard instanceof CityCardDTO cityCard) {
-            return createCityCard(cityCard);
-        } else if (playerCard instanceof EpidemicCardDTO) {
-            return new EpidemicCard();
-        } else if (playerCard instanceof EventCardDTO eventCard) {
-            return new EventCard(eventCard.getTitle(), eventCard.getAction());
-        } else {
-            throw new IllegalArgumentException("Unknown card type.");
-        }
-    }
-
-    /**
-     * Creates a city card from the given city card data.
-     *
-     * @param cityCard the city card data
-     * @return the created city card
-     */
-    private static AbstractCard createCityCard(CityCardDTO cityCard) {
-        String foundationDate = cityCard.getCity()
-                                        .getFoundationDate() < 0 ? cityCard.getCity()
-                                                                           .getFoundationDate() + " v. Chr." : String.valueOf(
-                cityCard.getCity()
-                        .getFoundationDate());
-        return new CityCard(
-                cityCard.getCity()
-                        .getName()
-                        .getDisplayName(),
-                foundationDate,
-                cityCard.getCity()
-                        .getPlagueName()
-        );
+        return CardFactory.createCard(playerCard);
     }
 
     /**
@@ -1077,5 +1033,24 @@ public class GamePresenter extends AbstractPresenter {
                     break;
             }
         }
+    }
+
+    /**
+     * Event handler for the CardSelectionResponse.
+     * This method is called when a CardSelectionResponse is received.
+     * It displays a dialog for the user to select a card.
+     *
+     * @param response the CardSelectionResponse containing the cards to be selected
+     */
+    @Subscribe
+    public void onCardSelectionResponse(CardSelectionResponse response) {
+        CardSelectionDialog dialog = new CardSelectionDialog(response.isDismissible(), response.getCards());
+        Optional<ICardDTO> result = dialog.showAndWait();
+    }
+
+    @Subscribe
+    public void onCardExchangeResponse(CardExchangeResponse response) {
+        CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
+        Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
 }
