@@ -17,6 +17,7 @@ import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagementException;
+import de.uol.swp.server.lobby.store.LobbyStoreException;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -84,7 +85,7 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     @BeforeEach
-    void setUp() throws LobbyManagementException, PlayerManagementException, GameManagementException {
+    void setUp() throws LobbyStoreException, PlayerManagementException, GameManagementException {
         MockitoAnnotations.openMocks(this);
 
         List<IUserDTO> users = new ArrayList<>();
@@ -98,7 +99,7 @@ public class GameServiceTest extends EventBusBasedTest {
 
         when(gameManagement.createAndInitializeGame(createGameRequest)).thenReturn(game);
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(game);
-        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.of(lobby));
+        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(lobby);
 
     }
 
@@ -128,8 +129,8 @@ public class GameServiceTest extends EventBusBasedTest {
      * Tests setting player positioning when the lobby is not found.
      */
     @Test
-    void testOnPositionRequest_LobbyNotFound() throws LobbyManagementException, GameManagementException, PlayerManagementException {
-        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.empty());
+    void testOnPositionRequest_LobbyNotFound() throws GameManagementException, PlayerManagementException {
+        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(null);
         when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
 
         post(positioningRequest);
@@ -143,7 +144,7 @@ public class GameServiceTest extends EventBusBasedTest {
      * Tests setting player positioning when the game is null.
      */
     @Test
-    void testOnPositionRequest_GameIsNull() throws LobbyManagementException, GameManagementException, PlayerManagementException {
+    void testOnPositionRequest_GameIsNull() throws GameManagementException, PlayerManagementException {
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(null);
         when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
 
@@ -152,13 +153,14 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, times(1)).setPositioning(positioningRequest);
         assertNull(event, "No event should be posted when the game is null.");
     }
+
     /**
      * Tests create game  when the game is null.
      */
     @Test
-    void testOnCreateGameRequest_GameIsNull() throws LobbyManagementException, PlayerManagementException {
+    void testOnCreateGameRequest_GameIsNull() throws LobbyStoreException, PlayerManagementException {
         when(gameManagement.createAndInitializeGame(createGameRequest)).thenReturn(null);
-        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(Optional.of(lobby));
+        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(lobby);
 
         gameService.onCreateGameRequest(createGameRequest);
 

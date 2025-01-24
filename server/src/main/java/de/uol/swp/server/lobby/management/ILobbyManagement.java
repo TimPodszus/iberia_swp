@@ -1,10 +1,10 @@
 package de.uol.swp.server.lobby.management;
 
 import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.store.LobbyStoreException;
 import de.uol.swp.server.usermanagement.IUser;
-import java.sql.SQLException;
+
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Interface for managing lobbies.
@@ -17,52 +17,50 @@ public interface ILobbyManagement {
      * @param lobbyName the name of the lobby
      * @param owner     the owner of the lobby
      * @return the created lobby
-     * @throws LobbyManagementException if an error occurs during lobby creation
+     * @throws LobbyStoreException if an error occurs during lobby creation
      */
-    ILobby createLobby(String lobbyName, IUser owner) throws LobbyManagementException;
+    ILobby createLobby(String lobbyName, IUser owner) throws LobbyStoreException;
 
     /**
      * Deletes an existing lobby.
      *
      * @param lobbyId the ID of the lobby to delete
-     * @throws LobbyManagementException if an error occurs during lobby deletion
+     * @throws LobbyStoreException if an error occurs during lobby deletion
      */
-    void deleteLobby(String lobbyId) throws LobbyManagementException;
+    void deleteLobby(String lobbyId) throws LobbyStoreException;
 
     /**
      * Retrieves a lobby by its ID.
      *
      * @param lobbyId the ID of the lobby to retrieve
-     * @return an Optional containing the lobby if found, or an empty Optional if not found
-     * @throws LobbyManagementException if an error occurs during lobby retrieval
+     * @return the lobby with the specified ID
      */
-    Optional<ILobby> getLobby(String lobbyId) throws LobbyManagementException;
+    ILobby getLobby(String lobbyId);
 
     /**
      * Retrieves a list of all lobbies.
      *
      * @return a list of all lobbies
-     * @throws LobbyManagementException if an error occurs during lobby retrieval
+     * @throws LobbyStoreException if an error occurs during lobby retrieval
      */
-    List<ILobby> getLobbies() throws LobbyManagementException;
+    List<ILobby> getLobbies() throws LobbyStoreException;
 
 
-
-   /**
+    /**
      * Allows a user to join a specified lobby.
+     *
      * @param lobby an Optional containing the lobby to join
-     * @throws LobbyManagementException if an error occurs during the join process
-     * @throws SQLException if a database access error occurs
+     * @throws LobbyStoreException if an error occurs during the join process
      */
-    void joinLobby(ILobby lobby, IUser user) throws LobbyManagementException, SQLException;
+    void joinLobby(ILobby lobby, IUser user) throws LobbyStoreException;
 
     /**
      * Updates an existing lobby.
      *
      * @param lobby the lobby to update
      * @return the updated lobby
-     * @throws LobbyManagementException if an error occurs during lobby update
+     * @throws LobbyStoreException if an error occurs during lobby update
      */
-    ILobby updateLobby(ILobby lobby) throws LobbyManagementException;
+    ILobby updateLobby(ILobby lobby) throws LobbyStoreException;
 }
 
