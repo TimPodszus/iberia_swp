@@ -16,6 +16,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
+<?import javafx.scene.control.ToggleButton?>
 
 <AnchorPane fx:id="gameScreen" onMouseDragged="#onMouseDraggedEvent" onMousePressed="#onMousePressedEvent" onScroll="#onScrollEvent" stylesheets="@../css/gameScreen.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.game.GamePresenter">
     <StackPane fx:id="mapPane" minWidth="1400.0" prefWidth="1400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -1595,40 +1596,40 @@
                 <children>
                     <VBox alignment="CENTER">
                         <children>
-                            <Button fx:id="buildTrainTracksButton" mnemonicParsing="false" onAction="#onBuildTrainTrack" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Schienen bauen">
+                            <ToggleButton fx:id="buildTrainTracksButton" mnemonicParsing="false" onAction="#onBuildTrainTrack" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Schienen bauen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
-                            </Button>
-                            <Button fx:id="buildHospitalButton" mnemonicParsing="false" onAction="#onBuildHospital" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Krankenhaus bauen">
+                            </ToggleButton>
+                            <ToggleButton fx:id="buildHospitalButton" mnemonicParsing="false" onAction="#onBuildHospital" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Krankenhaus bauen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
-                            </Button>
-                            <Button fx:id="treatInfectionButton" mnemonicParsing="false" onAction="#onTreatPlague" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Seuche behandeln">
+                            </ToggleButton>
+                            <ToggleButton fx:id="treatInfectionButton" mnemonicParsing="false" onAction="#onTreatPlague" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Seuche behandeln">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
-                            </Button>
+                            </ToggleButton>
                         </children>
                     </VBox>
                     <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0">
                         <children>
-                            <Button fx:id="shareKnowledgeButton" mnemonicParsing="false" onAction="#onShareKnowledge" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Wissen teilen">
+                            <ToggleButton fx:id="shareKnowledgeButton" mnemonicParsing="false" onAction="#onShareKnowledge" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Wissen teilen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
-                            </Button>
-                            <Button fx:id="researchPlagueButton" mnemonicParsing="false" onAction="#onResearchPlague" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Seuche erforschen">
+                            </ToggleButton>
+                            <ToggleButton fx:id="researchPlagueButton" mnemonicParsing="false" onAction="#onResearchPlague" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Seuche erforschen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
-                            </Button>
-                            <Button fx:id="treatWaterButton" mnemonicParsing="false" onAction="#onPlaceWaterTreatment" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Wasser aufbereiten">
+                            </ToggleButton>
+                            <ToggleButton fx:id="treatWaterButton" mnemonicParsing="false" onAction="#onPlaceWaterTreatment" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Wasser aufbereiten">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
-                            </Button>
+                            </ToggleButton>
                         </children>
                     </VBox>
                 </children>

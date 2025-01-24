@@ -96,8 +96,6 @@ public class PlagueManagement implements IPlagueManagement {
         }
 
         plague.setResearched(true);
-        game.getState()
-            .handleAction(game, game.getCurrentPlayer());
     }
 
     /**

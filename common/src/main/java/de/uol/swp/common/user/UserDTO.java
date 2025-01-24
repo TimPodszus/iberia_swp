@@ -28,6 +28,7 @@ public class UserDTO implements IUserDTO, Serializable {
     public static IUserDTO createWithoutPassword(IUserDTO defaultUser) {
         return new UserDTO(defaultUser.getUsername(), "");
     }
+
     public UserDTO(IUserDTO user) {
         this.username = user.getUsername();
         this.password = user.getPassword();
@@ -52,7 +53,7 @@ public class UserDTO implements IUserDTO, Serializable {
             return false;
         }
         UserDTO userDTO = (UserDTO) obj;
-        return Objects.equals(username, userDTO.username) && Objects.equals(password, userDTO.password);
+        return Objects.equals(username, userDTO.username);
     }
 
     @Override
