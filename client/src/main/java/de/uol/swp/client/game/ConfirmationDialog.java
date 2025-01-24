@@ -9,6 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.concurrent.atomic.AtomicBoolean;
