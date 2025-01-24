@@ -15,13 +15,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * A utility class for displaying a confirmation dialog.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConfirmationDialog {
 
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private ConfirmationDialog() {
-    }
 
     /**
      * Displays a confirmation dialog with the specified title.
@@ -40,13 +36,16 @@ public class ConfirmationDialog {
 
         Text text = new Text(title);
         text.setStyle("-fx-font-size: 16px;");
-        double textWidth = text.getLayoutBounds().getWidth();
+        double textWidth = text.getLayoutBounds()
+                               .getWidth();
 
         Button acceptButton = new Button("Accept");
-        acceptButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 5px;");
+        acceptButton.setStyle(
+                "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 5px;");
 
         Button declineButton = new Button("Decline");
-        declineButton.setStyle("-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 5px;");
+        declineButton.setStyle(
+                "-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 5px;");
 
         acceptButton.setOnAction(e -> {
             userResponse.set(true);
@@ -59,11 +58,13 @@ public class ConfirmationDialog {
         });
 
         HBox buttonBox = new HBox(10);
-        buttonBox.getChildren().addAll(acceptButton, declineButton);
+        buttonBox.getChildren()
+                 .addAll(acceptButton, declineButton);
         buttonBox.setStyle("-fx-alignment: center; -fx-spacing: 10px;");
 
         VBox layout = new VBox(20);
-        layout.getChildren().addAll(label, buttonBox);
+        layout.getChildren()
+              .addAll(label, buttonBox);
         layout.setPadding(new Insets(20));
         layout.setStyle("-fx-background-color: #FFCB83; -fx-background-radius: 10px; -fx-alignment: center;");
 
