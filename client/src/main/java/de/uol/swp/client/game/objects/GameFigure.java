@@ -11,6 +11,7 @@ import java.util.List;
 public class GameFigure extends Group {
     public GameFigure(List<Color> colors) {
         createStripedCircle(colors);
+        this.setMouseTransparent(true);
     }
 
     private void createStripedCircle(List<Color> colors) {
