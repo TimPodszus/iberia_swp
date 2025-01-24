@@ -9,6 +9,7 @@ import de.uol.swp.client.game.objects.PlayerButton;
 import de.uol.swp.client.game.objects.cards.*;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
+import de.uol.swp.client.game.objects.dialogs.StartGameDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.*;
@@ -745,15 +746,18 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param event the StartGameEvent containing the game data
      */
-    @Subscribe
-    public void onStartGameEvent(StartGameEvent event) {
-        this.gameDTO = event.getGameDTO();
+@Subscribe
+public void onStartGameEvent(StartGameEvent event) {
+    this.gameDTO = event.getGameDTO();
 
-        Platform.runLater(() -> {
-            updateBoard(gameDTO);
-            updatePlayers(gameDTO.getPlayers());
-        });
-    }
+    Platform.runLater(() -> {
+        updateBoard(gameDTO);
+        updatePlayers(gameDTO.getPlayers());
+
+        StartGameDialog dialog = new StartGameDialog();
+        dialog.showAndWait();
+    });
+}
 
     /**
      * Updates the game board with the latest data from the game DTO.
