@@ -1,7 +1,6 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.exception.UnsopportedMethodExeption;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
@@ -9,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -18,6 +18,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service class for handling game-related operations.
@@ -58,44 +60,49 @@ public class GameService {
         eventBus.post(new AvailableActionsRequest(lobbyCode));
     }
 
-    public static void showStartDialog() {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Startposition wählen");
+public static void showStartDialog() {
+    Stage dialog = new Stage();
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.setTitle("Startposition wählen");
 
-        Label messageLabel1 = new Label("Bitte wähle eine Startstadt aus indem du auf sie klickst.");
-        Label messageLabel2 = new Label("Du kannst nur eine Stadt auswählen, dessen Stadtkarte du bereits auf der Hand hast.");
-        Label messageLabel3 = new Label("Für weitere Infos findest du die Anleitung hier");
-        messageLabel1.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
-        messageLabel2.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
-        messageLabel3.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
+    Label messageLabel1 = new Label("Bitte wähle eine Startstadt aus indem du auf sie klickst.");
+    Label messageLabel2 = new Label("Du kannst nur eine Stadt auswählen, dessen Stadtkarte du bereits auf der Hand hast.");
+    Label messageLabel3 = new Label("Für weitere Infos findest du die Anleitung hier");
+    messageLabel1.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
+    messageLabel2.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
+    messageLabel3.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
 
+    Button closeButton = new Button("Verstanden");
+    closeButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 5px;");
+    closeButton.setOnAction(e -> dialog.close());
 
-        Button closeButton = new Button("Verstanden");
-        closeButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 5px;");
-        closeButton.setOnAction(e -> dialog.close());
+    Button rulesButton = getRulesButton();
 
+    HBox buttonBox = new HBox(10);
+    buttonBox.getChildren().addAll(closeButton, rulesButton);
+    buttonBox.setStyle("-fx-alignment: center; -fx-spacing: 10px;");
+    VBox layout = new VBox(5);
+    layout.getChildren().addAll(messageLabel1, messageLabel2, messageLabel3, buttonBox);
+    layout.setPadding(new Insets(20));
+    layout.setStyle("-fx-background-color: #FFCB83; -fx-background-radius: 10px; -fx-alignment: center;");
+
+    Scene scene = new Scene(layout, 600, 200);
+    dialog.setScene(scene);
+    dialog.showAndWait();
+}
+
+    private static Button getRulesButton() {
         Button rulesButton = new Button("Anleitung");
         rulesButton.setStyle("-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 5px;");
-        closeButton.setOnAction(e-> {
+        rulesButton.setOnAction(e -> {
             try {
                 Desktop.getDesktop().browse(new URI("https://www.brettspielversand.de/mediafiles/spieleanleitungen/zman/114-0021_Pandemic_Iberia_Anleitung.pdf"));
             } catch (IOException | URISyntaxException ioException) {
-                ioException.printStackTrace();
+                Logger.getLogger(GameService.class.getName()).log(Level.WARNING, "Browseraufruf der Regeln hat nicht funktioniert",
+                        ioException);
             }
         });
-
-
-
-        VBox layout = new VBox(5);
-        layout.getChildren().addAll(messageLabel1, messageLabel2, messageLabel3, closeButton);
-        layout.setPadding(new Insets(20));
-        layout.setStyle("-fx-background-color: #FFCB83; -fx-background-radius: 10px; -fx-alignment: center;");
-
-        Scene scene = new Scene(layout, 600, 200);
-        dialog.setScene(scene);
-        dialog.showAndWait();
+        return rulesButton;
     }
-
 
 }

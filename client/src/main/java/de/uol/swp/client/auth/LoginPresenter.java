@@ -1,7 +1,6 @@
 package de.uol.swp.client.auth;
 
 import de.uol.swp.client.AbstractPresenter;
-import de.uol.swp.client.game.GameService;
 import de.uol.swp.client.register.event.ShowRegistrationViewEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -39,7 +38,6 @@ public class LoginPresenter extends AbstractPresenter {
 
     /**
      * Method called when the login button is pressed
-     *
      * This Method is called when the login button is pressed. It takes the text
      * entered in the login and password field and gives the user service a request
      * to log in the user specified by those fields.
@@ -56,7 +54,6 @@ public class LoginPresenter extends AbstractPresenter {
 
     /**
      * Method called when the register button is pressed
-     *
      * This Method is called when the register button is pressed. It posts an instance
      * of the ShowRegistrationViewEvent to the EventBus the SceneManager is subscribed
      * to.
@@ -69,6 +66,6 @@ public class LoginPresenter extends AbstractPresenter {
      */
     @FXML
     private void onRegisterButtonPressed(ActionEvent event) {
-        GameService.showStartDialog();
+        eventBus.post(showRegViewMessage);
     }
 }
