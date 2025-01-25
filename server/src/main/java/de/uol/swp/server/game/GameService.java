@@ -3,6 +3,7 @@ package de.uol.swp.server.game;
 import com.google.inject.Inject;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.InitialBoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -14,6 +15,7 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.store.LobbyStoreException;
@@ -75,7 +77,10 @@ public class GameService extends AbstractService {
     public void onPositionRequest(PositioningRequest request) throws LobbyStoreException, GameManagementException, PlayerManagementException {
         IGame game = gameManagement.setPositioning(request);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        if (game != null && lobby != null) {
+        if(game != null && lobby != null && game.getState().equals(WaitForPositioning.class)){
+            sendToAllInLobby(lobby, new InitialBoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        }
+        if (game != null && lobby != null && !game.getState().equals(WaitForPositioning.class)) {
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
     }
