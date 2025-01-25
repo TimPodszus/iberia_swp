@@ -6,13 +6,14 @@ import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
-import de.uol.swp.client.game.objects.cards.*;
+import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
-import de.uol.swp.client.game.objects.dialogs.StartGameDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.cards.*;
+import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
 import de.uol.swp.common.game.GameActions;
@@ -751,11 +752,9 @@ public void onStartGameEvent(StartGameEvent event) {
     this.gameDTO = event.getGameDTO();
 
     Platform.runLater(() -> {
-        updateBoard(gameDTO);
+        inintialUpdateBoard(gameDTO);
         updatePlayers(gameDTO.getPlayers());
 
-        StartGameDialog dialog = new StartGameDialog();
-        dialog.showAndWait();
     });
 }
 
@@ -790,6 +789,24 @@ public void onStartGameEvent(StartGameEvent event) {
                    .equals(user.getUsername())) {
             gameService.sendAvailableActionsRequest(this.lobbyId);
         }
+    }
+
+    private void inintialUpdateBoard(IGameDTO gameDTO) {
+        updateCities(gameDTO.getCities());
+        updateConnections(gameDTO.getConnections());
+        updateRegions(gameDTO.getRegions());
+        updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
+        updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
+        updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
+        updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
+        updatePlayerHandCards(gameDTO.getPlayers());
+        updateInfectionCounter(gameDTO.getInfectionCounter());
+        updateEscalationStage(gameDTO.getEscalationStage());
+        updateHospitals(gameDTO.getCities());
+        updateResearchedPlagues(gameDTO.getPlagues());
+
+        disableActionButtons();
+        GameService.showStartDialog();
     }
 
     /**

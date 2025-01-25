@@ -60,6 +60,7 @@ public class GameService extends AbstractService {
         if (game != null) {
             post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
             sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+
         }
     }
 

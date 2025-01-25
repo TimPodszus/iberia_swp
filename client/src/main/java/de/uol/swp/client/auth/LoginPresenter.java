@@ -1,6 +1,7 @@
 package de.uol.swp.client.auth;
 
 import de.uol.swp.client.AbstractPresenter;
+import de.uol.swp.client.game.GameService;
 import de.uol.swp.client.register.event.ShowRegistrationViewEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -68,6 +69,6 @@ public class LoginPresenter extends AbstractPresenter {
      */
     @FXML
     private void onRegisterButtonPressed(ActionEvent event) {
-        eventBus.post(showRegViewMessage);
+        GameService.showStartDialog();
     }
 }
