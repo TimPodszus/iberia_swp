@@ -1,13 +1,13 @@
 package de.uol.swp.server.player.management;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.*;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.city.management.CityManagement;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.StartState;
@@ -19,6 +19,14 @@ import java.util.Objects;
 
 
 public class PlayerManagement implements IPlayerManagement {
+    private IGame game;
+
+    @Inject
+    private IGameManagement gameManagement;
+
+    @Inject
+    private ICityManagement cityManagement;
+
     public ICardDTO drawPlayerCard(IGame game, IUser user) throws PlayerManagementException {
         IPlayer player = game.getPlayers()
                              .stream()
@@ -30,37 +38,32 @@ public class PlayerManagement implements IPlayerManagement {
     }
 
     public ICardDTO drawPlayerCard(IGame game, IPlayer player) throws PlayerManagementException {
-        Card card = getCard(game, player);
+        ICard card = getCard(game, player);
 
         if (card instanceof EpidemicCard) {
             game.setInfectionCounter(game.getInfectionCounter() + 1);
 
-            IGameManagement gameManagement = new GameManagement();
             InfectionCard epidemicCard = gameManagement.drawInfectionCard(game);
-
-            CityManagement cityManagement = new CityManagement();
             cityManagement.infectCityWithOwnPlague(game, epidemicCard, 3);
 
             game.getPlayerCardDiscardPile()
                 .add(card);
         } else {
-            game.getPlayers()
-                .get(game.getCurrentPlayerIndex())
-                .addCard(card);
+            addCard(player, card);
         }
-        if(game.getState() instanceof DrawCardState drawCardState) {
+        if (game.getState() instanceof DrawCardState drawCardState) {
             drawCardState.increaseCardsDrawn(game);
         }
         return CardMapper.toDTO(card);
     }
 
-    private Card getCard(IGame game, IPlayer player) throws PlayerManagementException {
+    private ICard getCard(IGame game, IPlayer player) throws PlayerManagementException {
         if (!player.equals(game.getPlayers()
                                .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState) && !(game.getState() instanceof StartState)) {
             throw new PlayerManagementException();
         }
 
-        List<Card> playerCardDrawPile = game.getPlayerCardDrawPile();
+        List<ICard> playerCardDrawPile = game.getPlayerCardDrawPile();
 
         if (playerCardDrawPile.isEmpty()) {
             throw new PlayerManagementException();
@@ -74,7 +77,7 @@ public class PlayerManagement implements IPlayerManagement {
         boolean validRequest = false;
         int cityCardCount = 0;
         CityRepository cityRepository = new CityRepository();
-        for (Card card : player.getCards()) {
+        for (ICard card : player.getCards()) {
             if (card instanceof CityCard cityCard) {
                 cityCardCount++;
                 if (cityCard.getCity()
@@ -92,5 +95,24 @@ public class PlayerManagement implements IPlayerManagement {
             throw new PlayerManagementException(
                     "Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast " + "ausw" + "ählen!");
         }
+    }
+
+    public void addCard(IPlayer player, ICard card) {
+        player.getCards().add(card);
+    }
+
+    public void playCard(IPlayer player, ICard card) {
+
+    }
+
+    public void discardCard(IPlayer player, ICard card) {
+        discardCards(player, List.of(card));
+    }
+
+    public void discardCards(IPlayer player, List<? extends ICard> cards) {
+        for (ICard card : cards) {
+            player.getCards().remove(card);
+        }
+        game.getPlayerCardDiscardPile().addAll(cards);
     }
 }
