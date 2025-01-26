@@ -3,12 +3,13 @@ package de.uol.swp.server.city.data;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.infection.data.IInfection;
+import de.uol.swp.server.infection.data.Infection;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -16,13 +17,33 @@ import java.util.List;
  * whether it is a harbour city, and whether a hospital has been built.
  */
 @AllArgsConstructor
-@RequiredArgsConstructor
 @Getter
 public class City implements ICity {
+
+    /**
+     * Constructs a new City with the specified attributes.
+     *
+     * @param id             the id of the city
+     * @param plagueName     the name of the plague affecting the city
+     * @param name           the name of the city
+     * @param foundationDate the foundation date of the city
+     * @param harbourCity    indicates if the city is a harbour city
+     */
+    public City(int id, PlagueName plagueName, CityName name, int foundationDate, boolean harbourCity) {
+        this.id = id;
+        this.plagueName = plagueName;
+        this.name = name;
+        this.foundationDate = foundationDate;
+        this.harbourCity = harbourCity;
+        Arrays.stream(PlagueName.values())
+              .forEach(plagueNameValue -> this.infections.add(new Infection(0, plagueNameValue)));
+    }
+
     /**
      * The id of the city.
      */
     private final int id;
+
     /**
      * The name of the plague affecting the city.
      */
