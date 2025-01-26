@@ -1,6 +1,6 @@
 package de.uol.swp.server.infection.data;
 
-import de.uol.swp.server.plague.data.Plague;
+import de.uol.swp.common.game.PlagueName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,5 +10,5 @@ import lombok.Setter;
 public class Infection implements IInfection {
     @Setter
     private int severity;
-    private final Plague plague;
+    private final PlagueName plagueName;
 }
