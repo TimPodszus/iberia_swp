@@ -17,13 +17,13 @@ public class Region implements IRegion {
     private int waterTreatments;
     private boolean preventionMarker;
 
-    public void increaseWaterTreatments(int count) {
-        waterTreatments += count;
+    public void increaseWaterTreatments(int amount) {
+        waterTreatments += amount;
     }
 
-    public void decreaseWaterTreatments(int count) throws RegionManagementException {
-        if (waterTreatments >= count) {
-            waterTreatments -= count;
+    public void decreaseWaterTreatments(int amount) throws RegionManagementException {
+        if (waterTreatments >= amount) {
+            waterTreatments -= amount;
         } else {
             throw new RegionManagementException("Nicht genug Wasseraufbereitungsmarker in dieser Region verfügbar");
         }
