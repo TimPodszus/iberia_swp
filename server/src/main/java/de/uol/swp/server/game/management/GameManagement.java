@@ -5,6 +5,7 @@ import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
@@ -110,7 +111,7 @@ public class GameManagement implements IGameManagement {
         int foundingDate = Integer.MAX_VALUE;
         IPlayer startingPlayer = null;
         for (IPlayer player : game.getPlayers()) {
-            for (Card card : player.getCards()) {
+            for (ICard card : player.getCards()) {
                 if (card instanceof CityCard cityCard && cityCard.getCity()
                                                                  .getFoundationDate() < foundingDate) {
                     foundingDate = cityCard.getCity()

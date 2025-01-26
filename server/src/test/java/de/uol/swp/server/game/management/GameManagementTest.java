@@ -7,8 +7,8 @@ import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
@@ -145,7 +145,7 @@ class GameManagementTest {
         when(mockCity.getName()).thenReturn(ALBACETE);
         when(mockCityCard.getCity()).thenReturn(mockCity);
 
-        List<Card> cards = new ArrayList<>();
+        List<ICard> cards = new ArrayList<>();
         cards.add(mockCityCard);
         when(mockPlayer.getCards()).thenReturn(cards);
 
