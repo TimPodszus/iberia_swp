@@ -21,7 +21,6 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.event.InitialBoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
@@ -611,7 +610,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param cityId  the ID of the city
      * @param players the roles of the players to be added to the city
      */
-    public void setPlayersInCity(int cityId, List<IPlayerDTO> players) {
+    public void setPlayerInCity(int cityId, List<IPlayerDTO> players) {
         StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + cityId);
 
         List<Color> playerColors = new ArrayList<>();
@@ -626,20 +625,6 @@ public class GamePresenter extends AbstractPresenter {
         stackPaneCity.getChildren()
                      .addAll(gameFigure);
     }
-
-    public void setPlayerInCity(int cityId, IPlayerDTO player) {
-        Platform.runLater(() -> {
-            StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + cityId);
-
-            List<Color> playerColors = new ArrayList<>();
-            playerColors.add(Color.web(player.getRole().getName().getColorCode()));
-
-            GameFigure gameFigure = new GameFigure(playerColors);
-
-            stackPaneCity.getChildren().addAll(gameFigure);
-        });
-    }
-
 
     /**
      * Removes all game figures from all cities.
@@ -767,15 +752,10 @@ public void onStartGameEvent(StartGameEvent event) {
     this.gameDTO = event.getGameDTO();
 
     Platform.runLater(() -> {
-        initialBoardUpdate(gameDTO);
+        inintialUpdateBoard(gameDTO);
         updatePlayers(gameDTO.getPlayers());
 
     });
-}
-@Subscribe
-public void onInitialUpdateBoard(InitialBoardUpdateEvent event) {
-    setPlayerInCity(event.getCityId(), event.getPlayerDTO());
-
 }
 
     /**
@@ -811,8 +791,10 @@ public void onInitialUpdateBoard(InitialBoardUpdateEvent event) {
         }
     }
 
-    private void initialBoardUpdate(IGameDTO gameDTO) {
+    private void inintialUpdateBoard(IGameDTO gameDTO) {
         updateCities(gameDTO.getCities());
+        updateConnections(gameDTO.getConnections());
+        updateRegions(gameDTO.getRegions());
         updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
         updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
         updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
@@ -820,6 +802,7 @@ public void onInitialUpdateBoard(InitialBoardUpdateEvent event) {
         updatePlayerHandCards(gameDTO.getPlayers());
         updateInfectionCounter(gameDTO.getInfectionCounter());
         updateEscalationStage(gameDTO.getEscalationStage());
+        updateHospitals(gameDTO.getCities());
         updateResearchedPlagues(gameDTO.getPlagues());
 
         disableActionButtons();
@@ -964,8 +947,6 @@ public void onInitialUpdateBoard(InitialBoardUpdateEvent event) {
         updateCurrentUserRole(players);
     }
 
-
-
     /**
      * Updates the players in cities with the latest data.
      * Removes all game figures and sets the players in their respective cities.
@@ -978,11 +959,10 @@ public void onInitialUpdateBoard(InitialBoardUpdateEvent event) {
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayersInCity(cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
                 playersInCity
         )));
     }
-
 
     /**
      * Updates the current user's role with the latest data.

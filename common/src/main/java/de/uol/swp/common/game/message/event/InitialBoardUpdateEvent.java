@@ -1,20 +1,18 @@
 package de.uol.swp.common.game.message.event;
 
+import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameEvent;
-import de.uol.swp.common.player.IPlayerDTO;
 import lombok.Getter;
 
 import java.util.Objects;
 @Getter
 public class InitialBoardUpdateEvent extends AbstractGameEvent {
 
-    private final int cityId;
-    private final IPlayerDTO playerDTO;
+    private final IGameDTO GameDTO;
 
-    public InitialBoardUpdateEvent(String lobbyCode, int cityId, IPlayerDTO playerDTO) {
+    public InitialBoardUpdateEvent(String lobbyCode, IGameDTO game) {
         super(lobbyCode);
-        this.cityId = cityId;
-        this.playerDTO = playerDTO;
+        this.GameDTO = game;
     }
     @Override
     public boolean equals(Object o) {
@@ -22,12 +20,12 @@ public class InitialBoardUpdateEvent extends AbstractGameEvent {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         InitialBoardUpdateEvent that = (InitialBoardUpdateEvent) o;
-        return cityId == that.cityId && Objects.equals(playerDTO, that.playerDTO);
+        return Objects.equals(GameDTO, that.getGameDTO());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), cityId, playerDTO);
+        return Objects.hash(super.hashCode(), GameDTO);
     }
 
 }

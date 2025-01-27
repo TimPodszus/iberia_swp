@@ -1,6 +1,5 @@
 package de.uol.swp.server.game.management;
 
-import com.google.inject.Inject;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
@@ -21,6 +20,7 @@ import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import com.google.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -184,9 +184,7 @@ public class GameManagement implements IGameManagement {
                     break;
                 }
             }
-
             try {
-                assert requestPlayer.getCurrentPosition() != null;
                 assert requestPlayer != null;
                 playerManagement.setStartingPosition(
                         game.getCityRepository()

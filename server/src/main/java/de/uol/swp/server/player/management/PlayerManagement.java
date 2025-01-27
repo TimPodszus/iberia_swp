@@ -77,14 +77,11 @@ public class PlayerManagement implements IPlayerManagement {
         for (Card card : player.getCards()) {
             if (card instanceof CityCard cityCard) {
                 cityCardCount++;
-                if(player.getCurrentPosition() != null) {
-                    if (cityCard.getCity()
-                                .getName()
-                                .equals(cityName)) {
-                        validRequest = true;
-                    }
+                if (cityCard.getCity()
+                            .getName()
+                            .equals(cityName)) {
+                    validRequest = true;
                 }
-
             }
         }
         if (validRequest || cityCardCount == 0) {
