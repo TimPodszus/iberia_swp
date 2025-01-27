@@ -935,6 +935,7 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayersInCities(List<IPlayerDTO> players) {
         removeAllGameFigures();
         Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
+                                                              .filter(player -> player.getCurrentPosition() != null)
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
