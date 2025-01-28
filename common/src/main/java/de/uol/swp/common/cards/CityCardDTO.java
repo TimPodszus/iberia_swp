@@ -1,7 +1,6 @@
 package de.uol.swp.common.cards;
 
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.city.ICityDTO;
 import lombok.Getter;
 
 /**

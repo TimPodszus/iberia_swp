@@ -51,6 +51,13 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         return availableDestinations;
     }
 
+    /**
+     * Retrieves the available land connections for a given city.
+     *
+     * @param lobbyId   the ID of the lobby
+     * @param startCity the starting city
+     * @return a map of cities that can be reached via land connections
+     */
     private Map<ICity, Boolean> getByLandConnectedCities(String lobbyId, ICity startCity) {
         IGame game = super.getGame(lobbyId);
         Map<ICity, Boolean> availableDestinations = new HashMap<>();

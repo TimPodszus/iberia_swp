@@ -84,10 +84,7 @@ public class AbstractService {
      */
     public void sendToAllInLobby(ILobby lobby, AbstractServerMessage message) {
         List<Session> sessions = authenticationService.getSessions(new HashSet<>(lobby.getUsers()));
-        for (Session session : sessions) {
-            message.setSession(session);
-            post(message);
-
-        }
+        message.setReceiver(sessions);
+        post(message);
     }
 }

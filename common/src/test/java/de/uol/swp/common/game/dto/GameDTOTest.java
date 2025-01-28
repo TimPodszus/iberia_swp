@@ -59,7 +59,7 @@ public class GameDTOTest {
     private final int escalationStage = 5;
     private final int waterTreatmentsLeft = 5;
     private final int tracksLeft = 5;
-    private final int currentPlayerIndex = 5;
+    private final int currentPlayerIndex = 0;
 
     @Test
     void testConstructor() {
@@ -158,6 +158,12 @@ public class GameDTOTest {
         );
         assertTrue(emptyGame.getCities()
                             .isEmpty());
+    }
+
+    @Test
+    void testGetCurrentPlayer() {
+        IGameDTO game = createTestGameDTO("gameId");
+        assertEquals(players.get(currentPlayerIndex), game.getCurrentPlayer());
     }
 
     private IGameDTO createTestGameDTO(String gameId) {
