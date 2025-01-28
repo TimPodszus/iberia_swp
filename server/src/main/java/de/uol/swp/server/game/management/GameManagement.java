@@ -98,8 +98,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
             game.getPlayers()
                 .add(player);
-            int cardsToDraw = switch (game.getPlayers()
-                                          .size()) {
+            int cardsToDraw = switch (users.size()) {
                 case 2 -> 4;
                 case 3 -> 3;
                 default -> 2;
@@ -107,7 +106,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             for (int i = 0; i < cardsToDraw; i++) {
                 playerManagement.drawPlayerCard(game, player);
             }
-            game.setCurrentPlayerIndex(game.getCurrentPlayerIndex() + 1);
+            int currentPlayerIndex = game.getCurrentPlayerIndex();
+            int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;
+            game.setCurrentPlayerIndex(nextPlayerIndex);
         }
 
     }

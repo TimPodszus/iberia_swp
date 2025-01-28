@@ -4,6 +4,7 @@ import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
+import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
@@ -32,7 +33,7 @@ public class GameDTO implements IGameDTO, Serializable {
     private int waterTreatmentsLeft;
     private int tracksLeft;
     private int currentPlayerIndex;
-    private String state;
+    private StateType state;
 
     public IPlayerDTO getCurrentPlayer() {
         return players.get(currentPlayerIndex);
@@ -47,20 +48,21 @@ public class GameDTO implements IGameDTO, Serializable {
             return false;
         }
         GameDTO gameDTO = (GameDTO) object;
-        return infectionCounter == gameDTO.infectionCounter && escalationStage == gameDTO.escalationStage && waterTreatmentsLeft == gameDTO.waterTreatmentsLeft && tracksLeft == gameDTO.tracksLeft && currentPlayerIndex == gameDTO.currentPlayerIndex && Objects.equals(gameId,
+        return infectionCounter == gameDTO.infectionCounter && escalationStage == gameDTO.escalationStage && waterTreatmentsLeft == gameDTO.waterTreatmentsLeft && tracksLeft == gameDTO.tracksLeft && currentPlayerIndex == gameDTO.currentPlayerIndex && Objects.equals(
+                gameId,
                 gameDTO.gameId
         ) && Objects.equals(cities, gameDTO.cities) && Objects.equals(connections,
                 gameDTO.connections
-        ) && Objects.equals(regions, gameDTO.regions) && Objects.equals(
-                plagues,
-                gameDTO.plagues
-        ) && Objects.equals(infectionCardDrawPile, gameDTO.infectionCardDrawPile) && Objects.equals(
-                infectionCardDiscardPile,
-                gameDTO.infectionCardDiscardPile
-        ) && Objects.equals(playerCardDrawPile, gameDTO.playerCardDrawPile) && Objects.equals(
-                playerCardDiscardPile,
-                gameDTO.playerCardDiscardPile
-        ) && Objects.equals(players, gameDTO.players);
+        ) && Objects.equals(regions, gameDTO.regions) && Objects.equals(plagues, gameDTO.plagues) && Objects.equals(
+                infectionCardDrawPile,
+                gameDTO.infectionCardDrawPile
+        ) && Objects.equals(infectionCardDiscardPile, gameDTO.infectionCardDiscardPile) && Objects.equals(
+                playerCardDrawPile,
+                gameDTO.playerCardDrawPile
+        ) && Objects.equals(playerCardDiscardPile, gameDTO.playerCardDiscardPile) && Objects.equals(
+                players,
+                gameDTO.players
+        );
     }
 
     @Override

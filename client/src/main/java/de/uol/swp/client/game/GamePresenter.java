@@ -6,19 +6,26 @@ import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
-import de.uol.swp.client.game.objects.cards.*;
+import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.RoleCard;
+import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
+import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.cards.*;
+import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
+import de.uol.swp.common.game.message.response.CardExchangeResponse;
+import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -31,7 +38,8 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -123,22 +131,22 @@ public class GamePresenter extends AbstractPresenter {
     private HBox playerButtons;
 
     @FXML
-    private Button buildTrainTracksButton;
+    private ToggleButton buildTrainTracksButton;
 
     @FXML
-    private Button buildHospitalButton;
+    private ToggleButton buildHospitalButton;
 
     @FXML
-    private Button researchPlagueButton;
+    private ToggleButton researchPlagueButton;
 
     @FXML
-    private Button treatWaterButton;
+    private ToggleButton treatWaterButton;
 
     @FXML
-    private Button treatInfectionButton;
+    private ToggleButton treatInfectionButton;
 
     @FXML
-    private Button shareKnowledgeButton;
+    private ToggleButton shareKnowledgeButton;
 
     private double mouseX;
 
@@ -152,6 +160,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     public void initialize() {
         loadSvgIntoWebView();
+        setToggleGroup();
     }
 
     /**
@@ -256,7 +265,7 @@ public class GamePresenter extends AbstractPresenter {
         int cityId = Integer.parseInt(source.getId()
                                             .replaceAll("\\D+", ""));
         if (gameDTO.getState()
-                   .equals("WaitForPositioning")) {
+                   .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
             gameService.setPosition(gameDTO.getGameId(), cityId);
         }
         if (source.getStyleClass()
@@ -321,7 +330,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onBuildTrainTrack(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+        if (buildTrainTracksButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+        } else {
+
+        }
     }
 
     /**
@@ -331,7 +344,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onBuildHospital(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
+        if (buildHospitalButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
+        } else {
+
+        }
     }
 
     /**
@@ -341,7 +358,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onTreatPlague(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
+        if (treatInfectionButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
+        } else {
+
+        }
     }
 
     /**
@@ -351,7 +372,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onShareKnowledge(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/87
+        if (shareKnowledgeButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
+        } else {
+
+        }
     }
 
     /**
@@ -361,7 +386,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onResearchPlague(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
+        if (researchPlagueButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
+        } else {
+
+        }
     }
 
     /**
@@ -371,7 +400,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onPlaceWaterTreatment(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
+        if (treatWaterButton.isSelected()) {
+            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
+        } else {
+
+        }
     }
 
     /**
@@ -409,6 +442,35 @@ public class GamePresenter extends AbstractPresenter {
         } catch (IOException e) {
             LOG.error(e);
         }
+    }
+
+    /**
+     * Sets the toggle group for the action buttons.
+     * <p>
+     * This method initializes a new ToggleGroup and assigns it to the action buttons.
+     * It also sets a listener to handle the selection changes within the toggle group.
+     */
+    private void setToggleGroup() {
+        ToggleGroup toggleGroup = new ToggleGroup();
+
+        buildTrainTracksButton.setToggleGroup(toggleGroup);
+        buildHospitalButton.setToggleGroup(toggleGroup);
+        researchPlagueButton.setToggleGroup(toggleGroup);
+        treatWaterButton.setToggleGroup(toggleGroup);
+        treatInfectionButton.setToggleGroup(toggleGroup);
+        shareKnowledgeButton.setToggleGroup(toggleGroup);
+
+        toggleGroup.selectedToggleProperty()
+                   .addListener((observable, oldToggle, newToggle) -> {
+                       if (newToggle == null) {
+                           oldToggle.setSelected(false);
+                       }
+                       if (newToggle != null && oldToggle instanceof ToggleButton toggleButton && toggleButton.getOnAction() != null) {
+                           toggleButton.getOnAction()
+                                       .handle(new ActionEvent(toggleButton, null));
+                       }
+
+                   });
     }
 
     /**
@@ -702,18 +764,19 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param event the StartGameEvent containing the game data
      */
-    @Subscribe
-    public void onStartGameEvent(StartGameEvent event) {
-        this.gameDTO = event.getGameDTO();
+@Subscribe
+public void onStartGameEvent(StartGameEvent event) {
+    this.gameDTO = event.getGameDTO();
         this.lobbyId = event.getLobbyCode();
         this.user = UserStore.getInstance()
                              .getUser();
 
-        Platform.runLater(() -> {
-            updateBoard(gameDTO);
-            updatePlayers(gameDTO.getPlayers());
-        });
-    }
+    Platform.runLater(() -> {
+        inintialUpdateBoard(gameDTO);
+        updatePlayers(gameDTO.getPlayers());
+
+    });
+}
 
     /**
      * Updates the game board with the latest data from the game DTO.
@@ -754,6 +817,24 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    private void inintialUpdateBoard(IGameDTO gameDTO) {
+        updateCities(gameDTO.getCities());
+        updateConnections(gameDTO.getConnections());
+        updateRegions(gameDTO.getRegions());
+        updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
+        updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
+        updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
+        updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
+        updatePlayerHandCards(gameDTO.getPlayers());
+        updateInfectionCounter(gameDTO.getInfectionCounter());
+        updateEscalationStage(gameDTO.getEscalationStage());
+        updateHospitals(gameDTO.getCities());
+        updateResearchedPlagues(gameDTO.getPlagues());
+
+        disableActionButtons();
+        GameService.showStartDialog();
+    }
+
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
@@ -770,7 +851,7 @@ public class GamePresenter extends AbstractPresenter {
             )) {
                 List<ICardDTO> playerHand = player.getCards();
                 for (ICardDTO card : playerHand) {
-                    AbstractCard abstractCard = createCard(card);
+                    AbstractCard abstractCard = CardFactory.createCard(card);
                     addPlayerHandCard(abstractCard);
                 }
             }
@@ -841,12 +922,7 @@ public class GamePresenter extends AbstractPresenter {
     private void updateInfectionCardDiscardPile(List<InfectionCardDTO> infectionCardDiscardPileList) {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
-            setInfectionCardDiscardPile(new InfectionCard(infectionCard.getCity()
-                                                                       .getPlagueName(),
-                    infectionCard.getCity()
-                                 .getName()
-                                 .getDisplayName()
-            ));
+            setInfectionCardDiscardPile(CardFactory.createCard(infectionCard));
         }
     }
 
@@ -915,6 +991,7 @@ public class GamePresenter extends AbstractPresenter {
             return;
         }
         Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
+                                                              .filter(player -> player.getCurrentPosition() != null)
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
@@ -987,46 +1064,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private static AbstractCard getCard(List<ICardDTO> playerCardDiscardPileList) {
         ICardDTO playerCard = playerCardDiscardPileList.get(playerCardDiscardPileList.size() - 1);
-        return createCard(playerCard);
-    }
-
-    /**
-     * Creates an abstract card from the given card data.
-     *
-     * @param playerCard the card data
-     * @return the created abstract card
-     */
-    private static AbstractCard createCard(ICardDTO playerCard) {
-        if (playerCard instanceof CityCardDTO cityCard) {
-            return createCityCard(cityCard);
-        } else if (playerCard instanceof EpidemicCardDTO) {
-            return new EpidemicCard();
-        } else if (playerCard instanceof EventCardDTO eventCard) {
-            return new EventCard(eventCard.getTitle(), eventCard.getAction());
-        } else {
-            throw new IllegalArgumentException("Unknown card type.");
-        }
-    }
-
-    /**
-     * Creates a city card from the given city card data.
-     *
-     * @param cityCard the city card data
-     * @return the created city card
-     */
-    private static AbstractCard createCityCard(CityCardDTO cityCard) {
-        String foundationDate = cityCard.getCity()
-                                        .getFoundationDate() < 0 ? cityCard.getCity()
-                                                                           .getFoundationDate() + " v. Chr." : String.valueOf(
-                cityCard.getCity()
-                        .getFoundationDate());
-        return new CityCard(cityCard.getCity()
-                                    .getName()
-                                    .getDisplayName(),
-                foundationDate,
-                cityCard.getCity()
-                        .getPlagueName()
-        );
+        return CardFactory.createCard(playerCard);
     }
 
     /**
@@ -1107,6 +1145,25 @@ public class GamePresenter extends AbstractPresenter {
                     break;
             }
         }
+    }
+
+    /**
+     * Event handler for the CardSelectionResponse.
+     * This method is called when a CardSelectionResponse is received.
+     * It displays a dialog for the user to select a card.
+     *
+     * @param response the CardSelectionResponse containing the cards to be selected
+     */
+    @Subscribe
+    public void onCardSelectionResponse(CardSelectionResponse response) {
+        CardSelectionDialog dialog = new CardSelectionDialog(response.isDismissible(), response.getCards());
+        Optional<ICardDTO> result = dialog.showAndWait();
+    }
+
+    @Subscribe
+    public void onCardExchangeResponse(CardExchangeResponse response) {
+        CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
+        Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
 
     /**

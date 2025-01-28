@@ -1,7 +1,6 @@
 package de.uol.swp.server.game.states;
 
-import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.common.game.StateType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,18 +12,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class WaitForPositioning implements IGameState {
-
     private int positionedPlayersCount = 0;
-
-    /**
-     * Processes player actions intended to set their starting positions on the game board.
-     * This method expects actions to be instances of MoveAction, specifying the destination for the player's starting position.
-     * If the destination is invalid, a GameTurnException is thrown. After all players are positioned, the game state transitions
-     * to the PlayerTurnState.
-     *
-     * @param player the player who is taking the action and attempting to set their starting position
-     */
-    public void handleAction(IGame game, IPlayer player) {
-        //Todo: SpielInitialisierung
+    public StateType getStateType() {
+        return StateType.WAIT_FOR_POSITIONING_STATE;
     }
 }

@@ -1,4 +1,11 @@
 package de.uol.swp.common.game;
 
 public enum StateType {
+    DRAW_CARD_STATE,
+    END_GAME_STATE,
+    EVENT_STATE,
+    INFECTION_STATE,
+    PLAYER_TURN_STATE,
+    START_STATE,
+    WAIT_FOR_POSITIONING_STATE
 }

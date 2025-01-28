@@ -3,7 +3,6 @@ package de.uol.swp.server.lobby.store;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.usermanagement.IUser;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -19,9 +18,9 @@ public interface ILobbyStore {
      * Searches for a lobby by its lobby code.
      *
      * @param lobbycode the unique code identifying the lobby
-     * @return the {@code ILobby} object with the specified lobby code or {@code null} if no lobby is found
+     * @return the {@code ILobby} object with the specified lobby code or null if no lobby is found
      */
-    ILobby findLobby(String lobbycode) throws SQLException;
+    ILobby findLobby(String lobbycode);
 
     /**
      * Creates a new lobby with the specified name, code, users, owner, and difficulty level.
@@ -32,7 +31,6 @@ public interface ILobbyStore {
      * @param owner      the user who owns the lobby
      * @param difficulty the difficulty level of the lobby
      * @return the newly created {@code Lobby}
-     * @throws SQLException if an error occurs while saving the lobby to the database
      */
     ILobby createLobby(
             String lobbyCode,
@@ -40,7 +38,7 @@ public interface ILobbyStore {
             List<IUser> users,
             IUser owner,
             int difficulty
-    ) throws SQLException;
+    );
 
     /**
      * Updates an existing lobby with the specified name, code, users, owner, and difficulty level.
@@ -51,7 +49,6 @@ public interface ILobbyStore {
      * @param owner      the user who owns the lobby
      * @param difficulty the difficulty level of the lobby
      * @return the updated {@code Lobby}
-     * @throws SQLException if an error occurs while updating the lobby in the database
      */
     ILobby updateLobby(
             String name,
@@ -59,14 +56,15 @@ public interface ILobbyStore {
             List<IUser> users,
             IUser owner,
             int difficulty
-    ) throws SQLException;
+    );
 
     /**
      * Removes the lobby with the specified name from the system.
      *
      * @param name the name of the lobby to remove
+     * @throws LobbyStoreException if an error occurs during the removal process
      */
-    void removeLobby(String name) throws SQLException, LobbyStoreException;
+    void removeLobby(String name) throws LobbyStoreException;
 
     /**
      * Retrieves all lobbies currently stored in the system.
@@ -74,21 +72,32 @@ public interface ILobbyStore {
      * @return a {@code Map} containing all lobbies, where the key is the lobby name and the value is the {@code ILobby}
      * object
      */
-    Map<String, ILobby> getAllLobbies() throws SQLException;
+    Map<String, ILobby> getAllLobbies();
 
     /**
      * Saves the specified lobby to the system.
      * This method is responsible for persisting lobby data to the database.
      *
      * @param lobby the {@code ILobby} containing the lobby information to save
-     * @throws SQLException if an error occurs while saving the lobby to the database
      */
-    void saveLobby(ILobby lobby) throws SQLException;
+    void saveLobby(ILobby lobby);
 
+    /**
+     * Removes a user from the specified lobby.
+     *
+     * @param lobbyID the unique identifier of the lobby
+     * @param user    the user to remove from the lobby
+     * @throws LobbyStoreException if an error occurs during the removal process
+     */
+    void removeUser(String lobbyID, IUser user) throws LobbyStoreException;
 
-    void removeUser(String lobbyID, IUser user) throws SQLException, LobbyStoreException;
-
-    void joinUser(String lobbyCode, IUser user) throws SQLException;
-
+    /**
+     * Adds a user to the specified lobby.
+     *
+     * @param lobbyCode the unique code identifying the lobby
+     * @param user      the user to add to the lobby
+     * @throws LobbyStoreException if an error occurs during the join process
+     */
+    void joinUser(String lobbyCode, IUser user) throws LobbyStoreException;
 }
 

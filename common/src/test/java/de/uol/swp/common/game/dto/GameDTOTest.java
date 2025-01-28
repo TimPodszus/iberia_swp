@@ -10,6 +10,7 @@ import de.uol.swp.common.connection.ConnectionDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
+import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.plague.PlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -19,6 +20,7 @@ import de.uol.swp.common.region.RegionDTO;
 import de.uol.swp.common.role.RoleDTO;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -119,6 +121,45 @@ public class GameDTOTest {
         assertEquals(gameDTO1.hashCode(), gameDTO2.hashCode(), "HashCodes are not equal");
     }
 
+    @Test
+    void testConstructorInitialization() {
+        IGameDTO game = createTestGameDTO("gameId");
+        assertNotNull(game.getCities());
+        assertEquals("gameId", game.getGameId());
+        assertEquals(5, game.getInfectionCounter());
+    }
+
+    @Test
+    void testGetterMethods() {
+        IGameDTO game = createTestGameDTO("gameId");
+        assertEquals(cities, game.getCities());
+        assertEquals(connections, game.getConnections());
+        assertEquals(regions, game.getRegions());
+    }
+
+    @Test
+    void testEmptyLists() {
+        GameDTO emptyGame = new GameDTO("gameId",
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                0,
+                0,
+                0,
+                0,
+                0,
+                StateType.START_STATE
+        );
+        assertTrue(emptyGame.getCities()
+                            .isEmpty());
+    }
+
     private IGameDTO createTestGameDTO(String gameId) {
         return new GameDTO(gameId,
                 cities,
@@ -134,7 +175,8 @@ public class GameDTOTest {
                 escalationStage,
                 waterTreatmentsLeft,
                 tracksLeft,
-                currentPlayerIndex, "active"
+                currentPlayerIndex,
+                StateType.START_STATE
         );
     }
 }

@@ -94,6 +94,17 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
+.action-button:selected {
+    -fx-padding: 6 8 8 8;
+    -fx-background-insets: 0, 0 0 2 0, 0 0 3 0, 0 0 4 0;
+    -fx-background-radius: 8;
+    -fx-background-color: linear-gradient(from 0% 93% to 0% 100%, #632c11 0%, #57260d 100%),
+    #682b1a,
+    #8f4e2d,
+    radial-gradient(center 50% 50%, radius 100%, #8f4e2a, #712f1f);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.85), 5, 0, 0, 2);
+}
+
 .action-buttons-box {
     -fx-padding: 6 8 8 8;
     -fx-background-radius: 8;

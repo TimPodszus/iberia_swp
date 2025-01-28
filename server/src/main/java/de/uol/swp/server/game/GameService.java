@@ -20,7 +20,6 @@ import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.lobby.management.LobbyManagementException;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
@@ -68,7 +67,7 @@ public class GameService extends AbstractService {
      * @param request the game creation request containing necessary game initialization parameters
      */
     @Subscribe
-    public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException, PlayerManagementException {
+    public void onCreateGameRequest(CreateGameRequest request) throws PlayerManagementException {
         LOG.debug("Got CreateGameRequest for lobby {}", request.getLobbyId());
         IGame game = gameManagement.createAndInitializeGame(request);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
@@ -87,7 +86,7 @@ public class GameService extends AbstractService {
      * @param request the game PositioningRequest containing necessary initialization parameters
      */
     @Subscribe
-    public void onPositionRequest(PositioningRequest request) throws LobbyManagementException, GameManagementException, PlayerManagementException {
+    public void onPositionRequest(PositioningRequest request) throws GameManagementException {
         IGame game = gameManagement.setPositioning(request);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null && lobby != null) {
@@ -102,7 +101,7 @@ public class GameService extends AbstractService {
      * @param request the player move request containing session, lobby code, and city ID
      */
     @Subscribe
-    public void onMovePlayerRequest(MovePlayerRequest request) throws GameManagementException, LobbyManagementException, GameException {
+    public void onMovePlayerRequest(MovePlayerRequest request) throws GameManagementException, GameException {
         IUserDTO user = request.getSession()
                                .map(Session::getUser)
                                .orElse(null);

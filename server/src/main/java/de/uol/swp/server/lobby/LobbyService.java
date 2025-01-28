@@ -3,18 +3,16 @@ package de.uol.swp.server.lobby;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
-import de.uol.swp.common.lobby.message.request.LobbyListRequest;
-import de.uol.swp.common.lobby.message.response.*;
 import de.uol.swp.common.lobby.message.request.*;
+import de.uol.swp.common.lobby.message.response.*;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.lobby.management.LobbyManagementException;
+import de.uol.swp.server.lobby.store.LobbyStoreException;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -56,7 +54,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyManagementException {
+    public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyStoreException {
         ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(),
                 UserMapper.toUser(createLobbyRequest.getOwner())
         );
@@ -80,7 +78,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws LobbyManagementException, SQLException {
+    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws LobbyStoreException {
         ILobby lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
         lobbyManagement.joinLobby(lobby, UserMapper.toUser(lobbyJoinUserRequest.getUser()));
         sendToAllInLobby(lobby,
@@ -100,10 +98,11 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) throws LobbyManagementException {
+    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) throws LobbyStoreException {
         ILobby lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getLobbyCode());
 
         lobby.leaveUser(UserMapper.toUser(lobbyLeaveUserRequest.getUser()));
+        lobby = lobbyManagement.updateLobby(lobby);
         sendToAllInLobby(lobby,
                 new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
         );
@@ -121,7 +120,7 @@ public class LobbyService extends AbstractService {
      * @since 2024-09-25
      */
     @Subscribe
-    public void onLobbyListRequest(LobbyListRequest request) throws LobbyManagementException {
+    public void onLobbyListRequest(LobbyListRequest request) throws LobbyStoreException {
         List<ILobbyDTO> lobbies = lobbyManagement.getLobbies()
                                                  .stream()
                                                  .map(LobbyMapper::toDTO)
@@ -145,7 +144,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onGetLobbyRequest(GetLobbyRequest request) throws LobbyManagementException {
+    public void onGetLobbyRequest(GetLobbyRequest request) throws LobbyStoreException {
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyCode());
         ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
         GetLobbyResponse response = new GetLobbyResponse(lobbyDTO);
@@ -168,7 +167,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onUpdateLobbyRequest(UpdateLobbyRequest request) throws LobbyManagementException {
+    public void onUpdateLobbyRequest(UpdateLobbyRequest request) throws LobbyStoreException {
         ILobbyDTO lobbyDTO = request.getLobbyDTO();
         ILobby updatedLobby = lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO));
         sendToAllInLobby(updatedLobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(updatedLobby)));

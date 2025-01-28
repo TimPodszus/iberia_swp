@@ -13,7 +13,7 @@ import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.lobby.management.LobbyManagementException;
+import de.uol.swp.server.lobby.store.LobbyStoreException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.Subscribe;
@@ -29,9 +29,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Test class for the LobbyService.
@@ -96,12 +94,12 @@ public class LobbyServiceTest extends EventBusBasedTest {
      * behavior of the mocked lobbyManagement to return a predefined lobby when the createLobby
      * method is called.
      *
-     * @throws LobbyManagementException if an error occurs during lobby management
+     * @throws LobbyStoreException if an error occurs during lobby management
      * @throws NoSuchFieldException     if the authenticationService field is not found
      * @throws IllegalAccessException   if the authenticationService field is not accessible
      */
     @BeforeEach
-    public void setUp() throws LobbyManagementException, NoSuchFieldException, IllegalAccessException {
+    public void setUp() throws LobbyStoreException, NoSuchFieldException, IllegalAccessException {
         MockitoAnnotations.openMocks(this);
 
         when(lobbyManagement.createLobby("Test", UserMapper.toUser(firstOwner))).thenReturn(lobby);
@@ -110,10 +108,10 @@ public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * Tests the creation of a lobby.
      *
-     * @throws LobbyManagementException if an error occurs during lobby creation
+     * @throws LobbyStoreException if an error occurs during lobby creation
      */
     @Test
-    void createLobbyTest() throws LobbyManagementException {
+    void createLobbyTest() throws LobbyStoreException {
         final CreateLobbyRequest request = new CreateLobbyRequest("Test", firstOwner);
 
         post(request);
@@ -124,11 +122,11 @@ public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * Tests retrieving all lobbies.
      *
-     * @throws InterruptedException     if the thread is interrupted
-     * @throws LobbyManagementException if an error occurs during lobby retrieval
+     * @throws InterruptedException if the thread is interrupted
+     * @throws LobbyStoreException  if an error occurs during lobby retrieval
      */
     @Test
-    void getAllLobbiesTest() throws InterruptedException, LobbyManagementException {
+    void getAllLobbiesTest() throws InterruptedException, LobbyStoreException {
         when(lobbyManagement.getLobbies()).thenReturn(new ArrayList<>());
 
         postAndWait(new LobbyListRequest());
@@ -139,11 +137,11 @@ public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * Tests retrieving a specific lobby.
      *
-     * @throws LobbyManagementException if an error occurs during lobby retrieval
-     * @throws InterruptedException     if the thread is interrupted
+     * @throws LobbyStoreException  if an error occurs during lobby retrieval
+     * @throws InterruptedException if the thread is interrupted
      */
     @Test
-    void getLobbyTest() throws LobbyManagementException, InterruptedException {
+    void getLobbyTest() throws LobbyStoreException, InterruptedException {
         when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
 
         postAndWait(new GetLobbyRequest("testcode", firstOwner));
@@ -154,10 +152,10 @@ public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * Tests updating a lobby.
      *
-     * @throws LobbyManagementException if an error occurs during lobby update
+     * @throws LobbyStoreException if an error occurs during lobby update
      */
     @Test
-    void updateLobbyTest() throws LobbyManagementException {
+    void updateLobbyTest() throws LobbyStoreException {
         ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
 
         when(lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO))).thenReturn(lobby);

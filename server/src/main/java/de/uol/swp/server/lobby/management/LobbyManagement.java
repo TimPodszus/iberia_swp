@@ -5,13 +5,12 @@ import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.store.ILobbyStore;
+import de.uol.swp.server.lobby.store.LobbyStore;
 import de.uol.swp.server.lobby.store.LobbyStoreException;
 import de.uol.swp.server.usermanagement.IUser;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -31,22 +30,19 @@ public class LobbyManagement implements ILobbyManagement {
      * Constructs a new LobbyManagement instance and initializes the lobby store.
      */
     @Inject
-    public LobbyManagement(ILobbyStore lobbyStore) {
-        this.lobbyStore = lobbyStore;
+    public LobbyManagement() {
+        this.lobbyStore = LobbyStore.getInstance();
     }
 
-    public ILobby createLobby(String name, IUser owner) throws LobbyManagementException {
-        try {
-            String lobbyID = generateLobbyID();
-            List<IUser> users = new ArrayList<>();
-            users.add(owner);
-            return lobbyStore.createLobby(lobbyID, name, users, owner, 4);
-        } catch (SQLException e) {
-            throw new LobbyManagementException("Failed to create lobby: " + e.getMessage());
-        }
+    public ILobby createLobby(String name, IUser owner) {
+        String lobbyID = generateLobbyID();
+        List<IUser> users = new ArrayList<>();
+        users.add(owner);
+        return lobbyStore.createLobby(lobbyID, name, users, owner, 4);
+
     }
 
-    public void leaveLobby(String lobbyID, IUser user) throws SQLException, LobbyStoreException {
+    public void leaveLobby(String lobbyID, IUser user) throws LobbyStoreException {
         ILobby lobbyToLeave = lobbyStore.findLobby(lobbyID);
         lobbyToLeave.getUsers()
                     .remove(user);
@@ -67,61 +63,32 @@ public class LobbyManagement implements ILobbyManagement {
         }
     }
 
-    public void deleteLobby(String lobbyId) throws LobbyManagementException {
-        try {
-            if (lobbyStore.findLobby(lobbyId) == null) {
-                throw new LobbyManagementException("LobbyID " + lobbyId + " not found!");
-            }
-            lobbyStore.removeLobby(lobbyId);
-        } catch (SQLException | LobbyStoreException e) {
-            throw new LobbyManagementException("Failed to delete lobby");
-        }
+    public void deleteLobby(String lobbyId) throws LobbyStoreException {
+        lobbyStore.removeLobby(lobbyId);
     }
 
-    public ILobby getLobby(String lobbyID) throws LobbyManagementException {
-        try {
-            ILobby lobby = lobbyStore.findLobby(lobbyID);
-            if (lobby != null) {
-                return lobby;
-            } else {
-                throw new LobbyManagementException("Lobby not found");
-            }
-        } catch (SQLException e) {
-            throw new LobbyManagementException("Failed to get lobby");
-        }
+    public ILobby getLobby(String lobbyID) {
+        return lobbyStore.findLobby(lobbyID);
     }
 
-    public List<ILobby> getLobbies() throws LobbyManagementException {
-        try {
-            return new ArrayList<>(lobbyStore.getAllLobbies()
-                                             .values());
-        } catch (SQLException e) {
-            throw new LobbyManagementException("Failed to get lobbies");
-        }
+    public List<ILobby> getLobbies() {
+        return new ArrayList<>(lobbyStore.getAllLobbies()
+                                         .values());
     }
 
     @Override
-    public void joinLobby(ILobby lobby, IUser user) throws LobbyManagementException, SQLException {
-        if (lobby != null) {
-            String lobbyID = lobby.getLobbyCode();
-            lobby.joinUser(user);
-            lobbyStore.joinUser(lobbyID, user);
-        } else {
-            throw new LobbyManagementException("Lobby not found!");
-        }
+    public void joinLobby(ILobby lobby, IUser user) throws LobbyStoreException {
+        String lobbyID = lobby.getLobbyCode();
+        lobbyStore.joinUser(lobbyID, user);
     }
 
-    public ILobby updateLobby(ILobby lobby) throws LobbyManagementException {
-        try {
-            return lobbyStore.updateLobby(lobby.getLobbyCode(),
-                    lobby.getName(),
-                    lobby.getUsers(),
-                    lobby.getOwner(),
-                    lobby.getDifficulty()
-            );
-        } catch (SQLException e) {
-            throw new LobbyManagementException("Failed to update lobby");
-        }
+    public ILobby updateLobby(ILobby lobby) {
+        return lobbyStore.updateLobby(lobby.getLobbyCode(),
+                lobby.getName(),
+                lobby.getUsers(),
+                lobby.getOwner(),
+                lobby.getDifficulty()
+        );
     }
 
 
@@ -130,7 +97,7 @@ public class LobbyManagement implements ILobbyManagement {
      *
      * @return a unique lobby code
      */
-    private String generateLobbyID() throws SQLException {
+    private String generateLobbyID() {
         String code;
         do {
             code = UUID.randomUUID()
