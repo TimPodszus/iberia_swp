@@ -322,13 +322,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
         IConnectionManagement connectionManagement = new ConnectionManagement();
-        Map<ICity, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(
+        Map<ICity, List<Card>> availableDestinations = connectionManagement.getAvailableDestinations(
                 lobbyId,
                 player.getCurrentPosition()
                       .getId()
         );
-        boolean citiesConnectedByLand = availableDestinations.containsKey(city) && !availableDestinations.get(city);
-        boolean citiesConnectedBySea = availableDestinations.containsKey(city) && availableDestinations.get(city);
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city) && availableDestinations.get(city)
+                                                                                                        .isEmpty();
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city) && !availableDestinations.get(city)
+                                                                                                        .isEmpty();
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error(
                     "[LobbyID: {}] Failed to move {}.There is no available connection between {} and {}",

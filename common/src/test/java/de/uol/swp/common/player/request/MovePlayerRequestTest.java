@@ -1,5 +1,7 @@
 package de.uol.swp.common.player.request;
 
+import de.uol.swp.common.cards.CityCardDTO;
+import de.uol.swp.common.cards.ICardDTO;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,13 +12,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MovePlayerRequestTest {
     private static final String LOBBY_CODE = "testLobbyCode";
     private static final int CITY_ID = 1;
+    private static final ICardDTO CARD = new CityCardDTO(1, "TestCity", null);
 
     /**
      * Tests the creation of a MovePlayerRequest and verifies its fields.
      */
     @Test
     void testRequest() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD);
         assertEquals(LOBBY_CODE, movePlayerRequest.getLobbyId());
         assertEquals(CITY_ID, movePlayerRequest.getCityId());
     }
@@ -26,8 +29,8 @@ public class MovePlayerRequestTest {
      */
     @Test
     void testEquals() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
-        MovePlayerRequest movePlayerRequest1 = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD);
+        MovePlayerRequest movePlayerRequest1 = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD);
         assertEquals(movePlayerRequest, movePlayerRequest1);
     }
 
@@ -36,7 +39,7 @@ public class MovePlayerRequestTest {
      */
     @Test
     void testEqualsWithSameObject() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD);
         assertEquals(movePlayerRequest, movePlayerRequest);
     }
 
@@ -45,7 +48,7 @@ public class MovePlayerRequestTest {
      */
     @Test
     void testEqualsWithOtherClass() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD);
         assertNotEquals(movePlayerRequest, new Object());
     }
 
@@ -54,8 +57,8 @@ public class MovePlayerRequestTest {
      */
     @Test
     void testHashCode() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
-        MovePlayerRequest movePlayerRequest1 = new MovePlayerRequest(LOBBY_CODE, CITY_ID);
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD);
+        MovePlayerRequest movePlayerRequest1 = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD);
         assertEquals(movePlayerRequest.hashCode(), movePlayerRequest1.hashCode());
     }
 }

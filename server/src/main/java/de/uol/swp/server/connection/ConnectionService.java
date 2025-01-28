@@ -2,19 +2,22 @@ package de.uol.swp.server.connection;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.city.CityMapper;
+import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.CardMapper;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Singleton
 public class ConnectionService extends AbstractService {
@@ -43,23 +46,25 @@ public class ConnectionService extends AbstractService {
      */
     @Subscribe
     public void onAvailableDestinationsRequest(AvailableDestinationsRequest request) {
-        LOG.debug(
-                "[Lobby: {}] Got AvailableDestinationsRequest for city {}",
+        LOG.debug("[Lobby: {}] Got AvailableDestinationsRequest for city {}",
                 request.getLobbyId(),
                 request.getCityId()
         );
-        Map<ICityDTO, Boolean> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyId(),
-                                                                                   request.getCityId()
-                                                                           )
-                                                                           .entrySet()
-                                                                           .stream()
-                                                                           .collect(Collectors.toMap(
-                                                                                   entry -> CityMapper.toDTO(entry.getKey()),
-                                                                                   Map.Entry::getValue
-                                                                           ));
+        Map<ICity, List<Card>> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyId(),
+                request.getCityId()
+        );
+        Map<Integer, List<ICardDTO>> availableDestinationsAsDtos = new HashMap<>();
 
+        for (Map.Entry<ICity, List<Card>> entry : availableDestinations.entrySet()) {
+            List<ICardDTO> cards = entry.getValue()
+                                        .stream()
+                                        .map(CardMapper::toDTO)
+                                        .toList();
+            availableDestinationsAsDtos.put(entry.getKey()
+                                                 .getId(), cards);
+        }
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinationsAsDtos);
 
         request.getMessageContext()
                .ifPresent(response::setMessageContext);

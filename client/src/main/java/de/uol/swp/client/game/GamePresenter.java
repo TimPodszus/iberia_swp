@@ -37,10 +37,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.ButtonType;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -84,7 +82,7 @@ public class GamePresenter extends AbstractPresenter {
     @Inject
     private GameService gameService;
 
-    private Map<Integer, Boolean> availableDestinations = new HashMap<>();
+    private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
 
     @FXML
     private AnchorPane gameScreen;
@@ -271,26 +269,16 @@ public class GamePresenter extends AbstractPresenter {
         }
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
-            if (Boolean.TRUE.equals(availableDestinations.get(cityId)) && !showSailingDialog()) {
-                return;
+            if (!availableDestinations.get(cityId)
+                                      .isEmpty()) {
+                CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(true,
+                        availableDestinations.get(cityId)
+                );
+                Optional<ICardDTO> result = cardSelectionDialog.showAndWait();
+                result.ifPresent(card -> gameService.movePlayerToCity(lobbyId, cityId, card));
             }
-            gameService.movePlayerToCity(this.lobbyId, cityId);
+            gameService.movePlayerToCity(this.lobbyId, cityId, null);
         }
-    }
-
-    /**
-     * Displays a confirmation dialog for sailing to a destination.
-     *
-     * @return true if the user confirms the action, false otherwise
-     */
-    private boolean showSailingDialog() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Schiffahrt");
-        alert.setHeaderText(null);
-        alert.setContentText("Möchtest Du dorthin mit dem Schiff fahren? Dafür musst Du die Stadtkarte " + "ablegen.");
-        Optional<ButtonType> result = alert.showAndWait();
-
-        return result.isPresent() && result.get() == ButtonType.OK;
     }
 
     /**
@@ -1160,13 +1148,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailableDestinationsResponse(AvailableDestinationsResponse response) {
-        Map<Integer, Boolean> destinations = new HashMap<>();
-        for (Map.Entry<ICityDTO, Boolean> entry : response.getCities()
-                                                          .entrySet()) {
-            destinations.put(entry.getKey()
-                                  .getId(), entry.getValue());
-        }
-        this.availableDestinations = destinations;
+        this.availableDestinations = response.getCities();
         this.setAvailableDestinations();
     }
 
@@ -1176,8 +1158,9 @@ public class GamePresenter extends AbstractPresenter {
      * of the corresponding city StackPane to indicate it is a highlighted destination.
      */
     public void setAvailableDestinations() {
-        for (Map.Entry<Integer, Boolean> entry : availableDestinations.entrySet()) {
-            Node node = mapPane.lookup(CITY_ID + entry.getKey());
+        for (Map.Entry<Integer, List<ICardDTO>> entry : availableDestinations.entrySet()) {
+            int cityId = entry.getKey();
+            Node node = mapPane.lookup(CITY_ID + cityId);
             node.getStyleClass()
                 .removeAll(CITY_CLASS);
             node.getStyleClass()
