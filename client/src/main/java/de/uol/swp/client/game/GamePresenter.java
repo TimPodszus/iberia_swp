@@ -74,6 +74,7 @@ public class GamePresenter extends AbstractPresenter {
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final String CITY_ID = "#city";
+    private static final String CITY_CLASS = "city";
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
     private String lobbyId;
@@ -764,19 +765,20 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param event the StartGameEvent containing the game data
      */
-@Subscribe
-public void onStartGameEvent(StartGameEvent event) {
-    this.gameDTO = event.getGameDTO();
+    @Subscribe
+    public void onStartGameEvent(StartGameEvent event) {
+        this.gameDTO = event.getGameDTO();
         this.lobbyId = event.getLobbyCode();
         this.user = UserStore.getInstance()
                              .getUser();
 
-    Platform.runLater(() -> {
-        inintialUpdateBoard(gameDTO);
-        updatePlayers(gameDTO.getPlayers());
+        Platform.runLater(() -> {
+            updateBoard(gameDTO);
+            GameService.showStartDialog();
+            updatePlayers(gameDTO.getPlayers());
 
-    });
-}
+        });
+    }
 
     /**
      * Updates the game board with the latest data from the game DTO.
@@ -797,17 +799,22 @@ public void onStartGameEvent(StartGameEvent event) {
         updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
         updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
         updatePlayerHandCards(gameDTO.getPlayers());
-        updatePlayersInCities(gameDTO.getPlayers());
+
+        if (!gameDTO.getState()
+                    .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
+            updatePlayersInCities(gameDTO.getPlayers());
+        }
+
         updateInfectionCounter(gameDTO.getInfectionCounter());
         updateEscalationStage(gameDTO.getEscalationStage());
         updateHospitals(gameDTO.getCities());
         updateResearchedPlagues(gameDTO.getPlagues());
 
         disableActionButtons();
-        if (!Objects.equals(gameDTO.getState(), "WaitForPositioning") && Objects.equals(gameDTO.getCurrentPlayer()
-                                                                                               .getUsername(),
-                user.getUsername()
-        )) {
+        if (gameDTO.getState()
+                   .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
+                                                                  .getUsername()
+                                                                  .equals(user.getUsername())) {
             gameService.requestAvailableDestination(this.lobbyId,
                     gameDTO.getCurrentPlayer()
                            .getCurrentPosition()
@@ -815,24 +822,6 @@ public void onStartGameEvent(StartGameEvent event) {
             );
             gameService.sendAvailableActionsRequest(this.lobbyId);
         }
-    }
-
-    private void inintialUpdateBoard(IGameDTO gameDTO) {
-        updateCities(gameDTO.getCities());
-        updateConnections(gameDTO.getConnections());
-        updateRegions(gameDTO.getRegions());
-        updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
-        updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
-        updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
-        updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
-        updatePlayerHandCards(gameDTO.getPlayers());
-        updateInfectionCounter(gameDTO.getInfectionCounter());
-        updateEscalationStage(gameDTO.getEscalationStage());
-        updateHospitals(gameDTO.getCities());
-        updateResearchedPlagues(gameDTO.getPlagues());
-
-        disableActionButtons();
-        GameService.showStartDialog();
     }
 
     /**
@@ -869,7 +858,7 @@ public void onStartGameEvent(StartGameEvent event) {
             stackPane.getStyleClass()
                      .remove(CITY_HIGHLIGHTED_CLASS);
             stackPane.getStyleClass()
-                     .add("city");
+                     .add(CITY_CLASS);
             updateInfections(city);
         }
     }
@@ -986,10 +975,6 @@ public void onStartGameEvent(StartGameEvent event) {
      */
     private void updatePlayersInCities(List<IPlayerDTO> players) {
         removeAllGameFigures();
-        if (gameDTO.getState()
-                   .equals("WaitForPositioning")) {
-            return;
-        }
         Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
                                                               .filter(player -> player.getCurrentPosition() != null)
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
@@ -1194,7 +1179,7 @@ public void onStartGameEvent(StartGameEvent event) {
         for (Map.Entry<Integer, Boolean> entry : availableDestinations.entrySet()) {
             Node node = mapPane.lookup(CITY_ID + entry.getKey());
             node.getStyleClass()
-                .removeAll("city");
+                .removeAll(CITY_CLASS);
             node.getStyleClass()
                 .add(CITY_HIGHLIGHTED_CLASS);
         }
