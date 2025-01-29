@@ -210,7 +210,7 @@ public class GameManagement implements IGameManagement {
      * @param lobbyCode The code of the lobby to retrieve the game from
      * @return The game associated with the given lobby code
      */
-    private IGame getGame(String lobbyCode) {
+    public IGame getGame(String lobbyCode) {
         return GameStore.getInstance()
                         .getGame(lobbyCode);
     }

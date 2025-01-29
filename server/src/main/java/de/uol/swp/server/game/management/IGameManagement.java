@@ -43,5 +43,7 @@ public interface IGameManagement {
      * @return a list of available game actions
      */
     List<GameActions> getAvailableActions(String lobbyId, IUser user);
+
+    IGame getGame(String lobbyId);
 }
 

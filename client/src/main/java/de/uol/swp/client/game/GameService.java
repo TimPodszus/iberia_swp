@@ -4,8 +4,9 @@ import com.google.inject.Inject;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
+import de.uol.swp.common.region.request.AvailableRegionsRequest;
+import de.uol.swp.common.region.request.WaterTreatmentRegionRequest;
 import org.greenrobot.eventbus.EventBus;
-
 
 /**
  * Service class for handling game-related operations.
@@ -46,5 +47,12 @@ public class GameService {
         eventBus.post(new AvailableActionsRequest(lobbyCode));
     }
 
+    public void sendAvailableRegionsRequest(String lobbyCode) {
+        eventBus.post(new AvailableRegionsRequest(lobbyCode));
+    }
 
+    public void sendRegionForWaterTreatmentRequest(String lobbyCode, int regionId) {
+        eventBus.post(new WaterTreatmentRegionRequest(lobbyCode, regionId));
+    }
 }
+

@@ -54,4 +54,9 @@ public class City implements ICity {
      */
     @Setter
     private List<IInfection> infections = new ArrayList<>();
+
+    /**
+     * The color of the city.
+     */
+    private final String color;
 }

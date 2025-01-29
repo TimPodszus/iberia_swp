@@ -145,3 +145,9 @@
 .hospital {
     -fx-background-color: rgb(255, 255, 255, 0.7);
 }
+
+.region-highlight {
+    -fx-fill: rgba(255, 0, 0, 0.6);
+    -fx-stroke: #ff0000;
+    -fx-stroke-width: 3px;
+}

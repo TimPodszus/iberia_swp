@@ -41,4 +41,6 @@ public interface IPlague {
      * @param researched the researched status to set
      */
     void setResearched(boolean researched);
+
+    String getColor();
 }

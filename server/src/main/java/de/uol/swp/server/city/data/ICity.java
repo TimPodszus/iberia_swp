@@ -73,4 +73,11 @@ public interface ICity {
      * @param infections the list of infections to set
      */
     void setInfections(List<IInfection> infections);
+
+    /**
+     * Gets the color of the city.
+     *
+     * @return the color of the city.
+     */
+    String getColor();
 }

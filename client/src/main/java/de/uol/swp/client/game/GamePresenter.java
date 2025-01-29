@@ -30,6 +30,8 @@ import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
+import de.uol.swp.common.region.response.AvailableRegionsResponse;
+import de.uol.swp.common.region.response.PossibleCityCardsToDiscardForRegionResponse;
 import de.uol.swp.common.user.IUserDTO;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -71,11 +73,12 @@ public class GamePresenter extends AbstractPresenter {
     private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
+    private static final String REGION_HIGHLIGHTED_CLASS = "region-highlight";
+    private static final String REGION_ID = "#region";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
     private String lobbyId;
 
-    private final IUserDTO user = UserStore.getInstance()
-                                           .getUser();
+    private IUserDTO user;
 
     @Inject
     protected GameService gameService;
@@ -283,7 +286,13 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onRegionClickedEvent(MouseEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
+        Node source = (Node) event.getSource();
+        if (gameDTO.getState()
+                   .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
+            int regionId = Integer.parseInt(source.getId()
+                                                  .replaceAll("\\D+", ""));
+            gameService.sendRegionForWaterTreatmentRequest(lobbyId, regionId);
+        }
     }
 
     /**
@@ -386,9 +395,12 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onPlaceWaterTreatment(ActionEvent event) {
         if (treatWaterButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
-        } else {
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
+                gameService.sendAvailableRegionsRequest(lobbyId);
+            } else {
 
+            }
         }
     }
 
@@ -758,7 +770,9 @@ public class GamePresenter extends AbstractPresenter {
         Platform.runLater(() -> {
             initialUpdateBoard(gameDTO);
             updatePlayers(gameDTO.getPlayers());
-
+            this.user = UserStore.getInstance()
+                                 .getUser();
+            this.lobbyId = event.getLobbyCode();
         });
     }
 
@@ -1138,5 +1152,22 @@ public class GamePresenter extends AbstractPresenter {
     public void onCardExchangeResponse(CardExchangeResponse response) {
         CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
         Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
+    }
+
+    @Subscribe
+    public void onAvailableRegionsResponse(AvailableRegionsResponse response) {
+        setAvailableRegions(response.getRegions());
+    }
+
+    @Subscribe
+    public void onPossibleCityCardsToDiscardForRegionResponse(PossibleCityCardsToDiscardForRegionResponse response) {
+    }
+
+    public void setAvailableRegions(Set<IRegionDTO> regions) {
+        for (IRegionDTO region : regions) {
+            Node node = mapPane.lookup(REGION_ID + region.getId());
+            node.getStyleClass()
+                .add(REGION_HIGHLIGHTED_CLASS);
+        }
     }
 }
