@@ -20,7 +20,7 @@ build-job:
   artifacts:
     paths:
       - target/
-    expire_in: 1 week
+    expire_in: 2 days
 
 
 unit-test-job:
@@ -33,7 +33,7 @@ unit-test-job:
     when: always
     paths:
       - target/
-    expire_in: 1 week
+    expire_in: 2 days
     reports:
       junit: "**/target/surefire-reports/*.xml"
 

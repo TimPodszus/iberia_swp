@@ -4,6 +4,7 @@ import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
+import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
@@ -31,7 +32,7 @@ public class GameDTO implements IGameDTO, Serializable {
     private int waterTreatmentsLeft;
     private int tracksLeft;
     private int currentPlayerIndex;
-    private String state;
+    private StateType state;
 
     public IPlayerDTO getCurrentPlayer() {
         return players.get(currentPlayerIndex);

@@ -1,10 +1,11 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import org.greenrobot.eventbus.EventBus;
+
 
 /**
  * Service class for handling game-related operations.
@@ -44,4 +45,6 @@ public class GameService {
     public void sendAvailableActionsRequest(String lobbyCode) {
         eventBus.post(new AvailableActionsRequest(lobbyCode));
     }
+
+
 }

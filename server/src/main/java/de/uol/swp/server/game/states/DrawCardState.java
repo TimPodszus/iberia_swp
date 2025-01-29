@@ -1,9 +1,8 @@
 package de.uol.swp.server.game.states;
 
+import de.uol.swp.common.game.StateType;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.data.IPlayer;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Represents the state in a game where players draw cards.
@@ -12,20 +11,16 @@ import lombok.Setter;
  * provided the player holds seven or fewer cards.
  */
 @Getter
-@Setter
 public class DrawCardState implements IGameState {
     private int cardsDrawn = 0;
+    public StateType getStateType() {
+        return StateType.DRAW_CARD_STATE;
+    }
 
-    /**
-     * Processes the card drawing action for a player in the game. Each call allows the player
-     * to draw one card from the player deck. Once a player has drawn two cards, this method checks
-     * the total number of cards held by the player. If the player holds seven or fewer cards,
-     * the game state is transitioned to InfectionState.
-     *
-     * @param game   the game in which this action is being processed
-     * @param player the player who is drawing the card
-     */
-    public void handleAction(IGame game, IPlayer player) {
-        //TODO: Überarbeiten der States
+    public void increaseCardsDrawn(IGame game) {
+        cardsDrawn++;
+        if(cardsDrawn == 2){
+            game.setState(new InfectionState());
+        }
     }
 }
