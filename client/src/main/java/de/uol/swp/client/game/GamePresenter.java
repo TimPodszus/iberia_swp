@@ -16,7 +16,8 @@ import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.connectiom.IConnectionDTO;
+import de.uol.swp.common.connection.IConnectionDTO;
+import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.StateType;
@@ -71,14 +72,18 @@ public class GamePresenter extends AbstractPresenter {
     private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
+    private static final String CITY_ID = "#city";
+    private static final String CITY_CLASS = "city";
+    private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
     private String lobbyId;
 
-    private final IUserDTO user = UserStore.getInstance()
-                                           .getUser();
+    private IUserDTO user;
 
     @Inject
-    protected GameService gameService;
+    private GameService gameService;
+
+    private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
 
     @FXML
     private AnchorPane gameScreen;
@@ -256,14 +261,25 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
+        Node source = (Node) event.getSource();
+        int cityId = Integer.parseInt(source.getId()
+                                            .replaceAll("\\D+", ""));
         if (gameDTO.getState()
                    .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
-            Node source = (Node) event.getSource();
-            int cityId = Integer.parseInt(source.getId()
-                                                .replaceAll("\\D+", ""));
             gameService.setPosition(gameDTO.getGameId(), cityId);
         }
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/114
+        if (source.getStyleClass()
+                  .contains(CITY_HIGHLIGHTED_CLASS)) {
+            if (!availableDestinations.get(cityId)
+                                      .isEmpty()) {
+                CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(true,
+                        availableDestinations.get(cityId)
+                );
+                Optional<ICardDTO> result = cardSelectionDialog.showAndWait();
+                result.ifPresent(card -> gameService.movePlayerToCity(lobbyId, cityId, card.getId()));
+            }
+            gameService.movePlayerToCity(this.lobbyId, cityId, -1);
+        }
     }
 
     /**
@@ -295,17 +311,6 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onPlayerCardPileClickedEvent(MouseEvent event) {
         gameService.drawPlayerCard(lobbyId);
-    }
-
-    /**
-     * Event handler for the GameStartedEvent.
-     * This method is called when a game starts and sets the lobby code.
-     *
-     * @param event the GameStartedEvent containing the lobby code
-     */
-    @Subscribe
-    private void onStartGameEventEvent(StartGameEvent event) {
-        lobbyId = event.getLobbyCode();
     }
 
     /**
@@ -614,6 +619,7 @@ public class GamePresenter extends AbstractPresenter {
     public void setPlayerInCity(int cityId, List<IPlayerDTO> players) {
         StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + cityId);
 
+
         List<Color> playerColors = new ArrayList<>();
         for (IPlayerDTO player : players) {
             playerColors.add(Color.web(player.getRole()
@@ -754,9 +760,13 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
         this.gameDTO = event.getGameDTO();
+        this.lobbyId = event.getLobbyCode();
+        this.user = UserStore.getInstance()
+                             .getUser();
 
         Platform.runLater(() -> {
-            initialUpdateBoard(gameDTO);
+            updateBoard(gameDTO);
+            GameStartDialog.showStartDialog();
             updatePlayers(gameDTO.getPlayers());
 
         });
@@ -781,37 +791,29 @@ public class GamePresenter extends AbstractPresenter {
         updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
         updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
         updatePlayerHandCards(gameDTO.getPlayers());
-        updatePlayersInCities(gameDTO.getPlayers());
+
+        if (!gameDTO.getState()
+                    .equals(StateType.START_STATE)) {
+            updatePlayersInCities(gameDTO.getPlayers());
+        }
+
         updateInfectionCounter(gameDTO.getInfectionCounter());
         updateEscalationStage(gameDTO.getEscalationStage());
         updateHospitals(gameDTO.getCities());
         updateResearchedPlagues(gameDTO.getPlagues());
 
         disableActionButtons();
-        if (gameDTO.getCurrentPlayer()
-                   .getUsername()
-                   .equals(user.getUsername())) {
+        if (gameDTO.getState()
+                   .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
+                                                                  .getUsername()
+                                                                  .equals(user.getUsername())) {
+            gameService.requestAvailableDestination(this.lobbyId,
+                    gameDTO.getCurrentPlayer()
+                           .getCurrentPosition()
+                           .getId()
+            );
             gameService.sendAvailableActionsRequest(this.lobbyId);
         }
-    }
-
-    private void initialUpdateBoard(IGameDTO gameDTO) {
-        updateCities(gameDTO.getCities());
-        updateConnections(gameDTO.getConnections());
-        updateRegions(gameDTO.getRegions());
-        updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
-        updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
-        updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
-        updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
-        updatePlayerHandCards(gameDTO.getPlayers());
-        updateInfectionCounter(gameDTO.getInfectionCounter());
-        updateEscalationStage(gameDTO.getEscalationStage());
-        updateHospitals(gameDTO.getCities());
-        updateResearchedPlagues(gameDTO.getPlagues());
-
-        disableActionButtons();
-        GameStartDialog.showStartDialog();
-
     }
 
     /**
@@ -845,6 +847,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCities(List<ICityDTO> cities) {
         for (ICityDTO city : cities) {
+            Node stackPane = mapPane.lookup(CITY_ID + city.getId());
+            stackPane.getStyleClass()
+                     .remove(CITY_HIGHLIGHTED_CLASS);
+            stackPane.getStyleClass()
+                     .add(CITY_CLASS);
             updateInfections(city);
         }
     }
@@ -1138,5 +1145,34 @@ public class GamePresenter extends AbstractPresenter {
     public void onCardExchangeResponse(CardExchangeResponse response) {
         CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
         Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
+    }
+
+    /**
+     * Handles the AvailableDestinationsResponse.
+     * This method is called when an AvailableDestinationsResponse is received.
+     * It updates the available destinations map and highlights the available destination cities on the game map.
+     *
+     * @param response the AvailableDestinationsResponse containing the available destinations
+     */
+    @Subscribe
+    public void onAvailableDestinationsResponse(AvailableDestinationsResponse response) {
+        this.availableDestinations = response.getCities();
+        this.setAvailableDestinations();
+    }
+
+    /**
+     * Highlights the available destination cities on the game map.
+     * Iterates through the available destinations and updates the style class
+     * of the corresponding city StackPane to indicate it is a highlighted destination.
+     */
+    public void setAvailableDestinations() {
+        for (Map.Entry<Integer, List<ICardDTO>> entry : availableDestinations.entrySet()) {
+            int cityId = entry.getKey();
+            Node node = mapPane.lookup(CITY_ID + cityId);
+            node.getStyleClass()
+                .removeAll(CITY_CLASS);
+            node.getStyleClass()
+                .add(CITY_HIGHLIGHTED_CLASS);
+        }
     }
 }

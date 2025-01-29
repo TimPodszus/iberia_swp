@@ -1,6 +1,8 @@
 package de.uol.swp.server.connection;
 
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.connection.data.Connection;
+import de.uol.swp.server.connection.data.IConnection;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ public class ConnectionRepository {
     /**
      * List of all connections.
      */
-    List<Connection> connections;
+    List<IConnection> connections;
 
     /**
      * Constructor that initializes the connection repository by creating all connections.
@@ -118,11 +120,24 @@ public class ConnectionRepository {
      * @param id the unique identifier of the connection
      * @return the connection with the specified id, or null if not found
      */
-    public Connection getConnectionByID(int id) {
+    public IConnection getConnectionByID(int id) {
         return connections.stream()
                           .filter(connection -> connection.getId() == id)
                           .findFirst()
                           .orElse(null);
+    }
+
+    /**
+     * Retrieves a list of connections that include the specified city.
+     *
+     * @param cityName the name of the city
+     * @return a list of connections that include the specified city
+     */
+    public List<IConnection> getConnectionsOfCity(CityName cityName) {
+        return connections.stream()
+                          .filter(connection -> connection.getCityNames()
+                                                          .contains(cityName))
+                          .toList();
     }
 
     /**
@@ -133,7 +148,7 @@ public class ConnectionRepository {
      */
     public List<CityName> getCityNamesOfConnectedCitiesByCityName(CityName cityName) {
         return connections.stream()
-                          .map(Connection::getCityNames)
+                          .map(IConnection::getCityNames)
                           .filter(cityNames -> cityNames.contains(cityName))
                           .findFirst()
                           .orElse(null);

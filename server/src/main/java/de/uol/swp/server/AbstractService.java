@@ -4,12 +4,14 @@ import com.google.inject.Inject;
 import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
+import de.uol.swp.common.user.Session;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This class is the base for creating a new Service.
@@ -75,14 +77,14 @@ public class AbstractService {
      * This method prepares an AbstractServerMessage to be sent to all users in the given lobby
      * and posts it to the EventBus.
      *
-     * @param lobby the lobby whose users will receive the message
+     * @param lobby   the lobby whose users will receive the message
      * @param message the message to be sent to all users in the lobby
      * @see AbstractServerMessage
      * @since 2019-10-08
      */
     public void sendToAllInLobby(ILobby lobby, AbstractServerMessage message) {
-        message.setReceiver(authenticationService.getSessions(new HashSet<>((lobby.getUsers()))));
-
+        List<Session> sessions = authenticationService.getSessions(new HashSet<>(lobby.getUsers()));
+        message.setReceiver(sessions);
         post(message);
     }
 }

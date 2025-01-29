@@ -1,10 +1,9 @@
-package de.uol.swp.server.connection;
+package de.uol.swp.server.connection.data;
 
 import de.uol.swp.common.city.CityName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 import java.util.List;
 
@@ -14,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Getter
-public class Connection {
+public class Connection implements IConnection {
     /**
      * The unique identifier for the connection.
      */
@@ -28,11 +27,15 @@ public class Connection {
     /**
      * Indicates if a train track is present on the connection.
      */
-    @Setter
     private boolean trainTrack;
 
     /**
      * Indicates if a train track can be built on the connection.
      */
     private final boolean trainTrackBuildable;
+
+    @Override
+    public void buildTrainTracks(boolean trainTrack) {
+        this.trainTrack = trainTrack;
+    }
 }

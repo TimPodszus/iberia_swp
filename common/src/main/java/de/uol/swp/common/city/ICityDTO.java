@@ -5,10 +5,12 @@ import de.uol.swp.common.infection.IInfectionDTO;
 
 import java.util.List;
 
+import java.io.Serializable;
+
 /**
  * Interface representing a City Data Transfer Object (DTO).
  */
-public interface ICityDTO {
+public interface ICityDTO extends Serializable {
 
     /**
      * Gets the id of the city.
