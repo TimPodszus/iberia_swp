@@ -20,6 +20,7 @@ import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
@@ -40,6 +41,7 @@ public class GameService extends AbstractService {
     IGameManagement gameManagement;
     protected ILobbyManagement lobbyManagement;
     ICityManagement cityManagement;
+    IPlayerManagement playerManagement;
 
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
@@ -51,12 +53,14 @@ public class GameService extends AbstractService {
             EventBus bus,
             ILobbyManagement lobbyManagement,
             IGameManagement gameManagement,
-            ICityManagement cityManagement
+            ICityManagement cityManagement,
+            IPlayerManagement playerManagement
     ) {
         super(bus);
         this.lobbyManagement = lobbyManagement;
         this.gameManagement = gameManagement;
         this.cityManagement = cityManagement;
+        this.playerManagement = playerManagement;
     }
 
     /**
@@ -101,7 +105,7 @@ public class GameService extends AbstractService {
      * @param request the player move request containing session, lobby code, and city ID
      */
     @Subscribe
-    public void onMovePlayerRequest(MovePlayerRequest request) throws GameManagementException, GameException {
+    public void onMovePlayerRequest(MovePlayerRequest request) throws GameManagementException, GameException, PlayerManagementException {
         IUserDTO user = request.getSession()
                                .map(Session::getUser)
                                .orElse(null);
@@ -111,7 +115,8 @@ public class GameService extends AbstractService {
 
         gameManagement.movePlayer(UserMapper.toUser(user),
                 request.getLobbyId(),
-                cityManagement.getCity(request.getLobbyId(), request.getCityId())
+                cityManagement.getCity(request.getLobbyId(), request.getCityId()),
+                playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId())
         );
 
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));

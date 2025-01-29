@@ -22,7 +22,7 @@ import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.lobby.store.LobbyStoreException;
+import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
@@ -59,8 +59,16 @@ public class GameServiceTest extends EventBusBasedTest {
     @Mock
     private AuthenticationService authenticationService;
 
+    @Mock
+    private IPlayerManagement playerManagement;
+
     @InjectMocks
-    GameService gameService = new GameService(getBus(), lobbyManagement, gameManagement, cityManagement);
+    GameService gameService = new GameService(getBus(),
+            lobbyManagement,
+            gameManagement,
+            cityManagement,
+            playerManagement
+    );
 
     /**
      * Handles BoardUpdateEvent.
@@ -107,7 +115,7 @@ public class GameServiceTest extends EventBusBasedTest {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12);
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12, -1);
         movePlayerRequest.setSession(session);
         ICity city = new CityRepository().getCity(12);
         when(cityManagement.getCity("lobbycode", 12)).thenReturn(city);
@@ -118,7 +126,7 @@ public class GameServiceTest extends EventBusBasedTest {
 
         postAndWait(movePlayerRequest);
 
-        verify(gameManagement, atLeast(1)).movePlayer(user, "lobbycode", city);
+        verify(gameManagement, atLeast(1)).movePlayer(user, "lobbycode", city, null);
         assertInstanceOf(BoardUpdateEvent.class, event);
     }
 
@@ -127,7 +135,7 @@ public class GameServiceTest extends EventBusBasedTest {
      */
     @Test
     void testOnMovePlayerRequestWithUnknownUser() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12);
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12, 1);
         movePlayerRequest.setSession(null);
 
         assertThrows(GameException.class, () -> gameService.onMovePlayerRequest(movePlayerRequest));
@@ -189,7 +197,7 @@ public class GameServiceTest extends EventBusBasedTest {
      * Tests create game  when the game is null.
      */
     @Test
-    void testOnCreateGameRequest_GameIsNull() throws LobbyStoreException, PlayerManagementException {
+    void testOnCreateGameRequest_GameIsNull() throws PlayerManagementException {
         List<IUserDTO> users = List.of(new UserDTO("username", "password"));
         CreateGameRequest createGameRequest = new CreateGameRequest(LOBBY_CODE, GAME_ID, users);
         when(gameManagement.createAndInitializeGame(createGameRequest)).thenReturn(null);

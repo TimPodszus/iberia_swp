@@ -3,12 +3,13 @@ package de.uol.swp.server.player.management;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import de.uol.swp.common.cards.CardType;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -81,6 +82,47 @@ class PlayerManagementTest {
 
         assertTrue(thrown.getMessage()
                          .contains("Keine valide Stadt ausgewählt"));
+    }
+
+    @Test
+    void testGetCard() throws PlayerManagementException {
+        String lobbyId = "testLobby";
+        String playerName = "testPlayer";
+        int cardId = 1;
+
+        Card card = mock(Card.class);
+        when(card.getId()).thenReturn(cardId);
+
+        when(game.getPlayers()).thenReturn(List.of(player));
+        GameStore.getInstance()
+                 .addGame(lobbyId, game);
+
+        when(player.getUser()).thenReturn(user);
+        when(player.getCards()).thenReturn(List.of(card));
+
+        when(user.getUsername()).thenReturn(playerName);
+
+        Card result = playerManagement.getCard(lobbyId, playerName, cardId);
+
+        assertEquals(card, result);
+    }
+
+    @Test
+    void testGetCard_CardNotFound_ThrowsException() {
+        String lobbyId = "testLobby";
+        String playerName = "testPlayer";
+        int cardId = 1;
+
+        when(game.getPlayers()).thenReturn(List.of(player));
+        GameStore.getInstance()
+                 .addGame(lobbyId, game);
+
+        when(player.getUser()).thenReturn(user);
+        when(player.getCards()).thenReturn(List.of());
+
+        when(user.getUsername()).thenReturn(playerName);
+
+        assertThrows(PlayerManagementException.class, () -> playerManagement.getCard(lobbyId, playerName, cardId));
     }
 
 }

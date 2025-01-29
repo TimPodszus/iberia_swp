@@ -3,6 +3,7 @@ package de.uol.swp.server.game.management;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
@@ -51,10 +52,11 @@ public interface IGameManagement {
      * @param user    the user representing the player to be moved
      * @param lobbyId the id of the lobby in which the game is happening
      * @param city    the city to which the player will be moved
+     * @param card    the card used to move the player
      *                <p>
      * @throws GameManagementException if moving the player fails
      */
-    void movePlayer(IUser user, String lobbyId, ICity city) throws GameManagementException;
+    void movePlayer(IUser user, String lobbyId, ICity city, Card card) throws GameManagementException;
 
     /**
      * Retrieves the game with the specified lobby code.

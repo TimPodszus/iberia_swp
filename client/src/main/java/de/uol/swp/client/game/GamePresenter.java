@@ -275,9 +275,9 @@ public class GamePresenter extends AbstractPresenter {
                         availableDestinations.get(cityId)
                 );
                 Optional<ICardDTO> result = cardSelectionDialog.showAndWait();
-                result.ifPresent(card -> gameService.movePlayerToCity(lobbyId, cityId, card));
+                result.ifPresent(card -> gameService.movePlayerToCity(lobbyId, cityId, card.getId()));
             }
-            gameService.movePlayerToCity(this.lobbyId, cityId, null);
+            gameService.movePlayerToCity(this.lobbyId, cityId, -1);
         }
     }
 
@@ -789,7 +789,7 @@ public class GamePresenter extends AbstractPresenter {
         updatePlayerHandCards(gameDTO.getPlayers());
 
         if (!gameDTO.getState()
-                    .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
+                    .equals(StateType.START_STATE)) {
             updatePlayersInCities(gameDTO.getPlayers());
         }
 

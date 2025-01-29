@@ -56,9 +56,10 @@ public class GameService {
      *
      * @param lobbyId the lobby ID of the game in which the player is to be moved
      * @param cityId  the city to which the player is to be moved
+     * @param cardId  the card to be used for the move
      */
-    public void movePlayerToCity(String lobbyId, int cityId, ICardDTO card) {
-        eventBus.post(new MovePlayerRequest(lobbyId, cityId));
+    public void movePlayerToCity(String lobbyId, int cityId, int cardId) {
+        eventBus.post(new MovePlayerRequest(lobbyId, cityId, cardId));
     }
 
     /*

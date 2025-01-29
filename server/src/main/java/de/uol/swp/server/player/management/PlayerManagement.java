@@ -11,6 +11,7 @@ import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.StartState;
+import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -50,7 +51,7 @@ public class PlayerManagement implements IPlayerManagement {
                 .get(game.getCurrentPlayerIndex())
                 .addCard(card);
         }
-        if(game.getState() instanceof DrawCardState drawCardState) {
+        if (game.getState() instanceof DrawCardState drawCardState) {
             drawCardState.increaseCardsDrawn(game);
         }
         return CardMapper.toDTO(card);
@@ -94,5 +95,26 @@ public class PlayerManagement implements IPlayerManagement {
             throw new PlayerManagementException(
                     "Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast " + "ausw" + "ählen!");
         }
+    }
+
+    public Card getCard(String lobbyId, String playerName, int cardId) throws PlayerManagementException {
+        IGame game = GameStore.getInstance()
+                              .getGame(lobbyId);
+        IPlayer player = getPlayer(game, playerName);
+        return player.getCards()
+                     .stream()
+                     .filter(c -> Objects.equals(c.getId(), cardId))
+                     .findFirst()
+                     .orElse(null);
+    }
+
+    private IPlayer getPlayer(IGame game, String playerName) throws PlayerManagementException {
+        return game.getPlayers()
+                   .stream()
+                   .filter(p -> p.getUser()
+                                 .getUsername()
+                                 .equals(playerName))
+                   .findFirst()
+                   .orElseThrow(() -> new PlayerManagementException("Player not found"));
     }
 }

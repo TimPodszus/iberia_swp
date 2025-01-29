@@ -312,7 +312,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void movePlayer(IUser user, String lobbyId, ICity city) throws GameManagementException {
+    public void movePlayer(IUser user, String lobbyId, ICity city, Card card) throws GameManagementException {
         IGame game = super.getGame(lobbyId);
         IPlayer player = game.getCurrentPlayer();
         if (!player.getUser()
@@ -362,13 +362,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             return;
         }
 
-        Card cityCard = player.getCityCard(city);
-
         boolean playerIsSailor = player.getRole()
                                        .getName()
                                        .equals(RoleEnum.SAILOR);
         if (!playerIsSailor) {
-            player.discardCard(cityCard);
+            player.discardCard(card);
         }
 
         LOG.debug(

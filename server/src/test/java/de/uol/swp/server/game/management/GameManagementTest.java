@@ -213,7 +213,7 @@ class GameManagementTest {
         when(game.getCurrentPlayer()).thenReturn(player1);
 
         assertThrows(GameManagementException.class,
-                () -> gameManagement.movePlayer(user2, "lobbyCode", destinationCity),
+                () -> gameManagement.movePlayer(user2, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
     }
@@ -228,7 +228,7 @@ class GameManagementTest {
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
 
-        gameManagement.movePlayer(user, "lobbyCode", destinationCity);
+        gameManagement.movePlayer(user, "lobbyCode", destinationCity, null);
 
         assertEquals(destinationCity,
                 player.getCurrentPosition(),
@@ -247,7 +247,7 @@ class GameManagementTest {
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
 
         assertThrows(GameManagementException.class,
-                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity),
+                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
     }
@@ -270,7 +270,7 @@ class GameManagementTest {
         assertTrue(player.getCards()
                          .contains(destinationCityCard), "Expected player to have the destination city card");
 
-        gameManagement.movePlayer(user, "lobbyCode", destinationCity);
+        gameManagement.movePlayer(user, "lobbyCode", destinationCity, destinationCityCard);
 
         assertEquals(destinationCity, player.getCurrentPosition(), "Expected player to have moved to Alicante");
         assertFalse(player.getCards()
@@ -290,7 +290,7 @@ class GameManagementTest {
         setupPlayerForMove(startCity, player, new Nurse(), new ArrayList<>());
 
         assertThrows(GameManagementException.class,
-                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity),
+                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
     }
@@ -305,7 +305,7 @@ class GameManagementTest {
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
 
-        gameManagement.movePlayer(user, "lobbyCode", destinationCity);
+        gameManagement.movePlayer(user, "lobbyCode", destinationCity, null);
 
         assertEquals(destinationCity, player.getCurrentPosition(), "Expected player to have moved to Alicante");
     }
@@ -328,7 +328,7 @@ class GameManagementTest {
         assertTrue(player.getCards()
                          .contains(destinationCityCard), "Expected player to have the destination city card");
 
-        gameManagement.movePlayer(user, "lobbyCode", destinationCity);
+        gameManagement.movePlayer(user, "lobbyCode", destinationCity, destinationCityCard);
 
         assertEquals(destinationCity, player.getCurrentPosition(), "Expected player to have moved to Alicante");
         assertTrue(
@@ -349,7 +349,7 @@ class GameManagementTest {
         setupPlayerForMove(startCity, player, new Nurse(), new ArrayList<>());
         buildTrainTracks();
 
-        gameManagement.movePlayer(user, "lobbyCode", destinationCity);
+        gameManagement.movePlayer(user, "lobbyCode", destinationCity, null);
 
         assertEquals(destinationCity, player.getCurrentPosition(), "Expected player to have moved to Valladolid");
     }

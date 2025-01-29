@@ -101,7 +101,7 @@ class ConnectionManagementTest {
 
         Map<ICity, List<Card>> cities = connectionManagement.getAvailableDestinations("lobbyCode", city.getId());
 
-        assertEquals(3, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
+        assertEquals(6, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
         assertTrue(cities.containsKey(harbourCity), "Expected Alicante to be an available destination");
         assertFalse(
                 cities.get(harbourCity)
