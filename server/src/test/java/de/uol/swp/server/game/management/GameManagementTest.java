@@ -16,6 +16,7 @@ import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
@@ -219,6 +220,22 @@ class GameManagementTest {
     }
 
     @Test
+    void testMovePlayerWithWrongGameState() {
+        ICity destinationCity = cityRepository.getCityByName(CityName.BARCELONA);
+        IUser user = new User("user1");
+        createTestPlayers(user);
+        IPlayer player = game.getPlayers()
+                             .get(0);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getState()).thenReturn(mock(WaitForPositioning.class));
+
+        assertThrows(GameManagementException.class,
+                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
+                "Expected GameManagementException"
+        );
+    }
+
+    @Test
     void testMoveByLand() throws GameManagementException {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
@@ -233,6 +250,11 @@ class GameManagementTest {
         assertEquals(destinationCity,
                 player.getCurrentPosition(),
                 "Expected player to have moved to Palma de Mallorca"
+        );
+        assertEquals(
+                3,
+                ((PlayerTurnState) game.getState()).getActionsRemaining(),
+                "Expected player to have 3 actions left"
         );
     }
 
@@ -361,6 +383,8 @@ class GameManagementTest {
             players.add(player);
         }
         when(game.getPlayers()).thenReturn(players);
+        IGameState state = new PlayerTurnState();
+        when(game.getState()).thenReturn(state);
     }
 
     private void setupPlayerForMove(

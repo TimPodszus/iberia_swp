@@ -14,6 +14,7 @@ import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
@@ -314,6 +315,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     @Override
     public void movePlayer(IUser user, String lobbyId, ICity city, Card card) throws GameManagementException {
         IGame game = super.getGame(lobbyId);
+
+        IGameState gameState = game.getState();
+        if (!(gameState instanceof PlayerTurnState)) {
+            LOG.error("[LobbyID: {}] Game is not in a state that allows moving players", lobbyId);
+            throw new GameManagementException("Game is not in a state that allows moving players");
+        }
+
         IPlayer player = game.getCurrentPlayer();
         if (!player.getUser()
                    .equals(user)) {
@@ -359,6 +367,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getDisplayName()
             );
             player.setCurrentPosition(city);
+            ((PlayerTurnState) gameState).reduceActionsRemaining(game);
             return;
         }
 
@@ -378,6 +387,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     .getDisplayName()
         );
         player.setCurrentPosition(city);
+        ((PlayerTurnState) gameState).reduceActionsRemaining(game);
     }
 
 }
