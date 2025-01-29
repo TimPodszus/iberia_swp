@@ -10,6 +10,7 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.store.IGameStore;
 import de.uol.swp.server.plague.data.IPlague;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.role.CountryDoctor;
@@ -119,7 +120,7 @@ public class PlagueManagement implements IPlagueManagement {
             throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");
         }
 
-        Player currentPlayer = game.getCurrentPlayer();
+        IPlayer currentPlayer = game.getCurrentPlayer();
         ICity currentCity = currentPlayer.getCurrentPosition();
         boolean isCountryDoctor = currentPlayer.getRole() instanceof CountryDoctor;
         boolean canTreatInAdjacentRegion;
@@ -165,12 +166,13 @@ public class PlagueManagement implements IPlagueManagement {
             secondCity.removePlagueCubes(plagueToTreatInSecondCity, 1);
         }
 
-        game.getState().handleAction(game, currentPlayer);
     }
     public boolean isCubeCountNegative(IGame game, PlagueName plagueName) {
         return game.getPlagueRepository()
                    .getPlagueByName(plagueName)
                    .getCubesRemaining() > 0;
     }
+
+
 }
 

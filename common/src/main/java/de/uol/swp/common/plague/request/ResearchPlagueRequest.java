@@ -1,6 +1,8 @@
-package de.uol.swp.common.plague;
+package de.uol.swp.common.plague.request;
+
 
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.plague.AbstractPlagueMessage;
 
 /**
  * A request message sent to research a specific plague.
@@ -18,3 +20,4 @@ public class ResearchPlagueRequest extends AbstractPlagueMessage {
     }
 
 }
+

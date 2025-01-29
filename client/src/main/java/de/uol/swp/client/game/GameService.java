@@ -1,8 +1,12 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.plague.request.AvailableCitiesToTreatRequest;
+import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
+import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import org.greenrobot.eventbus.EventBus;
 
@@ -43,5 +47,17 @@ public class GameService {
      */
     public void sendAvailableActionsRequest(String lobbyCode) {
         eventBus.post(new AvailableActionsRequest(lobbyCode));
+    }
+
+    public void sendAvailableCitiesToTreatRequest(String lobbyID, int cityID) {
+        eventBus.post(new AvailableCitiesToTreatRequest(lobbyID, cityID));
+    }
+
+    public void sendAvailablePlaguesRequest(String lobbyID, int cityID) {
+        eventBus.post(new AvailablePlaguesRequest(lobbyID, cityID));
+    }
+
+    public void sendTreatPlagueRequest(String lobbyID, int cityID, PlagueName selectedPlague) {
+        eventBus.post(new TreatPlagueRequest(lobbyID, cityID, selectedPlague));
     }
 }

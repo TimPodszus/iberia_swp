@@ -6,16 +6,21 @@ import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
-import de.uol.swp.client.game.objects.cards.*;
+import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
+import de.uol.swp.client.game.objects.dialogs.SelectCityToTreatDialog;
+import de.uol.swp.client.game.objects.dialogs.TreatPlagueDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.cards.*;
+import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
@@ -25,6 +30,9 @@ import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
+import de.uol.swp.common.plague.response.AvailableCitiesToTreatResponse;
+import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
+import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.IUserDTO;
@@ -32,21 +40,34 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.*;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Shape;
+import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -54,7 +75,11 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -75,7 +100,7 @@ public class GamePresenter extends AbstractPresenter {
                                            .getUser();
 
     @Inject
-    protected GameService gameService;
+    private GameService gameService;
 
     @FXML
     private AnchorPane gameScreen;
@@ -340,10 +365,92 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onTreatPlague(ActionEvent event) {
+        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
         if (treatInfectionButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
-        } else {
+            gameService.sendAvailablePlaguesRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
+        }
+    }
 
+    @Subscribe
+    public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
+        PlagueName selectedPlague = showTreatPlagueDialog(response.getAvailablePlagues());
+
+        gameService.sendTreatPlagueRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId(), selectedPlague);
+
+        if (response.getRole().equals(RoleEnum.COUNTRY_DOCTOR)) {
+            gameService.sendAvailableCitiesToTreatRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
+        }
+    }
+
+    private PlagueName showTreatPlagueDialog(List<IInfectionDTO> availablePlagues) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TreatPlagueDialog.fxml"));
+            Parent root = loader.load();
+
+            TreatPlagueDialog controller = loader.getController();
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Seuche behandeln");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(treatInfectionButton.getScene().getWindow());
+            dialogStage.setScene(new Scene(root));
+            controller.setDialogStage(dialogStage);
+            controller.initData(availablePlagues);
+
+            dialogStage.showAndWait();
+            return controller.getSelectedPlague();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Subscribe
+    public void onTreatPlagueResponse(TreatPlagueResponse response) {
+        updatePlagueView(response.getCityID(), response.getPlagueName());
+
+        if (gameDTO.getCurrentPlayer().getRole().equals(RoleEnum.COUNTRY_DOCTOR)) {
+            gameService.sendAvailableCitiesToTreatRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
+        }
+    }
+
+    private void updatePlagueView(int cityID, PlagueName plagueName) {
+        for (ICityDTO city : gameDTO.getCities()) {
+            if (city.getId() == cityID) {
+                city.getInfections().removeIf(infection -> infection.getPlague().getName().equals(plagueName));
+                break;
+            }
+        }
+
+        Platform.runLater(() -> updateBoard(gameDTO));
+    }
+
+    @Subscribe
+    public void onAvailableCitiesToTreatResponse(AvailableCitiesToTreatResponse response) {
+        ICityDTO selectedCity = showSelectCityDialog(response.getAvailableCities());
+        if (selectedCity == null) return;
+
+        gameService.sendAvailablePlaguesRequest(lobbyId, selectedCity.getId());
+    }
+
+    private ICityDTO showSelectCityDialog(List<ICityDTO> availableCities) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SelectCityToTreatDialog.fxml"));
+            Parent root = loader.load();
+
+            SelectCityToTreatDialog controller = loader.getController();
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Stadt auswählen");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(treatInfectionButton.getScene().getWindow());
+            dialogStage.setScene(new Scene(root));
+            controller.setDialogStage(dialogStage);
+            controller.initData(availableCities);
+
+            dialogStage.showAndWait();
+            return controller.getSelectedCity();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -1108,4 +1215,6 @@ public class GamePresenter extends AbstractPresenter {
         CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
         Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
+
+
 }

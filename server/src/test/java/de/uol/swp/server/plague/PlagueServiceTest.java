@@ -2,7 +2,7 @@ package de.uol.swp.server.plague;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.plague.PlagueResearchedMessage;
-import de.uol.swp.common.plague.ResearchPlagueRequest;
+import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
