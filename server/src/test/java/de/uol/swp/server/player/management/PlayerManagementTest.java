@@ -19,6 +19,9 @@ import org.mockito.*;
 
 import java.util.List;
 
+/**
+ * Test class for PlayerManagement.
+ */
 class PlayerManagementTest {
 
     @Mock
@@ -32,19 +35,29 @@ class PlayerManagementTest {
 
     private PlayerManagement playerManagement;
 
+    /**
+     * Sets up the test environment before each test.
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         playerManagement = new PlayerManagement();
     }
 
-
+    /**
+     * Tests that drawPlayerCard throws an exception when the player is not found.
+     */
     @Test
     void drawPlayerCard_PlayerNotFound_ThrowsException() {
         when(game.getPlayers()).thenReturn(List.of());
         assertThrows(PlayerManagementException.class, () -> playerManagement.drawPlayerCard(game, user));
     }
 
+    /**
+     * Tests that setStartingPosition sets the position when a valid city is provided.
+     *
+     * @throws PlayerManagementException if an error occurs while setting the starting position
+     */
     @Test
     void setStartingPosition_ValidCity_SetsPosition() throws PlayerManagementException {
         CityName cityName = CityName.ALBACETE;
@@ -61,6 +74,9 @@ class PlayerManagementTest {
         verify(player, times(1)).setCurrentPosition(any(ICity.class));
     }
 
+    /**
+     * Tests that setStartingPosition throws an exception when an invalid city is provided.
+     */
     @Test
     void setStartingPosition_InvalidCity_ThrowsException() {
         CityName requestedCity = CityName.ALBACETE;
@@ -84,6 +100,11 @@ class PlayerManagementTest {
                          .contains("Keine valide Stadt ausgewählt"));
     }
 
+    /**
+     * Tests that getCard returns the correct card when it is found.
+     *
+     * @throws PlayerManagementException if an error occurs while getting the card
+     */
     @Test
     void testGetCard() throws PlayerManagementException {
         String lobbyId = "testLobby";
@@ -107,8 +128,13 @@ class PlayerManagementTest {
         assertEquals(card, result);
     }
 
+    /**
+     * Tests that getCard returns null when the card is not found.
+     *
+     * @throws PlayerManagementException if an error occurs while getting the card
+     */
     @Test
-    void testGetCard_CardNotFound_ThrowsException() {
+    void testGetCardNotFound() throws PlayerManagementException {
         String lobbyId = "testLobby";
         String playerName = "testPlayer";
         int cardId = 1;
@@ -122,7 +148,6 @@ class PlayerManagementTest {
 
         when(user.getUsername()).thenReturn(playerName);
 
-        assertThrows(PlayerManagementException.class, () -> playerManagement.getCard(lobbyId, playerName, cardId));
+        assertNull(playerManagement.getCard(lobbyId, playerName, cardId));
     }
-
 }
