@@ -6,16 +6,15 @@ import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
-import de.uol.swp.client.game.objects.cards.AbstractCard;
-import de.uol.swp.client.game.objects.cards.RoleCard;
+import de.uol.swp.client.game.objects.cards.*;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
 import de.uol.swp.client.game.objects.dialogs.SelectCityToTreatDialog;
 import de.uol.swp.client.game.objects.dialogs.TreatPlagueDialog;
+import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.cards.ICardDTO;
-import de.uol.swp.common.cards.InfectionCardDTO;
+import de.uol.swp.common.cards.*;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connectiom.IConnectionDTO;
 import de.uol.swp.common.game.GameActions;
@@ -75,11 +74,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -100,7 +95,7 @@ public class GamePresenter extends AbstractPresenter {
                                            .getUser();
 
     @Inject
-    private GameService gameService;
+    protected GameService gameService;
 
     @FXML
     private AnchorPane gameScreen;
@@ -781,8 +776,10 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
 
         playerCardsHBox.getChildren()
-                       .add(playerCardsHBox.getChildren()
-                                           .size() - 1, cardSlot);
+                       .add(
+                               playerCardsHBox.getChildren()
+                                              .size() - 1, cardSlot
+                       );
     }
 
     /**
@@ -793,7 +790,8 @@ public class GamePresenter extends AbstractPresenter {
     public void removePlayerHandCards() {
         playerCardsHBox.getChildren()
                        .removeIf(node -> node instanceof Pane && node.getStyleClass()
-                                                                     .contains("pile") && !Objects.equals(node.getId(),
+                                                                     .contains("pile") && !Objects.equals(
+                               node.getId(),
                                "roleCard"
                        ));
     }
@@ -857,8 +855,9 @@ public class GamePresenter extends AbstractPresenter {
         this.gameDTO = event.getGameDTO();
 
         Platform.runLater(() -> {
-            updateBoard(gameDTO);
+            initialUpdateBoard(gameDTO);
             updatePlayers(gameDTO.getPlayers());
+
         });
     }
 
@@ -895,6 +894,25 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    private void initialUpdateBoard(IGameDTO gameDTO) {
+        updateCities(gameDTO.getCities());
+        updateConnections(gameDTO.getConnections());
+        updateRegions(gameDTO.getRegions());
+        updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
+        updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
+        updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
+        updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
+        updatePlayerHandCards(gameDTO.getPlayers());
+        updateInfectionCounter(gameDTO.getInfectionCounter());
+        updateEscalationStage(gameDTO.getEscalationStage());
+        updateHospitals(gameDTO.getCities());
+        updateResearchedPlagues(gameDTO.getPlagues());
+
+        disableActionButtons();
+        GameStartDialog.showStartDialog();
+
+    }
+
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
@@ -904,7 +922,8 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayerHandCards(List<IPlayerDTO> players) {
         removePlayerHandCards();
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
+            if (Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -1021,7 +1040,8 @@ public class GamePresenter extends AbstractPresenter {
         playerButtons.getChildren()
                      .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(player.getUsername(),
+            if (!Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -1042,10 +1062,12 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayersInCities(List<IPlayerDTO> players) {
         removeAllGameFigures();
         Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
+                                                              .filter(player -> player.getCurrentPosition() != null)
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
+                cityId,
                 playersInCity
         )));
     }
@@ -1057,7 +1079,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
+            if (Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -1215,6 +1238,4 @@ public class GamePresenter extends AbstractPresenter {
         CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
         Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
-
-
 }

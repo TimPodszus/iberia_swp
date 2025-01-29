@@ -154,7 +154,8 @@ public class Game implements IGame {
     public void initializeGame(int difficulty) {
         createInfectionCards(cityRepository.getCities());
         createPlayerCards(cityRepository.getCities());
-        Collections.shuffle(getInfectionCardDrawPile());
+        Collections.shuffle(infectionCardDrawPile);
+        Collections.shuffle(playerCardDrawPile);
         gameStartShuffle(difficulty + 3);
     }
 
