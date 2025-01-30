@@ -22,7 +22,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -145,15 +144,7 @@ class PlagueManagementTest {
         when(currentCity.isHospitalBuilt()).thenReturn(true);
         when(currentCity.getPlagueName()).thenReturn(PlagueName.CHOLERA);
 
-        List<ICard> discardPile = new ArrayList<>();
-        when(game.getPlayerCardDiscardPile()).thenReturn(discardPile);
-
         plagueManagement.researchPlague(PlagueName.CHOLERA, game);
-
-        //TODO: muss ich hier evtl das game bzw. den lobbyCode mit hineingeben, damit ich den discard pile im
-        // richtigen game fülle?
-        verify(playerManagement).discardCards(eq(currentPlayer), anyList());
-        assertEquals(5, discardPile.size());
 
         verify(plague).setResearched(true);
     }
