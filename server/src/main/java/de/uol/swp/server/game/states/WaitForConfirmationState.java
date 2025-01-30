@@ -5,12 +5,22 @@ import de.uol.swp.common.player.IPlayerDTO;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Represents the state where the game is waiting for a player's confirmation.
+ */
 @Getter
 @Setter
-public class WaitForConfirmationState implements IGameState{
+public class WaitForConfirmationState implements IGameState {
+    /**
+     * The player the game is waiting for.
+     */
     IPlayerDTO waitingForPlayer;
 
-
+    /**
+     * Gets the type of the state.
+     *
+     * @return the state type
+     */
     @Override
     public StateType getStateType() {
         return StateType.WAIT_FOR_CONFIRMATION_STATE;
