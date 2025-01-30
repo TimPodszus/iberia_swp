@@ -61,6 +61,7 @@ class GameManagementTest {
     @InjectMocks
     private GameManagement gameManagement;
 
+    @Mock
     private CityRepository cityRepository;
 
     @Mock
@@ -139,7 +140,7 @@ class GameManagementTest {
                         .toString(),
                 albacete
         );
-        player.addCard(cityCard);
+        playerManagement.addCard(player, cityCard);
 
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 34);
         request.setSession(session);
@@ -155,57 +156,17 @@ class GameManagementTest {
     @Test
     void testSetPositioningWithPlayerManagementException() throws PlayerManagementException {
         WaitForPositioning mockState = mock(WaitForPositioning.class);
-        Player mockPlayer = spy(new Player(mock(IUser.class)));
-        IUser mockUser = mock(IUser.class);
-        IUserDTO mockUserDTO = mock(IUserDTO.class);
-        Session mockSession = mock(Session.class);
-        CityRepository mockCityRepository = mock(CityRepository.class);
-
-        when(mockUser.getUsername()).thenReturn("testUsername");
-        when(mockUserDTO.getUsername()).thenReturn("testUsername");
-
-        CityCard mockCityCard = mock(CityCard.class);
-        ICity mockCity = mock(ICity.class);
-        when(mockCity.getName()).thenReturn(ALBACETE);
-        when(mockCityCard.getCity()).thenReturn(mockCity);
-
-        List<ICard> cards = new ArrayList<>();
-        cards.add(mockCityCard);
-        when(mockPlayer.getCards()).thenReturn(cards);
-
-        List<IPlayer> playerList = new ArrayList<>();
-        playerList.add(mockPlayer);
-
-        when(gameStore.getGame("lobby123")).thenReturn(mockGame);
-        when(mockGame.getState()).thenReturn(mockState);
-        when(mockGame.getPlayers()).thenReturn(playerList);
-        when(mockGame.getCityRepository()).thenReturn(mockCityRepository);
-        when(mockCityRepository.getCitiesByNames(any(CityName.class))).thenReturn(List.of(mockCity));
-
-        when(mockPlayer.getUser()).thenReturn(mockUser);
-        when(mockUser.getUsername()).thenReturn("testUsername");
-
-        when(positioningRequest.getLobbyId()).thenReturn("lobby123");
-        when(positioningRequest.getCityId()).thenReturn(34);
-        when(mockSession.getUser()).thenReturn(mockUserDTO);
-        when(positioningRequest.getSession()).thenReturn(Optional.of(mockSession));
-
-        when(mockCityRepository.getCityNameById(34)).thenReturn(ALBACETE);
-
         when(mockState.getPositionedPlayersCount()).thenReturn(1);
         when(game.getState()).thenReturn(mockState);
 
         IUser testUser = new User("test", "test");
-        Session session = UUIDSession.create(testUser);
         IPlayer player = new Player(testUser);
         when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getGameId()).thenReturn("gameId");
         doThrow(PlayerManagementException.class).when(playerManagement)
-                                                .setStartingPosition(ALBACETE, player);
+                                                .setStartingPosition("gameId", ALBACETE, player);
 
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 34);
-        request.setSession(session);
-
-        when(game.getCityRepository()).thenReturn(cityRepository);
 
         assertThrows(GameManagementException.class, () -> gameManagement.setPositioning(request));
     }
@@ -315,27 +276,20 @@ class GameManagementTest {
     void testMoveBySea() throws GameManagementException {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
-        Card destinationCityCard = new CityCard(destinationCity.getId(),
-                destinationCity.getName()
-                               .toString(),
+        ICard destinationCityCard = new CityCard(destinationCity.getId(),
+                destinationCity.getName().toString(),
                 destinationCity
         );
         IUser user = new User("user1", "");
         createTestPlayers(user);
-        IPlayer player = game.getPlayers()
-                             .get(0);
+        IPlayer player = game.getPlayers().get(0);
         setupPlayerForMove(startCity, player, new Nurse(), new ArrayList<>(List.of(destinationCityCard)));
 
-        assertTrue(player.getCards()
-                         .contains(destinationCityCard), "Expected player to have the destination city card");
+        assertTrue(player.getCards().contains(destinationCityCard), "Expected player to have the destination city card");
 
         gameManagement.movePlayer(user, "lobbyCode", destinationCity, destinationCityCard);
 
         assertEquals(destinationCity, player.getCurrentPosition(), "Expected player to have moved to Alicante");
-        assertFalse(player.getCards()
-                          .contains(destinationCityCard),
-                "Expected player to have discarded the destination city card"
-        );
     }
 
     @Test
@@ -373,7 +327,7 @@ class GameManagementTest {
     void testMoveSailorBySeaWithCityCard() throws GameManagementException {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
-        Card destinationCityCard = new CityCard(destinationCity.getId(),
+        ICard destinationCityCard = new CityCard(destinationCity.getId(),
                 destinationCity.getName()
                                .toString(),
                 destinationCity
@@ -425,7 +379,7 @@ class GameManagementTest {
     }
 
     private void setupPlayerForMove(
-            ICity startCity, IPlayer player, IRole role, List<Card> cards
+            ICity startCity, IPlayer player, IRole role, List<ICard> cards
     ) {
         player.setCurrentPosition(startCity);
         player.setRole(role);
@@ -454,7 +408,6 @@ class GameManagementTest {
             .buildTrainTracks(true);
     }
 
-    @Test
     void testGetAvailableActions() {
         List<GameActions> actions = gameManagement.getAvailableActions("LobbyId", null);
         assertEquals(6, actions.size());

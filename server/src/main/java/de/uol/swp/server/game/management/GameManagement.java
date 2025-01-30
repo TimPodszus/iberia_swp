@@ -5,7 +5,6 @@ import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.AbstractManagement;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
@@ -44,12 +43,14 @@ import java.util.Map;
 public class GameManagement extends AbstractManagement implements IGameManagement {
     static final Logger LOG = LogManager.getLogger(GameManagement.class);
 
+    private final IPlayerManagement playerManagement;
+    private final ICityManagement cityManagement;
 
     @Inject
-    private IPlayerManagement playerManagement;
-
-    @Inject
-    private ICityManagement cityManagement;
+    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement) {
+        this.playerManagement = playerManagement;
+        this.cityManagement = cityManagement;
+    }
 
     /**
      * Creates and initializes a game based on the provided creation request.
@@ -196,7 +197,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 if (player.getUser()
                           .getUsername()
                           .equals(request.getSession()
-                                         .get()
+                                         .orElseThrow(() -> new GameManagementException("Session not found"))
                                          .getUser()
                                          .getUsername())) {
                     requestPlayer = player;
@@ -307,7 +308,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void movePlayer(IUser user, String lobbyId, ICity city, Card card) throws GameManagementException {
+    public void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException {
         IGame game = super.getGame(lobbyId);
 
         IGameState gameState = game.getState();
@@ -324,7 +325,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
         IConnectionManagement connectionManagement = new ConnectionManagement();
-        Map<ICity, List<Card>> availableDestinations = connectionManagement.getAvailableDestinations(
+        Map<ICity, List<ICard>> availableDestinations = connectionManagement.getAvailableDestinations(
                 lobbyId,
                 player.getCurrentPosition()
                       .getId()
@@ -369,7 +370,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                        .getName()
                                        .equals(RoleEnum.SAILOR);
         if (!playerIsSailor) {
-            player.discardCard(card);
+            playerManagement.discardCard(game.getGameId(), player, card);
         }
 
         LOG.debug(

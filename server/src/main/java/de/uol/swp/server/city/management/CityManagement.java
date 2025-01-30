@@ -1,20 +1,18 @@
 package de.uol.swp.server.city.management;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.infection.management.IInfectionManagement;
-import de.uol.swp.server.infection.management.InfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.region.management.RegionManagement;
 
 import java.util.*;
 
@@ -23,9 +21,16 @@ import java.util.*;
  * handling escalations, and managing infection severity.
  */
 public class CityManagement implements ICityManagement {
-    private final IRegionManagement regionManagement = new RegionManagement();
-    private final IGameManagement gameManagement = new GameManagement();
-    private final IInfectionManagement infectionManagement = new InfectionManagement();
+    private final IRegionManagement regionManagement;
+    private final IGameManagement gameManagement;
+    private final IInfectionManagement infectionManagement;
+
+    @Inject
+    public CityManagement(IRegionManagement regionManagement, IGameManagement gameManagement, IInfectionManagement infectionManagement) {
+        this.regionManagement = regionManagement;
+        this.gameManagement = gameManagement;
+        this.infectionManagement = infectionManagement;
+    }
 
     /**
      * Infects a city with its own plague by a specified amount.

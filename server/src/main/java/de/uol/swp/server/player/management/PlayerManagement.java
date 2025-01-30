@@ -5,10 +5,8 @@ import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.*;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.StartState;
@@ -21,11 +19,14 @@ import java.util.Objects;
 
 
 public class PlayerManagement implements IPlayerManagement {
-    @Inject
-    private final IGameManagement gameManagement = new GameManagement();
+    private final IGameManagement gameManagement;
+    private final ICityManagement cityManagement;
 
     @Inject
-    private final ICityManagement cityManagement = new CityManagement();
+    public PlayerManagement(IGameManagement gameManagement, ICityManagement cityManagement) {
+        this.gameManagement = gameManagement;
+        this.cityManagement = cityManagement;
+    }
 
     public ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException {
         IPlayer player = GameStore.getInstance().getGame(lobbyCode).getPlayers()
@@ -119,7 +120,7 @@ public class PlayerManagement implements IPlayerManagement {
         game.getPlayerCardDiscardPile().addAll(cards);
     }
 
-    public Card getCard(String lobbyId, String playerName, int cardId) throws PlayerManagementException {
+    public ICard getCard(String lobbyId, String playerName, int cardId) throws PlayerManagementException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyId);
         IPlayer player = getPlayer(game, playerName);

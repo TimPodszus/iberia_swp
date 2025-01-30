@@ -5,15 +5,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import de.uol.swp.common.city.CityName;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.*;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
+import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.usermanagement.IUser;
@@ -22,9 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Test class for PlayerManagement.
@@ -42,9 +38,11 @@ class PlayerManagementTest {
     @Mock
     private EpidemicCard epidemicCard;
     @Mock
-    private GameManagement gameManagement;
+    private IGameManagement gameManagement;
+    @Mock
+    private ICityManagement cityManagement;
 
-    private PlayerManagement playerManagement;
+    private IPlayerManagement playerManagement;
 
     /**
      * Sets up the test environment before each test.
@@ -52,10 +50,11 @@ class PlayerManagementTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        playerManagement = new PlayerManagement();
         GameStore.getInstance().addGame(game.getGameId(), game);
+        playerManagement = new PlayerManagement(gameManagement, cityManagement);
     }
-/**
+
+    /**
      * Tests that drawPlayerCard throws an exception when the player is not found.
      */
     @Test
@@ -73,7 +72,6 @@ class PlayerManagementTest {
 
         assertNotNull(cardDTO);
     }
-
 
     @Test
     void drawPlayerCard_EpidemicCard_IncreasesInfectionCounter() throws PlayerManagementException {
@@ -166,10 +164,10 @@ class PlayerManagementTest {
         String playerName = "testPlayer";
         int cardId = 1;
 
-        Card card = mock(Card.class);
+        ICard card = mock(ICard.class);
         when(card.getId()).thenReturn(cardId);
 
-        when(game.getPlayers()).thenReturn(List.of(player));
+        game.getPlayers().add(player);
         GameStore.getInstance()
                  .addGame(lobbyId, game);
 
@@ -178,7 +176,7 @@ class PlayerManagementTest {
 
         when(user.getUsername()).thenReturn(playerName);
 
-        Card result = playerManagement.getCard(lobbyId, playerName, cardId);
+        ICard result = playerManagement.getCard(lobbyId, playerName, cardId);
 
         assertEquals(card, result);
     }
@@ -194,7 +192,7 @@ class PlayerManagementTest {
         String playerName = "testPlayer";
         int cardId = 1;
 
-        when(game.getPlayers()).thenReturn(List.of(player));
+        game.getPlayers().add(player);
         GameStore.getInstance()
                  .addGame(lobbyId, game);
 
@@ -205,7 +203,6 @@ class PlayerManagementTest {
 
         assertNull(playerManagement.getCard(lobbyId, playerName, cardId));
     }
-}
 
     @Test
     void discardCards_DiscardMultipleCards() {
