@@ -32,7 +32,13 @@ public interface ILobbyStore {
      * @param difficulty the difficulty level of the lobby
      * @return the newly created {@code Lobby}
      */
-    ILobby createLobby(String lobbyCode, String name, List<IUser> users, IUser owner, int difficulty);
+    ILobby createLobby(
+            String lobbyCode,
+            String name,
+            List<IUser> users,
+            IUser owner,
+            int difficulty
+    );
 
     /**
      * Updates an existing lobby with the specified name, code, users, owner, and difficulty level.
@@ -44,7 +50,13 @@ public interface ILobbyStore {
      * @param difficulty the difficulty level of the lobby
      * @return the updated {@code Lobby}
      */
-    ILobby updateLobby(String name, String lobbycode, List<IUser> users, IUser owner, int difficulty);
+    ILobby updateLobby(
+            String name,
+            String lobbycode,
+            List<IUser> users,
+            IUser owner,
+            int difficulty
+    );
 
     /**
      * Removes the lobby with the specified name from the system.

@@ -2,14 +2,15 @@ package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.server.infection.InfectionMapper;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import de.uol.swp.server.infection.InfectionMapper;
 import de.uol.swp.server.city.data.ICity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CityMapper {
 
     public static ICityDTO toDTO(ICity city) {

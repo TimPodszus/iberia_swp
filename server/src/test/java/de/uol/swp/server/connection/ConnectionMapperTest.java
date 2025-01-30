@@ -1,7 +1,9 @@
 package de.uol.swp.server.connection;
 
-import de.uol.swp.common.connectiom.IConnectionDTO;
+import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.connection.data.Connection;
+import de.uol.swp.server.connection.data.IConnection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,27 +14,27 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for the ConnectionMapper utility class.
- * This class verifies the functionality of mapping {@link Connection} objects to {@link IConnectionDTO} objects.
+ * This class verifies the functionality of mapping {@link IConnection} objects to {@link IConnectionDTO} objects.
  */
 class ConnectionMapperTest {
     /**
-     * Instance of the first {@link Connection} object used for testing.
+     * Instance of the first {@link IConnection} object used for testing.
      */
-    private Connection firstCityConnection;
+    private IConnection firstCityConnection;
 
     /**
-     * List of {@link Connection} objects used in tests.
+     * List of {@link IConnection} objects used in tests.
      */
-    private List<Connection> connectionList;
+    private List<IConnection> connectionList;
 
     /**
      * Sets up test objects before each test method.
-     * Initializes {@link Connection} instances with predefined values and adds them to a list.
+     * Initializes {@link IConnection} instances with predefined values and adds them to a list.
      */
     @BeforeEach
     void setUp() {
         firstCityConnection = new Connection(1, Arrays.asList(CityName.BARCELONA, CityName.ALICANTE), true, true);
-        Connection secondCityConnection = new Connection(
+        IConnection secondCityConnection = new Connection(
                 2,
                 Arrays.asList(CityName.ZARAGOZA, CityName.GIRONA),
                 false,
@@ -43,8 +45,8 @@ class ConnectionMapperTest {
     }
 
     /**
-     * Tests the {@link ConnectionMapper#toDTO(Connection)} method.
-     * Verifies that a {@link Connection} object is correctly mapped to an {@link IConnectionDTO} object.
+     * Tests the  method.
+     * Verifies that a {@link IConnection} object is correctly mapped to an {@link IConnectionDTO} object.
      */
     @Test
     void testToDTO() {
@@ -52,8 +54,7 @@ class ConnectionMapperTest {
 
         assertNotNull(connectionDTO);
         assertEquals(1, connectionDTO.getId());
-        assertEquals(
-                2,
+        assertEquals(2,
                 connectionDTO.getCityNames()
                              .size()
         );

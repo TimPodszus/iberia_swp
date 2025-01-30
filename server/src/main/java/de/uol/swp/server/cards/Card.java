@@ -3,6 +3,8 @@ package de.uol.swp.server.cards;
 import de.uol.swp.common.cards.CardType;
 import lombok.Getter;
 
+import java.util.Objects;
+
 @Getter
 public abstract class Card {
     private final int id;
@@ -13,5 +15,23 @@ public abstract class Card {
         this.id = id;
         this.title = title;
         this.type = type;
+    }
+
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        Card card = (Card) object;
+        return id == card.id && Objects.equals(title, card.title) && type == card.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, type);
     }
 }
