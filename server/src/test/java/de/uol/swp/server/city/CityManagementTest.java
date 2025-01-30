@@ -18,6 +18,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for CityManagement.
@@ -161,5 +162,17 @@ public class CityManagementTest {
         assertThrows(CityManagementException.class, () -> {
             cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
         }, "Game Over");
+    }
+
+    /**
+     * Tests the getCity method of CityManagement.
+     */
+    @Test
+    void testGetCity() {
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+
+        ICity city = cityManagement.getCity("lobbyCode", 1);
+
+        assertEquals(1, city.getId());
     }
 }

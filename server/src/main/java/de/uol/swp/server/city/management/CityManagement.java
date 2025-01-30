@@ -7,6 +7,7 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.infection.management.IInfectionManagement;
@@ -48,10 +49,7 @@ public class CityManagement implements ICityManagement {
      * @throws CityManagementException if any parameter is invalid or an error occurs during infection
      */
     public void infectCity(
-            IGame game,
-            InfectionCard infectionCard,
-            PlagueName plagueName,
-            int amount
+            IGame game, InfectionCard infectionCard, PlagueName plagueName, int amount
     ) throws CityManagementException {
         infectCity(game, findCity(game, infectionCard), plagueName, amount, true);
         gameManagement.discardInfectionCard(game, infectionCard);
@@ -68,11 +66,7 @@ public class CityManagement implements ICityManagement {
      * @throws CityManagementException if any parameter is invalid or an error occurs during infection
      */
     private void infectCity(
-            IGame game,
-            ICity city,
-            PlagueName plagueName,
-            int amount,
-            boolean triggerEscalation
+            IGame game, ICity city, PlagueName plagueName, int amount, boolean triggerEscalation
     ) throws CityManagementException {
         validateParameters(game, city, plagueName, amount);
 
@@ -101,10 +95,7 @@ public class CityManagement implements ICityManagement {
      * @throws CityManagementException if any parameter is invalid
      */
     private void validateParameters(
-            IGame game,
-            ICity city,
-            PlagueName plagueName,
-            int amount
+            IGame game, ICity city, PlagueName plagueName, int amount
     ) throws CityManagementException {
         if (game == null || city == null || plagueName == null || amount < 1) {
             throw new CityManagementException("Invalid parameters");
@@ -124,6 +115,13 @@ public class CityManagement implements ICityManagement {
                                        .getCityByName(infectionCard.getCity()
                                                                    .getName()))
                        .orElseThrow(() -> new CityManagementException("City not found"));
+    }
+
+    public ICity getCity(String lobbyId, int cityId) {
+        return GameStore.getInstance()
+                        .getGame(lobbyId)
+                        .getCityRepository()
+                        .getCity(cityId);
     }
 
     /**
@@ -150,12 +148,7 @@ public class CityManagement implements ICityManagement {
      * @param triggerEscalation whether to trigger escalation if the infection severity exceeds the threshold
      */
     private void increaseInfectionSeverity(
-            IGame game,
-            IInfection infection,
-            IPlague plague,
-            int amount,
-            ICity city,
-            boolean triggerEscalation
+            IGame game, IInfection infection, IPlague plague, int amount, ICity city, boolean triggerEscalation
     ) {
         int newSeverity;
 

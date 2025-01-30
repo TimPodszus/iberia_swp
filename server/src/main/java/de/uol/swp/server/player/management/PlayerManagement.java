@@ -37,7 +37,9 @@ public class PlayerManagement implements IPlayerManagement {
         return drawPlayerCard(lobbyCode, player);
     }
 
-    public ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws PlayerManagementException {
+    public ICardDTO drawPlayerCard(
+            String lobbyCode, IPlayer player
+    ) throws PlayerManagementException {
         IGame game = GameStore.getInstance().getGame(lobbyCode);
 
         ICard card = getCard(game, player);
@@ -115,5 +117,26 @@ public class PlayerManagement implements IPlayerManagement {
             player.getCards().remove(card);
         }
         game.getPlayerCardDiscardPile().addAll(cards);
+    }
+
+    public Card getCard(String lobbyId, String playerName, int cardId) throws PlayerManagementException {
+        IGame game = GameStore.getInstance()
+                              .getGame(lobbyId);
+        IPlayer player = getPlayer(game, playerName);
+        return player.getCards()
+                     .stream()
+                     .filter(c -> Objects.equals(c.getId(), cardId))
+                     .findFirst()
+                     .orElse(null);
+    }
+
+    private IPlayer getPlayer(IGame game, String playerName) throws PlayerManagementException {
+        return game.getPlayers()
+                   .stream()
+                   .filter(p -> p.getUser()
+                                 .getUsername()
+                                 .equals(playerName))
+                   .findFirst()
+                   .orElseThrow(() -> new PlayerManagementException("Player not found"));
     }
 }

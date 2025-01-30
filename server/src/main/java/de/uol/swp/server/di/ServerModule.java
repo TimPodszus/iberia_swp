@@ -1,19 +1,19 @@
 package de.uol.swp.server.di;
 
+import com.google.inject.AbstractModule;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.ICityManagement;
+import de.uol.swp.server.connection.management.ConnectionManagement;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagement;
-import de.uol.swp.server.lobby.store.ILobbyStore;
-import de.uol.swp.server.lobby.store.LobbyStore;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
-import org.greenrobot.eventbus.EventBus;
-import com.google.inject.AbstractModule;
 import de.uol.swp.server.usermanagement.store.UserStore;
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * Module that provides classes needed by the Server.
@@ -34,7 +34,9 @@ public class ServerModule extends AbstractModule {
         bind(UserStore.class).toInstance(store);
         bind(EventBus.class).toInstance(bus);
         bind(ILobbyManagement.class).to(LobbyManagement.class);
-        bind(ILobbyStore.class).to(LobbyStore.class);
+        bind(IConnectionManagement.class).to(ConnectionManagement.class);
+        bind(IGameManagement.class).to(GameManagement.class);
+        bind(ICityManagement.class).to(CityManagement.class);
         bind(IGameManagement.class).to(GameManagement.class);
         bind(IPlayerManagement.class).to(PlayerManagement.class);
         bind(ICityManagement.class).to(CityManagement.class);

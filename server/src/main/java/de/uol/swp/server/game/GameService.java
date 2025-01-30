@@ -1,30 +1,35 @@
 package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.GameActions;
+import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.player.request.MovePlayerRequest;
+import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
+import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.game.management.IGameManagement;
-import de.uol.swp.server.lobby.management.LobbyManagementException;
+import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service responsible for managing game-related requests such as creating games.
@@ -32,8 +37,11 @@ import java.util.Optional;
  * and communicates the result back to the client through status responses.
  */
 public class GameService extends AbstractService {
+    private static final Logger LOG = LogManager.getLogger(GameService.class);
     IGameManagement gameManagement;
     protected ILobbyManagement lobbyManagement;
+    ICityManagement cityManagement;
+    IPlayerManagement playerManagement;
 
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
@@ -41,10 +49,18 @@ public class GameService extends AbstractService {
      * @param bus the EventBus to which the service will subscribe and post events
      */
     @Inject
-    public GameService(EventBus bus, ILobbyManagement lobbyManagement, IGameManagement gameManagement) {
+    public GameService(
+            EventBus bus,
+            ILobbyManagement lobbyManagement,
+            IGameManagement gameManagement,
+            ICityManagement cityManagement,
+            IPlayerManagement playerManagement
+    ) {
         super(bus);
         this.lobbyManagement = lobbyManagement;
         this.gameManagement = gameManagement;
+        this.cityManagement = cityManagement;
+        this.playerManagement = playerManagement;
     }
 
     /**
@@ -55,14 +71,17 @@ public class GameService extends AbstractService {
      * @param request the game creation request containing necessary game initialization parameters
      */
     @Subscribe
-    public void onCreateGameRequest(CreateGameRequest request) throws LobbyManagementException, PlayerManagementException {
+    public void onCreateGameRequest(CreateGameRequest request) throws PlayerManagementException {
+        LOG.debug("Got CreateGameRequest for lobby {}", request.getLobbyId());
         IGame game = gameManagement.createAndInitializeGame(request);
-        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyId());
-        if (game != null && lobby.isPresent()) {
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        if (game != null) {
+            LOG.debug("Game created for lobby {}", request.getLobbyId());
             post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
-            sendToAllInLobby(lobby.get(), new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+            sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
     }
+
     /**
      * Handles incoming requests to set a players position. This method initializes the position
      * through the GameManagement class, checks if the positioning was successful,
@@ -71,12 +90,38 @@ public class GameService extends AbstractService {
      * @param request the game PositioningRequest containing necessary initialization parameters
      */
     @Subscribe
-    public void onPositionRequest(PositioningRequest request) throws LobbyManagementException, GameManagementException, PlayerManagementException {
+    public void onPositionRequest(PositioningRequest request) throws GameManagementException {
         IGame game = gameManagement.setPositioning(request);
-        Optional<ILobby> lobby = lobbyManagement.getLobby(request.getLobbyId());
-        if (game != null && lobby.isPresent()) {
-            sendToAllInLobby(lobby.get(), new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        if (game != null && lobby != null) {
+            sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
+    }
+
+    /**
+     * Handles incoming requests to move a player. This method retrieves the user from the session,
+     * and then delegates the player movement to the GameManagement class.
+     *
+     * @param request the player move request containing session, lobby code, and city ID
+     */
+    @Subscribe
+    public void onMovePlayerRequest(MovePlayerRequest request) throws GameManagementException, GameException, PlayerManagementException {
+        IUserDTO user = request.getSession()
+                               .map(Session::getUser)
+                               .orElse(null);
+        if (user == null) {
+            throw new GameException("User is unknown");
+        }
+
+        gameManagement.movePlayer(UserMapper.toUser(user),
+                request.getLobbyId(),
+                cityManagement.getCity(request.getLobbyId(), request.getCityId()),
+                playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId())
+        );
+
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 
     /**

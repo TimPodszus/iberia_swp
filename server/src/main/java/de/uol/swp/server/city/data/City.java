@@ -75,4 +75,18 @@ public class City implements ICity {
      */
     @Setter
     private List<IInfection> infections = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object object) {
+        boolean equals = false;
+        if (object instanceof City city) {
+            equals = this.plagueName.equals(city.plagueName) && this.name.equals(city.name) && this.foundationDate == city.foundationDate && this.harbourCity == city.harbourCity && this.hospitalBuilt == city.hospitalBuilt;
+        }
+        return equals;
+    }
+
+    @Override
+    public int hashCode() {
+        return plagueName.hashCode() + name.hashCode() + foundationDate + (harbourCity ? 1 : 0) + (hospitalBuilt ? 1 : 0);
+    }
 }

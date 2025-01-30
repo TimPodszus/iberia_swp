@@ -1,6 +1,9 @@
 package de.uol.swp.server.player.data;
 
 import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.usermanagement.IUser;
@@ -23,5 +26,15 @@ public class Player implements IPlayer {
     @Setter
     private List<ICard> cards = new ArrayList<>();
     private final IUser user;
+
+    public CityCard getCityCard(ICity city) {
+        for (ICard card : cards) {
+            if (card instanceof CityCard cityCard && cityCard.getCity()
+                                                             .equals(city)) {
+                return cityCard;
+            }
+        }
+        return null;
+    }
 }
 
