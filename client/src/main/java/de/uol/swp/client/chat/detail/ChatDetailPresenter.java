@@ -7,10 +7,12 @@ import de.uol.swp.common.chat.AbstractChatMessage;
 import de.uol.swp.common.chat.PlayerChatMessage;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import org.greenrobot.eventbus.Subscribe;
 
 
@@ -29,6 +31,12 @@ public class ChatDetailPresenter extends AbstractPresenter {
     private LobbyService lobbyService;
 
     private ILobbyDTO lobbyDTO;
+    private boolean isChatVisible = false;
+    @FXML
+    private VBox chatContainer;
+
+    @FXML
+    private Button toggleChatButton;
 
     @FXML
     public void initialize() {
@@ -60,5 +68,18 @@ public class ChatDetailPresenter extends AbstractPresenter {
 
     public void appendToChat(String message) {
         Platform.runLater(() -> chatArea.appendText("[System] " + message + "\n"));
+    }
+
+    @FXML
+    public void toggleChatVisibility() {
+        isChatVisible = !isChatVisible;
+        chatContainer.setVisible(isChatVisible);
+        chatContainer.setManaged(isChatVisible);
+
+        if (isChatVisible) {
+            toggleChatButton.setText("❌");
+        } else {
+            toggleChatButton.setText("Chat");
+        }
     }
 }

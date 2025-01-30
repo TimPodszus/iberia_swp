@@ -2,6 +2,7 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
+import de.uol.swp.client.chat.detail.ChatDetailPresenter;
 import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
@@ -32,12 +33,14 @@ import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.IUserDTO;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
@@ -51,6 +54,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -154,6 +158,26 @@ public class GamePresenter extends AbstractPresenter {
 
     private IGameDTO gameDTO;
 
+    @FXML
+    private AnchorPane chatPane;
+    @FXML
+    private Button chatToggleButton;
+    private boolean isChatOpen = false;
+    @FXML
+    public void toggleChat() {
+        TranslateTransition transition = new TranslateTransition(Duration.millis(300), chatPane);
+        if (isChatOpen) {
+            transition.setToX(-300);  // Chat nach links ausblenden
+        } else {
+            transition.setToX(0);  // Chat sichtbar machen
+        }
+        transition.play();
+        isChatOpen = !isChatOpen;
+    }
+
+    @Inject
+    private ChatDetailPresenter chatDetailPresenter;
+
     /**
      * Initializes the game screen presenter.
      */
@@ -161,6 +185,7 @@ public class GamePresenter extends AbstractPresenter {
     public void initialize() {
         loadSvgIntoWebView();
         setToggleGroup();
+        eventBus.register(chatDetailPresenter);
     }
 
     /**
