@@ -10,8 +10,6 @@ import jakarta.inject.Inject;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.Optional;
-
 public class ChatService extends AbstractService {
     private final Chat chat;
     private final ILobbyManagement lobbyManagement;
@@ -25,13 +23,11 @@ public class ChatService extends AbstractService {
 
     @Subscribe
     public void onChatRequest(PlayerChatMessage playerChatMessage) throws LobbyManagementException {
-        Optional<ILobby> optionalLobby = lobbyManagement.getLobby(playerChatMessage.getLobbyCode());
+        ILobby lobby = lobbyManagement.getLobby(playerChatMessage.getLobbyCode());
 
-        if (optionalLobby.isEmpty()) {
+        if (playerChatMessage.getLobbyCode().isEmpty()) {
             throw new LobbyManagementException("Lobby not found for code: " + playerChatMessage.getLobbyCode());
         }
-
-        ILobby lobby = optionalLobby.get();
 
         chat.addMessage(playerChatMessage);
 
