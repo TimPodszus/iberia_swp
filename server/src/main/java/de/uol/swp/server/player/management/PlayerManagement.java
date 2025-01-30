@@ -4,13 +4,15 @@ import com.google.inject.Inject;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.*;
-import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.StartState;
+import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -19,25 +21,25 @@ import java.util.Objects;
 
 
 public class PlayerManagement implements IPlayerManagement {
-    private IGame game;
+    @Inject
+    private final IGameManagement gameManagement = new GameManagement();
 
     @Inject
-    private IGameManagement gameManagement;
+    private final ICityManagement cityManagement = new CityManagement();
 
-    @Inject
-    private ICityManagement cityManagement;
-
-    public ICardDTO drawPlayerCard(IGame game, IUser user) throws PlayerManagementException {
-        IPlayer player = game.getPlayers()
+    public ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException {
+        IPlayer player = GameStore.getInstance().getGame(lobbyCode).getPlayers()
                              .stream()
                              .filter(p -> Objects.equals(p.getUser()
                                                           .getUsername(), user.getUsername()))
                              .findFirst()
                              .orElseThrow(() -> new PlayerManagementException("Player not found for the given user"));
-        return drawPlayerCard(game, player);
+        return drawPlayerCard(lobbyCode, player);
     }
 
-    public ICardDTO drawPlayerCard(IGame game, IPlayer player) throws PlayerManagementException {
+    public ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws PlayerManagementException {
+        IGame game = GameStore.getInstance().getGame(lobbyCode);
+
         ICard card = getCard(game, player);
 
         if (card instanceof EpidemicCard) {
@@ -60,23 +62,24 @@ public class PlayerManagement implements IPlayerManagement {
     private ICard getCard(IGame game, IPlayer player) throws PlayerManagementException {
         if (!player.equals(game.getPlayers()
                                .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState) && !(game.getState() instanceof StartState)) {
-            throw new PlayerManagementException();
+            throw new PlayerManagementException("It is not the player's turn to draw a card");
         }
 
         List<ICard> playerCardDrawPile = game.getPlayerCardDrawPile();
 
         if (playerCardDrawPile.isEmpty()) {
-            throw new PlayerManagementException();
+            throw new PlayerManagementException("Player card draw pile is empty");
         }
 
         // if 0 is the top card of the draw pile
         return playerCardDrawPile.remove(0);
     }
 
-    public void setStartingPosition(CityName cityName, IPlayer player) throws PlayerManagementException {
+    public void setStartingPosition(String lobbyCode, CityName cityName, IPlayer player) throws PlayerManagementException {
+        IGame game = GameStore.getInstance().getGame(lobbyCode);
+
         boolean validRequest = false;
         int cityCardCount = 0;
-        CityRepository cityRepository = new CityRepository();
         for (ICard card : player.getCards()) {
             if (card instanceof CityCard cityCard) {
                 cityCardCount++;
@@ -88,12 +91,12 @@ public class PlayerManagement implements IPlayerManagement {
             }
         }
         if (validRequest || cityCardCount == 0) {
-            ICity city = cityRepository.getCitiesByNames(cityName)
+            ICity city = game.getCityRepository().getCitiesByNames(cityName)
                                        .get(0);
             player.setCurrentPosition(city);
         } else {
             throw new PlayerManagementException(
-                    "Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast " + "ausw" + "ählen!");
+                    "Keine valide Stadt ausgewählt! Du musst eine Stadt die du auf der Hand hast auswählen!");
         }
     }
 
@@ -101,15 +104,13 @@ public class PlayerManagement implements IPlayerManagement {
         player.getCards().add(card);
     }
 
-    public void playCard(IPlayer player, ICard card) {
-
+    public void discardCard(String lobbyCode, IPlayer player, ICard card) {
+        discardCards(lobbyCode, player, List.of(card));
     }
 
-    public void discardCard(IPlayer player, ICard card) {
-        discardCards(player, List.of(card));
-    }
+    public void discardCards(String lobbyCode, IPlayer player, List<? extends ICard> cards) {
+        IGame game = GameStore.getInstance().getGame(lobbyCode);
 
-    public void discardCards(IPlayer player, List<? extends ICard> cards) {
         for (ICard card : cards) {
             player.getCards().remove(card);
         }

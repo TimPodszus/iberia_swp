@@ -3,7 +3,6 @@ package de.uol.swp.server.game.management;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
@@ -93,7 +92,7 @@ public class GameManagement implements IGameManagement {
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                playerManagement.drawPlayerCard(game, player);
+                playerManagement.drawPlayerCard(game.getGameId(), player);
             }
             game.setCurrentPlayerIndex(game.getCurrentPlayerIndex() + 1);
         }
@@ -188,6 +187,7 @@ public class GameManagement implements IGameManagement {
             try {
                 assert requestPlayer != null;
                 playerManagement.setStartingPosition(
+                        game.getGameId(),
                         game.getCityRepository()
                             .getCityNameById(request.getCityId()), requestPlayer
                 );

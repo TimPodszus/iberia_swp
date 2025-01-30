@@ -5,7 +5,6 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
-import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.store.IGameStore;
 import de.uol.swp.server.plague.data.IPlague;
@@ -24,6 +23,7 @@ public class PlagueManagement implements IPlagueManagement {
 
     private final IGameStore gameStore;
 
+    @Inject
     private IPlayerManagement playerManagement;
 
     /**
@@ -86,7 +86,7 @@ public class PlagueManagement implements IPlagueManagement {
 
         List<CityCard> cardsToDiscard = plagueCards.subList(0, 5);
 
-        playerManagement.discardCards(game.getCurrentPlayer(), cardsToDiscard);
+        playerManagement.discardCards(game.getGameId(), game.getCurrentPlayer(), cardsToDiscard);
 
         plague.setResearched(true);
     }

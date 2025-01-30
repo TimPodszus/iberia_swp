@@ -2,7 +2,6 @@ package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.city.CityName;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.data.IPlayer;
@@ -23,7 +22,7 @@ public interface IPlayerManagement {
      * @return the drawn card
      * @throws PlayerManagementException if an error occurs while drawing the card
      */
-    ICardDTO drawPlayerCard(IGame game, IUser user) throws PlayerManagementException;
+    ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException;
 
     /**
      * Draws a player card for a given player in a game.
@@ -33,7 +32,7 @@ public interface IPlayerManagement {
      * @return the drawn card
      * @throws PlayerManagementException if an error occurs while drawing the card
      */
-    ICardDTO drawPlayerCard(IGame game, IPlayer player) throws PlayerManagementException;
+    ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws PlayerManagementException;
 
     /**
      * Sets the starting position for a player in a specified city.
@@ -41,13 +40,30 @@ public interface IPlayerManagement {
      * @param cityName the name of the city
      * @param player   the player whose starting position is being set
      */
-    void setStartingPosition(CityName cityName, IPlayer player) throws PlayerManagementException;
+    void setStartingPosition(String lobbyCode, CityName cityName, IPlayer player) throws PlayerManagementException;
 
+    /**
+     * Adds a card to the player's hand.
+     *
+     * @param player the player to whom the card is being added
+     * @param card   the card to be added
+     */
     void addCard(IPlayer player, ICard card);
 
-    void playCard(IPlayer player, ICard card);
+    /**
+     * Discards a single card from the player's hand.
+     *
+     * @param player the player discarding the card
+     * @param card   the card to be discarded
+     * @param <T>    the type of the card, extending ICard
+     */
+    <T extends ICard> void discardCard(String lobbyCode, IPlayer player, T card);
 
-    <T extends ICard> void discardCard(IPlayer player, T card);
-
-    void discardCards(IPlayer player, List<? extends ICard> cards);
+    /**
+     * Discards multiple cards from the player's hand.
+     *
+     * @param player the player discarding the cards
+     * @param cards  the list of cards to be discarded
+     */
+    void discardCards(String lobbyCode, IPlayer player, List<? extends ICard> cards);
 }
