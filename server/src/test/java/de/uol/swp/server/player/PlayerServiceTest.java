@@ -48,11 +48,11 @@ class PlayerServiceTest {
         IUser user = new User("testUser", "testPassword");
 
         when(request.getLobbyId()).thenReturn("validGameId");
-        when(GameStore.getInstance().getGame(eq("validGameId"))).thenReturn(game);
 
         when(session.getUser()).thenReturn(UserMapper.toDTO(user));
         when(request.getSession()).thenReturn(Optional.of(session));
-        GameStore.getInstance().addGame("validGameId", game); // Ensure the game is added to the store
+
+        GameStore.getInstance().addGame("validGameId", game);
     }
 
     @Test
