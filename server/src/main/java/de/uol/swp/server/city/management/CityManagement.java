@@ -172,11 +172,11 @@ public class CityManagement implements ICityManagement {
         plague.setCubesRemaining(plague.getCubesRemaining() - cubesUsed);
 
         if (wouldEscalate && triggerEscalation) {
-            escalation(game, city.getName(), List.of(city.getName()), city.getPlagueName());
+            escalation(game, city.getName(), city.getPlagueName());
         }
 
         if (game.getPlagueRepository().getPlagueByName(plague.getName()).getCubesRemaining() < 0) {
-            // GameOver auslösen (Implementierung mit Issue #137)
+            //TODO: GameOver auslösen (Implementierung mit Issue #137)
 
             // vorübergehend für Unit-Test - muss dann entsprechend angepasst werden
             throw new CityManagementException("Game Over");
@@ -188,15 +188,15 @@ public class CityManagement implements ICityManagement {
      *
      * @param game            the game instance
      * @param cityName        the name of the city to escalate
-     * @param escalatedCities the list of cities that have already escalated
      * @param plagueName      the name of the plague causing the escalation
      */
-    public void escalation(IGame game, CityName cityName, List<CityName> escalatedCities, PlagueName plagueName) {
+    private void escalation(IGame game, CityName cityName, PlagueName plagueName) {
 
         Queue<CityName> citiesToProcess = new LinkedList<>();
         citiesToProcess.add(cityName);
 
-        List<CityName> mutableEscalatedCities = new ArrayList<>(escalatedCities);
+        List<CityName> escalatedCities = new ArrayList<>();
+        escalatedCities.add(cityName);
 
         while (!citiesToProcess.isEmpty()) {
             game.setEscalationStage(game.getEscalationStage() + 1);
@@ -208,7 +208,7 @@ public class CityManagement implements ICityManagement {
                                               .getCitiesByNames(connectedCityNames);
 
             for (ICity connectedCity : connectedCities) {
-                if (mutableEscalatedCities.contains(connectedCity.getName())) {
+                if (escalatedCities.contains(connectedCity.getName())) {
                     continue;
                 }
 
@@ -221,7 +221,7 @@ public class CityManagement implements ICityManagement {
                                                                .equals(plagueName) && infection.getSeverity() > 3)
                                  .findFirst()
                                  .ifPresent(infection -> infection.setSeverity(3));
-                    mutableEscalatedCities.add(connectedCity.getName());
+                    escalatedCities.add(connectedCity.getName());
                     citiesToProcess.add(connectedCity.getName());
                 }
             }
