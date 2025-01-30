@@ -175,7 +175,6 @@ public class GamePresenter extends AbstractPresenter {
         isChatOpen = !isChatOpen;
     }
 
-    @Inject
     private ChatDetailPresenter chatDetailPresenter;
 
     /**
@@ -185,7 +184,6 @@ public class GamePresenter extends AbstractPresenter {
     public void initialize() {
         loadSvgIntoWebView();
         setToggleGroup();
-        eventBus.register(chatDetailPresenter);
     }
 
     /**
