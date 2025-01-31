@@ -11,18 +11,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class WaitForConfirmationState implements IGameState {
+    private final StateType stateType = StateType.WAIT_FOR_CONFIRMATION_STATE;
     /**
      * The player the game is waiting for.
      */
     IPlayerDTO waitingForPlayer;
 
-    /**
-     * Gets the type of the state.
-     *
-     * @return the state type
-     */
-    @Override
-    public StateType getStateType() {
-        return StateType.WAIT_FOR_CONFIRMATION_STATE;
-    }
 }
