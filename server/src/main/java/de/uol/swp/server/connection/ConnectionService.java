@@ -6,8 +6,8 @@ import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CardMapper;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import org.apache.logging.log4j.LogManager;
@@ -50,12 +50,13 @@ public class ConnectionService extends AbstractService {
                 request.getLobbyId(),
                 request.getCityId()
         );
-        Map<ICity, List<Card>> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyId(),
+        Map<ICity, List<ICard>> availableDestinations =
+                connectionManagement.getAvailableDestinations(request.getLobbyId(),
                 request.getCityId()
         );
         Map<Integer, List<ICardDTO>> availableDestinationsAsDtos = new HashMap<>();
 
-        for (Map.Entry<ICity, List<Card>> entry : availableDestinations.entrySet()) {
+        for (Map.Entry<ICity, List<ICard>> entry : availableDestinations.entrySet()) {
             List<ICardDTO> cards = entry.getValue()
                                         .stream()
                                         .map(CardMapper::toDTO)

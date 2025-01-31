@@ -2,9 +2,9 @@ package de.uol.swp.server.connection.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.AbstractManagement;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
@@ -25,20 +25,20 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     private static final Logger LOG = LogManager.getLogger(ConnectionManagement.class);
 
     @Override
-    public Map<ICity, List<Card>> getAvailableDestinations(String lobbyId, int cityId) {
+    public Map<ICity, List<ICard>> getAvailableDestinations(String lobbyId, int cityId) {
         CityRepository cityRepository = super.getGame(lobbyId)
                                              .getCityRepository();
         ICity startCity = cityRepository.getCity(cityId);
 
-        Map<ICity, List<Card>> availableDestinations = getByLandConnectedCities(lobbyId, startCity);
+        Map<ICity, List<ICard>> availableDestinations = getByLandConnectedCities(lobbyId, startCity);
 
         if (startCity.isHarbourCity()) {
             LOG.debug("[Lobby: {}] City {} is a harbour city, continuing to retrieve available harbour cities",
                     lobbyId,
                     startCity.getName()
             );
-            Map<ICity, List<Card>> seaConnections = getBySeaConnectedCities(lobbyId);
-            for (Map.Entry<ICity, List<Card>> entry : seaConnections.entrySet()) {
+            Map<ICity, List<ICard>> seaConnections = getBySeaConnectedCities(lobbyId);
+            for (Map.Entry<ICity, List<ICard>> entry : seaConnections.entrySet()) {
                 availableDestinations.putIfAbsent(entry.getKey(), entry.getValue());
             }
         }
@@ -58,9 +58,9 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
      * @param startCity the starting city
      * @return a map of cities that can be reached via land connections
      */
-    private Map<ICity, List<Card>> getByLandConnectedCities(String lobbyId, ICity startCity) {
+    private Map<ICity, List<ICard>> getByLandConnectedCities(String lobbyId, ICity startCity) {
         IGame game = super.getGame(lobbyId);
-        Map<ICity, List<Card>> availableDestinations = new HashMap<>();
+        Map<ICity, List<ICard>> availableDestinations = new HashMap<>();
         List<IConnection> connections = game.getConnectionRepository()
                                             .getConnectionsOfCity(startCity.getName());
 
@@ -98,8 +98,8 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
      * @param currentCity the starting city
      * @return a map of cities that can be reached via train connections
      */
-    private Map<ICity, List<Card>> getAdditionalTrainConnectionsForCity(
-            String lobbyId, ICity previousCity, ICity currentCity, Map<ICity, List<Card>> availableDestinations
+    private Map<ICity, List<ICard>> getAdditionalTrainConnectionsForCity(
+            String lobbyId, ICity previousCity, ICity currentCity, Map<ICity, List<ICard>> availableDestinations
     ) {
         IGame game = super.getGame(lobbyId);
         List<IConnection> connections = game.getConnectionRepository()
@@ -135,8 +135,8 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
      * @param lobbyId the ID of the lobby
      * @return a map of cities that can be reached via sea connections
      */
-    private Map<ICity, List<Card>> getBySeaConnectedCities(String lobbyId) {
-        Map<ICity, List<Card>> availableConnections = new HashMap<>();
+    private Map<ICity, List<ICard>> getBySeaConnectedCities(String lobbyId) {
+        Map<ICity, List<ICard>> availableConnections = new HashMap<>();
         CityRepository cityRepository = super.getGame(lobbyId)
                                              .getCityRepository();
 
@@ -154,7 +154,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
             harbourCities.forEach(city -> availableConnections.put(city, new ArrayList<>()));
         } else {
             for (ICity city : harbourCities) {
-                List<Card> cards = getCardsWithSameColor(lobbyId, city);
+                List<ICard> cards = getCardsWithSameColor(lobbyId, city);
                 if (!cards.isEmpty()) {
                     availableConnections.put(city, cards);
                 }
@@ -176,11 +176,11 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
      * @param city    the city to match the card colors with
      * @return a list of cards that match the color of the given city
      */
-    private List<Card> getCardsWithSameColor(String lobbyId, ICity city) {
-        List<Card> cards = new ArrayList<>();
+    private List<ICard> getCardsWithSameColor(String lobbyId, ICity city) {
+        List<ICard> cards = new ArrayList<>();
         IPlayer currentPlayer = super.getGame(lobbyId)
                                      .getCurrentPlayer();
-        for (Card card : currentPlayer.getCards()) {
+        for (ICard card : currentPlayer.getCards()) {
             if (card instanceof CityCard cityCard && cityCard.getCity()
                                                              .getPlagueName()
                                                              .equals(city.getPlagueName())) {

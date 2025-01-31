@@ -1,35 +1,36 @@
 package de.uol.swp.server.city.management;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.infection.management.IInfectionManagement;
-import de.uol.swp.server.infection.management.InfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
-import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.region.management.RegionManagement;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Manages city-related operations such as infecting cities with plagues,
  * handling escalations, and managing infection severity.
  */
 public class CityManagement implements ICityManagement {
-    private final IRegionManagement regionManagement = new RegionManagement();
-    private final IGameManagement gameManagement = new GameManagement();
-    private final IInfectionManagement infectionManagement = new InfectionManagement();
+    private final IRegionManagement regionManagement;
+    private final IGameManagement gameManagement;
+    private final IInfectionManagement infectionManagement;
+
+    @Inject
+    public CityManagement(IRegionManagement regionManagement, IGameManagement gameManagement, IInfectionManagement infectionManagement) {
+        this.regionManagement = regionManagement;
+        this.gameManagement = gameManagement;
+        this.infectionManagement = infectionManagement;
+    }
 
     /**
      * Infects a city with its own plague by a specified amount.
@@ -83,7 +84,8 @@ public class CityManagement implements ICityManagement {
                              .getPlagueByName(plagueName);
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
-        if(game.getState() instanceof InfectionState infectionState){
+
+        if (game.getState() instanceof InfectionState infectionState){
             infectionState.increaseInfectedCities(game);
         }
     }
@@ -100,7 +102,7 @@ public class CityManagement implements ICityManagement {
     private void validateParameters(
             IGame game, ICity city, PlagueName plagueName, int amount
     ) throws CityManagementException {
-        if (game == null || city == null || plagueName == null || amount < 0) {
+        if (game == null || city == null || plagueName == null || amount < 1) {
             throw new CityManagementException("Invalid parameters");
         }
     }
@@ -136,8 +138,7 @@ public class CityManagement implements ICityManagement {
     private boolean hasExceededSeverity(ICity city) {
         return city.getInfections()
                    .stream()
-                   .anyMatch(i -> i.getPlague()
-                                   .getName()
+                   .anyMatch(i -> i.getPlagueName()
                                    .equals(city.getPlagueName()) && i.getSeverity() > 3);
     }
 
@@ -154,19 +155,29 @@ public class CityManagement implements ICityManagement {
     private void increaseInfectionSeverity(
             IGame game, IInfection infection, IPlague plague, int amount, ICity city, boolean triggerEscalation
     ) {
-        int newSeverity = Math.min(infection.getSeverity() + amount, 3);
-        int cubesUsed = newSeverity - infection.getSeverity();
+        int newSeverity;
+
+        if (!triggerEscalation && infection.getSeverity() + amount > 3) {
+            newSeverity = infection.getSeverity() + amount;
+        } else {
+            newSeverity = Math.min(infection.getSeverity() + amount, 3);
+        }
+
+        int cubesUsed = Math.min(newSeverity, 3) - infection.getSeverity();
         boolean wouldEscalate = infection.getSeverity() + amount > 3;
 
         infection.setSeverity(newSeverity);
         plague.setCubesRemaining(plague.getCubesRemaining() - cubesUsed);
 
         if (wouldEscalate && triggerEscalation) {
-            escalation(game, city.getName(), List.of(city.getName()), city.getPlagueName());
+            escalation(game, city.getName(), city.getPlagueName());
         }
 
-        if (new PlagueManagement().isCubeCountNegative(game, plague.getName())) {
-            // GameOver auslösen (Implementierung mit Issue #137)
+        if (game.getPlagueRepository().getPlagueByName(plague.getName()).getCubesRemaining() < 0) {
+            //TODO: GameOver auslösen (Implementierung mit Issue #137)
+
+            // vorübergehend für Unit-Test - muss dann entsprechend angepasst werden
+            throw new CityManagementException("Game Over");
         }
     }
 
@@ -175,14 +186,19 @@ public class CityManagement implements ICityManagement {
      *
      * @param game            the game instance
      * @param cityName        the name of the city to escalate
-     * @param escalatedCities the list of cities that have already escalated
      * @param plagueName      the name of the plague causing the escalation
      */
-    public void escalation(IGame game, CityName cityName, List<CityName> escalatedCities, PlagueName plagueName) {
+    private void escalation(IGame game, CityName cityName, PlagueName plagueName) {
+
         Queue<CityName> citiesToProcess = new LinkedList<>();
         citiesToProcess.add(cityName);
 
+        List<CityName> escalatedCities = new ArrayList<>();
+        escalatedCities.add(cityName);
+
         while (!citiesToProcess.isEmpty()) {
+            game.setEscalationStage(game.getEscalationStage() + 1);
+
             CityName currentCity = citiesToProcess.poll();
             List<CityName> connectedCityNames = game.getConnectionRepository()
                                                     .getCityNamesOfConnectedCitiesByCityName(currentCity);
@@ -197,6 +213,12 @@ public class CityManagement implements ICityManagement {
                 infectCity(game, connectedCity, plagueName, 1, false);
 
                 if (hasExceededSeverity(connectedCity)) {
+                    connectedCity.getInfections()
+                                 .stream()
+                                 .filter(infection -> infection.getPlagueName()
+                                                               .equals(plagueName) && infection.getSeverity() > 3)
+                                 .findFirst()
+                                 .ifPresent(infection -> infection.setSeverity(3));
                     escalatedCities.add(connectedCity.getName());
                     citiesToProcess.add(connectedCity.getName());
                 }

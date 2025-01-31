@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.util.Objects;
 
 @Getter
-public abstract class Card {
+public abstract class Card implements ICard {
     private final int id;
     private final String title;
     private final CardType type;
