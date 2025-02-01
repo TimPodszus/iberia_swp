@@ -38,17 +38,16 @@ public class MovePlayerRequest extends AbstractGameRequest {
     }
 
     /**
-     * Constructs a new MovePlayerRequest.
+     * Constructs a new MovePlayerRequest with a player to take with.
      *
      * @param lobbyCode the code of the lobby
      * @param cityId    the ID of the city
-     * @param cardId    the ID of the card
      * @param username  the username of the player, which should be taken with
      */
-    public MovePlayerRequest(String lobbyCode, int cityId, int cardId, String username) {
+    public MovePlayerRequest(String lobbyCode, int cityId, String username) {
         super(lobbyCode);
         this.cityId = cityId;
-        this.cardId = cardId;
+        this.cardId = -1;
         this.username = username;
     }
 
@@ -63,11 +62,11 @@ public class MovePlayerRequest extends AbstractGameRequest {
         MovePlayerRequest that = (MovePlayerRequest) object;
         return Objects.equals(super.getLobbyId(), that.getLobbyId()) && Objects.equals(cityId,
                 that.cityId
-        ) && Objects.equals(cardId, that.cardId);
+        ) && Objects.equals(cardId, that.cardId) && Objects.equals(username, that.username);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.getLobbyId(), cityId, cardId);
+        return Objects.hash(super.getLobbyId(), cityId, cardId, username);
     }
 }

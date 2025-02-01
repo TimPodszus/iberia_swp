@@ -17,11 +17,11 @@ public class MovePlayerRequestTest {
      * Tests the creation of a MovePlayerRequest and verifies its fields.
      */
     @Test
-    void testConstructor() {
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD_ID, USERNAME);
+    void testConstructorWithoutCardId() {
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID, USERNAME);
         assertEquals(LOBBY_CODE, movePlayerRequest.getLobbyId(), "The lobby code should be set correctly.");
         assertEquals(CITY_ID, movePlayerRequest.getCityId(), "The city ID should be set correctly.");
-        assertEquals(CARD_ID, movePlayerRequest.getCardId(), "The card ID should be set correctly.");
+        assertEquals(-1, movePlayerRequest.getCardId(), "The card ID should be set to -1.");
         assertEquals(USERNAME, movePlayerRequest.getUsername(), "The username should be set correctly.");
     }
 
