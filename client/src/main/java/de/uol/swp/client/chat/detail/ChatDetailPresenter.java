@@ -13,6 +13,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import lombok.Setter;
 import org.greenrobot.eventbus.Subscribe;
 
 
@@ -27,26 +28,21 @@ public class ChatDetailPresenter extends AbstractPresenter {
     @FXML
     private Button sendChatButton;
 
-    @Inject
-    private LobbyService lobbyService;
-
-    private ILobbyDTO lobbyDTO;
-    private boolean isChatVisible = false;
     @FXML
     private VBox chatContainer;
 
     @FXML
     private Button toggleChatButton;
 
+    @Inject
+    private LobbyService lobbyService;
+
+    @Setter
+    private ILobbyDTO lobbyDTO;
+
+    private boolean isChatVisible = false;
+
     @FXML
-    public void initialize() {
-        sendChatButton.setOnAction(event -> onSendChat());
-    }
-
-    public void setLobbyDTO(ILobbyDTO lobbyDTO) {
-        this.lobbyDTO = lobbyDTO;
-    }
-
     public void onSendChat() {
         String message = chatInput.getText();
         if (message == null || message.trim().isEmpty()) {

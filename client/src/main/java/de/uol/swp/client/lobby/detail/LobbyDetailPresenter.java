@@ -61,8 +61,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     @FXML
     public TableView<UserListItem> userTable;
 
-    @Inject
-    private ChatDetailPresenter chatDetailPresenter;
+    @FXML
+    private ChatDetailPresenter chatController;
 
     /**
      * Initializes the Lobby Screen.
@@ -93,9 +93,6 @@ public class LobbyDetailPresenter extends AbstractPresenter {
                  .get(0)
                  .setCellValueFactory(new PropertyValueFactory<>("name"));
         userTable.setPlaceholder(new Label("Keine Spieler in der Lobby"));
-
-        chatDetailPresenter.setLobbyDTO(lobbyDTO);
-
     }
 
     /**
@@ -107,7 +104,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage message) {
         if (lobbyDTO != null && message.getLobbyCode().equals(lobbyDTO.getLobbyCode())) {
             String chatMessage = "Spieler " + message.getUser().getUsername() + " hat die Lobby betreten.";
-            chatDetailPresenter.appendToChat(chatMessage);
+            chatController.appendToChat(chatMessage);
 
             lobbyService.getLobby(message.getLobbyCode(), UserStore.getInstance().getUser());
         }
@@ -153,6 +150,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * Initializes the screen with the lobby data.
      */
     private void initializeScreen() {
+        chatController.setLobbyDTO(lobbyDTO);
+
         Platform.runLater(() -> {
             setFields();
             setUserList();
