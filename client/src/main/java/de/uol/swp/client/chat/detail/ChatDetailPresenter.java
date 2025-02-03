@@ -57,9 +57,13 @@ public class ChatDetailPresenter extends AbstractPresenter {
 
     @Subscribe
     public void onChatMessageReceived(AbstractChatMessage chatMessage) {
-        Platform.runLater(() ->
-                chatArea.appendText(chatMessage.getSession().get().getUser() + ": " + chatMessage.getMessage() + "\n")
-        );
+        Platform.runLater(() -> {
+            if (chatMessage.getSession().isPresent()) {
+                chatArea.appendText(chatMessage.getSession().get().getUser() + ": " + chatMessage.getMessage() + "\n");
+            } else {
+                chatArea.appendText("[Unbekannt]: " + chatMessage.getMessage() + "\n");
+            }
+        });
     }
 
     public void appendToChat(String message) {
