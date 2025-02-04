@@ -3,7 +3,9 @@ package de.uol.swp.server.game.management;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -22,9 +24,9 @@ public interface IGameManagement {
     /**
      * Sets the initial positioning of a player in the game based on the provided city.
      *
-     * @param request      The request with where the position is to be set
+     * @param request The request with where the position is to be set
      */
-    IGame setPositioning(PositioningRequest request) throws GameManagementException, PlayerManagementException;
+    IGame setPositioning(PositioningRequest request) throws GameManagementException;
 
     /**
      * Draws a player card. The specific behavior of this method should be defined.
@@ -44,6 +46,24 @@ public interface IGameManagement {
      */
     List<GameActions> getAvailableActions(String lobbyId, IUser user);
 
+    /**
+     * Moves a player to a specified city in the game.
+     *
+     * @param user    the user representing the player to be moved
+     * @param lobbyId the id of the lobby in which the game is happening
+     * @param city    the city to which the player will be moved
+     * @param card    the card used to move the player
+     *                <p>
+     * @throws GameManagementException if moving the player fails
+     */
+    void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException;
+
+    /**
+     * Retrieves the game with the specified lobby code.
+     *
+     * @param lobbyId the id of the lobby in which the game is happening
+     * @return the game with the specified lobby code
+     */
     IGame getGame(String lobbyId);
 }
 

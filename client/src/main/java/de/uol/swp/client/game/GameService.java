@@ -1,8 +1,11 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.region.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.request.WaterTreatmentRegionRequest;
@@ -25,6 +28,28 @@ public class GameService {
     }
 
     /**
+     * Requests available destinations for the specified city.
+     *
+     * @param lobbyCode the lobby code of the game for which available destinations are to be requested
+     * @param cityId    the ID of the city for which available destinations are to be requested
+     */
+    public void requestAvailableDestination(String lobbyCode, int cityId) {
+        AvailableDestinationsRequest request = new AvailableDestinationsRequest(lobbyCode, cityId);
+        eventBus.post(request);
+    }
+
+    /**
+     * Moves the player to the specified city.
+     *
+     * @param lobbyId the lobby ID of the game in which the player is to be moved
+     * @param cityId  the city to which the player is to be moved
+     * @param cardId  the card to be used for the move
+     */
+    public void movePlayerToCity(String lobbyId, int cityId, int cardId) {
+        eventBus.post(new MovePlayerRequest(lobbyId, cityId, cardId));
+    }
+
+    /*
      * Sends a request to draw a player card for the specified lobby.
      *
      * @param lobbyCode the code of the lobby

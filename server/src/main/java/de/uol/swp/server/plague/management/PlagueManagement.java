@@ -5,11 +5,8 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
-import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.store.GameStore;
-import de.uol.swp.server.game.store.IGameStore;
 import de.uol.swp.server.plague.data.IPlague;
-
+import de.uol.swp.server.player.management.IPlayerManagement;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,16 +17,15 @@ import java.util.stream.Collectors;
  * being in the correct city, and having a hospital built in that city.
  */
 public class PlagueManagement implements IPlagueManagement {
-
-    private final IGameStore gameStore;
+    private final IPlayerManagement playerManagement;
 
     /**
      * Constructs a new PlagueManagement instance and initializes the game store.
      * The game store is retrieved as a singleton instance to manage the state and data of the game.
      */
     @Inject
-    public PlagueManagement() {
-        this.gameStore = GameStore.getInstance();
+    public PlagueManagement(IPlayerManagement playerManagement) {
+        this.playerManagement = playerManagement;
     }
 
     /**
@@ -81,22 +77,11 @@ public class PlagueManagement implements IPlagueManagement {
             throw new PlagueManagementException("No suitable hospital in the current city to research the plague");
         }
 
-
         List<CityCard> cardsToDiscard = plagueCards.subList(0, 5);
-        for (CityCard card : cardsToDiscard) {
-            game.getCurrentPlayer()
-                .discardCard(card);
-            game.getPlayerCardDiscardPile()
-                .add(card);
-        }
+
+        playerManagement.discardCards(game.getGameId(), game.getCurrentPlayer(), cardsToDiscard);
 
         plague.setResearched(true);
-    }
-
-    public boolean isCubeCountNegative(IGame game, PlagueName plagueName) {
-        return game.getPlagueRepository()
-                   .getPlagueByName(plagueName)
-                   .getCubesRemaining() > 0;
     }
 }
 

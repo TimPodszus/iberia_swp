@@ -1,6 +1,7 @@
 package de.uol.swp.server.game.data;
 
 import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.ConnectionRepository;
@@ -126,7 +127,7 @@ public interface IGame {
      *
      * @return the player card draw pile
      */
-    List<Card> getPlayerCardDrawPile();
+    List<ICard> getPlayerCardDrawPile();
 
     /**
      * Gets the player card discard pile.
@@ -134,22 +135,52 @@ public interface IGame {
      * @return the player card discard pile
      */
 
-    List<Card> getPlayerCardDiscardPile();
+    List<ICard> getPlayerCardDiscardPile();
 
+    /**
+     * Gets the list of players.
+     *
+     * @return the list of players
+     */
     List<IPlayer> getPlayers();
 
     IGameState getState();
 
+    /**
+     * Sets the current state of the game.
+     *
+     * @param state the new state of the game
+     */
     void setState(IGameState state);
 
     IGameState getPreviousState();
 
+    /**
+     * Sets the current player index.
+     *
+     * @param count the new current player index
+     */
     void setCurrentPlayerIndex(int count);
 
+    /**
+     * Gets the current player index.
+     *
+     * @return the current player index
+     */
     int getCurrentPlayerIndex();
 
+    /**
+     * Initializes the game with the specified difficulty.
+     *
+     * @param difficulty the difficulty level
+     */
     void initializeGame(int difficulty);
 
+    /**
+     * Gets the difficulty level of the game.
+     *
+     * @return the difficulty level
+     */
     int getDifficulty();
 
     IPlayer getCurrentPlayer();

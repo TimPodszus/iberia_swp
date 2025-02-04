@@ -77,19 +77,14 @@ public class AbstractService {
      * This method prepares an AbstractServerMessage to be sent to all users in the given lobby
      * and posts it to the EventBus.
      *
-     * @param lobby the lobby whose users will receive the message
+     * @param lobby   the lobby whose users will receive the message
      * @param message the message to be sent to all users in the lobby
      * @see AbstractServerMessage
      * @since 2019-10-08
      */
     public void sendToAllInLobby(ILobby lobby, AbstractServerMessage message) {
         List<Session> sessions = authenticationService.getSessions(new HashSet<>(lobby.getUsers()));
-        for (Session session : sessions) {
-            message.setSession(session);
-            post(message);
-
-
-
-        }
-}
+        message.setReceiver(sessions);
+        post(message);
+    }
 }

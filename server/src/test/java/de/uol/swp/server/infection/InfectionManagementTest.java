@@ -35,10 +35,8 @@ class InfectionManagementTest {
     @Test
     void testFindExistingInfection() {
         IInfection infection = mock(IInfection.class);
-        IPlague plague = mock(IPlague.class);
 
-        when(plague.getName()).thenReturn(PlagueName.YELLOW_FEVER);
-        when(infection.getPlague()).thenReturn(plague);
+        when(infection.getPlagueName()).thenReturn(PlagueName.YELLOW_FEVER);
         List<IInfection> infections = new ArrayList<>();
         infections.add(infection);
 

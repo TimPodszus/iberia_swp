@@ -3,20 +3,20 @@ package de.uol.swp.client.game.objects.cards;
 import javafx.scene.layout.AnchorPane;
 import lombok.Getter;
 
+import java.util.Objects;
+
 /**
  * Represents an abstract card in the game.
  */
 @Getter
 public class AbstractCard extends AnchorPane {
+    private static final String STYLESHEET_PATH = "/css/cards.css";
+    private static final String CARD_STYLE_CLASS = "card";
+    private static final String CARD_SELECTED_STYLE_CLASS = "card-selected";
     /**
      * The background color for the text.
      */
     public static final String TEXT_BACKGROUND_COLOR = "-fx-background-color: white;";
-
-    private static final String BORDER_COLOR = "-fx-border-color: black;";
-    private static final String BORDER_WIDTH_IDENTIFIER = "-fx-border-width: ";
-    private static final int BORDER_WIDTH_SELECTED = 2;
-    private static final int BORDER_WIDTH_UNSELECTED = 0;
 
     /**
      * The unique identifier for the card.
@@ -30,7 +30,9 @@ public class AbstractCard extends AnchorPane {
      */
     public AbstractCard(int cardId) {
         this.cardId = cardId;
-        this.setStyle(BORDER_COLOR);
+        this.getStylesheets()
+            .add(Objects.requireNonNull(getClass().getResource(STYLESHEET_PATH))
+                        .toExternalForm());
         this.unselect();
     }
 
@@ -38,13 +40,19 @@ public class AbstractCard extends AnchorPane {
      * Selects the card by setting the border width to the select value.
      */
     public void select() {
-        this.setStyle(BORDER_WIDTH_IDENTIFIER + BORDER_WIDTH_SELECTED + ";");
+        this.getStyleClass()
+            .removeAll(CARD_STYLE_CLASS);
+        this.getStyleClass()
+            .add(CARD_SELECTED_STYLE_CLASS);
     }
 
     /**
      * Unselects the card by setting the border width to the unselect value.
      */
     public void unselect() {
-        this.setStyle(BORDER_WIDTH_IDENTIFIER + BORDER_WIDTH_UNSELECTED + ";");
+        this.getStyleClass()
+            .removeAll(CARD_SELECTED_STYLE_CLASS);
+        this.getStyleClass()
+            .add(CARD_STYLE_CLASS);
     }
 }

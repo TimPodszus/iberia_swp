@@ -1,14 +1,16 @@
 package de.uol.swp.server.communication;
 
+
+import com.google.inject.Inject;
+import de.uol.swp.common.message.Message;
+import de.uol.swp.common.message.MessageContext;
+import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.message.request.RequestMessage;
 import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.message.response.ResponseMessage;
-import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import com.google.inject.Inject;
-import de.uol.swp.common.message.*;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.message.UserLoggedInMessage;
 import de.uol.swp.common.user.message.UserLoggedOutMessage;
@@ -74,7 +76,8 @@ public class ServerHandler implements ServerHandlerDelegate {
                 checkIfMessageNeedsAuthorization(messageContext.get(), msg);
                 eventBus.post(msg);
             } catch (Exception e) {
-                LOG.error("ServerException {} {}",
+                LOG.error(
+                        "ServerException {} {}",
                         e.getClass()
                          .getName(),
                         e.getMessage()

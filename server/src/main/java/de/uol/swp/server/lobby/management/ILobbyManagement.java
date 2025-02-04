@@ -45,7 +45,6 @@ public interface ILobbyManagement {
      */
     List<ILobby> getLobbies() throws LobbyStoreException;
 
-
     /**
      * Allows a user to join a specified lobby.
      *

@@ -96,7 +96,7 @@ public class LobbyListItem {
         this.name = name;
         this.players = players;
         this.difficulty = difficulty;
-        this.privateAccess = true;
+        this.privateAccess = false;
     }
 
     /**

@@ -6,6 +6,7 @@ import de.uol.swp.common.Configuration;
 import de.uol.swp.server.communication.ServerHandler;
 import de.uol.swp.server.communication.netty.NettyServerHandler;
 import de.uol.swp.server.communication.netty.Server;
+import de.uol.swp.server.connection.ConnectionService;
 import de.uol.swp.server.di.ServerModule;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.lobby.LobbyService;
@@ -21,7 +22,6 @@ import org.apache.logging.log4j.Logger;
  * This class handles the startup of the server
  *
  * @author Marco Grawunder
- *
  * @since 2017-03-17
  */
 class ServerApp {
@@ -76,6 +76,7 @@ class ServerApp {
         injector.getInstance(AuthenticationService.class);
         injector.getInstance(LobbyService.class);
         injector.getInstance(GameService.class);
+        injector.getInstance(ConnectionService.class);
         injector.getInstance(RegionService.class);
     }
 

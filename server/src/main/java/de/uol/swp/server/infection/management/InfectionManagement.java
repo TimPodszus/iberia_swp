@@ -17,15 +17,14 @@ public class InfectionManagement implements IInfectionManagement {
 
         Optional<IInfection> existingInfection = city.getInfections()
                                                      .stream()
-                                                     .filter(i -> i.getPlague()
-                                                                   .getName()
+                                                     .filter(i -> i.getPlagueName()
                                                                    .equals(plagueName))
                                                      .findFirst();
 
         if (existingInfection.isEmpty()) {
             IPlague plague = plagueRepository.getPlagueByName(plagueName);
             if (plague != null) {
-                Infection newInfection = new Infection(0, (Plague) plague);
+                Infection newInfection = new Infection(0, plague.getName());
                 city.getInfections()
                     .add(newInfection);
                 return newInfection;

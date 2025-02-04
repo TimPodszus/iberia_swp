@@ -1,14 +1,20 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.game.GameActions;
+import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.connection.management.ConnectionManagement;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
@@ -20,23 +26,31 @@ import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Manages game related operations such as creating games,
  * setting player positions, and handling card draws.
  */
-public class GameManagement implements IGameManagement {
+public class GameManagement extends AbstractManagement implements IGameManagement {
+    static final Logger LOG = LogManager.getLogger(GameManagement.class);
+
+    private final IPlayerManagement playerManagement;
+    private final ICityManagement cityManagement;
 
     @Inject
-    private IPlayerManagement playerManagement;
-
-    @Inject
-    private ICityManagement cityManagement;
+    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement) {
+        this.playerManagement = playerManagement;
+        this.cityManagement = cityManagement;
+    }
 
     /**
      * Creates and initializes a game based on the provided creation request.
@@ -64,7 +78,7 @@ public class GameManagement implements IGameManagement {
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
      */
-    void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
+    private void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
         initiateInfections(game);
         createPlayers(users, game);
         assignRoles(game);
@@ -91,7 +105,7 @@ public class GameManagement implements IGameManagement {
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                playerManagement.drawPlayerCard(game, player);
+                playerManagement.drawPlayerCard(game.getGameId(), player);
             }
             int currentPlayerIndex = game.getCurrentPlayerIndex();
             int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;
@@ -111,7 +125,7 @@ public class GameManagement implements IGameManagement {
         int foundingDate = Integer.MAX_VALUE;
         IPlayer startingPlayer = null;
         for (IPlayer player : game.getPlayers()) {
-            for (Card card : player.getCards()) {
+            for (ICard card : player.getCards()) {
                 if (card instanceof CityCard cityCard && cityCard.getCity()
                                                                  .getFoundationDate() < foundingDate) {
                     foundingDate = cityCard.getCity()
@@ -152,7 +166,7 @@ public class GameManagement implements IGameManagement {
      * @param game The game instance where city infections will be initiated
      */
 
-    void initiateInfections(IGame game) {
+    private void initiateInfections(IGame game) {
         int infectionAmount = 3;
         for (int i = 1; i <= 9; i++) {
             cityManagement.infectCityWithOwnPlague(game, drawInfectionCard(game), infectionAmount);
@@ -169,8 +183,13 @@ public class GameManagement implements IGameManagement {
      *
      * @param request The request with where the position is to be set
      */
-    public IGame setPositioning(PositioningRequest request) throws PlayerManagementException {
+    public IGame setPositioning(PositioningRequest request) throws GameManagementException {
         IGame game = getGame(request.getLobbyId());
+
+        if (game == null) {
+            throw new GameManagementException("Game not found");
+        }
+
         if (game.getState() instanceof WaitForPositioning waitForPositioning) {
             List<IPlayer> players = game.getPlayers();
             IPlayer requestPlayer = null;
@@ -178,7 +197,7 @@ public class GameManagement implements IGameManagement {
                 if (player.getUser()
                           .getUsername()
                           .equals(request.getSession()
-                                         .get()
+                                         .orElseThrow(() -> new GameManagementException("Session not found"))
                                          .getUser()
                                          .getUsername())) {
                     requestPlayer = player;
@@ -188,18 +207,21 @@ public class GameManagement implements IGameManagement {
             try {
                 assert requestPlayer != null;
                 playerManagement.setStartingPosition(
+                        game.getGameId(),
                         game.getCityRepository()
                             .getCityNameById(request.getCityId()), requestPlayer
                 );
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
             } catch (PlayerManagementException e) {
-                throw new PlayerManagementException("Failed to set Position");
+                throw new GameManagementException("Failed to set Position");
             }
             if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
                                                                       .size()) {
                 game.setState(new PlayerTurnState());
                 game.setCurrentPlayerIndex(0);
             }
+        } else {
+            throw new GameManagementException("Game is not in a state that allows setting positioning");
         }
         return game;
     }
@@ -295,4 +317,83 @@ public class GameManagement implements IGameManagement {
         //TODO: Implement logic in #84
         return true;
     }
+
+    @Override
+    public void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException {
+        IGame game = super.getGame(lobbyId);
+
+        IGameState gameState = game.getState();
+        if (!(gameState instanceof PlayerTurnState)) {
+            LOG.error("[LobbyID: {}] Game is not in a state that allows moving players", lobbyId);
+            throw new GameManagementException("Game is not in a state that allows moving players");
+        }
+
+        IPlayer player = game.getCurrentPlayer();
+        if (!player.getUser()
+                   .equals(user)) {
+            LOG.error("[LobbyID: {}] {} is not the current player", lobbyId, user.getUsername());
+            throw new GameManagementException("Player is not the current player");
+        }
+
+        IConnectionManagement connectionManagement = new ConnectionManagement();
+        Map<ICity, List<ICard>> availableDestinations = connectionManagement.getAvailableDestinations(
+                lobbyId,
+                player.getCurrentPosition()
+                      .getId()
+        );
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city) && availableDestinations.get(city)
+                                                                                                        .isEmpty();
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city) && !availableDestinations.get(city)
+                                                                                                        .isEmpty();
+        if (!citiesConnectedByLand && !citiesConnectedBySea) {
+            LOG.error(
+                    "[LobbyID: {}] Failed to move {}.There is no available connection between {} and {}",
+                    lobbyId,
+                    player.getUser()
+                          .getUsername(),
+                    player.getCurrentPosition()
+                          .getName()
+                          .getDisplayName(),
+                    city.getName()
+                        .getDisplayName()
+            );
+            throw new GameManagementException("There is no available connection between " + player.getCurrentPosition()
+                                                                                                  .getName()
+                                                                                                  .getDisplayName() + " " + "and " + city.getName()
+                                                                                                                                         .getDisplayName());
+        }
+
+        if (citiesConnectedByLand) {
+            LOG.debug(
+                    "[LobbyID: {}] Moving {} to city {}",
+                    lobbyId,
+                    player.getUser()
+                          .getUsername(),
+                    city.getName()
+                        .getDisplayName()
+            );
+            player.setCurrentPosition(city);
+            ((PlayerTurnState) gameState).reduceActionsRemaining(game);
+            return;
+        }
+
+        boolean playerIsSailor = player.getRole()
+                                       .getName()
+                                       .equals(RoleEnum.SAILOR);
+        if (!playerIsSailor) {
+            playerManagement.discardCard(game.getGameId(), player, card);
+        }
+
+        LOG.debug(
+                "[LobbyID: {}] {} sails to {}",
+                lobbyId,
+                player.getUser()
+                      .getUsername(),
+                city.getName()
+                    .getDisplayName()
+        );
+        player.setCurrentPosition(city);
+        ((PlayerTurnState) gameState).reduceActionsRemaining(game);
+    }
+
 }

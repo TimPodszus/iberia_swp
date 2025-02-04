@@ -1,6 +1,6 @@
 package de.uol.swp.server.infection.data;
 
-import de.uol.swp.server.plague.data.IPlague;
+import de.uol.swp.common.game.PlagueName;
 
 public interface IInfection {
 
@@ -23,5 +23,5 @@ public interface IInfection {
      *
      * @return the plague associated with the infection
      */
-    IPlague getPlague();
+    PlagueName getPlagueName();
 }
