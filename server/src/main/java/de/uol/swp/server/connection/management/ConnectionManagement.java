@@ -48,6 +48,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                 availableDestinations.size(),
                 startCity.getName()
         );
+        availableDestinations.remove(startCity);
         return availableDestinations;
     }
 
