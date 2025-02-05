@@ -9,7 +9,6 @@ import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TreatPlagueDialog {
 
@@ -21,7 +20,7 @@ public class TreatPlagueDialog {
 
     public void initData(List<IInfectionDTO> plagues) {
         List<PlagueName> selectablePlagues = plagues.stream()
-                .map(p -> p.getPlagueName())
+                .map(IInfectionDTO::getPlagueName)
                 .toList();
         plagueListView.setItems(FXCollections.observableArrayList(selectablePlagues));
     }

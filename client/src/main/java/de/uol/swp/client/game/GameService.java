@@ -1,7 +1,6 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.game.PlagueName;
@@ -10,7 +9,6 @@ import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.plague.request.AvailableCitiesToTreatRequest;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import org.greenrobot.eventbus.EventBus;
 
