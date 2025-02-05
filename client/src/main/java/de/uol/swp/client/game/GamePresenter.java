@@ -373,86 +373,63 @@ public class GamePresenter extends AbstractPresenter {
 
     @Subscribe
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
-        PlagueName selectedPlague = showTreatPlagueDialog(response.getAvailablePlagues());
+        TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
+        Optional<PlagueName> result = dialog.showAndWait(); // Optional nutzen!
 
-        gameService.sendTreatPlagueRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId(), selectedPlague);
+        result.ifPresent(selectedPlague -> {
+            gameService.sendTreatPlagueRequest(
+                    lobbyId,
+                    gameDTO.getCurrentPlayer().getCurrentPosition().getId(),
+                    selectedPlague
+            );
 
-        if (response.getRole().equals(RoleEnum.COUNTRY_DOCTOR)) {
-            gameService.sendAvailableCitiesToTreatRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
-        }
+            treatInfectionButton.setSelected(false);
+
+            if (response.getRole() == RoleEnum.COUNTRY_DOCTOR) {
+                gameService.sendAvailableCitiesToTreatRequest(
+                        lobbyId,
+                        gameDTO.getCurrentPlayer().getCurrentPosition().getId()
+                );
+            }
+        });
     }
 
-    private PlagueName showTreatPlagueDialog(List<IInfectionDTO> availablePlagues) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TreatPlagueDialog.fxml"));
-            Parent root = loader.load();
 
-            TreatPlagueDialog controller = loader.getController();
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle("Seuche behandeln");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(treatInfectionButton.getScene().getWindow());
-            dialogStage.setScene(new Scene(root));
-            controller.setDialogStage(dialogStage);
-            controller.initData(availablePlagues);
-
-            dialogStage.showAndWait();
-            return controller.getSelectedPlague();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     @Subscribe
     public void onTreatPlagueResponse(TreatPlagueResponse response) {
         updatePlagueView(response.getCityID(), response.getPlagueName());
 
-        if (gameDTO.getCurrentPlayer().getRole().equals(RoleEnum.COUNTRY_DOCTOR)) {
+        if (RoleEnum.COUNTRY_DOCTOR == gameDTO.getCurrentPlayer().getRole().getName()) {
             gameService.sendAvailableCitiesToTreatRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
         }
     }
 
     private void updatePlagueView(int cityID, PlagueName plagueName) {
-        for (ICityDTO city : gameDTO.getCities()) {
-            if (city.getId() == cityID) {
-                city.getInfections().removeIf(infection -> infection.getPlagueName().equals(plagueName));
-                break;
-            }
-        }
+        Optional<ICityDTO> cityOpt = gameDTO.getCities()
+                .stream()
+                .filter(city -> city.getId() == cityID)
+                .findFirst();
 
-        Platform.runLater(() -> updateBoard(gameDTO));
+        cityOpt.ifPresentOrElse(
+                city -> {
+                    city.getInfections().removeIf(infection -> infection.getPlagueName().equals(plagueName));
+                    Platform.runLater(() -> updateBoard(gameDTO));
+                },
+                () -> System.err.println("Fehler: Stadt mit ID " + cityID + " nicht gefunden!")
+        );
     }
 
     @Subscribe
     public void onAvailableCitiesToTreatResponse(AvailableCitiesToTreatResponse response) {
-        ICityDTO selectedCity = showSelectCityDialog(response.getAvailableCities());
-        if (selectedCity == null) return;
+        SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(response.getAvailableCities());
+        Optional<ICityDTO> selectedCity = dialog.showAndWait();
 
-        gameService.sendAvailablePlaguesRequest(lobbyId, selectedCity.getId());
+        selectedCity.ifPresent(city ->
+                gameService.sendAvailablePlaguesRequest(lobbyId, city.getId())
+        );
     }
 
-    private ICityDTO showSelectCityDialog(List<ICityDTO> availableCities) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SelectCityToTreatDialog.fxml"));
-            Parent root = loader.load();
-
-            SelectCityToTreatDialog controller = loader.getController();
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle("Stadt auswählen");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(treatInfectionButton.getScene().getWindow());
-            dialogStage.setScene(new Scene(root));
-            controller.setDialogStage(dialogStage);
-            controller.initData(availableCities);
-
-            dialogStage.showAndWait();
-            return controller.getSelectedCity();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     /**
      * Handles share knowledge action.

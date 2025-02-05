@@ -5,43 +5,80 @@ import de.uol.swp.common.infection.IInfectionDTO;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import lombok.Getter;
 
 import java.util.List;
 
-public class TreatPlagueDialog {
+public class TreatPlagueDialog extends Dialog<PlagueName> {
 
-    @FXML
-    private ListView<PlagueName> plagueListView;
-
-    private Stage dialogStage;
+    private static final String HEADER = "Plage behandeln";
+    private final boolean dismissible;
+    private final List<IInfectionDTO> plagues;
     private PlagueName selectedPlague;
 
-    public void initData(List<IInfectionDTO> plagues) {
-        List<PlagueName> selectablePlagues = plagues.stream()
-                .map(IInfectionDTO::getPlagueName)
-                .toList();
-        plagueListView.setItems(FXCollections.observableArrayList(selectablePlagues));
+    public TreatPlagueDialog(boolean dismissible, List<IInfectionDTO> plagues) {
+        this.dismissible = dismissible;
+        this.plagues = plagues;
+        super.initStyle(StageStyle.DECORATED);
+        super.setHeaderText(HEADER);
+        this.setContent();
+        this.setButtons();
+        super.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                return this.selectedPlague;
+            } else {
+                return null;
+            }
+        });
     }
 
-    @FXML
-    private void onCancel(ActionEvent event) {
-        dialogStage.close();
+    /**
+     * Setzt den Inhalt des Dialogs, einschließlich der Plagen zur Auswahl.
+     */
+    private void setContent() {
+        HBox plagueBox = new HBox();
+        for (IInfectionDTO infection : this.plagues) {
+            PlagueName plagueName = infection.getPlagueName();
+            Button plagueButton = new Button(plagueName.name());
+            plagueButton.setOnAction(event -> onPlagueSelected(plagueName));
+            plagueBox.getChildren().add(plagueButton);
+        }
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setContent(plagueBox);
+        super.getDialogPane().setContent(scrollPane);
     }
 
-    @FXML
-    private void onConfirm(ActionEvent event) {
-        selectedPlague = plagueListView.getSelectionModel().getSelectedItem();
-        dialogStage.close();
+    /**
+     * Behandelt das Ereignis, wenn eine Plage ausgewählt wird.
+     *
+     * @param plagueName der Name der ausgewählten Plage
+     */
+    private void onPlagueSelected(PlagueName plagueName) {
+        if (this.selectedPlague != null) {
+            // Optional: Visuelle Darstellung der Auswahl zurücksetzen
+        }
+        this.selectedPlague = plagueName;  // Setzt die ausgewählte Plage
     }
 
-    public PlagueName getSelectedPlague() {
-        return selectedPlague;
+    /**
+     * Setzt die Buttons für den Dialog.
+     */
+    private void setButtons() {
+        super.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        if (this.dismissible) {
+            super.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+        }
     }
 
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
-    }
 }
 
