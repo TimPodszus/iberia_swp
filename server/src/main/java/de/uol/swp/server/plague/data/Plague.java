@@ -14,6 +14,4 @@ public class Plague implements IPlague {
     private int cubesRemaining;
     @Setter
     private boolean researched;
-
-    private final String color;
 }

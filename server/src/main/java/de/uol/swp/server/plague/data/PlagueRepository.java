@@ -22,10 +22,10 @@ public class PlagueRepository {
      */
     private void createAllPlagues() {
         plagues = new ArrayList<>();
-        plagues.add(new Plague(PlagueName.YELLOW_FEVER, 24, false, "yellow"));
-        plagues.add(new Plague(PlagueName.CHOLERA, 24, false, "blue"));
-        plagues.add(new Plague(PlagueName.MALARIA, 24, false, "black"));
-        plagues.add(new Plague(PlagueName.TYPHUS, 24, false, "red"));
+        plagues.add(new Plague(PlagueName.YELLOW_FEVER, 24, false));
+        plagues.add(new Plague(PlagueName.CHOLERA, 24, false));
+        plagues.add(new Plague(PlagueName.MALARIA, 24, false));
+        plagues.add(new Plague(PlagueName.TYPHUS, 24, false));
     }
 
     /**

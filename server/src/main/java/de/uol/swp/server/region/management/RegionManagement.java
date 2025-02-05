@@ -2,6 +2,7 @@ package de.uol.swp.server.region.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.CityCardDTO;
+import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.IUserDTO;
@@ -99,17 +100,17 @@ public class RegionManagement implements IRegionManagement {
                                                   .getPlagues()
                                                   .stream()
                                                   .filter(IPlague::isResearched)
-                                                  .map(IPlague::getColor)
+                                                  .map(IPlague::getName)
+                                                  .map(PlagueName::getColorCode)
                                                   .toList();
         for (ICity city : citiesInRegion) {
-            IPlague cityPlague = game.getPlagueRepository()
-                                     .getPlagueByName(city.getPlagueName());
             for (CityCard cityCard : playerCityCards) {
-                IPlague cityCardPlague = game.getPlagueRepository()
-                                             .getPlagueByName(cityCard.getCity()
-                                                                      .getPlagueName());
-                if (cityCardPlague.getColor()
-                                  .equals(cityPlague.getColor()) || researchedPlaguesColor.contains(cityCardPlague.getColor())) {
+                if (cityCard.getCity()
+                            .getPlagueName()
+                            .getColorCode()
+                            .equals(city.getPlagueName()
+                                        .getColorCode()) || researchedPlaguesColor.contains((city.getPlagueName()
+                                                                                                 .getColorCode()))) {
                     possibleCityCards.add(cityCard);
                 }
             }
@@ -129,12 +130,9 @@ public class RegionManagement implements IRegionManagement {
                                                         .stream()
                                                         .filter(CityCard.class::isInstance)
                                                         .map(CityCard.class::cast)
-                                                        .map(card -> {
-                                                            IPlague plague = game.getPlagueRepository()
-                                                                                 .getPlagueByName(card.getCity()
-                                                                                                      .getPlagueName());
-                                                            return plague.getColor();
-                                                        })
+                                                        .map(card -> card.getCity()
+                                                                         .getPlagueName()
+                                                                         .getColorCode())
                                                         .collect(Collectors.toSet());
 
         if (requestPlayer.getRole()
@@ -147,8 +145,7 @@ public class RegionManagement implements IRegionManagement {
         for (IRegion region : surroundingRegions) {
             List<ICity> citiesInRegion = region.getSurroundingCities();
             for (ICity city : citiesInRegion) {
-                IPlague plague = game.getPlagueRepository().getPlagueByName(city.getPlagueName());
-                if (playerCityCardColors.contains(plague.getColor())) {
+                if (playerCityCardColors.contains(city.getPlagueName().getColorCode())) {
                     availableRegions.add(RegionMapper.toDTO(region));
                     break;
                 }
