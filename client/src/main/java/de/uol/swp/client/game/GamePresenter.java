@@ -24,6 +24,7 @@ import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
@@ -363,9 +364,32 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onShareKnowledge(ActionEvent event) {
         if (shareKnowledgeButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
-        } else {
+            if (gameDTO.getCurrentPlayer().getCards().stream().anyMatch(card -> card.getId() != gameDTO.getCurrentPlayer().getCurrentPosition().getId())) {
+                IPlayerDTO playerWithCityCard = gameDTO.getPlayers().stream().filter(playerDTO -> playerDTO.getCards().stream().anyMatch(card -> card.getId() == gameDTO.getCurrentPlayer().getCurrentPosition().getId())).findFirst().orElse(null);
+                if (playerWithCityCard != null) {
+                    Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+                    cardsToExchange.put(gameDTO.getCurrentPlayer().getUsername(),gameDTO.getCurrentPlayer().getCards());
+                    cardsToExchange.put(playerWithCityCard.getUsername(), playerWithCityCard.getCards());
+                    CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(playerWithCityCard.getUsername(),
+                            cardsToExchange);
+                    Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+                     result.ifPresent(map -> eventBus.post(new CardsExchangeRequest(map, lobbyId)));
+                     LOG.trace("Card Exchange Request sent to " + playerWithCityCard.getUsername());
 
+                }
+            }
+            else {
+                Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+                List<IPlayerDTO> playersInSameCity = gameDTO.getPlayers().stream().filter(playerDTO -> playerDTO.getCurrentPosition().getId() == gameDTO.getCurrentPlayer().getCurrentPosition().getId()).toList();
+                for(IPlayerDTO playerDTO : playersInSameCity){
+                    cardsToExchange.put(playerDTO.getUsername(), playerDTO.getCards());
+                }
+                CardExchangeDialog cardExchangeDialog =
+                        new CardExchangeDialog(gameDTO.getCurrentPlayer().getUsername(), cardsToExchange);
+                Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+                result.ifPresent(map -> eventBus.post(new CardsExchangeRequest(map, lobbyId)));
+                LOG.trace("Card Exchange Request sent");
+            }
         }
     }
 
@@ -382,6 +406,8 @@ public class GamePresenter extends AbstractPresenter {
 
         }
     }
+
+
 
     /**
      * Handles place water treatment action.
