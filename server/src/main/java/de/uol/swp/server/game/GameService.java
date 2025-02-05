@@ -150,6 +150,5 @@ public class GameService extends AbstractService {
         request.getMessageContext()
                .ifPresent(response::setMessageContext);
         post(response);
-
     }
 }

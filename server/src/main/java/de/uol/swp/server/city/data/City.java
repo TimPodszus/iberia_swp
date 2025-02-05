@@ -29,13 +29,12 @@ public class City implements ICity {
      * @param foundationDate the foundation date of the city
      * @param harbourCity    indicates if the city is a harbour city
      */
-    public City(int id, PlagueName plagueName, CityName name, int foundationDate, boolean harbourCity, String color) {
+    public City(int id, PlagueName plagueName, CityName name, int foundationDate, boolean harbourCity) {
         this.id = id;
         this.plagueName = plagueName;
         this.name = name;
         this.foundationDate = foundationDate;
         this.harbourCity = harbourCity;
-        this.color = color;
         Arrays.stream(PlagueName.values())
               .forEach(plagueNameValue -> this.infections.add(new Infection(0, plagueNameValue)));
     }
@@ -90,9 +89,4 @@ public class City implements ICity {
     public int hashCode() {
         return plagueName.hashCode() + name.hashCode() + foundationDate + (harbourCity ? 1 : 0) + (hospitalBuilt ? 1 : 0);
     }
-
-    /**
-     * The color of the city.
-     */
-    private final String color;
 }

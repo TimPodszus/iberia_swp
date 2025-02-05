@@ -10,9 +10,11 @@ import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
+import de.uol.swp.client.game.objects.dialogs.CardSelectionWaterTreatmentDialog;
 import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.cards.CityCardDTO;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
@@ -53,6 +55,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -88,6 +91,8 @@ public class GamePresenter extends AbstractPresenter {
     private GameService gameService;
 
     private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
+
+    private int regionId;
 
     @FXML
     private AnchorPane gameScreen;
@@ -306,7 +311,7 @@ public class GamePresenter extends AbstractPresenter {
         Node source = (Node) event.getSource();
         if (gameDTO.getState()
                    .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
-            int regionId = Integer.parseInt(source.getId()
+            regionId = Integer.parseInt(source.getId()
                                                   .replaceAll("\\D+", ""));
             gameService.sendRegionForWaterTreatmentRequest(lobbyId, regionId);
         }
@@ -404,11 +409,12 @@ public class GamePresenter extends AbstractPresenter {
             if (gameDTO.getState()
                        .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
                 gameService.sendAvailableRegionsRequest(lobbyId);
-            } else {
-
             }
         }
-    }
+        else {
+            resetRegionStyle();
+            }
+        }
 
     /**
      * Handles the options clicked event.
@@ -1166,9 +1172,27 @@ public class GamePresenter extends AbstractPresenter {
 
     @Subscribe
     public void onPossibleCityCardsToDiscardForRegionResponse(PossibleCityCardsToDiscardForRegionResponse response) {
+        Platform.runLater(() -> {
+            CardSelectionWaterTreatmentDialog cardSelectionDialog = new CardSelectionWaterTreatmentDialog(
+                    true,
+                    response.getCityCards(),
+                    gameDTO.getCurrentPlayer()
+                           .getRole()
+                           .getName()
+            );
+            Optional<Pair<CityCardDTO, Integer>> result = cardSelectionDialog.showAndWait();
+            result.ifPresent(cardAndAmount -> {
+                CityCardDTO card = cardAndAmount.getKey();
+                int amount = cardAndAmount.getValue();
+                gameService.sendWaterTreatmentRequest(lobbyId, regionId, amount, card);
+                treatWaterButton.setSelected(false);
+                resetRegionStyle();
+
+            });
+        });
     }
 
-    public void setAvailableRegions(Set<IRegionDTO> regions) {
+    private void setAvailableRegions(Set<IRegionDTO> regions) {
         for (IRegionDTO region : regions) {
             Node node = mapPane.lookup(REGION_ID + region.getId());
             node.getStyleClass()
@@ -1202,6 +1226,14 @@ public class GamePresenter extends AbstractPresenter {
                 .removeAll(CITY_CLASS);
             node.getStyleClass()
                 .add(CITY_HIGHLIGHTED_CLASS);
+        }
+    }
+    private void resetRegionStyle () {
+        List<IRegionDTO> regions = gameDTO.getRegions();
+        for (IRegionDTO region : regions) {
+            Node stackPane = mapPane.lookup(REGION_ID + region.getId());
+            stackPane.getStyleClass()
+                     .remove(REGION_HIGHLIGHTED_CLASS);
         }
     }
 }

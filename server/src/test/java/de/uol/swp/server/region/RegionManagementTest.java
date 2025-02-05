@@ -8,6 +8,8 @@ import de.uol.swp.server.region.management.RegionManagement;
 import de.uol.swp.server.region.management.RegionManagementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class RegionManagementTest {
-
+    @Mock
     private RegionManagement regionManagement;
     private IGame game;
     private ICity city;
@@ -25,7 +27,7 @@ class RegionManagementTest {
 
     @BeforeEach
     void setUp() {
-        regionManagement = new RegionManagement();
+        MockitoAnnotations.openMocks(this);
         game = mock(IGame.class);
         city = mock(ICity.class);
         region1 = mock(IRegion.class);

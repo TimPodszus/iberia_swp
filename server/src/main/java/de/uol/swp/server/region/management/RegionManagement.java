@@ -1,18 +1,24 @@
 package de.uol.swp.server.region.management;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.cards.CityCardDTO;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.management.GameManagementException;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.RegionMapper;
 import de.uol.swp.server.region.data.IRegion;
+import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,6 +27,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class RegionManagement implements IRegionManagement {
+    private final IPlayerManagement playerManagement;
+
+    @Inject
+    public RegionManagement(IPlayerManagement playerManagement) {
+        this.playerManagement = playerManagement;
+    }
+
     public int reduceWaterTreatments(IGame game, ICity city, int amount) throws RegionManagementException {
         List<IRegion> regions = game.getRegionRepository()
                                     .getRegionsByCityName(city.getName());
@@ -37,6 +50,28 @@ public class RegionManagement implements IRegionManagement {
         }
     }
 
+    public void increaseWaterTreatmentsFromRegion(
+            String lobbyId,
+            int regionId,
+            int amount,
+            ICard card,
+            IUser user
+    ) throws RegionManagementException, GameManagementException {
+        IGame game = getGame(lobbyId);
+        if (game.getState() instanceof PlayerTurnState playerTurnState) {
+            IRegion region = game.getRegionRepository()
+                                 .getRegionByID(regionId);
+            region.increaseWaterTreatments(amount);
+            IPlayer player = game.getCurrentPlayer();
+            if (!player.getUser()
+                       .equals(user)) {
+                throw new GameManagementException("Player is not the current player");
+            }
+            playerManagement.discardCard(lobbyId, player, card);
+            playerTurnState.reduceActionsRemaining(game);
+        }
+    }
+
     public List<CityCardDTO> getPossibleCityCardsToDiscard(
             String lobbyId,
             IUserDTO user,
@@ -44,19 +79,19 @@ public class RegionManagement implements IRegionManagement {
     ) throws RegionManagementException {
         IGame game = getGame(lobbyId);
         IPlayer requestPlayer = getRequestPlayer(user, game);
-        List<CityCard> possibleCityCards = new ArrayList<>();
+        Set<CityCard> possibleCityCards = new HashSet<>();
         IRegion region = game.getRegionRepository()
                              .getRegionByID(regionId);
         List<ICity> citiesInRegion = region.getSurroundingCities();
         assert requestPlayer != null;
         List<CityCard> playerCityCards = requestPlayer.getCards()
-                                               .stream()
-                                               .filter(CityCard.class::isInstance)
-                                               .map(CityCard.class::cast)
-                                               .toList();
+                                                      .stream()
+                                                      .filter(CityCard.class::isInstance)
+                                                      .map(CityCard.class::cast)
+                                                      .toList();
         if (requestPlayer.getRole()
-                  .getName()
-                  .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)) {
+                         .getName()
+                         .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)) {
             return CardMapper.toCityCardDTOList(playerCityCards);
         }
 
@@ -67,16 +102,19 @@ public class RegionManagement implements IRegionManagement {
                                                   .map(IPlague::getColor)
                                                   .toList();
         for (ICity city : citiesInRegion) {
+            IPlague cityPlague = game.getPlagueRepository()
+                                     .getPlagueByName(city.getPlagueName());
             for (CityCard cityCard : playerCityCards) {
-                if (cityCard.getCity()
-                            .getColor()
-                            .equals(city.getColor()) || researchedPlaguesColor.contains(cityCard.getCity()
-                                                                                                .getColor())) {
+                IPlague cityCardPlague = game.getPlagueRepository()
+                                             .getPlagueByName(cityCard.getCity()
+                                                                      .getPlagueName());
+                if (cityCardPlague.getColor()
+                                  .equals(cityPlague.getColor()) || researchedPlaguesColor.contains(cityCardPlague.getColor())) {
                     possibleCityCards.add(cityCard);
                 }
             }
         }
-        return CardMapper.toCityCardDTOList(possibleCityCards);
+        return CardMapper.toCityCardDTOList(new ArrayList<>(possibleCityCards));
     }
 
     public Set<IRegionDTO> getAvailableRegions(String lobbyId, IUserDTO user) throws RegionManagementException {
@@ -88,14 +126,20 @@ public class RegionManagement implements IRegionManagement {
                                                .getRegionsByCityName(currentPosition.getName());
         Set<IRegionDTO> availableRegions = new HashSet<>();
         Set<String> playerCityCardColors = requestPlayer.getCards()
-                                                 .stream()
-                                                 .filter(CityCard.class::isInstance)
-                                                 .map(CityCard.class::cast)
-                                                 .map(card -> card.getCity()
-                                                                  .getColor())
-                                                 .collect(Collectors.toSet());
+                                                        .stream()
+                                                        .filter(CityCard.class::isInstance)
+                                                        .map(CityCard.class::cast)
+                                                        .map(card -> {
+                                                            IPlague plague = game.getPlagueRepository()
+                                                                                 .getPlagueByName(card.getCity()
+                                                                                                      .getPlagueName());
+                                                            return plague.getColor();
+                                                        })
+                                                        .collect(Collectors.toSet());
 
-        if(requestPlayer.getRole().getName().equals(RoleEnum.AGRICULTURAL_SCIENTIST)){
+        if (requestPlayer.getRole()
+                         .getName()
+                         .equals(RoleEnum.AGRICULTURAL_SCIENTIST)) {
             availableRegions.addAll(RegionMapper.toDTOList(surroundingRegions));
             return availableRegions;
         }
@@ -103,7 +147,8 @@ public class RegionManagement implements IRegionManagement {
         for (IRegion region : surroundingRegions) {
             List<ICity> citiesInRegion = region.getSurroundingCities();
             for (ICity city : citiesInRegion) {
-                if (playerCityCardColors.contains(city.getColor())) {
+                IPlague plague = game.getPlagueRepository().getPlagueByName(city.getPlagueName());
+                if (playerCityCardColors.contains(plague.getColor())) {
                     availableRegions.add(RegionMapper.toDTO(region));
                     break;
                 }
@@ -135,6 +180,7 @@ public class RegionManagement implements IRegionManagement {
         return GameStore.getInstance()
                         .getGame(lobbyCode);
     }
+
     private IPlayer getRequestPlayer(IUserDTO user, IGame game) throws RegionManagementException {
         IPlayer requestPlayer = null;
         for (IPlayer player : game.getPlayers()) {

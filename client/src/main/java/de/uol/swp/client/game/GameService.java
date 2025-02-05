@@ -1,7 +1,7 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.CityCardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
@@ -9,6 +9,7 @@ import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.region.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.request.WaterTreatmentRegionRequest;
+import de.uol.swp.common.region.request.WaterTreatmentRequest;
 import org.greenrobot.eventbus.EventBus;
 
 /**
@@ -78,6 +79,9 @@ public class GameService {
 
     public void sendRegionForWaterTreatmentRequest(String lobbyCode, int regionId) {
         eventBus.post(new WaterTreatmentRegionRequest(lobbyCode, regionId));
+    }
+    public void sendWaterTreatmentRequest(String lobbyCode, int regionId, int amount, CityCardDTO card) {
+        eventBus.post(new WaterTreatmentRequest(lobbyCode, regionId, amount, card));
     }
 }
 
