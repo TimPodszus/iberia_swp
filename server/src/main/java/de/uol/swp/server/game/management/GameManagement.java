@@ -1,5 +1,6 @@
 package de.uol.swp.server.game.management;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -9,9 +10,9 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
-import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.IGameState;
@@ -28,8 +29,6 @@ import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.google.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -262,7 +261,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isHospitalBuildable()) {
             actions.add(GameActions.BUILD_HOSPITAL);
         }
-        if (isKnowledgeShareable()) {
+        if (isKnowledgeShareable(lobbyCode)) {
             actions.add(GameActions.SHARE_KNOWLEDGE);
         }
         if (isInfectionTreatable()) {
@@ -287,10 +286,18 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return true;
     }
 
-    private boolean isKnowledgeShareable() {
-        //TODO: Implement logic in #87
-        return true;
-    }
+private boolean isKnowledgeShareable(String lobbyCode) {
+    IGame game = this.getGame(lobbyCode);
+    IPlayer currentPlayer = game.getCurrentPlayer();
+    int currentCityId = currentPlayer.getCurrentPosition().getId();
+
+    return game.getPlayers().stream()
+               .filter(player -> player.getCurrentPosition().getId() == currentCityId)
+               .anyMatch(player -> player.getCards().stream()
+                                         .filter(card -> card instanceof CityCard)
+                                         .map(card -> (CityCard) card)
+                                         .anyMatch(card -> card.getCity().getId() == currentCityId));
+}
 
     private boolean isInfectionTreatable() {
         //TODO: Implement logic in #88
