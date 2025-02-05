@@ -21,8 +21,8 @@ public class TreatPlagueDialog {
 
     public void initData(List<IInfectionDTO> plagues) {
         List<PlagueName> selectablePlagues = plagues.stream()
-                .map(p -> p.getPlague().getName())
-                .collect(Collectors.toList());
+                .map(p -> p.getPlagueName())
+                .toList();
         plagueListView.setItems(FXCollections.observableArrayList(selectablePlagues));
     }
 
