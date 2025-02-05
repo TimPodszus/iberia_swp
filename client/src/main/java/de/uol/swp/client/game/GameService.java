@@ -1,8 +1,8 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
@@ -92,5 +92,22 @@ public class GameService {
         eventBus.post(new AvailableActionsRequest(lobbyCode));
     }
 
+    /**
+     * Sends a request to share a ride to the specified city.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param cityId    the ID of the city to which the ride is to be shared
+     */
+    public void sendShareRideRequest(String lobbyCode, int cityId) {
+        eventBus.post(new ShareRideRequest(lobbyCode, cityId));
+    }
 
+    /**
+     * Sends a request to deny the ride-share.
+     *
+     * @param lobbyCode the code of the lobby
+     */
+    public void sendShareRideRequest(String lobbyCode) {
+        eventBus.post(new ShareRideRequest(lobbyCode));
+    }
 }

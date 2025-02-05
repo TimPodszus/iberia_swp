@@ -12,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
- * Test class for PickupPlayerEvent.
+ * Test class for ShareRideEvent.
  */
-public class PickupPlayerEventTest {
+public class ShareRideEventTest {
 
     private static final String LOBBY_ID = "lobbyId";
     private static final ICityDTO TEST_CITY = new CityDTO(1,
@@ -27,54 +27,54 @@ public class PickupPlayerEventTest {
     );
 
     /**
-     * Tests the constructor of PickupPlayerEvent.
+     * Tests the constructor of ShareRideEvent.
      */
     @Test
     void testConstructor() {
-        PickupPlayerEvent event = new PickupPlayerEvent(LOBBY_ID, TEST_CITY);
+        ShareRideEvent event = new ShareRideEvent(LOBBY_ID, TEST_CITY);
 
         assertEquals(LOBBY_ID, event.getLobbyId(), "The lobby ID is not set correctly.");
         assertEquals(TEST_CITY, event.getCity(), "The city is not set correctly.");
     }
 
     /**
-     * Tests the equals method of PickupPlayerEvent with two identical events.
+     * Tests the equals method of ShareRideEvent with two identical events.
      */
     @Test
     void testEquals() {
-        PickupPlayerEvent event1 = new PickupPlayerEvent(LOBBY_ID, TEST_CITY);
-        PickupPlayerEvent event2 = new PickupPlayerEvent(LOBBY_ID, TEST_CITY);
+        ShareRideEvent event1 = new ShareRideEvent(LOBBY_ID, TEST_CITY);
+        ShareRideEvent event2 = new ShareRideEvent(LOBBY_ID, TEST_CITY);
 
-        assertEquals(event1, event2, "The two PickupPlayerEvents should be equal.");
+        assertEquals(event1, event2, "The two ShareRideEvent should be equal.");
     }
 
     /**
-     * Tests the equals method of PickupPlayerEvent with the same object.
+     * Tests the equals method of ShareRideEvent with the same object.
      */
     @Test
     void testEqualsWithSameObject() {
-        PickupPlayerEvent event = new PickupPlayerEvent(LOBBY_ID, TEST_CITY);
+        ShareRideEvent event = new ShareRideEvent(LOBBY_ID, TEST_CITY);
 
-        assertEquals(event, event, "The PickupPlayerEvent should be equal to itself.");
+        assertEquals(event, event, "The ShareRideEvent should be equal to itself.");
     }
 
     /**
-     * Tests the equals method of PickupPlayerEvent with a different object.
+     * Tests the equals method of ShareRideEvent with a different object.
      */
     @Test
     void testEqualsWithDifferentObject() {
-        PickupPlayerEvent event = new PickupPlayerEvent(LOBBY_ID, TEST_CITY);
+        ShareRideEvent event = new ShareRideEvent(LOBBY_ID, TEST_CITY);
         Object object = new Object();
 
-        assertNotEquals(event, object, "The PickupPlayerEvent should not be equal to an object of a different type.");
+        assertNotEquals(event, object, "The ShareRideEvent should not be equal to an object of a different type.");
     }
 
     /**
-     * Tests the hashCode method of PickupPlayerEvent.
+     * Tests the hashCode method of ShareRideEvent.
      */
     @Test
     void testHashCode() {
-        PickupPlayerEvent event = new PickupPlayerEvent(LOBBY_ID, TEST_CITY);
+        ShareRideEvent event = new ShareRideEvent(LOBBY_ID, TEST_CITY);
 
         assertEquals(event.hashCode(), event.hashCode(), "The hash code should be consistent.");
     }

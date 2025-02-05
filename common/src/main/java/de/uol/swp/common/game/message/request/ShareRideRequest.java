@@ -10,6 +10,7 @@ import java.util.Objects;
  */
 @Getter
 public class ShareRideRequest extends AbstractGameRequest {
+    private final boolean confirmed;
     private final int cityId;
 
     /**
@@ -20,7 +21,20 @@ public class ShareRideRequest extends AbstractGameRequest {
      */
     public ShareRideRequest(String lobbyId, int cityId) {
         super(lobbyId);
+        this.confirmed = true;
         this.cityId = cityId;
+    }
+
+    /**
+     * Constructs a new ShareRideRequest with the specified lobby ID.
+     * The request is not confirmed and the city ID is set to -1.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    public ShareRideRequest(String lobbyId) {
+        super(lobbyId);
+        this.confirmed = false;
+        this.cityId = -1;
     }
 
     @Override
@@ -32,11 +46,13 @@ public class ShareRideRequest extends AbstractGameRequest {
             return false;
         }
         ShareRideRequest that = (ShareRideRequest) object;
-        return Objects.equals(super.getLobbyId(), that.getLobbyId()) && Objects.equals(this.cityId, that.cityId);
+        return Objects.equals(super.getLobbyId(), that.getLobbyId()) && Objects.equals(this.confirmed,
+                that.isConfirmed()
+        ) && Objects.equals(this.cityId, that.cityId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.getLobbyId(), cityId);
+        return Objects.hash(super.getLobbyId(), confirmed, cityId);
     }
 }

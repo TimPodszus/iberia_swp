@@ -7,7 +7,7 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.event.PickupPlayerEvent;
+import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
@@ -120,19 +120,16 @@ public class GameService extends AbstractService {
 
         ICity destination = cityManagement.getCity(request.getLobbyId(), request.getCityId());
 
-        if (!request.getUsername()
-                    .isEmpty()) {
-            LOG.debug("[LobbyID: {}] Sending pickup event for player {}", request.getLobbyId(), request.getUsername());
-            PickupPlayerEvent pickupPlayerEvent = createPickupPlayerEvent(request, destination);
-            post(pickupPlayerEvent);
-            LOG.info("[LobbyID: {}] Asked player if he wants to be picked up", request.getLobbyId());
-        }
-
         gameManagement.movePlayer(UserMapper.toUser(user),
                 request.getLobbyId(),
                 destination,
                 playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId())
         );
+
+        if (!request.getUsername()
+                    .isEmpty()) {
+            this.sendShareRideEvent(request, destination);
+        }
 
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
@@ -168,17 +165,17 @@ public class GameService extends AbstractService {
     }
 
     /**
-     * Creates a PickupPlayerEvent for the specified request and destination.
+     * Creates a ShareRideEvent for the specified request and destination.
      *
      * @param request     the MovePlayerRequest containing the lobby ID and username
      * @param destination the destination city for the player
-     * @return the created PickupPlayerEvent
      * @throws GameException if the user or session is not found
      */
-    private PickupPlayerEvent createPickupPlayerEvent(
+    private void sendShareRideEvent(
             MovePlayerRequest request, ICity destination
     ) throws GameException {
-        PickupPlayerEvent event = new PickupPlayerEvent(request.getLobbyId(), CityMapper.toDTO(destination));
+        LOG.debug("[LobbyID: {}] Sending pickup event for player {}", request.getLobbyId(), request.getUsername());
+        ShareRideEvent event = new ShareRideEvent(request.getLobbyId(), CityMapper.toDTO(destination));
         IUser user = lobbyManagement.getLobby(request.getLobbyId())
                                     .getUsers()
                                     .stream()
@@ -201,6 +198,8 @@ public class GameService extends AbstractService {
                                                            "Session not found. It seems like the user is not logged " + "in.");
                                                });
         event.setReceiver(List.of(session));
-        return event;
+        post(event);
+        LOG.info("[LobbyID: {}] Asked player if he wants to be picked up", request.getLobbyId());
+        gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
     }
 }

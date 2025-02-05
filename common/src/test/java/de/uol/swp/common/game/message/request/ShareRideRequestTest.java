@@ -2,8 +2,7 @@ package de.uol.swp.common.game.message.request;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for the ShareRideRequest class.
@@ -17,11 +16,21 @@ public class ShareRideRequestTest {
      * Tests the constructor of ShareRideRequest.
      */
     @Test
-    void testConstructor() {
+    void testConstructorWithCityId() {
         ShareRideRequest shareRideRequest = new ShareRideRequest(LOBBY_ID, CITY_ID);
 
         assertEquals(LOBBY_ID, shareRideRequest.getLobbyId(), "The lobby ID is not set correctly.");
+        assertTrue(shareRideRequest.isConfirmed(), "The request should be confirmed.");
         assertEquals(CITY_ID, shareRideRequest.getCityId(), "The city ID is not set correctly.");
+    }
+
+    @Test
+    void testConstructorWithoutCityId() {
+        ShareRideRequest shareRideRequest = new ShareRideRequest(LOBBY_ID);
+
+        assertEquals(LOBBY_ID, shareRideRequest.getLobbyId(), "The lobby ID is not set correctly.");
+        assertFalse(shareRideRequest.isConfirmed(), "The request should not be confirmed.");
+        assertEquals(-1, shareRideRequest.getCityId(), "The city ID is not set correctly.");
     }
 
     /**
@@ -53,8 +62,7 @@ public class ShareRideRequestTest {
         ShareRideRequest shareRideRequest = new ShareRideRequest(LOBBY_ID, CITY_ID);
         Object object = new Object();
 
-        assertNotEquals(
-                shareRideRequest,
+        assertNotEquals(shareRideRequest,
                 object,
                 "The ShareRideRequest should not be equal to an object of a different type."
         );

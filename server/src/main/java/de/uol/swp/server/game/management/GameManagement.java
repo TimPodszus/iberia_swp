@@ -387,13 +387,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         ((PlayerTurnState) gameState).reduceActionsRemaining(game);
     }
 
-    public void lockGameInWaitForConfirmationState(String lobbyId) {
+    public void lockGameInWaitForConfirmation(String lobbyId) {
         IGame game = getGame(lobbyId);
         WaitForConfirmationState waitForConfirmationState = new WaitForConfirmationState();
         game.setState(waitForConfirmationState);
     }
 
-    public void unlockGameInWaitForConfirmationState(String lobbyId) {
+    public void unlockGameInWaitForConfirmation(String lobbyId) {
         IGame game = getGame(lobbyId);
         game.setState(game.getPreviousState());
     }

@@ -25,6 +25,7 @@ import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
@@ -1255,5 +1256,29 @@ public class GamePresenter extends AbstractPresenter {
         }
         LOG.info("Players in the same city as the current player retrieved");
         return playersInCity;
+    }
+
+    /**
+     * Handles the ShareRideEvent.
+     * <p>
+     * This method is called when a ShareRideEvent is received. It displays a confirmation dialog
+     * asking the user if they want to be taken to the specified city. If the user confirms,
+     * a share ride request is sent with the city ID. Otherwise, a share ride request is sent without the city ID.
+     *
+     * @param event the ShareRideEvent containing the city data
+     */
+    @Subscribe
+    public void onShareRideEvent(ShareRideEvent event) {
+        boolean result = ConfirmationDialog.showConfirmationDialog("Willst du zu " + event.getCity()
+                                                                                          .getName()
+                                                                                          .getDisplayName() + " mitgenommen werden?");
+        if (result) {
+            gameService.sendShareRideRequest(lobbyId,
+                    event.getCity()
+                         .getId()
+            );
+        } else {
+            gameService.sendShareRideRequest(lobbyId);
+        }
     }
 }

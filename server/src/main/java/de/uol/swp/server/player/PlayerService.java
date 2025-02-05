@@ -2,6 +2,7 @@ package de.uol.swp.server.player;
 
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
@@ -10,7 +11,7 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.UserMapper;
@@ -22,6 +23,7 @@ import org.greenrobot.eventbus.Subscribe;
  */
 public class PlayerService extends AbstractService {
     private final IPlayerManagement playerManagement;
+    private final IGameManagement gameManagement;
 
     /**
      * Constructs a new PlayerService.
@@ -29,9 +31,10 @@ public class PlayerService extends AbstractService {
      * @param bus              the EventBus instance for event handling
      * @param playerManagement the player management instance for player operations
      */
-    public PlayerService(EventBus bus, IPlayerManagement playerManagement) {
+    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement) {
         super(bus);
         this.playerManagement = playerManagement;
+        this.gameManagement = gameManagement;
     }
 
     /**
@@ -42,19 +45,41 @@ public class PlayerService extends AbstractService {
     @Subscribe
     public void onDrawPlayerCardRequest(DrawPlayerCardRequest request) {
         AbstractResponseMessage response;
+        Session session = request.getSession()
+                                 .orElseThrow(() -> new IllegalStateException("Session not present"));
         try {
-            Session session = request.getSession()
-                                     .orElseThrow(() -> new IllegalStateException("Session not present"));
             ICardDTO card = playerManagement.drawPlayerCard(request.getLobbyId(), UserMapper.toUser(session.getUser()));
             response = new DrawPlayerCardResponse(request.getLobbyId(), true, "Card drawn successfully", card);
         } catch (PlayerManagementException e) {
             response = new StatusResponse(request.getLobbyId(), false, "Error drawing a player card");
         }
-        response.setSession(request.getSession()
-                                   .orElseThrow(() -> new IllegalStateException("Session not present")));
+        response.setSession(session);
         post(response);
-        IGame game = GameStore.getInstance()
-                              .getGame(request.getLobbyId());
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    /**
+     * Handles the ShareRideRequest event.
+     *
+     * @param request the request to share a ride
+     * @throws PlayerManagementException if there is an error in player management
+     */
+    @Subscribe
+    public void onShareRideRequest(ShareRideRequest request) throws PlayerManagementException {
+        if (request.isConfirmed()) {
+            Session session = request.getSession()
+                                     .orElseThrow(() -> new IllegalStateException("Session not present"));
+            playerManagement.setPlayerLocation(
+                    request.getLobbyId(),
+                    session.getUser()
+                           .getUsername(),
+                    request.getCityId()
+            );
+        }
+        gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
+
+        IGame game = gameManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 }

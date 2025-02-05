@@ -10,7 +10,7 @@ import java.util.Objects;
  * Request to pick up a player in a specific city.
  */
 @Getter
-public class PickupPlayerEvent extends AbstractGameEvent {
+public class ShareRideEvent extends AbstractGameEvent {
     private final ICityDTO city;
 
     /**
@@ -19,7 +19,7 @@ public class PickupPlayerEvent extends AbstractGameEvent {
      * @param lobbyId the ID of the lobby
      * @param city    the city where the player is to be picked up
      */
-    public PickupPlayerEvent(String lobbyId, ICityDTO city) {
+    public ShareRideEvent(String lobbyId, ICityDTO city) {
         super(lobbyId);
         this.city = city;
     }
@@ -32,7 +32,7 @@ public class PickupPlayerEvent extends AbstractGameEvent {
         if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        PickupPlayerEvent that = (PickupPlayerEvent) object;
+        ShareRideEvent that = (ShareRideEvent) object;
         return Objects.equals(super.getLobbyId(), that.getLobbyId()) && Objects.equals(city, that.city);
     }
 
