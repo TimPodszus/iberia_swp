@@ -818,7 +818,7 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
         this.gameDTO = event.getGameDTO();
-        this.lobbyId = event.getLobbyCode();
+        this.lobbyId = event.getLobbyId();
         this.user = UserStore.getInstance()
                              .getUser();
 
