@@ -416,7 +416,7 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlagueView(int cityID, PlagueName plagueName) {
         for (ICityDTO city : gameDTO.getCities()) {
             if (city.getId() == cityID) {
-                city.getInfections().removeIf(infection -> infection.getPlague().getName().equals(plagueName));
+                city.getInfections().removeIf(infection -> infection.getPlagueName().equals(plagueName));
                 break;
             }
         }
