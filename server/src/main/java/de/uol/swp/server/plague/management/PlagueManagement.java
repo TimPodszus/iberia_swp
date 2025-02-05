@@ -6,6 +6,7 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.data.IPlayer;
@@ -118,7 +119,6 @@ public class PlagueManagement implements IPlagueManagement {
         boolean canTreatInAdjacentRegion;
 
         if (isCountryDoctor) {
-            // Liste von Regionen basierend auf der aktuellen Position des Spielers welche um einen herum sind
             List<IRegion> allRegions = game.getRegionRepository().getRegions();
             List<IRegion> regionsNearBy = new ArrayList<>();
             for (IRegion region : allRegions) {
