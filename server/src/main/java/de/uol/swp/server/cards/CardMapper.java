@@ -23,7 +23,7 @@ public class CardMapper {
      * @param cards the list of Card objects to be converted
      * @return a List of CardDTO objects, each corresponding to the input list's specific card type
      */
-    public static List<ICardDTO> toMixedCardDTOList(List<Card> cards) {
+    public static List<ICardDTO> toMixedCardDTOList(List<ICard> cards) {
         return cards.stream()
                     .map(CardMapper::toDTO)
                     .toList();
@@ -36,7 +36,7 @@ public class CardMapper {
      * @param card the Card object to convert
      * @return the CardDTO corresponding to the type of the provided Card object, or null if the type is not supported
      */
-    public static ICardDTO toDTO(Card card) {
+    public static ICardDTO toDTO(ICard card) {
         if (card instanceof CityCard cityCard) {
             return toCityCardDTO(cityCard);
         } else if (card instanceof EpidemicCard epidemicCard) {

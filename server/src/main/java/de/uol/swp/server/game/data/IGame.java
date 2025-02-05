@@ -1,6 +1,7 @@
 package de.uol.swp.server.game.data;
 
 import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.ConnectionRepository;
@@ -126,14 +127,15 @@ public interface IGame {
      *
      * @return the player card draw pile
      */
-    List<Card> getPlayerCardDrawPile();
+    List<ICard> getPlayerCardDrawPile();
 
     /**
      * Gets the player card discard pile.
      *
      * @return the player card discard pile
      */
-    List<Card> getPlayerCardDiscardPile();
+
+    List<ICard> getPlayerCardDiscardPile();
 
     /**
      * Gets the list of players.

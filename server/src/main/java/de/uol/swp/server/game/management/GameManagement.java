@@ -5,8 +5,8 @@ import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.AbstractManagement;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.ConnectionManagement;
@@ -43,12 +43,14 @@ import java.util.Map;
 public class GameManagement extends AbstractManagement implements IGameManagement {
     static final Logger LOG = LogManager.getLogger(GameManagement.class);
 
+    private final IPlayerManagement playerManagement;
+    private final ICityManagement cityManagement;
 
     @Inject
-    private IPlayerManagement playerManagement;
-
-    @Inject
-    private ICityManagement cityManagement;
+    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement) {
+        this.playerManagement = playerManagement;
+        this.cityManagement = cityManagement;
+    }
 
     /**
      * Creates and initializes a game based on the provided creation request.
@@ -91,9 +93,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
      */
-    private void createPlayers(
-            List<IUser> users, IGame game
-    ) throws PlayerManagementException {
+    private void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
         for (IUser user : users) {
             Player player = new Player(user);
 
@@ -105,7 +105,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 default -> 2;
             };
             for (int i = 0; i < cardsToDraw; i++) {
-                playerManagement.drawPlayerCard(game, player);
+                playerManagement.drawPlayerCard(game.getGameId(), player);
             }
             int currentPlayerIndex = game.getCurrentPlayerIndex();
             int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;
@@ -125,7 +125,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         int foundingDate = Integer.MAX_VALUE;
         IPlayer startingPlayer = null;
         for (IPlayer player : game.getPlayers()) {
-            for (Card card : player.getCards()) {
+            for (ICard card : player.getCards()) {
                 if (card instanceof CityCard cityCard && cityCard.getCity()
                                                                  .getFoundationDate() < foundingDate) {
                     foundingDate = cityCard.getCity()
@@ -197,7 +197,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 if (player.getUser()
                           .getUsername()
                           .equals(request.getSession()
-                                         .get()
+                                         .orElseThrow(() -> new GameManagementException("Session not found"))
                                          .getUser()
                                          .getUsername())) {
                     requestPlayer = player;
@@ -206,8 +206,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             }
             try {
                 assert requestPlayer != null;
-                playerManagement.setStartingPosition(game.getCityRepository()
-                                                         .getCityNameById(request.getCityId()), requestPlayer);
+                playerManagement.setStartingPosition(
+                        game.getGameId(),
+                        game.getCityRepository()
+                            .getCityNameById(request.getCityId()), requestPlayer
+                );
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
             } catch (PlayerManagementException e) {
                 throw new GameManagementException("Failed to set Position");
@@ -221,14 +224,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             throw new GameManagementException("Game is not in a state that allows setting positioning");
         }
         return game;
-    }
-
-    /**
-     * Draws a player card from the deck.
-     * This method needs to be implemented to define how player cards are drawn.
-     */
-    public void drawPlayerCard() {
-        // TODO Implement Method
     }
 
     /**
@@ -313,7 +308,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void movePlayer(IUser user, String lobbyId, ICity city, Card card) throws GameManagementException {
+    public void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException {
         IGame game = super.getGame(lobbyId);
 
         IGameState gameState = game.getState();
@@ -330,7 +325,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
         IConnectionManagement connectionManagement = new ConnectionManagement();
-        Map<ICity, List<Card>> availableDestinations = connectionManagement.getAvailableDestinations(
+        Map<ICity, List<ICard>> availableDestinations = connectionManagement.getAvailableDestinations(
                 lobbyId,
                 player.getCurrentPosition()
                       .getId()
@@ -375,7 +370,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                        .getName()
                                        .equals(RoleEnum.SAILOR);
         if (!playerIsSailor) {
-            player.discardCard(card);
+            playerManagement.discardCard(game.getGameId(), player, card);
         }
 
         LOG.debug(

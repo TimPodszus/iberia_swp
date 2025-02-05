@@ -887,8 +887,7 @@ public class GamePresenter extends AbstractPresenter {
     private void updateInfections(ICityDTO city) {
         List<IInfectionDTO> infections = city.getInfections();
         for (IInfectionDTO infection : infections) {
-            IPlagueDTO plague = infection.getPlague();
-            PlagueName plagueName = plague.getName();
+            PlagueName plagueName = infection.getPlagueName();
             int severity = infection.getSeverity();
             setPlagueCubesToCity(city.getId(), plagueName, severity);
         }

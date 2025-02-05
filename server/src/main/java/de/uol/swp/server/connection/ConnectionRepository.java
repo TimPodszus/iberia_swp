@@ -148,9 +148,11 @@ public class ConnectionRepository {
      */
     public List<CityName> getCityNamesOfConnectedCitiesByCityName(CityName cityName) {
         return connections.stream()
-                          .map(IConnection::getCityNames)
-                          .filter(cityNames -> cityNames.contains(cityName))
-                          .findFirst()
-                          .orElse(null);
+                          .filter(connection -> connection.getCityNames()
+                              .stream().anyMatch(name -> name.equals(cityName)))
+                          .flatMap(connection -> connection.getCityNames().stream())
+                          .filter(name -> !name.equals(cityName))
+                          .distinct()
+                          .toList();
     }
 }
