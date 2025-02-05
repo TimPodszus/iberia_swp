@@ -1,6 +1,9 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.server.cards.*;
+import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.EpidemicCard;
+import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
@@ -109,7 +112,6 @@ public class Game implements IGame {
     /**
      * Current state of the game.
      */
-    @Setter
     private IGameState state;
 
     /**
@@ -225,5 +227,10 @@ public class Game implements IGame {
      */
     public IPlayer getCurrentPlayer() {
         return this.players.get(currentPlayerIndex);
+    }
+
+    public void setState(IGameState state) {
+        this.previousState = this.state;
+        this.state = state;
     }
 }
