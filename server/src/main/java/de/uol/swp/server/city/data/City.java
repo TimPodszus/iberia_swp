@@ -100,13 +100,13 @@ public class City implements ICity {
     public void removePlagueCubes(PlagueName plagueName, int count) {
         int currentCount;
         for (IInfection infection : infections) {
-            if (infection.getPlague().getName().equals(plagueName)) {
+            if (infection.getPlagueName().equals(plagueName)) {
                 currentCount = infection.getSeverity();
                 if (currentCount < count) {
                     throw new IllegalArgumentException("Not enough plague cubes to remove.");
                 }
                 infection.setSeverity(currentCount - count);
-                infection.getPlague().setCubesRemaining(infection.getPlague().getCubesRemaining() - count);
+//                infection.getPlague.setCubesRemaining(infection.getPlague().getCubesRemaining() - count);
             }
         }
     }
@@ -120,7 +120,7 @@ public class City implements ICity {
     public boolean hasPlague(PlagueName plagueName) {
         boolean hasPlague = false;
         for (IInfection infection : infections) {
-            hasPlague = infection.getPlague().getName().equals(plagueName);
+            hasPlague = infection.getPlagueName().equals(plagueName);
         }
         return hasPlague;
     }
@@ -134,7 +134,7 @@ public class City implements ICity {
     public int getPlagueCubes(PlagueName plagueName) {
         int plagueCubes = 0;
         for (IInfection infection : infections) {
-            if (infection.getPlague().getName().equals(plagueName)) {
+            if (infection.getPlagueName().equals(plagueName)) {
                 plagueCubes = infection.getSeverity();
             }
         }
