@@ -366,17 +366,26 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onTreatPlague(ActionEvent event) {
         //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/88
+        System.out.println("SEUCHE BEHANDELN BUTTON GEKLICKT");
         if (treatInfectionButton.isSelected()) {
+            System.out.println("Button ist ausgewählt, sende Request...");
             gameService.sendAvailablePlaguesRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
+        }
+        else {
+            System.out.println("Button ist nicht ausgewählt!");
         }
     }
 
     @Subscribe
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
+        System.out.println("AvailablePlaguesResponse empfangen! Anzahl Seuchen: " + response.getAvailablePlagues().size());
         TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
+        System.out.println("Dialog wird geöffnet...");
         Optional<PlagueName> result = dialog.showAndWait(); // Optional nutzen!
+        System.out.println("Dialog wurde geschlossen.");
 
         result.ifPresent(selectedPlague -> {
+            System.out.println("Ausgewählte Seuche: " + selectedPlague);
             gameService.sendTreatPlagueRequest(
                     lobbyId,
                     gameDTO.getCurrentPlayer().getCurrentPosition().getId(),
@@ -393,8 +402,6 @@ public class GamePresenter extends AbstractPresenter {
             }
         });
     }
-
-
 
     @Subscribe
     public void onTreatPlagueResponse(TreatPlagueResponse response) {
