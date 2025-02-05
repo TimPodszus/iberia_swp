@@ -37,7 +37,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                     lobbyId,
                     startCity.getName()
             );
-            Map<ICity, List<ICard>> seaConnections = getBySeaConnectedCities(lobbyId);
+            Map<ICity, List<ICard>> seaConnections = getBySeaConnectedCities(lobbyId, cityId);
             for (Map.Entry<ICity, List<ICard>> entry : seaConnections.entrySet()) {
                 availableDestinations.putIfAbsent(entry.getKey(), entry.getValue());
             }
@@ -48,7 +48,6 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                 availableDestinations.size(),
                 startCity.getName()
         );
-        availableDestinations.remove(startCity);
         return availableDestinations;
     }
 
@@ -136,7 +135,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
      * @param lobbyId the ID of the lobby
      * @return a map of cities that can be reached via sea connections
      */
-    private Map<ICity, List<ICard>> getBySeaConnectedCities(String lobbyId) {
+    private Map<ICity, List<ICard>> getBySeaConnectedCities(String lobbyId, int cityId) {
         Map<ICity, List<ICard>> availableConnections = new HashMap<>();
         CityRepository cityRepository = super.getGame(lobbyId)
                                              .getCityRepository();
@@ -151,15 +150,10 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         boolean isSailor = currentPlayer.getRole() != null && currentPlayer.getRole()
                                                                            .getName()
                                                                            .equals(RoleEnum.SAILOR);
-        if (isSailor) {
-            harbourCities.forEach(city -> availableConnections.put(city, new ArrayList<>()));
-        } else {
-            for (ICity city : harbourCities) {
-                List<ICard> cards = getCardsWithSameColor(lobbyId, city);
-                if (!cards.isEmpty()) {
-                    availableConnections.put(city, cards);
-                }
-
+        for (ICity city : harbourCities) {
+            List<ICard> cards = isSailor ? new ArrayList<>() : getCardsWithSameColor(lobbyId, city);
+            if (city.getId() != cityId && (!cards.isEmpty() || isSailor)) {
+                availableConnections.put(city, cards);
             }
         }
 
