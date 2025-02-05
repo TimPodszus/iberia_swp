@@ -2,7 +2,6 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
-import de.uol.swp.client.chat.detail.ChatDetailPresenter;
 import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
@@ -175,7 +174,6 @@ public class GamePresenter extends AbstractPresenter {
         isChatOpen = !isChatOpen;
     }
 
-    private ChatDetailPresenter chatDetailPresenter;
 
     /**
      * Initializes the game screen presenter.
