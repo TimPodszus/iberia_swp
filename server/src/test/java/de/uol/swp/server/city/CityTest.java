@@ -4,8 +4,8 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.infection.Infection;
 import de.uol.swp.server.infection.data.IInfection;
+import de.uol.swp.server.infection.data.Infection;
 import de.uol.swp.server.plague.data.Plague;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ class CityTest {
      */
     @Test
     void testAddInfections() {
-        IInfection infection = new Infection(1, new Plague(PlagueName.MALARIA, 1, true));
+        IInfection infection = new Infection(1, PlagueName.MALARIA);
 
         city.getInfections().add(infection);
 

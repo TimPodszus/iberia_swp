@@ -100,6 +100,7 @@ public class LobbyService extends AbstractService {
     @Subscribe
     public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) throws LobbyStoreException {
         ILobby lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getLobbyCode());
+
         lobby.leaveUser(UserMapper.toUser(lobbyLeaveUserRequest.getUser()));
         lobby = lobbyManagement.updateLobby(lobby);
         sendToAllInLobby(lobby,
@@ -153,6 +154,7 @@ public class LobbyService extends AbstractService {
                .ifPresent(response::setSession);
         post(response);
     }
+
 
     /**
      * Handles UpdateLobbyRequests found on the EventBus.

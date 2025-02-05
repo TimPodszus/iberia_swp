@@ -1,9 +1,6 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.server.cards.Card;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.cards.EpidemicCard;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.*;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
@@ -91,12 +88,12 @@ public class Game implements IGame {
     /**
      * Draw pile for player cards.
      */
-    private List<Card> playerCardDrawPile;
+    private List<ICard> playerCardDrawPile;
 
     /**
      * Discard pile for player cards.
      */
-    private List<Card> playerCardDiscardPile;
+    private List<ICard> playerCardDiscardPile;
 
     /**
      * List of players in the game.
@@ -195,20 +192,20 @@ public class Game implements IGame {
         if (numSubDecks <= 0) {
             throw new IllegalArgumentException("Number of sub-decks must be greater than zero.");
         }
-        List<List<Card>> subDecks = splitIntoSubDecks(playerCardDrawPile, numSubDecks);
+        List<List<ICard>> subDecks = splitIntoSubDecks(playerCardDrawPile, numSubDecks);
         for (int i = 0; i < numSubDecks; i++) {
             subDecks.get(i)
                     .add(createEpidemicCard(numSubDecks));
             Collections.shuffle(subDecks.get(i));
         }
         playerCardDrawPile.clear();
-        for (List<Card> deck : subDecks) {
+        for (List<ICard> deck : subDecks) {
             playerCardDrawPile.addAll(deck);
         }
     }
 
-    private List<List<Card>> splitIntoSubDecks(List<Card> deck, int numSubDecks) {
-        List<List<Card>> subDecks = new ArrayList<>();
+    private List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks) {
+        List<List<ICard>> subDecks = new ArrayList<>();
         int subDeckSize = deck.size() / numSubDecks;
         int leftover = deck.size() % numSubDecks;
 

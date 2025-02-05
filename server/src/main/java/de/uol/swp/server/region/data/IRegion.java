@@ -25,6 +25,13 @@ public interface IRegion {
     int getWaterTreatments();
 
     /**
+     * Increases the number of water treatments in the region by the specified count.
+     *
+     * @param amount the amount by which to increase the water treatments
+     */
+    void increaseWaterTreatments(int amount);
+
+    /**
      * Decreases the number of water treatments in the region by the specified amount.
      *
      * @param amount the amount by which to decrease the water treatments

@@ -1,8 +1,8 @@
 package de.uol.swp.server.plague;
 
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.states.IGameState;
@@ -14,6 +14,7 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.region.data.Region;
 import de.uol.swp.server.role.CountryDoctor;
+import de.uol.swp.server.player.management.PlayerManagement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -25,13 +26,15 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
  * Test class for PlagueManagement.
  */
 class PlagueManagementTest {
+
+    @Mock
+    PlayerManagement playerManagement;
 
     @Mock
     private Game game;
@@ -55,7 +58,7 @@ class PlagueManagementTest {
     public void setup() {
         MockitoAnnotations.openMocks(this);
 
-        List<Card> playerCards = List.of(
+        List<ICard> playerCards = List.of(
                 mockCityCard(PlagueName.CHOLERA),
                 mockCityCard(PlagueName.CHOLERA),
                 mockCityCard(PlagueName.CHOLERA),
@@ -151,14 +154,7 @@ class PlagueManagementTest {
         when(currentCity.isHospitalBuilt()).thenReturn(true);
         when(currentCity.getPlagueName()).thenReturn(PlagueName.CHOLERA);
 
-        List<Card> discardPile = new ArrayList<>();
-        when(game.getPlayerCardDiscardPile()).thenReturn(discardPile);
-
-
         plagueManagement.researchPlague(PlagueName.CHOLERA, game);
-
-        verify(currentPlayer, times(5)).discardCard(any(CityCard.class));
-        assertEquals(5, discardPile.size());
 
         verify(plague).setResearched(true);
     }

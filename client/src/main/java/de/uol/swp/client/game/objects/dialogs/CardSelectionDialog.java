@@ -59,6 +59,8 @@ public class CardSelectionDialog extends Dialog<ICardDTO> {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(cardBox);
+        super.getDialogPane()
+             .setContent(scrollPane);
     }
 
     /**
@@ -69,7 +71,9 @@ public class CardSelectionDialog extends Dialog<ICardDTO> {
      * @param id the ID of the clicked card
      */
     private void onCardClicked(int id) {
-        this.selectedCard.unselect();
+        if (this.selectedCard != null) {
+            this.selectedCard.unselect();
+        }
         setSelectedCard(id);
         this.selectedCard.select();
     }

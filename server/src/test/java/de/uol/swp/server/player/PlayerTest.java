@@ -1,10 +1,9 @@
 package de.uol.swp.server.player;
 
-import de.uol.swp.server.cards.Card;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.city.data.City;
-import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,10 +11,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Test class for the {@link Player} class.
@@ -23,48 +20,42 @@ import static org.mockito.Mockito.when;
  */
 class PlayerTest {
 
-    /**
-     * The instance of {@link Player} being tested.
-     */
     private Player player;
+    private IUser mockUser;
+    private IRole mockRole;
+    private ICity mockCity;
+    private List<ICard> mockCards;
 
-    /**
-     * Mocked instance of {@link City} used for testing.
-     */
-    private City mockCity;
-
-    /**
-     * Mocked instance of {@link CityCard} used for testing.
-     */
-    private CityCard mockCityCard;
-
-    /**
-     * A list of {@link Card} objects representing the player's hand during tests.
-     */
-    private List<Card> cards;
-
-    /**
-     * Sets up the test environment by initializing mocks and the Player instance.
-     */
     @BeforeEach
     void setUp() {
-        mockCity = mock(City.class);
-        mockCityCard = mock(CityCard.class);
-        when(mockCityCard.getCity()).thenReturn(mockCity);
-        cards = new ArrayList<>();
-        player = new Player(mock(IUser.class));
-        player.setCards(cards);
+        mockUser = mock(IUser.class);
+        mockRole = mock(IRole.class);
+        mockCity = mock(ICity.class);
+        mockCards = new ArrayList<>();
+        player = new Player(mockUser);
     }
 
-    /**
-     * Tests that the {@link Player#discardCard(Card)} method correctly removes a card from the player's hand.
-     */
     @Test
-    void discardCard_RemovesCardFromHand() {
-        Card card = mock(Card.class);
-        cards.add(card);
-        player.discardCard(card);
-        assertFalse(player.getCards()
-                          .contains(card));
+    void testConstructor() {
+        assertNotNull(player);
+        assertEquals(mockUser, player.getUser());
+        assertNull(player.getRole());
+        assertNull(player.getCurrentPosition());
+        assertNotNull(player.getCards());
+    }
+
+    @Test
+    void testGettersAndSetters() {
+        assertEquals(mockUser, player.getUser());
+        assertEquals(mockCards, player.getCards());
+
+        player.setRole(mockRole);
+        assertEquals(mockRole, player.getRole());
+
+        player.setCurrentPosition(mockCity);
+        assertEquals(mockCity, player.getCurrentPosition());
+
+        player.setCards(mockCards);
+        assertEquals(mockCards, player.getCards());
     }
 }

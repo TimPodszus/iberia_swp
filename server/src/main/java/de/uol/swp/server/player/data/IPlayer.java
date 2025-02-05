@@ -1,6 +1,8 @@
 package de.uol.swp.server.player.data;
 
 import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.role.IRole;
@@ -42,14 +44,14 @@ public interface IPlayer {
      *
      * @return the list of cards
      */
-    List<Card> getCards();
+    List<ICard> getCards();
 
     /**
      * Sets the cards of the player.
      *
      * @param cards the list of cards to set
      */
-    void setCards(List<Card> cards);
+    void setCards(List<ICard> cards);
 
     /**
      * Gets the user associated with the player.
@@ -59,30 +61,10 @@ public interface IPlayer {
     IUser getUser();
 
     /**
-     * Gets the city repository.
+     * Gets the city card of the player. Returns null if the player does not have the city card.
      *
-     * @return the city repository
+     * @param city the city to get the card for
+     * @return the city card or null, if the player does not have the card
      */
-    CityRepository getCityRepository();
-
-    /**
-     * Adds a card to the player's hand.
-     *
-     * @param card the card to add
-     */
-    void addCard(Card card);
-
-    /**
-     * Plays a card from the player's hand.
-     *
-     * @param card the card to play
-     */
-    void playCard(Card card);
-
-    /**
-     * Discards a card from the player's hand.
-     *
-     * @param card the card to discard
-     */
-    void discardCard(Card card);
+    CityCard getCityCard(ICity city);
 }

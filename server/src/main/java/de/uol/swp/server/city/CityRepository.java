@@ -122,6 +122,19 @@ public class CityRepository {
                      .toList();
     }
 
+    /**
+     * Retrieves a city by its ID.
+     *
+     * @param cityId the ID of the city to retrieve
+     * @return the city with the given ID, or null if no city is found
+     */
+    public ICity getCity(int cityId) {
+        return cities.stream()
+                     .filter(city -> city.getId() == cityId)
+                     .findFirst()
+                     .orElse(null);
+    }
+
     public CityName getCityNameById(int cityId) {
         return cities.stream()
                      .filter(city -> city.getId() == cityId)

@@ -1,6 +1,6 @@
 .infection-grade {
     -fx-fill: lightgrey;
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
 .infection-grade-active {
@@ -12,12 +12,12 @@
     -fx-border-color: black;
     -fx-border-width: 1;
     -fx-background-color: lightgrey;
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
 .outbreak-level {
     -fx-fill: lightgrey;
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
 .escalation-stage-active {
@@ -30,7 +30,7 @@
     -fx-border-width: 1;
     -fx-border-radius: 20;
     -fx-background-radius: 20;
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
 .plague-marker-red {
@@ -52,7 +52,13 @@
 .city {
     -fx-stroke: #3c3c3c;
     -fx-stroke-width: 1;
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.city-highlighted {
+    -fx-stroke: #77E44C;
+    -fx-stroke-width: 3;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
 .city-blue {
@@ -79,14 +85,13 @@
 
 .action-button {
     -fx-padding: 6 8 8 8;
-    -fx-background-insets: 0,0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-insets: 0, 0 0 5 0, 0 0 6 0, 0 0 7 0;
     -fx-background-radius: 8;
-    -fx-background-color:
-            linear-gradient(from 0% 93% to 0% 100%, #a34313 0%, #903b12 100%),
-            #9d4024,
-            #d86e3a,
-            radial-gradient(center 50% 50%, radius 100%, #d86e3a, #c54e2c);
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-background-color: linear-gradient(from 0% 93% to 0% 100%, #a34313 0%, #903b12 100%),
+    #9d4024,
+    #d86e3a,
+    radial-gradient(center 50% 50%, radius 100%, #d86e3a, #c54e2c);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
 .action-button:selected {
@@ -107,13 +112,13 @@
     -fx-border-color: black;
     -fx-border-width: 1;
     -fx-border-radius: 8;
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
 .hover-effect {
     -fx-border-color: black;
     -fx-border-width: 2;
-    -fx-effect: dropshadow(gaussian, gray, 20, 0, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgb(128, 128, 128), 20, 0, 0, 0);
 }
 
 .hover-effect-polygon {
@@ -124,14 +129,14 @@
     visibility: false;
     -fx-stroke: #3c3c3c;
     -fx-stroke-width: 1;
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
 .water-mark-visible {
     visibility: true;
     -fx-stroke: #3c3c3c;
     -fx-stroke-width: 1;
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
 .plague-cubes-display {
