@@ -543,7 +543,7 @@ public class SceneManager {
     public void showMainScreen() {
         showScene(
                 mainScene,
-                "Welcome " + UserStore.getInstance()
+                "Willkommen " + UserStore.getInstance()
                                       .getUser()
                                       .getUsername()
         );
@@ -558,7 +558,7 @@ public class SceneManager {
      * @since 2019-09-03
      */
     public void showLoginScreen() {
-        showScene(loginScene, "Login");
+        showScene(loginScene, "Anmeldung");
     }
 
     /**
@@ -568,7 +568,7 @@ public class SceneManager {
      * the window to "Registration"
      */
     public void showRegistrationScreen() {
-        showScene(registrationScene, "Registration");
+        showScene(registrationScene, "Registrierung");
     }
 
     /**
@@ -588,7 +588,7 @@ public class SceneManager {
      * the window to "Lobby".
      */
     public void showLobbyScreen() {
-        showScene(lobbyScene, "Lobby");
+        showScene(lobbyScene, "Lobby erstellen");
     }
 
     /**
