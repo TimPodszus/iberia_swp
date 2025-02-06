@@ -294,7 +294,8 @@ public class GamePresenter extends AbstractPresenter {
 
             if (movingByBoat(cityId) && gameDTO.getCurrentPlayer()
                                                .getRole()
-                                               .getName() == RoleEnum.SAILOR) {
+                                               .getName() == RoleEnum.SAILOR && !this.getPlayersInCity()
+                                                                                     .isEmpty()) {
                 LOG.debug("Player is a sailor and take a player with him to the harbour city {}", cityId);
                 PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
                 Optional<String> result = dialog.showAndWait();
@@ -1247,9 +1248,11 @@ public class GamePresenter extends AbstractPresenter {
         LOG.debug("Retrieving players in the same city as the current player");
         List<IPlayerDTO> playersInCity = new ArrayList<>();
         for (IPlayerDTO player : gameDTO.getPlayers()) {
-            if (player.getCurrentPosition() != null && player.getCurrentPosition() == gameDTO.getCurrentPlayer()
-                                                                                             .getCurrentPosition() && !player.equals(
-                    gameDTO.getCurrentPlayer())) {
+            boolean isNotCurrentPlayer = !player.equals(gameDTO.getCurrentPlayer());
+            boolean playersAreInSameCity = player.getCurrentPosition()
+                                                 .equals(gameDTO.getCurrentPlayer()
+                                                                .getCurrentPosition());
+            if (isNotCurrentPlayer && playersAreInSameCity) {
                 LOG.trace("Player {} is in the same city as the current player", player.getUsername());
                 playersInCity.add(player);
             }
@@ -1269,16 +1272,19 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onShareRideEvent(ShareRideEvent event) {
-        boolean result = ConfirmationDialog.showConfirmationDialog("Willst du zu " + event.getCity()
-                                                                                          .getName()
-                                                                                          .getDisplayName() + " mitgenommen werden?");
-        if (result) {
-            gameService.sendShareRideRequest(lobbyId,
-                    event.getCity()
-                         .getId()
-            );
-        } else {
-            gameService.sendShareRideRequest(lobbyId);
-        }
+        Platform.runLater(() -> {
+            boolean result = ConfirmationDialog.showConfirmationDialog("Willst du zu " + event.getCity()
+                                                                                              .getName()
+                                                                                              .getDisplayName() + " mitgenommen werden?");
+            if (result) {
+                gameService.sendShareRideRequest(lobbyId,
+                        event.getCity()
+                             .getId()
+                );
+            } else {
+                gameService.sendShareRideRequest(lobbyId);
+            }
+        });
+
     }
 }

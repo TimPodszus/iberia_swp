@@ -1,5 +1,6 @@
 package de.uol.swp.server.player;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
@@ -31,6 +32,7 @@ public class PlayerService extends AbstractService {
      * @param bus              the EventBus instance for event handling
      * @param playerManagement the player management instance for player operations
      */
+    @Inject
     public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement) {
         super(bus);
         this.playerManagement = playerManagement;

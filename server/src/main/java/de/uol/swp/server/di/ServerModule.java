@@ -7,10 +7,14 @@ import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.infection.management.IInfectionManagement;
+import de.uol.swp.server.infection.management.InfectionManagement;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.region.management.IRegionManagement;
+import de.uol.swp.server.region.management.RegionManagement;
 import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
 import de.uol.swp.server.usermanagement.store.UserStore;
 import org.greenrobot.eventbus.EventBus;
@@ -40,5 +44,7 @@ public class ServerModule extends AbstractModule {
         bind(IGameManagement.class).to(GameManagement.class);
         bind(IPlayerManagement.class).to(PlayerManagement.class);
         bind(ICityManagement.class).to(CityManagement.class);
+        bind(IInfectionManagement.class).to(InfectionManagement.class);
+        bind(IRegionManagement.class).to(RegionManagement.class);
     }
 }
