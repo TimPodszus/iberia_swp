@@ -41,9 +41,9 @@ public class ServerModule extends AbstractModule {
         bind(IConnectionManagement.class).to(ConnectionManagement.class);
         bind(IGameManagement.class).to(GameManagement.class);
         bind(ICityManagement.class).to(CityManagement.class);
-        bind(IGameManagement.class).to(GameManagement.class);
         bind(IPlayerManagement.class).to(PlayerManagement.class);
-        bind(ICityManagement.class).to(CityManagement.class);
+        bind(IInfectionManagement.class).to(InfectionManagement.class);
+        bind(IRegionManagement.class).to(RegionManagement.class);
         bind(IInfectionManagement.class).to(InfectionManagement.class);
         bind(IRegionManagement.class).to(RegionManagement.class);
     }

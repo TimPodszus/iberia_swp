@@ -21,9 +21,9 @@
                         <HBox prefWidth="200.0" spacing="6.0">
                             <children>
                                 <TextField fx:id="searchInput" maxHeight="1.7976931348623157E308"
-                                           promptText="Search Lobby" HBox.hgrow="ALWAYS"/>
+                                           promptText="Lobby suchen" HBox.hgrow="ALWAYS"/>
                                 <Button fx:id="searchButton" mnemonicParsing="false" onAction="#onSearchButtonPressed"
-                                        styleClass="search-button" text="Search"/>
+                                        styleClass="search-button" text="Suchen"/>
                             </children>
                         </HBox>
                         <ScrollPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
@@ -34,10 +34,10 @@
                                     <columns>
                                         <TableColumn maxWidth="1.7976931348623157E308" minWidth="-Infinity"
                                                      prefWidth="748.0" resizable="false" text="Name"/>
-                                        <TableColumn minWidth="9.0" prefWidth="124.0" resizable="false" text="Players"/>
+                                        <TableColumn minWidth="9.0" prefWidth="124.0" resizable="false" text="Spieler"/>
                                         <TableColumn minWidth="9.0" prefWidth="109.0" resizable="false"
-                                                     text="Difficulty"/>
-                                        <TableColumn prefWidth="88.0" resizable="false" text="Access"/>
+                                                     text="Schwierigkeit"/>
+                                        <TableColumn prefWidth="88.0" resizable="false" text="Zugang"/>
                                     </columns>
                                 </TableView>
                             </content>

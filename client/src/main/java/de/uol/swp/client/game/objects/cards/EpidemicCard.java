@@ -24,16 +24,16 @@ public class EpidemicCard extends AbstractCard {
         this.setStyle("-fx-background-color: f7d48e;");
 
         // Create and style the text for the epidemic label
-        Text epedemicText = new Text("Epedemie");
-        StackPane epedemicStackPane = new StackPane();
-        epedemicStackPane.setStyle(TEXT_BACKGROUND_COLOR);
-        epedemicStackPane.getChildren()
-                         .add(epedemicText);
+        Text epidemicText = new Text("Epidemie");
+        StackPane epidemicStackPane = new StackPane();
+        epidemicStackPane.setStyle(TEXT_BACKGROUND_COLOR);
+        epidemicStackPane.getChildren()
+                         .add(epidemicText);
 
         // Set the position of the epidemic label
-        AnchorPane.setTopAnchor(epedemicStackPane, 5.0);
-        AnchorPane.setLeftAnchor(epedemicStackPane, 0.0);
-        AnchorPane.setRightAnchor(epedemicStackPane, 0.0);
+        AnchorPane.setTopAnchor(epidemicStackPane, 5.0);
+        AnchorPane.setLeftAnchor(epidemicStackPane, 0.0);
+        AnchorPane.setRightAnchor(epidemicStackPane, 0.0);
 
         // Create and style the text for the description
         Text descriptionText = new Text("Beschreibung");
@@ -52,6 +52,6 @@ public class EpidemicCard extends AbstractCard {
 
         // Add the text elements to the card
         this.getChildren()
-            .addAll(epedemicStackPane, descriptionStackPane);
+            .addAll(epidemicStackPane, descriptionStackPane);
     }
 }
