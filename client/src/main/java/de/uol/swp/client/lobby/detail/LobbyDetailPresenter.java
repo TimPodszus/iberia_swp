@@ -3,7 +3,6 @@ package de.uol.swp.client.lobby.detail;
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
-import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
@@ -21,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Presenter class for the Lobby Screen.
@@ -175,16 +175,32 @@ public class LobbyDetailPresenter extends AbstractPresenter {
             TableRow<UserListItem> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                    LOG.debug("Joining lobby: {}",
+                    LOG.debug("Kicking {} from lobby",
                             row.getItem()
                                .getName()
                     );
                     UserListItem rowData = row.getItem();
-                    lobbyService.removeUser(this.lobbyDTO.getLobbyId(), rowData.getName());
+                    showConfirmKickDialog(rowData.getName());
                 }
             });
             return row;
         });
+    }
+
+    /**
+     * Shows a confirmation dialog to confirm the removal of a player from the lobby.
+     *
+     * @param username the username of the player to be removed
+     */
+    private void showConfirmKickDialog(String username) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Spieler entfernen");
+        alert.setHeaderText("Willst du " + username + " wirklich aus der Lobby entfernen?");
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            lobbyService.removeUser(this.lobbyDTO.getLobbyId(), username);
+        }
+        lobbyService.removeUser(this.lobbyDTO.getLobbyId(), username);
     }
 
     /**
@@ -231,6 +247,6 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     private void leaveLobby() {
         lobbyService.leaveLobby(lobbyDTO.getLobbyId());
-        eventBus.post(new ShowLastSceneEvent());
+        // TODO close lobby screen
     }
 }

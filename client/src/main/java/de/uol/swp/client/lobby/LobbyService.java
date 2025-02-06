@@ -3,6 +3,8 @@ package de.uol.swp.client.lobby;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.user.IUserDTO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
@@ -19,6 +21,7 @@ import java.util.List;
 
 
 public class LobbyService {
+    private static final Logger LOG = LogManager.getLogger(LobbyService.class);
 
     private final EventBus eventBus;
 
@@ -44,10 +47,12 @@ public class LobbyService {
     public void createNewLobby() {
         CreateLobbyRequest createLobbyRequest = new CreateLobbyRequest();
         eventBus.post(createLobbyRequest);
+        LOG.info("Send CreateLobbyRequest");
     }
 
     public void requestLobbyList() {
         eventBus.post(new LobbyListRequest());
+        LOG.info("Send LobbyListRequest");
     }
 
 
@@ -61,6 +66,7 @@ public class LobbyService {
     public void updateLobby(ILobbyDTO lobby) {
         UpdateLobbyRequest updateLobbyRequest = new UpdateLobbyRequest(lobby);
         eventBus.post(updateLobbyRequest);
+        LOG.info("Send UpdateLobbyRequest");
     }
 
     /**
@@ -73,6 +79,7 @@ public class LobbyService {
     public void getLobby(String lobbyId) {
         GetLobbyRequest getLobbyRequest = new GetLobbyRequest(lobbyId);
         eventBus.post(getLobbyRequest);
+        LOG.info("Send GetLobbyRequest");
     }
 
     /**
@@ -85,6 +92,7 @@ public class LobbyService {
     public void joinLobby(String lobbyId) {
         LobbyJoinUserRequest lobbyJoinUserRequest = new LobbyJoinUserRequest(lobbyId);
         eventBus.post(lobbyJoinUserRequest);
+        LOG.info("Send LobbyJoinUserRequest");
     }
 
     /**
@@ -98,6 +106,7 @@ public class LobbyService {
     public void removeUser(String lobbyId, String username) {
         RemoveUserFromLobbyRequest removeUserFromLobbyRequest = new RemoveUserFromLobbyRequest(lobbyId, username);
         eventBus.post(removeUserFromLobbyRequest);
+        LOG.info("Send RemoveUserFromLobbyRequest");
     }
 
     /**
@@ -110,6 +119,7 @@ public class LobbyService {
     public void leaveLobby(String lobbyId) {
         LobbyLeaveUserRequest lobbyLeaveUserRequest = new LobbyLeaveUserRequest(lobbyId);
         eventBus.post(lobbyLeaveUserRequest);
+        LOG.info("Send LobbyLeaveUserRequest");
     }
 
     /**
@@ -124,5 +134,6 @@ public class LobbyService {
     public void startGame(String lobbyId, int difficulty, List<IUserDTO> users) {
         CreateGameRequest createGameRequest = new CreateGameRequest(lobbyId, difficulty, users);
         eventBus.post(createGameRequest);
+        LOG.info("Send CreateGameRequest");
     }
 }

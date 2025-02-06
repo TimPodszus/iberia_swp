@@ -207,13 +207,7 @@ public class LobbyService extends AbstractService {
     @Subscribe
     public void onRemoveUserFromLobbyRequest(RemoveUserFromLobbyRequest request) throws LobbyStoreException {
         LOG.debug("[LobbyId: {}] Received remove user from lobby request", request.getLobbyId());
-        IUserDTO user = request.getSession()
-                               .orElseThrow(() -> {
-                                   LOG.error(SESSION_INVALID_OR_MISSING);
-                                   return new IllegalArgumentException(SESSION_INVALID_OR_MISSING);
-                               })
-                               .getUser();
-        ILobby lobby = lobbyManagement.removeUser(request.getLobbyId(), user.getUsername());
+        ILobby lobby = lobbyManagement.removeUser(request.getLobbyId(), request.getUserToRemove());
         sendToAllInLobby(lobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(lobby)));
         LOG.debug("[LobbyId: {}] Sent user left lobby message", request.getLobbyId());
     }
