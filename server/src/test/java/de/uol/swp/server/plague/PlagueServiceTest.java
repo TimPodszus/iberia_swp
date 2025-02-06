@@ -81,7 +81,7 @@ class PlagueServiceTest {
         TreatPlagueRequest request = new TreatPlagueRequest("lobby1", 123, PlagueName.CHOLERA);
         when(city.getId()).thenReturn(123);
 
-        plagueService.onTreatPlagueRequest(request, game);
+        plagueService.onTreatPlagueRequest(request);
 
         verify(city).removePlagueCubes(PlagueName.CHOLERA, 1);
 

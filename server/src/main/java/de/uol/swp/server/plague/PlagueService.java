@@ -16,18 +16,17 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.infection.InfectionMapper;
+import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
-import de.uol.swp.server.player.data.IPlayer;
-import de.uol.swp.server.region.data.IRegion;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -72,37 +71,36 @@ public class PlagueService extends AbstractService {
 
     @Subscribe
     public void onAvailablePlaguesRequest(
-            AvailablePlaguesRequest request,
-            Game game
+            AvailablePlaguesRequest request
     ) {
         LOG.debug("Received AvailablePlaguesRequest for lobbyId: {}", request.getLobbyId());
 
-        IPlayer player = game.getCurrentPlayer();
-        ICity city = player.getCurrentPosition();
-        List<IInfectionDTO> plaguesInCity = InfectionMapper.toDTOList(city.getInfections());
+        IGame game = plagueManagement.getGame(request.getLobbyId());
 
-        LOG.debug("Found {} infections in city {}", plaguesInCity.size(), city.getName());
+        List<IInfection> infections = plagueManagement.getInfectionsInCity(game);
+        List<IInfectionDTO> infectionsInCity = InfectionMapper.toDTOList(infections);
+
+        LOG.debug("Found {} infections in city {}", infectionsInCity.size(), game.getCurrentPlayer().getCurrentPosition().getName());
 
         AvailablePlaguesResponse availablePlaguesResponse = new AvailablePlaguesResponse(
                 request.getLobbyId(),
                 true,
-                plaguesInCity,
-                player.getRole().getName()
+                infectionsInCity,
+                game.getCurrentPlayer().getRole().getName()
         );
-        LOG.debug("Sending AvailablePlaguesResponse with {} plagues and role: {}", plaguesInCity.size(), player.getRole().getName());
+        LOG.debug("Sending AvailablePlaguesResponse with {} plagues and role: {}", infectionsInCity.size(), game.getCurrentPlayer().getRole().getName());
 
         post(availablePlaguesResponse);
     }
 
     @Subscribe
     public void onTreatPlagueRequest(
-            TreatPlagueRequest request,
-            Game game
+            TreatPlagueRequest request
     ) {
+        IGame game = plagueManagement.getGame(request.getLobbyId());
         ICity city = game.getCurrentPlayer().getCurrentPosition();
 
         city.removePlagueCubes(request.getPlagueName(), 1);
-
 
         TreatPlagueResponse treatPlagueResponse = new TreatPlagueResponse(request.getLobbyId(), true, request.getPlagueName(), city.getId());
         post(treatPlagueResponse);
@@ -110,25 +108,16 @@ public class PlagueService extends AbstractService {
     }
 
     @Subscribe
-    public void onAvailableCitiesToTreat(
-            AvailableCitiesToTreatRequest request,
-            Game game
+    public void onAvailableCitiesToTreatRequest(
+            AvailableCitiesToTreatRequest request
     ) {
-        List<IRegion> allRegions = game.getRegionRepository().getRegions();
-        List<IRegion> regionsNearBy = new ArrayList<>();
-        for (IRegion region : allRegions) {
-            if (region.getSurroundingCities().contains(game.getCurrentPlayer().getCurrentPosition())) {
-                regionsNearBy.add(region);
-            }
-        }
-        List<ICityDTO> citiesNearBy = new ArrayList<>();
-        for (IRegion region : regionsNearBy) {
-            List<ICityDTO> citiesInAdjecentRegion = CityMapper.toDTOList(game.getRegionRepository().getCitiesInAdjacentRegions(region));
-            citiesNearBy.addAll(citiesInAdjecentRegion);
-        }
+        IGame game = plagueManagement.getGame(request.getLobbyId());
 
+        List<ICity> citiesNearBy = plagueManagement.getCitiesNearBy(game, game.getCurrentPlayer().getCurrentPosition());
 
-        AvailableCitiesToTreatResponse availableCitiesToTreatResponse = new AvailableCitiesToTreatResponse(request.getLobbyId(), true, citiesNearBy);
+        List<ICityDTO> cityDTOList = CityMapper.toDTOList(citiesNearBy);
+
+        AvailableCitiesToTreatResponse availableCitiesToTreatResponse = new AvailableCitiesToTreatResponse(request.getLobbyId(), true, cityDTOList);
         post(availableCitiesToTreatResponse);
     }
 
