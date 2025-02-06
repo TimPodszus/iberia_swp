@@ -17,24 +17,28 @@ public class Lobby implements ILobby {
     private int difficulty;
 
 
-    public void addUser(IUser user) {
-        users.add(user);
-    }
-
-
     @Override
     public void updateOwner(IUser user) {
         this.owner = user;
     }
 
     @Override
-    public void joinUser(IUser user) {
+    public void addUser(IUser user) {
         users.add(user);
     }
 
     @Override
-    public void leaveUser(IUser user) {
-        // TODO document why this method is empty
+    public void removeUser(IUser user) {
+        users.remove(user);
+    }
+
+    @Override
+    public IUser getUser(String username) {
+        return users.stream()
+                    .filter(user -> user.getUsername()
+                                        .equals(username))
+                    .findFirst()
+                    .orElse(null);
     }
 
     @Override

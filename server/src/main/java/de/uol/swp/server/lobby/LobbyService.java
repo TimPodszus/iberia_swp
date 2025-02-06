@@ -115,7 +115,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest request) throws LobbyStoreException {
+    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest request) {
         LOG.debug("[LobbyId: {}] Received leave lobby request", request.getLobbyId());
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         IUserDTO user = request.getSession()
@@ -124,8 +124,7 @@ public class LobbyService extends AbstractService {
                                    return new IllegalArgumentException(SESSION_INVALID_OR_MISSING);
                                })
                                .getUser();
-        lobby.leaveUser(UserMapper.toUser(user));
-        lobby = lobbyManagement.updateLobby(lobby);
+        lobbyManagement.leaveLobby(request.getLobbyId(), UserMapper.toUser(user));
         sendToAllInLobby(lobby, new UserLeftLobbyMessage(request.getLobbyId(), user));
         LOG.debug("[LobbyId: {}] Sent user left lobby message", request.getLobbyId());
     }
@@ -194,7 +193,8 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onUpdateLobbyRequest(UpdateLobbyRequest request) throws LobbyStoreException {
-        LOG.debug("[LobbyId: {}] Received update lobby request",
+        LOG.debug(
+                "[LobbyId: {}] Received update lobby request",
                 request.getLobbyDTO()
                        .getLobbyId()
         );
@@ -202,5 +202,19 @@ public class LobbyService extends AbstractService {
         ILobby updatedLobby = lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO));
         sendToAllInLobby(updatedLobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(updatedLobby)));
         LOG.debug("[LobbyId: {}] Sent lobby updated event", updatedLobby.getLobbyId());
+    }
+
+    @Subscribe
+    public void onRemoveUserFromLobbyRequest(RemoveUserFromLobbyRequest request) throws LobbyStoreException {
+        LOG.debug("[LobbyId: {}] Received remove user from lobby request", request.getLobbyId());
+        IUserDTO user = request.getSession()
+                               .orElseThrow(() -> {
+                                   LOG.error(SESSION_INVALID_OR_MISSING);
+                                   return new IllegalArgumentException(SESSION_INVALID_OR_MISSING);
+                               })
+                               .getUser();
+        ILobby lobby = lobbyManagement.removeUser(request.getLobbyId(), user.getUsername());
+        sendToAllInLobby(lobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(lobby)));
+        LOG.debug("[LobbyId: {}] Sent user left lobby message", request.getLobbyId());
     }
 }

@@ -48,25 +48,23 @@ public class LobbyManagement implements ILobbyManagement {
         return lobby;
     }
 
-    public void leaveLobby(String lobbyID, IUser user) throws LobbyStoreException {
+    public void leaveLobby(String lobbyID, IUser user) {
         LOG.debug("[LobbyId: {}] User {} is leaving lobby", lobbyID, user.getUsername());
-        ILobby lobbyToLeave = lobbyStore.findLobby(lobbyID);
-        lobbyToLeave.getUsers()
-                    .remove(user);
-        lobbyStore.removeUser(lobbyID, user);
+        ILobby lobby = lobbyStore.findLobby(lobbyID);
+        lobby.removeUser(user);
         if (user.getUsername()
-                .equals(lobbyToLeave.getOwner()
-                                    .getUsername()) && !lobbyToLeave.getUsers()
-                                                                    .isEmpty()) {
-            List<IUser> remainingUsers = lobbyToLeave.getUsers();
+                .equals(lobby.getOwner()
+                             .getUsername()) && !lobby.getUsers()
+                                                      .isEmpty()) {
+            List<IUser> remainingUsers = lobby.getUsers();
             if (!remainingUsers.isEmpty()) {
                 IUser newOwner = remainingUsers.get(0);
                 LOG.debug("[LobbyId: {}] Owner left lobby, assigning {} as new owner", lobbyID, newOwner.getUsername());
-                lobbyToLeave.updateOwner(newOwner);
+                lobby.updateOwner(newOwner);
             }
         }
-        if (lobbyToLeave.getUsers()
-                        .isEmpty()) {
+        if (lobby.getUsers()
+                 .isEmpty()) {
             LOG.info("[LobbyId: {}] Lobby is empty, deleting lobby", lobbyID);
             lobbyStore.removeLobby(lobbyID);
         }
@@ -91,13 +89,35 @@ public class LobbyManagement implements ILobbyManagement {
     @Override
     public void joinLobby(String lobbyId, IUser user) throws LobbyStoreException {
         LOG.debug("[LobbyId: {}] User {} is joining lobby", lobbyId, user.getUsername());
-        lobbyStore.joinUser(lobbyId, user);
+        ILobby lobby = lobbyStore.findLobby(lobbyId);
+        if (lobby == null) {
+            LOG.error("[LobbyId: {}] Lobby not found", lobbyId);
+            throw new LobbyStoreException("Lobby not found");
+        }
+        lobby.addUser(user);
         LOG.info("[LobbyId: {}] A User joined lobby", lobbyId);
     }
 
     public ILobby updateLobby(ILobby lobby) {
         LOG.debug("Updating lobby with ID {}", lobby.getLobbyId());
         return lobbyStore.saveLobby(lobby);
+    }
+
+    public ILobby removeUser(String lobbyId, String username) throws LobbyStoreException {
+        LOG.debug("[LobbyId: {}] Removing user {}", lobbyId, username);
+        ILobby lobby = lobbyStore.findLobby(lobbyId);
+        if (lobby == null) {
+            LOG.error("[LobbyId: {}] Lobby not found", lobbyId);
+            throw new LobbyStoreException("Lobby not found");
+        }
+        IUser user = lobby.getUser(username);
+        if (user != null) {
+            lobby.removeUser(user);
+            LOG.info("[LobbyId: {}] User has been removed from lobby", lobbyId);
+        } else {
+            LOG.warn("[LobbyId: {}] User {} not found in lobby", lobbyId, username);
+        }
+        return lobby;
     }
 
 

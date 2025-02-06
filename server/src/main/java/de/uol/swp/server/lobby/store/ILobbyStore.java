@@ -58,23 +58,5 @@ public interface ILobbyStore {
      * @param lobby the {@code ILobby} containing the lobby information to save
      */
     ILobby saveLobby(ILobby lobby);
-
-    /**
-     * Removes a user from the specified lobby.
-     *
-     * @param lobbyID the unique identifier of the lobby
-     * @param user    the user to remove from the lobby
-     * @throws LobbyStoreException if an error occurs during the removal process
-     */
-    void removeUser(String lobbyID, IUser user) throws LobbyStoreException;
-
-    /**
-     * Adds a user to the specified lobby.
-     *
-     * @param lobbyId the unique code identifying the lobby
-     * @param user    the user to add to the lobby
-     * @throws LobbyStoreException if an error occurs during the join process
-     */
-    void joinUser(String lobbyId, IUser user) throws LobbyStoreException;
 }
 

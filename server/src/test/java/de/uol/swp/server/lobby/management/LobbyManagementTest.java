@@ -118,6 +118,9 @@ class LobbyManagementTest {
         assertNull(lobbyManagement.getLobby("NonExistentLobby"));
     }
 
+    /**
+     * Tests the retrieval of all lobbies.
+     */
     @Test
     void getLobbiesTest() {
         ILobby lobby1 = new Lobby("testcode1", "Test1", userList, firstOwner, 4);
@@ -131,6 +134,9 @@ class LobbyManagementTest {
         assertEquals(2, foundLobbies.size());
     }
 
+    /**
+     * Tests a successful user joining a lobby.
+     */
     @Test
     void joinLobby_Success() throws LobbyStoreException {
         User user = new User("testUser", "testUser");
@@ -146,8 +152,11 @@ class LobbyManagementTest {
         );
     }
 
+    /**
+     * Tests a user leaving a lobby.
+     */
     @Test
-    void userLeavesLobbyTest() throws LobbyStoreException {
+    void userLeavesLobbyTest() {
         Lobby mockLobby = new Lobby("Test4", "code4", new ArrayList<>(List.of(firstOwner, user1)), firstOwner, 3);
         lobbyStore.saveLobby(mockLobby);
 
@@ -157,32 +166,36 @@ class LobbyManagementTest {
                              .contains(user1));
     }
 
+    /**
+     * Tests the owner leaving a lobby.
+     */
     @Test
-    void ownerLeavesLobbyTest() throws LobbyStoreException {
+    void ownerLeavesLobbyTest() {
         Lobby mockLobby = new Lobby("Test5", "code5", userList, firstOwner, 3);
         lobbyStore.saveLobby(mockLobby);
         lobbyManagement.leaveLobby("Test5", firstOwner);
-        mockLobby.leaveUser(firstOwner);
+        mockLobby.removeUser(firstOwner);
         assertFalse(mockLobby.getUsers()
                              .contains(firstOwner));
         assertEquals(user1, mockLobby.getOwner());
     }
 
+    /**
+     * Tests all users leaving a lobby.
+     */
     @Test
-    void allUsersLeaveLobbyTest() throws LobbyStoreException {
+    void allUsersLeaveLobbyTest() {
         ILobby mockLobby = new Lobby("Test6", "code6", new ArrayList<>(List.of(firstOwner, user1)), firstOwner, 3);
         lobbyStore.saveLobby(mockLobby);
 
         lobbyManagement.leaveLobby("Test6", firstOwner);
         lobbyManagement.leaveLobby("Test6", user1);
 
-
         assertFalse(mockLobby.getUsers()
                              .contains(user1));
         assertTrue(mockLobby.getUsers()
                             .isEmpty());
     }
-
 
     /**
      * Tests the update of a lobby.
@@ -197,10 +210,53 @@ class LobbyManagementTest {
         assertEquals(updatedLobby, lobbyManagement.getLobby("testcode"));
     }
 
+    /**
+     * Tests joining a non-existent lobby.
+     */
     @Test
     void joinLobby_LobbyNotFound() {
         User user = new User("testUser", "testUser");
 
         assertThrows(LobbyStoreException.class, () -> lobbyManagement.joinLobby("testLobbyCode", user));
+    }
+
+    /**
+     * Tests removing a user from a lobby.
+     */
+    @Test
+    void testRemoveUser() throws LobbyStoreException {
+        ILobby lobby = new Lobby("testcode", "Test", userList, firstOwner, 4);
+        lobbyStore.saveLobby(lobby);
+        ILobby updatedLobby = lobbyManagement.removeUser("testcode", "Lasse");
+
+        assertEquals(
+                1,
+                updatedLobby.getUsers()
+                            .size()
+        );
+    }
+
+    /**
+     * Tests removing a user from an invalid lobby.
+     */
+    @Test
+    void testRemoveUserWithInvalidLobby() {
+        assertThrows(LobbyStoreException.class, () -> lobbyManagement.removeUser("test", "Lasse"));
+    }
+
+    /**
+     * Tests removing a user with an invalid username.
+     */
+    @Test
+    void testRemoveUserWithWrongUsername() throws LobbyStoreException {
+        ILobby lobby = new Lobby("testcode", "Test", userList, firstOwner, 4);
+        lobbyStore.saveLobby(lobby);
+        ILobby updatedLobby = lobbyManagement.removeUser("testcode", "invalid");
+
+        assertEquals(
+                2,
+                updatedLobby.getUsers()
+                            .size()
+        );
     }
 }

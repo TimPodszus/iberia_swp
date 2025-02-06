@@ -60,5 +60,22 @@ public interface ILobbyManagement {
      * @throws LobbyStoreException if an error occurs during lobby update
      */
     ILobby updateLobby(ILobby lobby) throws LobbyStoreException;
+
+    /**
+     * Removes a user from a specified lobby.
+     *
+     * @param lobbyId  the ID of the lobby
+     * @param username the username of the user to remove
+     * @return the updated lobby after the user is removed
+     */
+    public ILobby removeUser(String lobbyId, String username) throws LobbyStoreException;
+
+    /**
+     * Allows a user to leave a specified lobby.
+     *
+     * @param lobbyID the ID of the lobby to leave
+     * @param user    the user who wants to leave the lobby
+     */
+    void leaveLobby(String lobbyID, IUser user);
 }
 

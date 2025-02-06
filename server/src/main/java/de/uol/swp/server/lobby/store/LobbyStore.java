@@ -88,24 +88,4 @@ public class LobbyStore implements ILobbyStore {
         LOG.info("[LobbyId: {}]: Lobby saved", lobby.getLobbyId());
         return lobbies.get(lobby.getLobbyId());
     }
-
-    @Override
-    public void removeUser(String lobbyID, IUser user) throws LobbyStoreException {
-        ILobby lobby = lobbies.get(lobbyID);
-        if (lobby == null) {
-            throw new LobbyStoreException(LOBBY_NOT_FOUND + lobbyID);
-        }
-        lobby.getUsers()
-             .remove(user);
-    }
-
-    @Override
-    public void joinUser(String lobbyId, IUser user) throws LobbyStoreException {
-        ILobby lobby = lobbies.get(lobbyId);
-        if (lobby == null) {
-            throw new LobbyStoreException(LOBBY_NOT_FOUND + lobbyId);
-        }
-        lobby.getUsers()
-             .add(user);
-    }
 }
