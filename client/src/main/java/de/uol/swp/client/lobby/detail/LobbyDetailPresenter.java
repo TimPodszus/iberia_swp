@@ -5,7 +5,6 @@ import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
@@ -17,6 +16,8 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.List;
  * Presenter class for the Lobby Screen.
  */
 public class LobbyDetailPresenter extends AbstractPresenter {
+    private static final Logger LOG = LogManager.getLogger(LobbyDetailPresenter.class);
     public static final String FXML = "/fxml/LobbyScreen.fxml";
 
     private static final String MAX_PLAYERS = " / 5";
@@ -76,10 +78,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
                                       lobbyDTO.getOwner(),
                                       difficulty
                               );
-                              lobbyService.updateLobby(lobbyDTO,
-                                      UserStore.getInstance()
-                                               .getUser()
-                              );
+                              lobbyService.updateLobby(lobbyDTO);
                           });
         userTable.getColumns()
                  .get(0)
@@ -94,10 +93,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage message) {
-        lobbyService.getLobby(message.getLobbyId(),
-                UserStore.getInstance()
-                         .getUser()
-        );
+        lobbyService.getLobby(message.getLobbyId());
     }
 
     /**
@@ -166,15 +162,29 @@ public class LobbyDetailPresenter extends AbstractPresenter {
 
     /**
      * Sets the list of users in the lobby.
+     * Adds a double click event to the user table to remove a user from the lobby.
      */
     private void setUserList() {
         List<UserListItem> userListItems = lobbyDTO.getUsers()
                                                    .stream()
                                                    .map(user -> new UserListItem(user.getUsername()))
                                                    .toList();
-
         userTable.getItems()
                  .setAll(userListItems);
+        userTable.setRowFactory(tv -> {
+            TableRow<UserListItem> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    LOG.debug("Joining lobby: {}",
+                            row.getItem()
+                               .getName()
+                    );
+                    UserListItem rowData = row.getItem();
+                    lobbyService.removeUser(this.lobbyDTO.getLobbyId(), rowData.getName());
+                }
+            });
+            return row;
+        });
     }
 
     /**
@@ -199,28 +209,28 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * Handles the event when the game starts.
      */
     public void onGameStart() {
-        eventBus.post(new CreateGameRequest(lobbyDTO.getLobbyId(), lobbyDTO.getDifficulty(), lobbyDTO.getUsers()));
+        lobbyService.startGame(lobbyDTO.getLobbyId(), lobbyDTO.getDifficulty(), lobbyDTO.getUsers());
     }
 
     /**
      * Handles the event when the user leaves the lobby.
      */
     public void onLobbyLeave() {
-        //TODO: Implement lobby leave
-    }
-
-    /**
-     * Handles the event when the lobby is closed.
-     */
-    public void onLobbyClose() {
-        // TODO: Implement lobby close
+        this.leaveLobby();
     }
 
     /**
      * Handles the event when the back button is pressed.
-     * Posts a ShowLastSceneEvent to the event bus.
      */
     public void onBackButtonPressed() {
+        this.leaveLobby();
+    }
+
+    /**
+     * Leaves the current lobby and posts a ShowLastSceneEvent to the event bus.
+     */
+    private void leaveLobby() {
+        lobbyService.leaveLobby(lobbyDTO.getLobbyId());
         eventBus.post(new ShowLastSceneEvent());
     }
 }

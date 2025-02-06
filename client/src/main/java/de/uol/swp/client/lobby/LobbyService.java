@@ -1,13 +1,13 @@
 package de.uol.swp.client.lobby;
 
-import de.uol.swp.common.lobby.message.request.LobbyListRequest;
+import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.user.IUserDTO;
 import org.greenrobot.eventbus.EventBus;
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
-import de.uol.swp.common.lobby.message.request.CreateLobbyRequest;
-import de.uol.swp.common.lobby.message.request.GetLobbyRequest;
-import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
+
+import java.util.List;
 
 
 /**
@@ -55,25 +55,74 @@ public class LobbyService {
      * Posts a request to update a specified lobby on the EventBus
      *
      * @param lobby The lobby to be updated
-     * @param user  The user requesting the update
      * @see UpdateLobbyRequest
      * @since 2024-10-08
      */
-    public void updateLobby(ILobbyDTO lobby, IUserDTO user) {
-        UpdateLobbyRequest updateLobbyRequest = new UpdateLobbyRequest(lobby, user);
+    public void updateLobby(ILobbyDTO lobby) {
+        UpdateLobbyRequest updateLobbyRequest = new UpdateLobbyRequest(lobby);
         eventBus.post(updateLobbyRequest);
     }
 
     /**
      * Posts a request to get a specified lobby on the EventBus
      *
-     * @param lobbyCode The code of the lobby to retrieve
-     * @param user      The user requesting the lobby information
+     * @param lobbyId The id of the lobby to retrieve
      * @see GetLobbyRequest
      * @since 2024-10-08
      */
-    public void getLobby(String lobbyCode, IUserDTO user) {
-        GetLobbyRequest getLobbyRequest = new GetLobbyRequest(lobbyCode, user);
+    public void getLobby(String lobbyId) {
+        GetLobbyRequest getLobbyRequest = new GetLobbyRequest(lobbyId);
         eventBus.post(getLobbyRequest);
+    }
+
+    /**
+     * Posts a request to join a specified lobby on the EventBus
+     *
+     * @param lobbyId The id of the lobby to join
+     * @see LobbyJoinUserRequest
+     * @since 2024-10-08
+     */
+    public void joinLobby(String lobbyId) {
+        LobbyJoinUserRequest lobbyJoinUserRequest = new LobbyJoinUserRequest(lobbyId);
+        eventBus.post(lobbyJoinUserRequest);
+    }
+
+    /**
+     * Posts a request to remove a user from a specified lobby on the EventBus
+     *
+     * @param lobbyId  The id of the lobby from which the user will be removed
+     * @param username The username of the user to be removed
+     * @see RemoveUserFromLobbyRequest
+     * @since 2024-10-08
+     */
+    public void removeUser(String lobbyId, String username) {
+        RemoveUserFromLobbyRequest removeUserFromLobbyRequest = new RemoveUserFromLobbyRequest(lobbyId, username);
+        eventBus.post(removeUserFromLobbyRequest);
+    }
+
+    /**
+     * Posts a request to leave a specified lobby on the EventBus
+     *
+     * @param lobbyId The id of the lobby to leave
+     * @see LobbyLeaveUserRequest
+     * @since 2024-10-08
+     */
+    public void leaveLobby(String lobbyId) {
+        LobbyLeaveUserRequest lobbyLeaveUserRequest = new LobbyLeaveUserRequest(lobbyId);
+        eventBus.post(lobbyLeaveUserRequest);
+    }
+
+    /**
+     * Posts a request to start a game in a specified lobby on the EventBus
+     *
+     * @param lobbyId    The id of the lobby where the game will start
+     * @param difficulty The difficulty level of the game
+     * @param users      The list of users participating in the game
+     * @see CreateGameRequest
+     * @since 2024-10-08
+     */
+    public void startGame(String lobbyId, int difficulty, List<IUserDTO> users) {
+        CreateGameRequest createGameRequest = new CreateGameRequest(lobbyId, difficulty, users);
+        eventBus.post(createGameRequest);
     }
 }
