@@ -1,13 +1,17 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
-import de.uol.swp.common.player.request.MovePlayerRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
+import de.uol.swp.common.player.request.MovePlayerRequest;
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
+import static de.uol.swp.client.game.ConfirmationDialog.showConfirmationDialog;
 
 
 /**
@@ -71,5 +75,11 @@ public class GameService {
         eventBus.post(new AvailableActionsRequest(lobbyCode));
     }
 
+    @Subscribe
+    public void onShareKnowledgeEvent(ShareKnowledgeEvent event){
+        boolean accepted = showConfirmationDialog( "Do you want to share the card "  + event.getTargetPlayerCard() +
+                " with " + event.getTargetPlayer() + "in exchange for" + event.getCurrentPlayerCard() + "?" );
 
+        eventBus.post(new ShareKnowledgeRequest(event.getLobbyCode(), accepted,event));
+    }
 }

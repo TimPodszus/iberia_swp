@@ -1,13 +1,13 @@
 package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
@@ -18,8 +18,10 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.WaitForConfirmationState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -30,6 +32,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service responsible for managing game-related requests such as creating games.
@@ -152,4 +155,63 @@ public class GameService extends AbstractService {
         post(response);
 
     }
+
+    @Subscribe
+    public void onCardsExchangeRequest(CardsExchangeRequest request) throws GameManagementException {
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        game.setState(new WaitForConfirmationState());
+
+        Map<String, ICardDTO> cardsToExchange = request.getCardsToExchange();
+        String currentPlayerUsername = game.getCurrentPlayer().getUser().getUsername();
+        String targetPlayerUsername = cardsToExchange.keySet().stream()
+                                                     .filter(username -> !username.equals(currentPlayerUsername))
+                                                     .findFirst()
+                                                     .orElseThrow(() -> new GameManagementException("Target player not found"));
+
+        ShareKnowledgeEvent shareKnowledgeEvent = new ShareKnowledgeEvent(
+                request.getLobbyId(),
+               currentPlayerUsername,
+                targetPlayerUsername,
+                cardsToExchange.get(currentPlayerUsername),
+                cardsToExchange.get(targetPlayerUsername)
+        );
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                request.getLobbyId(),
+                currentPlayerUsername,
+                targetPlayerUsername,
+                cardsToExchange.get(currentPlayerUsername),
+                cardsToExchange.get(targetPlayerUsername)
+        );
+        IUser user = lobbyManagement.getLobby(request.getLobbyId()).getUsers().stream()
+                                    .filter(u -> u.getUsername().equals(targetPlayerUsername))
+                                    .findFirst()
+                                    .orElseThrow(() -> new GameManagementException("Target player not found"));
+        Session session =
+                authenticationService.getSession(user).orElseThrow(() -> new GameManagementException(
+                "Session not found"));
+        event.setReceiver(List.of(session));
+        bus.post(event);
+    }
+    @Subscribe
+    public void onShareKnowledgeRequest(ShareKnowledgeRequest request) throws GameManagementException {
+        ShareKnowledgeEvent event = request.getShareKnowledgeEvent();
+        IPlayer currentPlayer = gameManagement.getGame(event.getLobbyCode()).getCurrentPlayer();
+        IPlayer targetPlayer = gameManagement.getGame(event.getLobbyCode()).getPlayers().stream()
+                                             .filter(player -> player.getUser().getUsername().equals(event.getTargetPlayer()))
+                                             .findFirst()
+                                             .orElseThrow(() -> new GameManagementException("Target player not found"));
+
+
+        if (request.isAccepted()){
+            currentPlayer.getCards().remove(event.getCurrentPlayerCard());
+            targetPlayer.getCards().add(event.getCurrentPlayerCard());
+            targetPlayer.getCards().remove(event.getTargetPlayerCard());
+            currentPlayer.getCards().add(event.getTargetPlayerCard());
+
+
+        } else {
+
+        }
+    }
+
 }
