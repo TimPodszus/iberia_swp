@@ -3,6 +3,9 @@ package de.uol.swp.server.city.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.AbstractManagement;
+import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
@@ -12,6 +15,8 @@ import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.management.IRegionManagement;
 
 import java.util.*;
@@ -20,13 +25,17 @@ import java.util.*;
  * Manages city-related operations such as infecting cities with plagues,
  * handling escalations, and managing infection severity.
  */
-public class CityManagement implements ICityManagement {
+public class CityManagement extends AbstractManagement implements ICityManagement {
     private final IRegionManagement regionManagement;
     private final IGameManagement gameManagement;
     private final IInfectionManagement infectionManagement;
 
     @Inject
-    public CityManagement(IRegionManagement regionManagement, IGameManagement gameManagement, IInfectionManagement infectionManagement) {
+    public CityManagement(
+            IRegionManagement regionManagement,
+            IGameManagement gameManagement,
+            IInfectionManagement infectionManagement
+    ) {
         this.regionManagement = regionManagement;
         this.gameManagement = gameManagement;
         this.infectionManagement = infectionManagement;
@@ -54,7 +63,10 @@ public class CityManagement implements ICityManagement {
      * @throws CityManagementException if any parameter is invalid or an error occurs during infection
      */
     public void infectCity(
-            IGame game, InfectionCard infectionCard, PlagueName plagueName, int amount
+            IGame game,
+            InfectionCard infectionCard,
+            PlagueName plagueName,
+            int amount
     ) throws CityManagementException {
         infectCity(game, findCity(game, infectionCard), plagueName, amount, true);
         gameManagement.discardInfectionCard(game, infectionCard);
@@ -71,7 +83,11 @@ public class CityManagement implements ICityManagement {
      * @throws CityManagementException if any parameter is invalid or an error occurs during infection
      */
     private void infectCity(
-            IGame game, ICity city, PlagueName plagueName, int amount, boolean triggerEscalation
+            IGame game,
+            ICity city,
+            PlagueName plagueName,
+            int amount,
+            boolean triggerEscalation
     ) throws CityManagementException {
         validateParameters(game, city, plagueName, amount);
 
@@ -85,7 +101,7 @@ public class CityManagement implements ICityManagement {
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
 
-        if (game.getState() instanceof InfectionState infectionState){
+        if (game.getState() instanceof InfectionState infectionState) {
             infectionState.increaseInfectedCities(game);
         }
     }
@@ -100,7 +116,10 @@ public class CityManagement implements ICityManagement {
      * @throws CityManagementException if any parameter is invalid
      */
     private void validateParameters(
-            IGame game, ICity city, PlagueName plagueName, int amount
+            IGame game,
+            ICity city,
+            PlagueName plagueName,
+            int amount
     ) throws CityManagementException {
         if (game == null || city == null || plagueName == null || amount < 1) {
             throw new CityManagementException("Invalid parameters");
@@ -153,7 +172,12 @@ public class CityManagement implements ICityManagement {
      * @param triggerEscalation whether to trigger escalation if the infection severity exceeds the threshold
      */
     private void increaseInfectionSeverity(
-            IGame game, IInfection infection, IPlague plague, int amount, ICity city, boolean triggerEscalation
+            IGame game,
+            IInfection infection,
+            IPlague plague,
+            int amount,
+            ICity city,
+            boolean triggerEscalation
     ) {
         int newSeverity;
 
@@ -173,7 +197,9 @@ public class CityManagement implements ICityManagement {
             escalation(game, city.getName(), city.getPlagueName());
         }
 
-        if (game.getPlagueRepository().getPlagueByName(plague.getName()).getCubesRemaining() < 0) {
+        if (game.getPlagueRepository()
+                .getPlagueByName(plague.getName())
+                .getCubesRemaining() < 0) {
             //TODO: GameOver auslösen (Implementierung mit Issue #137)
 
             // vorübergehend für Unit-Test - muss dann entsprechend angepasst werden
@@ -184,9 +210,9 @@ public class CityManagement implements ICityManagement {
     /**
      * Handles the escalation process for a city and its connected cities.
      *
-     * @param game            the game instance
-     * @param cityName        the name of the city to escalate
-     * @param plagueName      the name of the plague causing the escalation
+     * @param game       the game instance
+     * @param cityName   the name of the city to escalate
+     * @param plagueName the name of the plague causing the escalation
      */
     private void escalation(IGame game, CityName cityName, PlagueName plagueName) {
 
@@ -224,5 +250,73 @@ public class CityManagement implements ICityManagement {
                 }
             }
         }
+    }
+
+    public void buildHospital(String lobbyId, String userName, CityName cityName) {
+        IGame game = getValidatedGame(lobbyId);
+        IPlayer player = getValidatedPlayer(game, userName);
+
+        if (!player.equals(game.getCurrentPlayer())) {
+            throw new CityManagementException("It's not the player's turn");
+        }
+
+        ICity city = getValidatedCity(game, cityName);
+
+        if (city.isHospitalBuilt()) {
+            throw new CityManagementException("Hospital already built in this city");
+        }
+
+        ICard cityCard = player.getCards()
+                               .stream()
+                               .filter(card -> card instanceof CityCard cityCardInstance && cityCardInstance.getCity()
+                                                                                                            .equals(city))
+                               .findFirst()
+                               .orElseThrow(() -> new CityManagementException("City card not found"));
+
+        new PlayerManagement(gameManagement, this).discardCard(lobbyId, player, cityCard);
+        buildHospitalWithEventCard(lobbyId, cityName);
+    }
+
+    public void buildHospitalWithEventCard(String lobbyId, CityName cityName) {
+        IGame game = getValidatedGame(lobbyId);
+        ICity targetCity = getValidatedCity(game, cityName);
+        ICity currentCity = game.getCurrentPlayer()
+                                .getCurrentPosition();
+
+        if (!targetCity.getPlagueName()
+                       .equals(currentCity.getPlagueName())) {
+            throw new CityManagementException("Target city does not have the same color as the city the player " + "is currently in");
+        }
+
+        game.getCityRepository()
+            .getCities()
+            .stream()
+            .filter(c -> c.isHospitalBuilt() && c.getPlagueName()
+                                                 .equals(targetCity.getPlagueName()))
+            .findFirst()
+            .ifPresent(existingHospital -> existingHospital.setHospitalBuilt(false));
+
+        targetCity.setHospitalBuilt(true);
+    }
+
+    private IGame getValidatedGame(String lobbyId) {
+        return Optional.ofNullable(getGame(lobbyId))
+                       .orElseThrow(() -> new CityManagementException("Game not found"));
+    }
+
+    private IPlayer getValidatedPlayer(IGame game, String userName) {
+        return game.getPlayers()
+                   .stream()
+                   .filter(p -> p.getUser()
+                                 .getUsername()
+                                 .equals(userName))
+                   .findFirst()
+                   .orElseThrow(() -> new CityManagementException("Player not found"));
+    }
+
+    private ICity getValidatedCity(IGame game, CityName cityName) {
+        return Optional.ofNullable(game.getCityRepository()
+                                       .getCityByName(cityName))
+                       .orElseThrow(() -> new CityManagementException("City not found"));
     }
 }
