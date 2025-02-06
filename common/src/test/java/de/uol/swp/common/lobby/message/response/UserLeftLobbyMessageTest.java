@@ -29,7 +29,7 @@ class UserLeftLobbyMessageTest {
     void createUserLeftLobbyMessage() {
         UserLeftLobbyMessage message = new UserLeftLobbyMessage(lobbyName, user);
 
-        assertEquals(lobbyName, message.getLobbyCode());
+        assertEquals(lobbyName, message.getLobbyId());
         assertEquals(user, message.getUser());
     }
 

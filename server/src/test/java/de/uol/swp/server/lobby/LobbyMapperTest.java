@@ -13,18 +13,21 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
- class LobbyMapperTest {
+class LobbyMapperTest {
     private final IUserDTO firstOwner = new UserDTO("Marco", "Marco");
 
     @Test
     void toDtoTest() {
-        ILobby lobby = new Lobby("testcode", "Test", UserMapper.toUser(List.of(firstOwner)),
+        ILobby lobby = new Lobby("testcode",
+                "Test",
+                UserMapper.toUser(List.of(firstOwner)),
                 UserMapper.toUser(firstOwner),
-                4);
+                4
+        );
         ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
 
         assertEquals(lobby.getName(), lobbyDTO.getName());
-        assertEquals(lobby.getLobbyCode(), lobbyDTO.getLobbyCode());
+        assertEquals(lobby.getLobbyId(), lobbyDTO.getLobbyId());
         assertEquals(lobby.getDifficulty(), lobbyDTO.getDifficulty());
     }
 
@@ -34,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         ILobby lobby = LobbyMapper.toLobby(lobbyDTO);
 
         assertEquals(lobby.getName(), lobbyDTO.getName());
-        assertEquals(lobby.getLobbyCode(), lobbyDTO.getLobbyCode());
+        assertEquals(lobby.getLobbyId(), lobbyDTO.getLobbyId());
         assertEquals(lobby.getDifficulty(), lobbyDTO.getDifficulty());
     }
 }

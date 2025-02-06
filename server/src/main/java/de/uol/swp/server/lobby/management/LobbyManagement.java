@@ -34,12 +34,12 @@ public class LobbyManagement implements ILobbyManagement {
         this.lobbyStore = LobbyStore.getInstance();
     }
 
-    public ILobby createLobby(String name, IUser owner) {
+    public ILobby createLobby(IUser owner) {
         String lobbyID = generateLobbyID();
+        String lobbyName = "Lobby " + owner.getUsername();
         List<IUser> users = new ArrayList<>();
         users.add(owner);
-        return lobbyStore.createLobby(lobbyID, name, users, owner, 4);
-
+        return lobbyStore.createLobby(lobbyID, lobbyName, users, owner, 4);
     }
 
     public void leaveLobby(String lobbyID, IUser user) throws LobbyStoreException {
@@ -78,17 +78,12 @@ public class LobbyManagement implements ILobbyManagement {
 
     @Override
     public void joinLobby(ILobby lobby, IUser user) throws LobbyStoreException {
-        String lobbyID = lobby.getLobbyCode();
+        String lobbyID = lobby.getLobbyId();
         lobbyStore.joinUser(lobbyID, user);
     }
 
     public ILobby updateLobby(ILobby lobby) {
-        return lobbyStore.updateLobby(lobby.getLobbyCode(),
-                lobby.getName(),
-                lobby.getUsers(),
-                lobby.getOwner(),
-                lobby.getDifficulty()
-        );
+        return lobbyStore.saveLobby(lobby);
     }
 
 

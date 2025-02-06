@@ -683,10 +683,8 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
 
         playerCardsHBox.getChildren()
-                       .add(
-                               playerCardsHBox.getChildren()
-                                              .size() - 1, cardSlot
-                       );
+                       .add(playerCardsHBox.getChildren()
+                                           .size() - 1, cardSlot);
     }
 
     /**
@@ -697,8 +695,7 @@ public class GamePresenter extends AbstractPresenter {
     public void removePlayerHandCards() {
         playerCardsHBox.getChildren()
                        .removeIf(node -> node instanceof Pane && node.getStyleClass()
-                                                                     .contains("pile") && !Objects.equals(
-                               node.getId(),
+                                                                     .contains("pile") && !Objects.equals(node.getId(),
                                "roleCard"
                        ));
     }
@@ -760,7 +757,7 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
         this.gameDTO = event.getGameDTO();
-        this.lobbyId = event.getLobbyCode();
+        this.lobbyId = event.getLobbyId();
         this.user = UserStore.getInstance()
                              .getUser();
 
@@ -825,8 +822,7 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayerHandCards(List<IPlayerDTO> players) {
         removePlayerHandCards();
         for (IPlayerDTO player : players) {
-            if (Objects.equals(
-                    player.getUsername(),
+            if (Objects.equals(player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -947,8 +943,7 @@ public class GamePresenter extends AbstractPresenter {
         playerButtons.getChildren()
                      .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(
-                    player.getUsername(),
+            if (!Objects.equals(player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -973,8 +968,7 @@ public class GamePresenter extends AbstractPresenter {
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
-                cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
                 playersInCity
         )));
     }
@@ -986,8 +980,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(
-                    player.getUsername(),
+            if (Objects.equals(player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()

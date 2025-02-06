@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class Lobby implements ILobby {
-    private final String lobbyCode;
+    private final String lobbyId;
     private final String name;
     private final List<IUser> users;
     private IUser owner;
@@ -43,13 +43,13 @@ public class Lobby implements ILobby {
             return true;
         }
         if (o instanceof ILobby lobby) {
-            return lobbyCode.equals(lobby.getLobbyCode());
+            return lobbyId.equals(lobby.getLobbyId());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return lobbyCode.hashCode();
+        return lobbyId.hashCode();
     }
 }

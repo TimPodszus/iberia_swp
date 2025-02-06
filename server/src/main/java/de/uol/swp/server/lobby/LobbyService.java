@@ -5,11 +5,16 @@ import com.google.inject.Singleton;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.lobby.message.response.*;
+import de.uol.swp.common.user.IUserDTO;
+import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.store.LobbyStoreException;
+import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -21,13 +26,14 @@ import java.util.List;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-@Singleton
 public class LobbyService extends AbstractService {
+    public static final Logger LOG = LogManager.getLogger(LobbyService.class);
+
     /**
      * The LobbyManagement instance used for managing lobbies.
      * This field is injected by the dependency injection framework.
      */
-    protected ILobbyManagement lobbyManagement;
+    private ILobbyManagement lobbyManagement;
 
     /**
      * Constructs a new LobbyService.
@@ -55,12 +61,14 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyStoreException {
-        ILobby createdLobby = lobbyManagement.createLobby(createLobbyRequest.getLobbyCode(),
-                UserMapper.toUser(createLobbyRequest.getOwner())
-        );
+        Session session = createLobbyRequest.getSession()
+                                            .orElseThrow(() -> {
+                                                LOG.error("Session is missing");
+                                                return new IllegalArgumentException("Session is missing");
+                                            });
+        ILobby createdLobby = lobbyManagement.createLobby(UserMapper.toUser(session.getUser()));
         LobbyCreatedResponse response = new LobbyCreatedResponse(LobbyMapper.toDTO(createdLobby));
-        createLobbyRequest.getSession()
-                          .ifPresent(response::setSession);
+        response.setSession(session);
         createLobbyRequest.getMessageContext()
                           .ifPresent(response::setMessageContext);
         post(response);
@@ -81,9 +89,7 @@ public class LobbyService extends AbstractService {
     public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws LobbyStoreException {
         ILobby lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
         lobbyManagement.joinLobby(lobby, UserMapper.toUser(lobbyJoinUserRequest.getUser()));
-        sendToAllInLobby(lobby,
-                new UserJoinedLobbyMessage(lobbyJoinUserRequest.getLobbyCode(), lobbyJoinUserRequest.getUser())
-        );
+        sendToAllInLobby(lobby, new UserJoinedLobbyMessage(lobby.getLobbyId(), lobbyJoinUserRequest.getUser()));
     }
 
     /**

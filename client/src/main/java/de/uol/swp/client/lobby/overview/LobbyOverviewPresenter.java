@@ -114,7 +114,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
         List<ILobbyDTO> filteredLobbies = new ArrayList<>();
         for (ILobbyDTO lobby : this.lobbyList) {
             if (lobby.getName()
-                     .contains(searchInputText) || lobby.getLobbyCode()
+                     .contains(searchInputText) || lobby.getLobbyId()
                                                         .contains(searchInputText)) {
                 filteredLobbies.add(lobby);
             }
@@ -131,7 +131,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
         List<LobbyListItem> lobbyListItems = new ArrayList<>();
         for (ILobbyDTO lobby : lobbyList) {
             lobbyListItems.add(new LobbyListItem(
-                    lobby.getLobbyCode(),
+                    lobby.getLobbyId(),
                     lobby.getName(),
                     lobby.getUsers()
                          .size(),
@@ -168,7 +168,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
      */
     private void onJoinLobby(String lobbyId) {
         ILobbyDTO lobby = lobbyList.stream()
-                                   .filter(l -> l.getLobbyCode()
+                                   .filter(l -> l.getLobbyId()
                                                  .equals(lobbyId))
                                    .findFirst()
                                    .orElse(null);
@@ -176,17 +176,26 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
         boolean userInLobby = false;
 
         List<IUserDTO> users = lobby.getUsers();
-        IUserDTO user = UserStore.getInstance().getUser();
+        IUserDTO user = UserStore.getInstance()
+                                 .getUser();
 
         for (IUserDTO u : lobby.getUsers()) {
-            if (Objects.equals(u, UserStore.getInstance().getUser())) {
+            if (Objects.equals(u,
+                    UserStore.getInstance()
+                             .getUser()
+            )) {
                 userInLobby = true;
             }
         }
         if (userInLobby) {
-            eventBus.post(new UserJoinedLobbyMessage(lobbyId, UserStore.getInstance().getUser()));
+            eventBus.post(new UserJoinedLobbyMessage(lobbyId,
+                    UserStore.getInstance()
+                             .getUser()
+            ));
         } else {
-            eventBus.post(new LobbyJoinUserRequest(lobbyId,(UserDTO) UserStore.getInstance().getUser()));
+            eventBus.post(new LobbyJoinUserRequest(lobbyId,
+                    (UserDTO) UserStore.getInstance()
+                                       .getUser()));
         }
     }
 }

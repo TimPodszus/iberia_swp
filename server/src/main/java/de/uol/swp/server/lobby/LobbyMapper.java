@@ -19,7 +19,8 @@ public class LobbyMapper {
      * @return the converted ILobbyDTO object
      */
     public static ILobbyDTO toDTO(ILobby lobby) {
-        return new LobbyDTO(lobby.getLobbyCode(),
+        return new LobbyDTO(
+                lobby.getLobbyId(),
                 lobby.getName(),
                 UserMapper.toDTO(lobby.getUsers()),
                 UserMapper.toDTO(lobby.getOwner()),
@@ -36,7 +37,8 @@ public class LobbyMapper {
      * @return the converted ILobby object
      */
     public static ILobby toLobby(ILobbyDTO lobbyDTO) {
-        return new Lobby(lobbyDTO.getLobbyCode(),
+        return new Lobby(
+                lobbyDTO.getLobbyId(),
                 lobbyDTO.getName(),
                 UserMapper.toUser(lobbyDTO.getUsers()),
                 UserMapper.toUser(lobbyDTO.getOwner()),

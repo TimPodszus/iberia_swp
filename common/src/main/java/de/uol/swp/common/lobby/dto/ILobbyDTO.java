@@ -33,11 +33,11 @@ public interface ILobbyDTO extends Serializable {
     List<IUserDTO> getUsers();
 
     /**
-     * Gets the lobby code.
+     * Gets the lobby id.
      *
-     * @return the lobby code
+     * @return the lobby id
      */
-    String getLobbyCode();
+    String getLobbyId();
 
     /**
      * Gets the difficulty level of the lobby.

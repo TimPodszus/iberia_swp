@@ -70,7 +70,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
                           .selectedIndexProperty()
                           .addListener((observableValue, number, t1) -> {
                               int difficulty = t1.intValue() + 1;
-                              lobbyDTO = new LobbyDTO(lobbyDTO.getLobbyCode(),
+                              lobbyDTO = new LobbyDTO(lobbyDTO.getLobbyId(),
                                       lobbyDTO.getName(),
                                       lobbyDTO.getUsers(),
                                       lobbyDTO.getOwner(),
@@ -94,7 +94,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage message) {
-        lobbyService.getLobby(message.getLobbyCode(),
+        lobbyService.getLobby(message.getLobbyId(),
                 UserStore.getInstance()
                          .getUser()
         );
@@ -199,7 +199,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * Handles the event when the game starts.
      */
     public void onGameStart() {
-        eventBus.post(new CreateGameRequest(lobbyDTO.getLobbyCode(), lobbyDTO.getDifficulty(), lobbyDTO.getUsers()));
+        eventBus.post(new CreateGameRequest(lobbyDTO.getLobbyId(), lobbyDTO.getDifficulty(), lobbyDTO.getUsers()));
     }
 
     /**

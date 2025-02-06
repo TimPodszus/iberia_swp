@@ -52,13 +52,6 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public ILobby updateLobby(String name, String lobbycode, List<IUser> users, IUser owner, int difficulty) {
-        ILobby lobby = new Lobby(lobbycode, name, users, owner, difficulty);
-        lobbies.put(lobbycode, lobby);
-        return lobby;
-    }
-
-    @Override
     public void removeLobby(String name) throws LobbyStoreException {
         ILobby lobby = lobbies.remove(name);
         if (lobby == null) {
@@ -72,8 +65,9 @@ public class LobbyStore implements ILobbyStore {
     }
 
     @Override
-    public void saveLobby(ILobby lobby) {
-        lobbies.put(lobby.getLobbyCode(), lobby);
+    public ILobby saveLobby(ILobby lobby) {
+        lobbies.put(lobby.getLobbyId(), lobby);
+        return lobbies.get(lobby.getLobbyId());
     }
 
     @Override

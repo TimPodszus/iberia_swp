@@ -38,13 +38,11 @@ public class LobbyService {
     /**
      * Posts a request to create a lobby on the EventBus
      *
-     * @param name Name chosen for the new lobby
-     * @param user User who wants to create the new lobby
      * @see CreateLobbyRequest
      * @since 2019-11-20
      */
-    public void createNewLobby(String name, IUserDTO user) {
-        CreateLobbyRequest createLobbyRequest = new CreateLobbyRequest(name, user);
+    public void createNewLobby() {
+        CreateLobbyRequest createLobbyRequest = new CreateLobbyRequest();
         eventBus.post(createLobbyRequest);
     }
 

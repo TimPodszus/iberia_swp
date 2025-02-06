@@ -24,7 +24,7 @@ public interface ILobby extends Serializable {
      *
      * @return A String containing the id of the lobby
      */
-    String getLobbyCode();
+    String getLobbyId();
 
     /**
      * Getter for the lobby's name

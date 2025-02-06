@@ -8,13 +8,16 @@ import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.lobby.message.request.UpdateLobbyRequest;
 import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
 import de.uol.swp.common.lobby.message.response.LobbyListResponse;
+import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.store.LobbyStoreException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
+import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +66,7 @@ public class LobbyServiceTest extends EventBusBasedTest {
      * The LobbyService instance used for testing.
      */
     @InjectMocks
-    LobbyService lobbyService = new LobbyService(getBus(), lobbyManagement);
+    LobbyService lobbyService = new LobbyService(super.getBus(), lobbyManagement);
 
     /**
      * Handles LobbyListResponse events.
@@ -94,15 +97,14 @@ public class LobbyServiceTest extends EventBusBasedTest {
      * behavior of the mocked lobbyManagement to return a predefined lobby when the createLobby
      * method is called.
      *
-     * @throws LobbyStoreException if an error occurs during lobby management
-     * @throws NoSuchFieldException     if the authenticationService field is not found
-     * @throws IllegalAccessException   if the authenticationService field is not accessible
+     * @throws LobbyStoreException    if an error occurs during lobby management
+     * @throws NoSuchFieldException   if the authenticationService field is not found
+     * @throws IllegalAccessException if the authenticationService field is not accessible
      */
     @BeforeEach
     public void setUp() throws LobbyStoreException, NoSuchFieldException, IllegalAccessException {
         MockitoAnnotations.openMocks(this);
-
-        when(lobbyManagement.createLobby("Test", UserMapper.toUser(firstOwner))).thenReturn(lobby);
+        when(lobbyManagement.createLobby(UserMapper.toUser(firstOwner))).thenReturn(lobby);
     }
 
     /**
@@ -112,11 +114,14 @@ public class LobbyServiceTest extends EventBusBasedTest {
      */
     @Test
     void createLobbyTest() throws LobbyStoreException {
-        final CreateLobbyRequest request = new CreateLobbyRequest("Test", firstOwner);
+        IUser user = UserMapper.toUser(firstOwner);
+        Session session = UUIDSession.create(user);
+        final CreateLobbyRequest request = new CreateLobbyRequest();
+        request.setSession(session);
 
         post(request);
 
-        verify(lobbyManagement, atLeast(1)).createLobby("Test", UserMapper.toUser(firstOwner));
+        verify(lobbyManagement, atLeast(1)).createLobby(UserMapper.toUser(firstOwner));
     }
 
     /**

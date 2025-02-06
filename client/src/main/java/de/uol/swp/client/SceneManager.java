@@ -18,6 +18,7 @@ import de.uol.swp.client.options.OptionsPresenter;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.lobby.message.response.LobbyCreatedResponse;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
@@ -40,6 +41,8 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class that manages which window/scene is currently shown
@@ -67,6 +70,8 @@ public class SceneManager {
     private Scene optionsScene;
     private Scene lastScene = null;
     private Scene currentScene = null;
+
+    private final Map<String, Stage> gameStages = new HashMap<>();
 
     private final Provider<FXMLLoader> loaderProvider;
 
@@ -364,7 +369,7 @@ public class SceneManager {
      */
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
-        showGameScreen();
+        showGameScreen(event.getLobbyId());
     }
 
     /**
@@ -422,7 +427,25 @@ public class SceneManager {
      */
     @Subscribe
     public void onUserJoinedLobbyEvent(UserJoinedLobbyMessage userJoinedLobbyMessage) {
-       showLobbyScreen();
+        if (gameStages.containsKey(userJoinedLobbyMessage.getLobbyId())) {
+            return;
+        }
+        showLobbyScreen(userJoinedLobbyMessage.getLobbyId());
+    }
+
+    /**
+     * Handles the event when a lobby is created.
+     * <p>
+     * If a LobbyCreatedResponse is detected on the EventBus, this method gets
+     * called. It tells the SceneManager to show the lobby screen.
+     *
+     * @param lobbyCreatedResponse The LobbyCreatedResponse detected on the EventBus
+     * @see de.uol.swp.client.SceneManager
+     */
+    @Subscribe
+    public void onLobbyCreatedResponse(LobbyCreatedResponse lobbyCreatedResponse) {
+        showLobbyScreen(lobbyCreatedResponse.getLobbyDTO()
+                                            .getLobbyId());
     }
 
     /**
@@ -436,7 +459,7 @@ public class SceneManager {
      */
     @Subscribe
     public void onCreateGameResponseEvent(CreateGameResponse response) {
-        showGameScreen();
+        showGameScreen(response.getLobbyId());
     }
 
     /**
@@ -544,8 +567,8 @@ public class SceneManager {
         showScene(
                 mainScene,
                 "Willkommen " + UserStore.getInstance()
-                                      .getUser()
-                                      .getUsername()
+                                         .getUser()
+                                         .getUsername()
         );
     }
 
@@ -587,8 +610,14 @@ public class SceneManager {
      * Switches the current Scene to the lobbyScene and sets the title of
      * the window to "Lobby".
      */
-    public void showLobbyScreen() {
-        showScene(lobbyScene, "Lobby erstellen");
+    public void showLobbyScreen(String lobbyId) {
+        Platform.runLater(() -> {
+            Stage stage = new Stage();
+            stage.setTitle("Lobby");
+            stage.setScene(lobbyScene);
+            stage.show();
+            gameStages.put(lobbyId, stage);
+        });
     }
 
     /**
@@ -619,20 +648,22 @@ public class SceneManager {
      * Switches the current Scene to the gameScreenScene and sets the title of
      * the window to "Iberia".
      */
-    public void showGameScreen() {
-        showScene(gameScreenScene, "Iberia");
-
+    public void showGameScreen(String lobbyId) {
         Platform.runLater(() -> {
+            Stage stage = gameStages.get(lobbyId);
+            stage.setTitle("Iberia");
+            stage.setScene(gameScreenScene);
+            stage.show();
             Rectangle2D visualBounds = Screen.getPrimary()
                                              .getVisualBounds();
 
-            primaryStage.setX(visualBounds.getMinX());
-            primaryStage.setY(visualBounds.getMinY());
-            primaryStage.setWidth(visualBounds.getWidth());
-            primaryStage.setHeight(visualBounds.getHeight());
+            stage.setX(visualBounds.getMinX());
+            stage.setY(visualBounds.getMinY());
+            stage.setWidth(visualBounds.getWidth());
+            stage.setHeight(visualBounds.getHeight());
 
-            primaryStage.setMaximized(true);
-            primaryStage.show();
+            stage.setMaximized(true);
+            stage.show();
         });
     }
 }

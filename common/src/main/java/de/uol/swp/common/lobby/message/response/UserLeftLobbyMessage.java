@@ -25,11 +25,11 @@ public class UserLeftLobbyMessage extends AbstractLobbyMessage {
     /**
      * Constructor
      *
-     * @param lobbyCode code of the lobby
-     * @param user      user who left the lobby
+     * @param lobbyId code of the lobby
+     * @param user    user who left the lobby
      * @since 2019-10-08
      */
-    public UserLeftLobbyMessage(String lobbyCode, IUserDTO user) {
-        super(lobbyCode, user);
+    public UserLeftLobbyMessage(String lobbyId, IUserDTO user) {
+        super(lobbyId, user);
     }
 }

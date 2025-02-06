@@ -201,7 +201,7 @@ public class DatabaseBasedLobbyStore {
         ) {
             while (rs.next()) {
                 Lobby lobby = createLobbyFromResultSet(rs);
-                lobbies.put(lobby.getLobbyCode(), lobby);
+                lobbies.put(lobby.getLobbyId(), lobby);
             }
         }
 
@@ -233,7 +233,7 @@ public class DatabaseBasedLobbyStore {
                         Statement.RETURN_GENERATED_KEYS
                 )
         ) {
-            psLobby.setString(1, lobby.getLobbyCode());
+            psLobby.setString(1, lobby.getLobbyId());
             psLobby.setInt(2, lobby.getDifficulty());
             psLobby.setString(3,
                     lobby.getOwner()
@@ -253,7 +253,7 @@ public class DatabaseBasedLobbyStore {
     private void saveUsersInLobbyToDatabase(ILobby lobby) throws SQLException {
         for (IUser user : lobby.getUsers()) {
             try (PreparedStatement psLobbyUsers = this.connection.prepareStatement(INSERT_LOBBYUSERS_SQL)) {
-                psLobbyUsers.setString(1, lobby.getLobbyCode());
+                psLobbyUsers.setString(1, lobby.getLobbyId());
                 psLobbyUsers.setString(2, user.getUsername());
                 psLobbyUsers.executeUpdate();
             }

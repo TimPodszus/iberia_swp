@@ -11,7 +11,7 @@ public class UpdateLobbyRequest extends AbstractLobbyRequest {
     private final ILobbyDTO lobbyDTO;
 
     public UpdateLobbyRequest(ILobbyDTO lobbyDTO, IUserDTO userDto) {
-        super(lobbyDTO.getLobbyCode(), userDto);
+        super(lobbyDTO.getLobbyId(), userDto);
         this.lobbyDTO = lobbyDTO;
     }
 

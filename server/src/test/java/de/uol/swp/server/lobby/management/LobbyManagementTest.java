@@ -46,7 +46,7 @@ class LobbyManagementTest {
      */
     @Test
     void createLobbyTest() {
-        ILobby createdLobby = lobbyManagement.createLobby("Test", firstOwner);
+        ILobby createdLobby = lobbyManagement.createLobby(firstOwner);
 
         assertNotNull(createdLobby);
         assertEquals(
@@ -122,8 +122,7 @@ class LobbyManagementTest {
     void joinLobby_Success() throws LobbyStoreException {
         User user = new User("testUser", "testUser");
         Lobby lobby = new Lobby("testLobbyCode", "testLobbyName", new ArrayList<>(List.of(firstOwner)), firstOwner, 4);
-        lobbyStore
-                   .saveLobby(lobby);
+        lobbyStore.saveLobby(lobby);
 
         lobbyManagement.joinLobby(lobby, user);
 
@@ -176,7 +175,7 @@ class LobbyManagementTest {
      * Tests the update of a lobby.
      */
     @Test
-    void updateLobbyTest()  {
+    void updateLobbyTest() {
         ILobby lobby = new Lobby("testcode", "Test", List.of(firstOwner), firstOwner, 4);
         lobbyStore.saveLobby(lobby);
         ILobby updatedLobby = new Lobby("testcode", "Updated", List.of(firstOwner, user1), firstOwner, 4);
@@ -190,8 +189,6 @@ class LobbyManagementTest {
         User user = new User("testUser", "testUser");
         ILobby lobby = new Lobby("testLobbyCode", "testLobbyName", new ArrayList<>(List.of(firstOwner)), firstOwner, 4);
 
-        assertThrows(LobbyStoreException.class,
-                () -> lobbyManagement.joinLobby(lobby, user)
-        );
+        assertThrows(LobbyStoreException.class, () -> lobbyManagement.joinLobby(lobby, user));
     }
 }

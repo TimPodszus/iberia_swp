@@ -14,12 +14,11 @@ public interface ILobbyManagement {
     /**
      * Creates a new lobby.
      *
-     * @param lobbyName the name of the lobby
-     * @param owner     the owner of the lobby
+     * @param owner the owner of the lobby
      * @return the created lobby
      * @throws LobbyStoreException if an error occurs during lobby creation
      */
-    ILobby createLobby(String lobbyName, IUser owner) throws LobbyStoreException;
+    ILobby createLobby(IUser owner) throws LobbyStoreException;
 
     /**
      * Deletes an existing lobby.
