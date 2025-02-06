@@ -6,15 +6,17 @@ import de.uol.swp.client.game.objects.GameFigure;
 import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
-import de.uol.swp.client.game.objects.cards.*;
+import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
+import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
 import de.uol.swp.client.game.objects.dialogs.SelectCityToTreatDialog;
 import de.uol.swp.client.game.objects.dialogs.TreatPlagueDialog;
-import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.cards.*;
+import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
@@ -40,11 +42,8 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
@@ -66,8 +65,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -75,7 +72,12 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -247,10 +249,10 @@ public class GamePresenter extends AbstractPresenter {
         Shape shape = (Shape) event.getSource();
         if (shape instanceof Polygon) {
             shape.getStyleClass()
-                 .add("hover-effect-polygon");
+                    .add("hover-effect-polygon");
         } else {
             shape.getStyleClass()
-                 .add("hover-effect");
+                    .add("hover-effect");
         }
     }
 
@@ -264,10 +266,10 @@ public class GamePresenter extends AbstractPresenter {
         Shape shape = (Shape) event.getSource();
         if (shape instanceof Polygon) {
             shape.getStyleClass()
-                 .remove("hover-effect-polygon");
+                    .remove("hover-effect-polygon");
         } else {
             shape.getStyleClass()
-                 .remove("hover-effect");
+                    .remove("hover-effect");
         }
     }
 
@@ -280,15 +282,15 @@ public class GamePresenter extends AbstractPresenter {
     private void onCityClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
         int cityId = Integer.parseInt(source.getId()
-                                            .replaceAll("\\D+", ""));
+                .replaceAll("\\D+", ""));
         if (gameDTO.getState()
-                   .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
+                .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
             gameService.setPosition(gameDTO.getGameId(), cityId);
         }
         if (source.getStyleClass()
-                  .contains(CITY_HIGHLIGHTED_CLASS)) {
+                .contains(CITY_HIGHLIGHTED_CLASS)) {
             if (!availableDestinations.get(cityId)
-                                      .isEmpty()) {
+                    .isEmpty()) {
                 CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(true,
                         availableDestinations.get(cityId)
                 );
@@ -370,8 +372,7 @@ public class GamePresenter extends AbstractPresenter {
         if (treatInfectionButton.isSelected()) {
             System.out.println("Button ist ausgewählt, sende Request...");
             gameService.sendAvailablePlaguesRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
-        }
-        else {
+        } else {
             System.out.println("Button ist nicht ausgewählt!");
         }
     }
@@ -534,16 +535,16 @@ public class GamePresenter extends AbstractPresenter {
         shareKnowledgeButton.setToggleGroup(toggleGroup);
 
         toggleGroup.selectedToggleProperty()
-                   .addListener((observable, oldToggle, newToggle) -> {
-                       if (newToggle == null) {
-                           oldToggle.setSelected(false);
-                       }
-                       if (newToggle != null && oldToggle instanceof ToggleButton toggleButton && toggleButton.getOnAction() != null) {
-                           toggleButton.getOnAction()
-                                       .handle(new ActionEvent(toggleButton, null));
-                       }
+                .addListener((observable, oldToggle, newToggle) -> {
+                    if (newToggle == null) {
+                        oldToggle.setSelected(false);
+                    }
+                    if (newToggle != null && oldToggle instanceof ToggleButton toggleButton && toggleButton.getOnAction() != null) {
+                        toggleButton.getOnAction()
+                                .handle(new ActionEvent(toggleButton, null));
+                    }
 
-                   });
+                });
     }
 
     /**
@@ -554,7 +555,7 @@ public class GamePresenter extends AbstractPresenter {
     public void setTrainConnection(int connectionId) {
         Line line = (Line) mapPane.lookup(CONNECTION_ID + connectionId);
         line.getStyleClass()
-            .add("train-connection");
+                .add("train-connection");
     }
 
     /**
@@ -568,14 +569,14 @@ public class GamePresenter extends AbstractPresenter {
 
         if (waterMarks == 0) {
             stackPane.getStyleClass()
-                     .remove("water-mark-visible");
+                    .remove("water-mark-visible");
             stackPane.getStyleClass()
-                     .add("water-mark");
+                    .add("water-mark");
         } else {
             stackPane.getStyleClass()
-                     .add("water-mark-visible");
+                    .add("water-mark-visible");
             stackPane.getStyleClass()
-                     .remove("water-mark");
+                    .remove("water-mark");
 
             for (Node child : stackPane.getChildren()) {
                 if (child instanceof Text text) {
@@ -602,7 +603,7 @@ public class GamePresenter extends AbstractPresenter {
         for (Node node : existingPlagues) {
             if (node.getUserData() == plagueName) {
                 plagueDisplayVBox.getChildren()
-                                 .remove(node);
+                        .remove(node);
                 break;
             }
         }
@@ -617,18 +618,18 @@ public class GamePresenter extends AbstractPresenter {
         text.setStrokeWidth(0.0);
 
         plagueHBox.getChildren()
-                  .addAll(plagueCube, text);
+                .addAll(plagueCube, text);
         plagueHBox.setUserData(plagueName);
         if (cubes == 3) {
             plagueHBox.getStyleClass()
-                      .add("plague-cubes-display-warning");
+                    .add("plague-cubes-display-warning");
         } else {
             plagueHBox.getStyleClass()
-                      .add("plague-cubes-display");
+                    .add("plague-cubes-display");
         }
 
         plagueDisplayVBox.getChildren()
-                         .add(plagueHBox);
+                .add(plagueHBox);
     }
 
     /**
@@ -671,12 +672,12 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(hospitalSymbol, new Insets(1.0, 1.0, 1.0, 1.0));
 
         hospitalHBox.getChildren()
-                    .add(hospitalSymbol);
+                .add(hospitalSymbol);
         hospitalHBox.getStyleClass()
-                    .add("hospital");
+                .add("hospital");
 
         plagueDisplayVBox.getChildren()
-                         .add(0, hospitalHBox);
+                .add(0, hospitalHBox);
     }
 
     private void removeHospitalFromCity(int cityId) {
@@ -684,9 +685,9 @@ public class GamePresenter extends AbstractPresenter {
 
         for (Node node : plagueDisplayVBox.getChildren()) {
             if (node instanceof HBox hbox && hbox.getStyleClass()
-                                                 .contains("hospital")) {
+                    .contains("hospital")) {
                 plagueDisplayVBox.getChildren()
-                                 .remove(hbox);
+                        .remove(hbox);
                 break;
             }
         }
@@ -706,14 +707,14 @@ public class GamePresenter extends AbstractPresenter {
         List<Color> playerColors = new ArrayList<>();
         for (IPlayerDTO player : players) {
             playerColors.add(Color.web(player.getRole()
-                                             .getName()
-                                             .getColorCode()));
+                    .getName()
+                    .getColorCode()));
         }
 
         GameFigure gameFigure = new GameFigure(playerColors);
 
         stackPaneCity.getChildren()
-                     .addAll(gameFigure);
+                .addAll(gameFigure);
     }
 
     /**
@@ -724,7 +725,7 @@ public class GamePresenter extends AbstractPresenter {
         for (int i = 1; i <= 48; i++) {
             StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + i);
             stackPaneCity.getChildren()
-                         .removeIf(GameFigure.class::isInstance);
+                    .removeIf(GameFigure.class::isInstance);
         }
     }
 
@@ -735,9 +736,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setInfectionCardDiscardPile(AbstractCard card) {
         infectionCardDiscardPile.getChildren()
-                                .removeAll();
+                .removeAll();
         infectionCardDiscardPile.getChildren()
-                                .add(card);
+                .add(card);
     }
 
     /**
@@ -747,9 +748,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setPlayerCardDiscardPile(AbstractCard card) {
         playerCardDiscardPile.getChildren()
-                             .removeAll();
+                .removeAll();
         playerCardDiscardPile.getChildren()
-                             .add(card);
+                .add(card);
     }
 
     /**
@@ -766,10 +767,10 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
 
         playerCardsHBox.getChildren()
-                       .add(
-                               playerCardsHBox.getChildren()
-                                              .size() - 1, cardSlot
-                       );
+                .add(
+                        playerCardsHBox.getChildren()
+                                .size() - 1, cardSlot
+                );
     }
 
     /**
@@ -779,11 +780,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void removePlayerHandCards() {
         playerCardsHBox.getChildren()
-                       .removeIf(node -> node instanceof Pane && node.getStyleClass()
-                                                                     .contains("pile") && !Objects.equals(
-                               node.getId(),
-                               "roleCard"
-                       ));
+                .removeIf(node -> node instanceof Pane && node.getStyleClass()
+                        .contains("pile") && !Objects.equals(
+                        node.getId(),
+                        "roleCard"
+                ));
     }
 
     /**
@@ -793,9 +794,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setRoleCard(RoleCard roleCard) {
         this.roleCard.getChildren()
-                     .removeAll();
+                .removeAll();
         this.roleCard.getChildren()
-                     .add(roleCard);
+                .add(roleCard);
     }
 
     /**
@@ -845,7 +846,7 @@ public class GamePresenter extends AbstractPresenter {
         this.gameDTO = event.getGameDTO();
         this.lobbyId = event.getLobbyCode();
         this.user = UserStore.getInstance()
-                             .getUser();
+                .getUser();
 
         Platform.runLater(() -> {
             updateBoard(gameDTO);
@@ -876,7 +877,7 @@ public class GamePresenter extends AbstractPresenter {
         updatePlayerHandCards(gameDTO.getPlayers());
 
         if (!gameDTO.getState()
-                    .equals(StateType.START_STATE)) {
+                .equals(StateType.START_STATE)) {
             updatePlayersInCities(gameDTO.getPlayers());
         }
 
@@ -887,13 +888,13 @@ public class GamePresenter extends AbstractPresenter {
 
         disableActionButtons();
         if (gameDTO.getState()
-                   .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
-                                                                  .getUsername()
-                                                                  .equals(user.getUsername())) {
+                .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
+                .getUsername()
+                .equals(user.getUsername())) {
             gameService.requestAvailableDestination(this.lobbyId,
                     gameDTO.getCurrentPlayer()
-                           .getCurrentPosition()
-                           .getId()
+                            .getCurrentPosition()
+                            .getId()
             );
             gameService.sendAvailableActionsRequest(this.lobbyId);
         }
@@ -911,8 +912,8 @@ public class GamePresenter extends AbstractPresenter {
             if (Objects.equals(
                     player.getUsername(),
                     UserStore.getInstance()
-                             .getUser()
-                             .getUsername()
+                            .getUser()
+                            .getUsername()
             )) {
                 List<ICardDTO> playerHand = player.getCards();
                 for (ICardDTO card : playerHand) {
@@ -932,9 +933,9 @@ public class GamePresenter extends AbstractPresenter {
         for (ICityDTO city : cities) {
             Node stackPane = mapPane.lookup(CITY_ID + city.getId());
             stackPane.getStyleClass()
-                     .remove(CITY_HIGHLIGHTED_CLASS);
+                    .remove(CITY_HIGHLIGHTED_CLASS);
             stackPane.getStyleClass()
-                     .add(CITY_CLASS);
+                    .add(CITY_CLASS);
             updateInfections(city);
         }
     }
@@ -1028,16 +1029,16 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updatePlayers(List<IPlayerDTO> players) {
         playerButtons.getChildren()
-                     .clear();
+                .clear();
         for (IPlayerDTO player : players) {
             if (!Objects.equals(
                     player.getUsername(),
                     UserStore.getInstance()
-                             .getUser()
-                             .getUsername()
+                            .getUser()
+                            .getUsername()
             )) {
                 playerButtons.getChildren()
-                             .add(new PlayerButton(player.getUsername(), this::onPlayerButtonClickedEvent));
+                        .add(new PlayerButton(player.getUsername(), this::onPlayerButtonClickedEvent));
             }
         }
         updateCurrentUserRole(players);
@@ -1052,9 +1053,9 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayersInCities(List<IPlayerDTO> players) {
         removeAllGameFigures();
         Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
-                                                              .filter(player -> player.getCurrentPosition() != null)
-                                                              .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
-                                                                                                             .getId()));
+                .filter(player -> player.getCurrentPosition() != null)
+                .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
+                        .getId()));
 
         playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
                 cityId,
@@ -1072,11 +1073,11 @@ public class GamePresenter extends AbstractPresenter {
             if (Objects.equals(
                     player.getUsername(),
                     UserStore.getInstance()
-                             .getUser()
-                             .getUsername()
+                            .getUser()
+                            .getUsername()
             )) {
                 setRoleCard(new RoleCard(player.getRole()
-                                               .getName()));
+                        .getName()));
             }
         }
     }
@@ -1089,14 +1090,14 @@ public class GamePresenter extends AbstractPresenter {
     private void updateInfectionCounter(int infectionCounter) {
         if (gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1)) instanceof Circle) {
             gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1))
-                      .getStyleClass()
-                      .remove("infection-grade-active");
+                    .getStyleClass()
+                    .remove("infection-grade-active");
         }
 
         if (gameScreen.lookup(INFECTION_GRADE_ID + infectionCounter) instanceof Circle) {
             gameScreen.lookup(INFECTION_GRADE_ID + infectionCounter)
-                      .getStyleClass()
-                      .add("infection-grade-active");
+                    .getStyleClass()
+                    .add("infection-grade-active");
         }
     }
 
@@ -1108,14 +1109,14 @@ public class GamePresenter extends AbstractPresenter {
     private void updateEscalationStage(int escalationStage) {
         if (gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1)) instanceof Circle) {
             gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1))
-                      .getStyleClass()
-                      .remove("escalation-stage-active");
+                    .getStyleClass()
+                    .remove("escalation-stage-active");
         }
 
         if (gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage) instanceof Circle) {
             gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage)
-                      .getStyleClass()
-                      .add("escalation-stage-active");
+                    .getStyleClass()
+                    .add("escalation-stage-active");
         }
     }
 
@@ -1152,9 +1153,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateResearchedPlagues(List<IPlagueDTO> plagues) {
         PlagueName[] researchedPlagues = plagues.stream()
-                                                .filter(IPlagueDTO::isResearched)
-                                                .map(IPlagueDTO::getName)
-                                                .toArray(PlagueName[]::new);
+                .filter(IPlagueDTO::isResearched)
+                .map(IPlagueDTO::getName)
+                .toArray(PlagueName[]::new);
         setResearchedPlagues(researchedPlagues);
     }
 
@@ -1182,7 +1183,7 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onAvailableActionsResponse(AvailableActionsResponse response) {
         if (!response.getLobbyId()
-                     .equals(lobbyId)) {
+                .equals(lobbyId)) {
             return;
         }
 
@@ -1252,9 +1253,9 @@ public class GamePresenter extends AbstractPresenter {
             int cityId = entry.getKey();
             Node node = mapPane.lookup(CITY_ID + cityId);
             node.getStyleClass()
-                .removeAll(CITY_CLASS);
+                    .removeAll(CITY_CLASS);
             node.getStyleClass()
-                .add(CITY_HIGHLIGHTED_CLASS);
+                    .add(CITY_HIGHLIGHTED_CLASS);
         }
     }
 }

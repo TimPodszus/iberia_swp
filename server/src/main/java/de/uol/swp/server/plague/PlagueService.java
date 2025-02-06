@@ -1,7 +1,6 @@
 package de.uol.swp.server.plague;
 
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.infection.IInfectionDTO;
@@ -23,6 +22,8 @@ import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.region.data.IRegion;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -30,8 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Singleton
 public class PlagueService extends AbstractService {
+    private static final Logger LOG = LogManager.getLogger(PlagueService.class);
 
     private final IPlagueManagement plagueManagement;
 
@@ -70,21 +71,31 @@ public class PlagueService extends AbstractService {
     }
 
     @Subscribe
-    public void onAvailablePlagues(
+    public void onAvailablePlaguesRequest(
             AvailablePlaguesRequest request,
             Game game
     ) {
+        LOG.debug("Received AvailablePlaguesRequest for lobbyId: {}", request.getLobbyId());
+
         IPlayer player = game.getCurrentPlayer();
         ICity city = player.getCurrentPosition();
         List<IInfectionDTO> plaguesInCity = InfectionMapper.toDTOList(city.getInfections());
 
-        AvailablePlaguesResponse availablePlaguesResponse = new AvailablePlaguesResponse(request.getLobbyId(), true, plaguesInCity, player.getRole().getName());
+        LOG.debug("Found {} infections in city {}", plaguesInCity.size(), city.getName());
+
+        AvailablePlaguesResponse availablePlaguesResponse = new AvailablePlaguesResponse(
+                request.getLobbyId(),
+                true,
+                plaguesInCity,
+                player.getRole().getName()
+        );
+        LOG.debug("Sending AvailablePlaguesResponse with {} plagues and role: {}", plaguesInCity.size(), player.getRole().getName());
 
         post(availablePlaguesResponse);
     }
 
     @Subscribe
-    public void onTreatPlague(
+    public void onTreatPlagueRequest(
             TreatPlagueRequest request,
             Game game
     ) {
@@ -106,7 +117,7 @@ public class PlagueService extends AbstractService {
         List<IRegion> allRegions = game.getRegionRepository().getRegions();
         List<IRegion> regionsNearBy = new ArrayList<>();
         for (IRegion region : allRegions) {
-            if(region.getSurroundingCities().contains(game.getCurrentPlayer().getCurrentPosition())) {
+            if (region.getSurroundingCities().contains(game.getCurrentPlayer().getCurrentPosition())) {
                 regionsNearBy.add(region);
             }
         }
