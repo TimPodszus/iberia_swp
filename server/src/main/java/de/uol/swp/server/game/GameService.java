@@ -6,18 +6,17 @@ import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
+import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.*;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.event.ShareRideEvent;
-import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.game.message.response.ShareKnowledgeResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -126,7 +125,8 @@ public class GameService extends AbstractService {
 
         ICity destination = cityManagement.getCity(request.getLobbyId(), request.getCityId());
 
-        gameManagement.movePlayer(UserMapper.toUser(user),
+        gameManagement.movePlayer(
+                UserMapper.toUser(user),
                 request.getLobbyId(),
                 destination,
                 playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId())
@@ -159,7 +159,8 @@ public class GameService extends AbstractService {
 
         IUser user = UserMapper.toUser(session.getUser());
         List<GameActions> actions = gameManagement.getAvailableActions(request.getLobbyId(), user);
-        AvailableActionsResponse response = new AvailableActionsResponse(request.getLobbyId(),
+        AvailableActionsResponse response = new AvailableActionsResponse(
+                request.getLobbyId(),
                 true,
                 "Retrieving all available actions was successful",
                 actions
@@ -177,9 +178,7 @@ public class GameService extends AbstractService {
      * @param destination the destination city for the player
      * @throws GameException if the user or session is not found
      */
-    private void sendShareRideEvent(
-            MovePlayerRequest request, ICity destination
-    ) throws GameException {
+    private void sendShareRideEvent(MovePlayerRequest request, ICity destination) throws GameException {
         LOG.debug("[LobbyID: {}] Sending pickup event for player {}", request.getLobbyId(), request.getUsername());
         ShareRideEvent event = new ShareRideEvent(request.getLobbyId(), CityMapper.toDTO(destination));
         IUser user = lobbyManagement.getLobby(request.getLobbyId())
@@ -189,7 +188,8 @@ public class GameService extends AbstractService {
                                                   .equals(request.getUsername()))
                                     .findFirst()
                                     .orElseThrow(() -> {
-                                        LOG.error("[LobbyID: {}] User could not be found in lobby",
+                                        LOG.error(
+                                                "[LobbyID: {}] User could not be found in lobby",
                                                 request.getLobbyId()
                                         );
                                         return new GameException("User not found");
@@ -215,15 +215,19 @@ public class GameService extends AbstractService {
         game.setState(new WaitForConfirmationState());
 
         Map<String, ICardDTO> cardsToExchange = request.getCardsToExchange();
-        String currentPlayerUsername = game.getCurrentPlayer().getUser().getUsername();
-        String targetPlayerUsername = cardsToExchange.keySet().stream()
+        String currentPlayerUsername = game.getCurrentPlayer()
+                                           .getUser()
+                                           .getUsername();
+        String targetPlayerUsername = cardsToExchange.keySet()
+                                                     .stream()
                                                      .filter(username -> !username.equals(currentPlayerUsername))
                                                      .findFirst()
-                                                     .orElseThrow(() -> new GameManagementException("Target player not found"));
+                                                     .orElseThrow(() -> new GameManagementException(
+                                                             "Target player not found"));
 
         ShareKnowledgeEvent shareKnowledgeEvent = new ShareKnowledgeEvent(
                 request.getLobbyId(),
-               currentPlayerUsername,
+                currentPlayerUsername,
                 targetPlayerUsername,
                 cardsToExchange.get(currentPlayerUsername),
                 cardsToExchange.get(targetPlayerUsername)
@@ -235,35 +239,61 @@ public class GameService extends AbstractService {
                 cardsToExchange.get(currentPlayerUsername),
                 cardsToExchange.get(targetPlayerUsername)
         );
-        IUser user = lobbyManagement.getLobby(request.getLobbyId()).getUsers().stream()
-                                    .filter(u -> u.getUsername().equals(targetPlayerUsername))
+        IUser user = lobbyManagement.getLobby(request.getLobbyId())
+                                    .getUsers()
+                                    .stream()
+                                    .filter(u -> u.getUsername()
+                                                  .equals(targetPlayerUsername))
                                     .findFirst()
                                     .orElseThrow(() -> new GameManagementException("Target player not found"));
-        Session session =
-                authenticationService.getSession(user).orElseThrow(() -> new GameManagementException(
-                "Session not found"));
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow(() -> new GameManagementException("Session not found"));
         event.setReceiver(List.of(session));
         bus.post(event);
     }
+
     @Subscribe
-    public void onShareKnowledgeRequest(ShareKnowledgeRequest request) throws GameManagementException {
+    public void onShareKnowledgeRequest(ShareKnowledgeRequest request) throws GameManagementException, PlayerManagementException {
         ShareKnowledgeEvent event = request.getShareKnowledgeEvent();
-        IPlayer currentPlayer = gameManagement.getGame(event.getLobbyCode()).getCurrentPlayer();
-        IPlayer targetPlayer = gameManagement.getGame(event.getLobbyCode()).getPlayers().stream()
-                                             .filter(player -> player.getUser().getUsername().equals(event.getTargetPlayer()))
+        IPlayer currentPlayer = gameManagement.getGame(event.getLobbyId())
+                                              .getCurrentPlayer();
+        IPlayer targetPlayer = gameManagement.getGame(event.getLobbyId())
+                                             .getPlayers()
+                                             .stream()
+                                             .filter(player -> player.getUser()
+                                                                     .getUsername()
+                                                                     .equals(event.getTargetPlayer()))
                                              .findFirst()
                                              .orElseThrow(() -> new GameManagementException("Target player not found"));
 
 
-        if (request.isAccepted()){
-            currentPlayer.getCards().remove(event.getCurrentPlayerCard());
-            targetPlayer.getCards().add(event.getCurrentPlayerCard());
-            targetPlayer.getCards().remove(event.getTargetPlayerCard());
-            currentPlayer.getCards().add(event.getTargetPlayerCard());
+        if (request.isAccepted()) {
+            ICard targetPlayerCard = playerManagement.getCard(
+                    event.getLobbyId(),
+                    targetPlayer.getUser()
+                                .getUsername(),
+                    event.getTargetPlayerCard()
+                         .getId()
+            );
+            ICard currentPlayerCard = playerManagement.getCard(
+                    event.getLobbyId(),
+                    currentPlayer.getUser()
+                                 .getUsername(),
+                    event.getCurrentPlayerCard()
+                         .getId()
+            );
+            currentPlayer.getCards()
+                         .remove(currentPlayerCard);
+            targetPlayer.getCards()
+                        .remove(targetPlayerCard);
+            currentPlayer.getCards()
+                         .add(targetPlayerCard);
+            targetPlayer.getCards()
+                        .add(currentPlayerCard);
 
-
+            bus.post(new ShareKnowledgeResponse(event.getLobbyId(), true));
         } else {
-
+            bus.post(new ShareKnowledgeResponse(event.getLobbyId(), false));
         }
     }
 

@@ -3,12 +3,10 @@ package de.uol.swp.client.game;
 import com.google.inject.Inject;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
-import de.uol.swp.common.game.message.request.ShareRideRequest;
-import de.uol.swp.common.player.request.MovePlayerRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
+import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import org.greenrobot.eventbus.EventBus;
@@ -100,9 +98,12 @@ public class GameService {
     }
 
     @Subscribe
-    public void onShareKnowledgeEvent(ShareKnowledgeEvent event){
-        boolean accepted = showConfirmationDialog( "Do you want to share the card "  + event.getTargetPlayerCard() +
-                " with " + event.getTargetPlayer() + "in exchange for" + event.getCurrentPlayerCard() + "?" );
+    public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
+        boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard() + " with " + event.getTargetPlayer() + "in exchange for" + event.getCurrentPlayerCard() + "?");
+
+        eventBus.post(new ShareKnowledgeRequest(event.getLobbyId(), accepted, event));
+    }
+
     /**
      * Sends a request to share a ride to the specified city.
      *
@@ -113,8 +114,6 @@ public class GameService {
         eventBus.post(new ShareRideRequest(lobbyCode, cityId));
     }
 
-        eventBus.post(new ShareKnowledgeRequest(event.getLobbyCode(), accepted,event));
-    }
     /**
      * Sends a request to deny the ride-share.
      *
@@ -123,4 +122,6 @@ public class GameService {
     public void sendShareRideRequest(String lobbyCode) {
         eventBus.post(new ShareRideRequest(lobbyCode));
     }
+
+
 }

@@ -289,18 +289,23 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return true;
     }
 
-private boolean isKnowledgeShareable(String lobbyCode) {
-    IGame game = this.getGame(lobbyCode);
-    IPlayer currentPlayer = game.getCurrentPlayer();
-    int currentCityId = currentPlayer.getCurrentPosition().getId();
+    private boolean isKnowledgeShareable(String lobbyCode) {
+        IGame game = this.getGame(lobbyCode);
+        IPlayer currentPlayer = game.getCurrentPlayer();
+        int currentCityId = currentPlayer.getCurrentPosition()
+                                         .getId();
 
-    return game.getPlayers().stream()
-               .filter(player -> player.getCurrentPosition().getId() == currentCityId)
-               .anyMatch(player -> player.getCards().stream()
-                                         .filter(card -> card instanceof CityCard)
-                                         .map(card -> (CityCard) card)
-                                         .anyMatch(card -> card.getCity().getId() == currentCityId));
-}
+        return game.getPlayers()
+                   .stream()
+                   .filter(player -> player.getCurrentPosition()
+                                           .getId() == currentCityId)
+                   .anyMatch(player -> player.getCards()
+                                             .stream()
+                                             .filter(card -> card instanceof CityCard)
+                                             .map(card -> (CityCard) card)
+                                             .anyMatch(card -> card.getCity()
+                                                                   .getId() == currentCityId));
+    }
 
     private boolean isInfectionTreatable() {
         //TODO: Implement logic in #88
@@ -404,6 +409,10 @@ private boolean isKnowledgeShareable(String lobbyCode) {
     public void unlockGameInWaitForConfirmation(String lobbyId) {
         IGame game = getGame(lobbyId);
         game.setState(game.getPreviousState());
+    }
+
+    public void getCard(String id, IPlayer player) {
+
     }
 
 }
