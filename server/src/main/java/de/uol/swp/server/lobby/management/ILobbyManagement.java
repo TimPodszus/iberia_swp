@@ -47,10 +47,10 @@ public interface ILobbyManagement {
     /**
      * Allows a user to join a specified lobby.
      *
-     * @param lobby an Optional containing the lobby to join
+     * @param lobbyId the ID of the lobby to join
      * @throws LobbyStoreException if an error occurs during the join process
      */
-    void joinLobby(ILobby lobby, IUser user) throws LobbyStoreException;
+    void joinLobby(String lobbyId, IUser user) throws LobbyStoreException;
 
     /**
      * Updates an existing lobby.

@@ -2,16 +2,26 @@ package de.uol.swp.common.lobby.message.request;
 
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.AbstractLobbyRequest;
-import de.uol.swp.common.user.IUserDTO;
 import lombok.Getter;
 
+/**
+ * Request to update a lobby.
+ */
 @Getter
 public class UpdateLobbyRequest extends AbstractLobbyRequest {
 
+    /**
+     * The lobby data transfer object.
+     */
     private final ILobbyDTO lobbyDTO;
 
-    public UpdateLobbyRequest(ILobbyDTO lobbyDTO, IUserDTO userDto) {
-        super(lobbyDTO.getLobbyId(), userDto);
+    /**
+     * Constructs a new UpdateLobbyRequest.
+     *
+     * @param lobbyDTO the lobby data transfer object
+     */
+    public UpdateLobbyRequest(ILobbyDTO lobbyDTO) {
+        super(lobbyDTO.getLobbyId());
         this.lobbyDTO = lobbyDTO;
     }
 

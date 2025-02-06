@@ -148,8 +148,11 @@ public class LobbyServiceTest extends EventBusBasedTest {
     @Test
     void getLobbyTest() throws LobbyStoreException, InterruptedException {
         when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
+        GetLobbyRequest request = new GetLobbyRequest("testcode");
+        Session session = UUIDSession.create(UserMapper.toUser(firstOwner));
+        request.setSession(session);
 
-        postAndWait(new GetLobbyRequest("testcode", firstOwner));
+        postAndWait(request);
 
         assertInstanceOf(GetLobbyResponse.class, event);
     }
@@ -162,10 +165,11 @@ public class LobbyServiceTest extends EventBusBasedTest {
     @Test
     void updateLobbyTest() throws LobbyStoreException {
         ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
-
         when(lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO))).thenReturn(lobby);
+        UpdateLobbyRequest request = new UpdateLobbyRequest(lobbyDTO);
+        Session session = UUIDSession.create(UserMapper.toUser(firstOwner));
 
-        post(new UpdateLobbyRequest(lobbyDTO, firstOwner));
+        post(request);
 
         ArgumentCaptor<ILobby> captor = ArgumentCaptor.forClass(ILobby.class);
         verify(lobbyManagement, atLeast(1)).updateLobby(captor.capture());

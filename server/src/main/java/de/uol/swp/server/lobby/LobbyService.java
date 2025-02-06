@@ -1,7 +1,6 @@
 package de.uol.swp.server.lobby;
 
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.lobby.message.response.*;
@@ -11,7 +10,6 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.store.LobbyStoreException;
-import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,10 +26,12 @@ import java.util.List;
  */
 public class LobbyService extends AbstractService {
     public static final Logger LOG = LogManager.getLogger(LobbyService.class);
+    private static final String SESSION_INVALID_OR_MISSING = "Session is missing or invalid";
 
     /**
      * The LobbyManagement instance used for managing lobbies.
      * This field is injected by the dependency injection framework.
+     * This needs to be private to allow mocking in tests.
      */
     private ILobbyManagement lobbyManagement;
 
@@ -61,17 +61,20 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onCreateLobbyRequest(CreateLobbyRequest createLobbyRequest) throws LobbyStoreException {
+        LOG.debug("Received create lobby request");
         Session session = createLobbyRequest.getSession()
                                             .orElseThrow(() -> {
-                                                LOG.error("Session is missing");
-                                                return new IllegalArgumentException("Session is missing");
+                                                LOG.error(SESSION_INVALID_OR_MISSING);
+                                                return new IllegalArgumentException(SESSION_INVALID_OR_MISSING);
                                             });
         ILobby createdLobby = lobbyManagement.createLobby(UserMapper.toUser(session.getUser()));
+        LOG.info("[LobbyId: {}] Created lobby", createdLobby.getLobbyId());
         LobbyCreatedResponse response = new LobbyCreatedResponse(LobbyMapper.toDTO(createdLobby));
         response.setSession(session);
         createLobbyRequest.getMessageContext()
                           .ifPresent(response::setMessageContext);
         post(response);
+        LOG.debug("[LobbyId: {}] Sent lobby created response", createdLobby.getLobbyId());
     }
 
     /**
@@ -80,16 +83,24 @@ public class LobbyService extends AbstractService {
      * It adds a user to a Lobby stored in the LobbyManagement and sends a UserJoinedLobbyMessage
      * to every user in the lobby.
      *
-     * @param lobbyJoinUserRequest The LobbyJoinUserRequest found on the EventBus
+     * @param request The LobbyJoinUserRequest found on the EventBus
      * @see ILobby
      * @see UserJoinedLobbyMessage
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyJoinUserRequest(LobbyJoinUserRequest lobbyJoinUserRequest) throws LobbyStoreException {
-        ILobby lobby = lobbyManagement.getLobby(lobbyJoinUserRequest.getLobbyCode());
-        lobbyManagement.joinLobby(lobby, UserMapper.toUser(lobbyJoinUserRequest.getUser()));
-        sendToAllInLobby(lobby, new UserJoinedLobbyMessage(lobby.getLobbyId(), lobbyJoinUserRequest.getUser()));
+    public void onLobbyJoinUserRequest(LobbyJoinUserRequest request) throws LobbyStoreException {
+        LOG.debug("[LobbyId: {}] Received join lobby request", request.getLobbyId());
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        IUserDTO user = request.getSession()
+                               .orElseThrow(() -> {
+                                   LOG.error(SESSION_INVALID_OR_MISSING);
+                                   return new IllegalArgumentException(SESSION_INVALID_OR_MISSING);
+                               })
+                               .getUser();
+        lobbyManagement.joinLobby(request.getLobbyId(), UserMapper.toUser(user));
+        LOG.info("[LobbyId: {}] User joined lobby", request.getLobbyId());
+        sendToAllInLobby(lobby, new UserJoinedLobbyMessage(lobby.getLobbyId(), user));
     }
 
     /**
@@ -98,20 +109,25 @@ public class LobbyService extends AbstractService {
      * It removes a user from a Lobby stored in the LobbyManagement and sends a
      * UserLeftLobbyMessage to every user in the lobby.
      *
-     * @param lobbyLeaveUserRequest The LobbyJoinUserRequest found on the EventBus
+     * @param request The LobbyJoinUserRequest found on the EventBus
      * @see ILobby
      * @see UserLeftLobbyMessage
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest lobbyLeaveUserRequest) throws LobbyStoreException {
-        ILobby lobby = lobbyManagement.getLobby(lobbyLeaveUserRequest.getLobbyCode());
-
-        lobby.leaveUser(UserMapper.toUser(lobbyLeaveUserRequest.getUser()));
+    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest request) throws LobbyStoreException {
+        LOG.debug("[LobbyId: {}] Received leave lobby request", request.getLobbyId());
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        IUserDTO user = request.getSession()
+                               .orElseThrow(() -> {
+                                   LOG.error(SESSION_INVALID_OR_MISSING);
+                                   return new IllegalArgumentException(SESSION_INVALID_OR_MISSING);
+                               })
+                               .getUser();
+        lobby.leaveUser(UserMapper.toUser(user));
         lobby = lobbyManagement.updateLobby(lobby);
-        sendToAllInLobby(lobby,
-                new UserLeftLobbyMessage(lobbyLeaveUserRequest.getLobbyCode(), lobbyLeaveUserRequest.getUser())
-        );
+        sendToAllInLobby(lobby, new UserLeftLobbyMessage(request.getLobbyId(), user));
+        LOG.debug("[LobbyId: {}] Sent user left lobby message", request.getLobbyId());
     }
 
     /**
@@ -127,6 +143,7 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onLobbyListRequest(LobbyListRequest request) throws LobbyStoreException {
+        LOG.debug("Received lobby list request");
         List<ILobbyDTO> lobbies = lobbyManagement.getLobbies()
                                                  .stream()
                                                  .map(LobbyMapper::toDTO)
@@ -137,6 +154,7 @@ public class LobbyService extends AbstractService {
         request.getMessageContext()
                .ifPresent(response::setMessageContext);
         post(response);
+        LOG.debug("Sent lobby list response");
     }
 
     /**
@@ -150,8 +168,9 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onGetLobbyRequest(GetLobbyRequest request) throws LobbyStoreException {
-        ILobby lobby = lobbyManagement.getLobby(request.getLobbyCode());
+    public void onGetLobbyRequest(GetLobbyRequest request) {
+        LOG.debug("[LobbyId: {}] Received get lobby request", request.getLobbyId());
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
         GetLobbyResponse response = new GetLobbyResponse(lobbyDTO);
         request.getMessageContext()
@@ -159,6 +178,7 @@ public class LobbyService extends AbstractService {
         request.getSession()
                .ifPresent(response::setSession);
         post(response);
+        LOG.debug("[LobbyId: {}] Sent get lobby response", request.getLobbyId());
     }
 
 
@@ -174,8 +194,13 @@ public class LobbyService extends AbstractService {
      */
     @Subscribe
     public void onUpdateLobbyRequest(UpdateLobbyRequest request) throws LobbyStoreException {
+        LOG.debug("[LobbyId: {}] Received update lobby request",
+                request.getLobbyDTO()
+                       .getLobbyId()
+        );
         ILobbyDTO lobbyDTO = request.getLobbyDTO();
         ILobby updatedLobby = lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO));
         sendToAllInLobby(updatedLobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(updatedLobby)));
+        LOG.debug("[LobbyId: {}] Sent lobby updated event", updatedLobby.getLobbyId());
     }
 }

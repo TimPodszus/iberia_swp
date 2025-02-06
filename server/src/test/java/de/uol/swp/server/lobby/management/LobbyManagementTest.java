@@ -63,7 +63,14 @@ class LobbyManagementTest {
     void deleteLobbyTest() {
         Lobby lobby = new Lobby("testcode2", "test2", userList, user1, 3);
         lobbyStore.saveLobby(lobby);
-        assertDoesNotThrow(() -> lobbyManagement.deleteLobby("testcode2"));
+        int size = lobbyStore.getAllLobbies()
+                             .size();
+        lobbyManagement.deleteLobby("testcode2");
+        assertEquals(
+                size - 1,
+                lobbyStore.getAllLobbies()
+                          .size()
+        );
     }
 
     /**
@@ -71,10 +78,16 @@ class LobbyManagementTest {
      */
     @Test
     void deleteNonExistendLobbyTest() {
-        assertThrows(
-                LobbyStoreException.class,
-                () -> lobbyManagement.deleteLobby("NonExistentLobby"),
-                "Should throw an exception when trying to delete a non-existent lobby."
+        Lobby lobby = new Lobby("testcode2", "test2", userList, user1, 3);
+        lobbyStore.saveLobby(lobby);
+        int size = lobbyStore.getAllLobbies()
+                             .size();
+        lobbyManagement.deleteLobby("NonExistentLobby");
+
+        assertEquals(
+                size,
+                lobbyStore.getAllLobbies()
+                          .size()
         );
     }
 
@@ -124,7 +137,7 @@ class LobbyManagementTest {
         Lobby lobby = new Lobby("testLobbyCode", "testLobbyName", new ArrayList<>(List.of(firstOwner)), firstOwner, 4);
         lobbyStore.saveLobby(lobby);
 
-        lobbyManagement.joinLobby(lobby, user);
+        lobbyManagement.joinLobby("testLobbyCode", user);
 
         assertEquals(
                 2,
@@ -187,8 +200,7 @@ class LobbyManagementTest {
     @Test
     void joinLobby_LobbyNotFound() {
         User user = new User("testUser", "testUser");
-        ILobby lobby = new Lobby("testLobbyCode", "testLobbyName", new ArrayList<>(List.of(firstOwner)), firstOwner, 4);
 
-        assertThrows(LobbyStoreException.class, () -> lobbyManagement.joinLobby(lobby, user));
+        assertThrows(LobbyStoreException.class, () -> lobbyManagement.joinLobby("testLobbyCode", user));
     }
 }

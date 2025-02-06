@@ -17,16 +17,17 @@ class LobbyMessageSerializableTest {
 
     @Test
     void testLobbyMessagesSerializable() {
-        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(
-                new CreateLobbyRequest(),
+        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new CreateLobbyRequest(),
                 CreateLobbyRequest.class
         ));
-        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new LobbyJoinUserRequest("test",
-                defaultUser
-        ), LobbyJoinUserRequest.class));
-        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new LobbyLeaveUserRequest("test",
-                defaultUser
-        ), LobbyLeaveUserRequest.class));
+        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(
+                new LobbyJoinUserRequest("test"),
+                LobbyJoinUserRequest.class
+        ));
+        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(
+                new LobbyLeaveUserRequest("test"),
+                LobbyLeaveUserRequest.class
+        ));
         assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new UserJoinedLobbyMessage("test",
                 defaultUser
         ), UserJoinedLobbyMessage.class));
