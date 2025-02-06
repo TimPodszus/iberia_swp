@@ -18,6 +18,7 @@ import de.uol.swp.client.options.OptionsPresenter;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.lobby.message.event.RemovedFromLobbyEvent;
 import de.uol.swp.common.lobby.message.response.LobbyCreatedResponse;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.geometry.Rectangle2D;
@@ -460,6 +461,29 @@ public class SceneManager {
     @Subscribe
     public void onCreateGameResponseEvent(CreateGameResponse response) {
         showGameScreen(response.getLobbyId());
+    }
+
+    /**
+     * Handles RemovedFromLobbyEvent detected on the EventBus.
+     * <p>
+     * If a RemovedFromLobbyEvent is detected on the EventBus, this method gets
+     * called. It closes the stage associated with the lobby ID from which the user
+     * was removed.
+     *
+     * @param event The RemovedFromLobbyEvent detected on the EventBus
+     * @see de.uol.swp.common.lobby.message.event.RemovedFromLobbyEvent
+     */
+    @Subscribe
+    public void onRemovedFromLobbyEvent(RemovedFromLobbyEvent event) {
+        Platform.runLater(() -> {
+            LOG.debug("[LobbyId: {}] Closing stage, because user has been removed", event.getLobbyId());
+            Stage stage = gameStages.get(event.getLobbyId());
+            if (stage != null) {
+                stage.close();
+            }
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Sie wurden aus der Lobby entfernt.");
+            alert.show();
+        });
     }
 
     /**

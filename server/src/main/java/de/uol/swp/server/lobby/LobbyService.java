@@ -2,6 +2,7 @@ package de.uol.swp.server.lobby;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
+import de.uol.swp.common.lobby.message.event.RemovedFromLobbyEvent;
 import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.lobby.message.response.*;
 import de.uol.swp.common.user.IUserDTO;
@@ -10,6 +11,7 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.store.LobbyStoreException;
+import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -164,7 +166,7 @@ public class LobbyService extends AbstractService {
      * @param request The GetLobbyRequest found on the EventBus
      * @see ILobby
      * @see GetLobbyResponse
-     * @since 2019-10-08
+     * @since 2024-10-02
      */
     @Subscribe
     public void onGetLobbyRequest(GetLobbyRequest request) {
@@ -189,7 +191,7 @@ public class LobbyService extends AbstractService {
      * @param request The UpdateLobbyRequest found on the EventBus
      * @see ILobby
      * @see ILobbyDTO
-     * @since 2019-10-08
+     * @since 2024-10-02
      */
     @Subscribe
     public void onUpdateLobbyRequest(UpdateLobbyRequest request) throws LobbyStoreException {
@@ -204,11 +206,35 @@ public class LobbyService extends AbstractService {
         LOG.debug("[LobbyId: {}] Sent lobby updated event", updatedLobby.getLobbyId());
     }
 
+    /**
+     * Handles RemoveUserFromLobbyRequests found on the EventBus.
+     * If a RemoveUserFromLobbyRequest is detected on the EventBus, this method is called.
+     * It removes a user from a Lobby stored in the LobbyManagement and sends a
+     * RemovedFromLobbyEvent to the user and a LobbyUpdatedEvent to every user in the lobby.
+     *
+     * @param request The RemoveUserFromLobbyRequest found on the EventBus
+     * @throws LobbyStoreException if there is an error accessing the lobby store
+     * @see ILobby
+     * @see RemovedFromLobbyEvent
+     * @see LobbyUpdatedEvent
+     * @since 2025-02-06
+     */
     @Subscribe
     public void onRemoveUserFromLobbyRequest(RemoveUserFromLobbyRequest request) throws LobbyStoreException {
         LOG.debug("[LobbyId: {}] Received remove user from lobby request", request.getLobbyId());
         ILobby lobby = lobbyManagement.removeUser(request.getLobbyId(), request.getUserToRemove());
+
+        IUser user = lobby.getUser(request.getUserToRemove());
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow(() -> {
+                                                   LOG.error(SESSION_INVALID_OR_MISSING);
+                                                   return new IllegalArgumentException(SESSION_INVALID_OR_MISSING);
+                                               });
+        RemovedFromLobbyEvent removedFromLobbyEvent = new RemovedFromLobbyEvent(lobby.getLobbyId());
+        removedFromLobbyEvent.setReceiver(List.of(session));
+        post(removedFromLobbyEvent);
+
         sendToAllInLobby(lobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(lobby)));
-        LOG.debug("[LobbyId: {}] Sent user left lobby message", request.getLobbyId());
+        LOG.debug("[LobbyId: {}] Sent lobby updated event", request.getLobbyId());
     }
 }

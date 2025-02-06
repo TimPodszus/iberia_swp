@@ -197,10 +197,10 @@ public class LobbyDetailPresenter extends AbstractPresenter {
         alert.setTitle("Spieler entfernen");
         alert.setHeaderText("Willst du " + username + " wirklich aus der Lobby entfernen?");
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (result.isPresent() && result.get()
+                                        .getButtonData() == ButtonBar.ButtonData.OK_DONE) {
             lobbyService.removeUser(this.lobbyDTO.getLobbyId(), username);
         }
-        lobbyService.removeUser(this.lobbyDTO.getLobbyId(), username);
     }
 
     /**
