@@ -15,14 +15,15 @@ import java.util.Objects;
 @Getter
 public class BoardUpdateEvent extends AbstractGameEvent {
     private final IGameDTO gameDTO;
+
     /**
      * Constructs a new BoardUpdateEvent.
      *
-     * @param lobbyCode the code of the lobby associated with the event
+     * @param lobbyId the code of the lobby associated with the event
      * @param gameDTO the game data transfer object associated with the update
      */
-    public BoardUpdateEvent(String lobbyCode, IGameDTO gameDTO) {
-        super(lobbyCode);
+    public BoardUpdateEvent(String lobbyId, IGameDTO gameDTO) {
+        super(lobbyId);
         this.gameDTO = gameDTO;
     }
 
