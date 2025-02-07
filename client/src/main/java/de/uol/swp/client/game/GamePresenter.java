@@ -383,6 +383,26 @@ public class GamePresenter extends AbstractPresenter {
         gameService.drawPlayerCard(lobbyId);
     }
 
+
+    @FXML
+    private void onRoleCardClickedEvent(MouseEvent event) {
+        if (gameDTO.getCurrentPlayer()
+                   .getRole()
+                   .getName()
+                   .equals(RoleEnum.POLITICIAN)) {
+            Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+            for (IPlayerDTO player : gameDTO.getPlayers()) {
+                cardsToExchange.put(player.getUsername(), player.getCards());
+            }
+            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(), cardsToExchange
+            );
+            Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+            result.ifPresent(map -> eventBus.post(new CardsExchangeRequest(map, lobbyId)));
+        }
+    }
+
     /**
      * Handles build train track action.
      *
@@ -463,7 +483,7 @@ public class GamePresenter extends AbstractPresenter {
                     );
                     Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
                     result.ifPresent(map -> eventBus.post(new CardsExchangeRequest(map, lobbyId)));
-                    LOG.trace("Card Exchange Request sent to " + playerWithCityCard.getUsername());
+                    LOG.trace("Card Exchange Request sent to {}", playerWithCityCard.getUsername());
 
                 }
             } else {
