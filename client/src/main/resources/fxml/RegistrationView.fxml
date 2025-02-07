@@ -12,31 +12,37 @@
 <AnchorPane prefHeight="720.0" prefWidth="1280.0" styleClass="dialog-pane" stylesheets="@../css/myDialog.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.register.RegistrationPresenter">
    <AnchorPane layoutX="120.0" layoutY="56.0" prefHeight="324.0" prefWidth="482.0" styleClass="form-pane" stylesheets="@../css/myDialog.css" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="180.0">
       <children>
-          <Button id="cancelButton" layoutX="14.0" layoutY="305.0" mnemonicParsing="false" onAction="#onCancelButtonPressed" styleClass="register-button" stylesheets="@../css/myDialog.css" text="Cancel" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-          <Button id="registerButton" defaultButton="true" layoutX="392.0" layoutY="275.0" mnemonicParsing="false" onAction="#onRegisterButtonPressed" styleClass="login-button" stylesheets="@../css/myDialog.css" text="Register" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+          <Button id="cancelButton" layoutX="14.0" layoutY="305.0" mnemonicParsing="false"
+                  onAction="#onCancelButtonPressed" styleClass="register-button" stylesheets="@../css/myDialog.css"
+                  text="Abbrechen" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+          <Button id="registerButton" defaultButton="true" layoutX="392.0" layoutY="275.0" mnemonicParsing="false"
+                  onAction="#onRegisterButtonPressed" styleClass="login-button" stylesheets="@../css/myDialog.css"
+                  text="Registrieren" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
          <VBox alignment="CENTER" layoutX="48.0" layoutY="62.0" prefHeight="200.0" prefWidth="345.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="48.0" AnchorPane.rightAnchor="48.0">
             <children>
                <VBox prefHeight="200.0" prefWidth="100.0" styleClass="input" stylesheets="@../css/myDialog.css">
                   <children>
-                      <Label stylesheets="@../css/myDialog.css" text="Login" />
-                      <TextField id="loginField" fx:id="loginField" promptText="Enter Login" style="-fx-text-alignment: left;" stylesheets="@../css/myDialog.css">
+                      <Label stylesheets="@../css/myDialog.css" text="Benutzername" />
+                      <TextField id="loginField" fx:id="loginField" promptText="Benutzernamen eingeben"
+                                 style="-fx-text-alignment: left;" stylesheets="@../css/myDialog.css">
                           <tooltip>
-                              <Tooltip style="-fx-text-alignment: LEFT;" text="Enter your login here" />
+                              <Tooltip style="-fx-text-alignment: LEFT;"
+                                       text="Geben Sie hier ihren Benutzernamen ein" />
                           </tooltip>
                       </TextField>
                   </children>
                </VBox>
                <VBox prefHeight="200.0" prefWidth="100.0" styleClass="input">
                   <children>
-                      <Label text="Password" />
-                      <PasswordField id="passwordField" fx:id="passwordField1" promptText="Enter Password" />
+                      <Label text="Passwort" />
+                      <PasswordField id="passwordField" fx:id="passwordField1" promptText="Passwort eingeben" />
                   </children>
                </VBox>
                <VBox prefHeight="200.0" prefWidth="100.0" styleClass="input">
                   <children>
                   
-                      <Label text="Password" />
-                      <PasswordField id="passwordField" fx:id="passwordField2" promptText="Repeat Password" />
+                      <Label text="Passwort" />
+                      <PasswordField id="passwordField" fx:id="passwordField2" promptText="Passwort wiederholen" />
                   </children>
                </VBox>
             </children>

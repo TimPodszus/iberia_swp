@@ -47,5 +47,7 @@ public class ServerModule extends AbstractModule {
         bind(IInfectionManagement.class).to(InfectionManagement.class);
         bind(IRegionManagement.class).to(RegionManagement.class);
         bind(IPlagueManagement.class).to(PlagueManagement.class);
+        bind(IInfectionManagement.class).to(InfectionManagement.class);
+        bind(IRegionManagement.class).to(RegionManagement.class);
     }
 }

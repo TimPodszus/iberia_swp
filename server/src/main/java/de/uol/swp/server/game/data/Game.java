@@ -109,7 +109,6 @@ public class Game implements IGame {
     /**
      * Current state of the game.
      */
-    @Setter
     private IGameState state;
 
     /**
@@ -225,5 +224,10 @@ public class Game implements IGame {
      */
     public IPlayer getCurrentPlayer() {
         return this.players.get(currentPlayerIndex);
+    }
+
+    public void setState(IGameState state) {
+        this.previousState = this.state;
+        this.state = state;
     }
 }

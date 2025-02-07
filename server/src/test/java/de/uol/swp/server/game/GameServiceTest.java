@@ -4,6 +4,7 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
@@ -27,6 +28,7 @@ import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
+import org.greenrobot.eventbus.EventBusException;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +37,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -96,6 +99,11 @@ public class GameServiceTest extends EventBusBasedTest {
         super.handleEvent(event);
     }
 
+    @Subscribe
+    public void onShareRideEvent(ShareRideRequest event) {
+        super.handleEvent(event);
+    }
+
     /**
      * Sets up the test environment.
      */
@@ -115,8 +123,60 @@ public class GameServiceTest extends EventBusBasedTest {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
-        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12, -1);
+
+        IUser user2 = new User("testuser2", "testpassword2");
+        Session session2 = UUIDSession.create(user2);
+        when(authenticationService.getSession(user2)).thenReturn(Optional.of(session2));
+
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12, "testuser2");
         movePlayerRequest.setSession(session);
+
+        ICity city = new CityRepository().getCity(12);
+        when(cityManagement.getCity("lobbycode", 12)).thenReturn(city);
+        IGame game = new Game(2, "lobbycode");
+        when(gameManagement.getGame("lobbycode")).thenReturn(game);
+        ILobby lobby = new Lobby("lobbycode", "Test", List.of(user, user2), user, 4);
+        when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
+
+        postAndWait(movePlayerRequest);
+
+        verify(gameManagement, atLeast(1)).movePlayer(user, "lobbycode", city, null);
+        verify(gameManagement, atLeast(1)).lockGameInWaitForConfirmation("lobbycode");
+        assertInstanceOf(BoardUpdateEvent.class, event);
+    }
+
+    @Test
+    void testOnMovePlayerRequestWithUnknownPlayerToTakeWith() throws InterruptedException, GameManagementException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        IUser user2 = new User("testuser2", "testpassword2");
+
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12, "testuser2");
+        movePlayerRequest.setSession(session);
+
+        ICity city = new CityRepository().getCity(12);
+        when(cityManagement.getCity("lobbycode", 12)).thenReturn(city);
+        IGame game = new Game(2, "lobbycode");
+        when(gameManagement.getGame("lobbycode")).thenReturn(game);
+        ILobby lobby = new Lobby("lobbycode", "Test", List.of(user, user2), user, 4);
+        when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
+
+        assertThrows(EventBusException.class, () -> postAndWait(movePlayerRequest));
+
+        verify(gameManagement, atLeast(1)).movePlayer(user, "lobbycode", city, null);
+    }
+
+    @Test
+    void testOnMovePlayerRequestWithNotLoggedInPlayerToTakeWith() throws GameManagementException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12, "testuser2");
+        movePlayerRequest.setSession(session);
+
         ICity city = new CityRepository().getCity(12);
         when(cityManagement.getCity("lobbycode", 12)).thenReturn(city);
         IGame game = new Game(2, "lobbycode");
@@ -124,10 +184,9 @@ public class GameServiceTest extends EventBusBasedTest {
         ILobby lobby = new Lobby("lobbycode", "Test", List.of(user), user, 4);
         when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
 
-        postAndWait(movePlayerRequest);
+        assertThrows(EventBusException.class, () -> postAndWait(movePlayerRequest));
 
         verify(gameManagement, atLeast(1)).movePlayer(user, "lobbycode", city, null);
-        assertInstanceOf(BoardUpdateEvent.class, event);
     }
 
     /**

@@ -10,6 +10,7 @@ import de.uol.swp.server.connection.ConnectionService;
 import de.uol.swp.server.di.ServerModule;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.lobby.LobbyService;
+import de.uol.swp.server.player.PlayerService;
 import de.uol.swp.server.plague.PlagueService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.UserManagement;
@@ -78,6 +79,7 @@ class ServerApp {
         injector.getInstance(GameService.class);
         injector.getInstance(ConnectionService.class);
         injector.getInstance(PlagueService.class);
+        injector.getInstance(PlayerService.class);
     }
 
 }
