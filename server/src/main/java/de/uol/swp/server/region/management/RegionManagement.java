@@ -154,7 +154,7 @@ public class RegionManagement implements IRegionManagement {
         return availableRegions;
     }
 
-    private void decreaseWaterTreatmentsInRegions(List<IRegion> regions, int amount) throws RegionManagementException {
+    public void decreaseWaterTreatmentsInRegions(List<IRegion> regions, int amount) throws RegionManagementException {
         for (IRegion region : regions) {
             int waterTreatments = region.getWaterTreatments();
             if (waterTreatments >= amount) {
@@ -167,18 +167,18 @@ public class RegionManagement implements IRegionManagement {
         }
     }
 
-    private void decreaseWaterTreatmentsInAllRegions(List<IRegion> regions) throws RegionManagementException {
+    public void decreaseWaterTreatmentsInAllRegions(List<IRegion> regions) throws RegionManagementException {
         for (IRegion region : regions) {
             region.decreaseWaterTreatments(region.getWaterTreatments());
         }
     }
 
-    private IGame getGame(String lobbyCode) {
+    public IGame getGame(String lobbyCode) {
         return GameStore.getInstance()
                         .getGame(lobbyCode);
     }
 
-    private IPlayer getRequestPlayer(IUserDTO user, IGame game) throws RegionManagementException {
+    public IPlayer getRequestPlayer(IUserDTO user, IGame game) throws RegionManagementException {
         IPlayer requestPlayer = null;
         for (IPlayer player : game.getPlayers()) {
             if (player.getUser()
