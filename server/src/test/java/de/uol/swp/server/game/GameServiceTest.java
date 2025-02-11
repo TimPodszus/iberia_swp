@@ -1,10 +1,9 @@
 package de.uol.swp.server.game;
 
+import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
+import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
@@ -12,6 +11,7 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -23,6 +23,7 @@ import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
@@ -66,7 +67,8 @@ public class GameServiceTest extends EventBusBasedTest {
     private IPlayerManagement playerManagement;
 
     @InjectMocks
-    GameService gameService = new GameService(getBus(),
+    GameService gameService = new GameService(
+            getBus(),
             lobbyManagement,
             gameManagement,
             cityManagement,
@@ -146,7 +148,7 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnMovePlayerRequestWithUnknownPlayerToTakeWith() throws InterruptedException, GameManagementException {
+    void testOnMovePlayerRequestWithUnknownPlayerToTakeWith() throws GameManagementException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
@@ -267,6 +269,115 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, times(1)).createAndInitializeGame(createGameRequest);
         verify(lobbyManagement, times(1)).getLobby(LOBBY_CODE);
         assertNull(event, "No event should be posted when the game creation fails.");
+    }
+
+
+    @Test
+    void testOnShareKnowledgeRequest_Accepted() throws GameManagementException, PlayerManagementException {
+        // Arrange
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                "lobbyId",
+                "currentPlayer",
+                "targetPlayer",
+                mock(ICardDTO.class),
+                mock(ICardDTO.class)
+        );
+        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", true, event);
+
+        IGame game = mock(IGame.class);
+        IPlayer currentPlayer = mock(IPlayer.class);
+        IPlayer targetPlayer = mock(IPlayer.class);
+        ICard currentPlayerCard = mock(ICard.class);
+        ICard targetPlayerCard = mock(ICard.class);
+        IUser currentUser = mock(IUser.class);
+        IUser targetUser = mock(IUser.class);
+        List<ICard> currentPlayerCards = mock(List.class);
+        List<ICard> targetPlayerCards = mock(List.class);
+
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
+        when(game.getPlayers()).thenReturn(List.of(currentPlayer, targetPlayer));
+        when(currentPlayer.getUser()).thenReturn(currentUser);
+        when(targetPlayer.getUser()).thenReturn(targetUser);
+        when(currentUser.getUsername()).thenReturn("currentPlayer");
+        when(targetUser.getUsername()).thenReturn("targetPlayer");
+        when(playerManagement.getCard(
+                "lobbyId",
+                "currentPlayer",
+                event.getCurrentPlayerCard()
+                     .getId()
+        )).thenReturn(currentPlayerCard);
+        when(playerManagement.getCard(
+                "lobbyId",
+                "targetPlayer",
+                event.getTargetPlayerCard()
+                     .getId()
+        )).thenReturn(targetPlayerCard);
+        when(currentPlayer.getCards()).thenReturn(currentPlayerCards);
+        when(targetPlayer.getCards()).thenReturn(targetPlayerCards);
+
+        // Act
+        gameService.onShareKnowledgeRequest(request);
+
+        // Assert
+        verify(currentPlayerCards).remove(currentPlayerCard);
+        verify(targetPlayerCards).remove(targetPlayerCard);
+        verify(currentPlayerCards).add(targetPlayerCard);
+        verify(targetPlayerCards).add(currentPlayerCard);
+    }
+
+    @Test
+    void testOnShareKnowledgeReqeust_Denied() throws PlayerManagementException, GameManagementException {
+        // Arrange
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                "lobbyId",
+                "currentPlayer",
+                "targetPlayer",
+                mock(ICardDTO.class),
+                mock(ICardDTO.class)
+        );
+        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", false, event);
+
+        IGame game = mock(IGame.class);
+        IPlayer currentPlayer = mock(IPlayer.class);
+        IPlayer targetPlayer = mock(IPlayer.class);
+        ICard currentPlayerCard = mock(ICard.class);
+        ICard targetPlayerCard = mock(ICard.class);
+        IUser currentUser = mock(IUser.class);
+        IUser targetUser = mock(IUser.class);
+        List<ICard> currentPlayerCards = mock(List.class);
+        List<ICard> targetPlayerCards = mock(List.class);
+
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
+        when(game.getPlayers()).thenReturn(List.of(currentPlayer, targetPlayer));
+        when(currentPlayer.getUser()).thenReturn(currentUser);
+        when(targetPlayer.getUser()).thenReturn(targetUser);
+        when(currentUser.getUsername()).thenReturn("currentPlayer");
+        when(targetUser.getUsername()).thenReturn("targetPlayer");
+        when(playerManagement.getCard(
+                "lobbyId",
+                "currentPlayer",
+                event.getCurrentPlayerCard()
+                     .getId()
+        )).thenReturn(currentPlayerCard);
+        when(playerManagement.getCard(
+                "lobbyId",
+                "targetPlayer",
+                event.getTargetPlayerCard()
+                     .getId()
+        )).thenReturn(targetPlayerCard);
+        when(currentPlayer.getCards()).thenReturn(currentPlayerCards);
+        when(targetPlayer.getCards()).thenReturn(targetPlayerCards);
+
+        // Act
+        gameService.onShareKnowledgeRequest(request);
+
+        // Assert
+        verify(currentPlayerCards, never()).remove(currentPlayerCard);
+        verify(targetPlayerCards, never()).remove(targetPlayerCard);
+        verify(currentPlayerCards, never()).add(targetPlayerCard);
+        verify(targetPlayerCards, never()).add(currentPlayerCard);
     }
 
 
