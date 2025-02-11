@@ -23,7 +23,6 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
-import de.uol.swp.server.game.states.WaitForConfirmationState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
@@ -211,9 +210,9 @@ public class GameService extends AbstractService {
 
     @Subscribe
     public void onCardsExchangeRequest(CardsExchangeRequest request) throws GameManagementException {
+        LOG.info("Received CardsExchangeRequest for lobby {}", request.getLobbyId());
         IGame game = gameManagement.getGame(request.getLobbyId());
-        game.setState(new WaitForConfirmationState());
-
+        gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
         Map<String, ICardDTO> cardsToExchange = request.getCardsToExchange();
         String currentPlayerUsername = game.getCurrentPlayer()
                                            .getUser()
@@ -222,8 +221,15 @@ public class GameService extends AbstractService {
                                                      .stream()
                                                      .filter(username -> !username.equals(currentPlayerUsername))
                                                      .findFirst()
-                                                     .orElseThrow(() -> new GameManagementException(
-                                                             "Target player not found"));
+                                                     .orElseThrow(() -> {
+                                                         LOG.error(
+                                                                 "Target player not found for username {}",
+                                                                 currentPlayerUsername
+                                                         );
+                                                         return new GameManagementException("Target player not found");
+                                                     });
+
+        LOG.debug("Current player: {}, Target player: {}", currentPlayerUsername, targetPlayerUsername);
 
         ShareKnowledgeEvent shareKnowledgeEvent = new ShareKnowledgeEvent(
                 request.getLobbyId(),
@@ -232,28 +238,39 @@ public class GameService extends AbstractService {
                 cardsToExchange.get(currentPlayerUsername),
                 cardsToExchange.get(targetPlayerUsername)
         );
-        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
-                request.getLobbyId(),
-                currentPlayerUsername,
-                targetPlayerUsername,
-                cardsToExchange.get(currentPlayerUsername),
-                cardsToExchange.get(targetPlayerUsername)
-        );
+        LOG.trace("Created ShareKnowledgeEvent: {}", shareKnowledgeEvent);
+
         IUser user = lobbyManagement.getLobby(request.getLobbyId())
                                     .getUsers()
                                     .stream()
                                     .filter(u -> u.getUsername()
                                                   .equals(targetPlayerUsername))
                                     .findFirst()
-                                    .orElseThrow(() -> new GameManagementException("Target player not found"));
+                                    .orElseThrow(() -> {
+                                        LOG.error(
+                                                "Target player not found in lobby for username {}",
+                                                targetPlayerUsername
+                                        );
+                                        return new GameManagementException("Target player not found");
+                                    });
+        LOG.trace("Found target player in lobby: {}", user.getUsername());
+
         Session session = authenticationService.getSession(user)
-                                               .orElseThrow(() -> new GameManagementException("Session not found"));
-        event.setReceiver(List.of(session));
-        bus.post(event);
+                                               .orElseThrow(() -> {
+                                                   LOG.error("Session not found for user {}", user.getUsername());
+                                                   return new GameManagementException("Session not found");
+                                               });
+        LOG.trace("Session found for user {}", user.getUsername());
+
+        shareKnowledgeEvent.setReceiver(List.of(session));
+        bus.post(shareKnowledgeEvent);
+        LOG.info("Posted ShareKnowledgeEvent to event bus for lobby {}", request.getLobbyId());
     }
 
     @Subscribe
     public void onShareKnowledgeRequest(ShareKnowledgeRequest request) throws GameManagementException, PlayerManagementException {
+        LOG.info("Received ShareKnowledgeRequest for lobby {}", request.getLobbyId());
+        gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
         ShareKnowledgeEvent event = request.getShareKnowledgeEvent();
         IPlayer currentPlayer = gameManagement.getGame(event.getLobbyId())
                                               .getCurrentPlayer();
@@ -264,10 +281,20 @@ public class GameService extends AbstractService {
                                                                      .getUsername()
                                                                      .equals(event.getTargetPlayer()))
                                              .findFirst()
-                                             .orElseThrow(() -> new GameManagementException("Target player not found"));
-
+                                             .orElseThrow(() -> {
+                                                 LOG.error(
+                                                         "Target player not found for username {}",
+                                                         event.getTargetPlayer()
+                                                 );
+                                                 return new GameManagementException("Target player not found");
+                                             });
 
         if (request.isAccepted()) {
+            LOG.info(
+                    "Share knowledge request accepted by target player {}",
+                    targetPlayer.getUser()
+                                .getUsername()
+            );
             ICard targetPlayerCard = playerManagement.getCard(
                     event.getLobbyId(),
                     targetPlayer.getUser()
@@ -291,8 +318,22 @@ public class GameService extends AbstractService {
             targetPlayer.getCards()
                         .add(currentPlayerCard);
 
+            LOG.debug(
+                    "Cards exchanged between {} and {}",
+                    currentPlayer.getUser()
+                                 .getUsername(),
+                    targetPlayer.getUser()
+                                .getUsername()
+            );
+            LOG.trace("Current player cards after exchange: {}", currentPlayer.getCards());
+            LOG.trace("Target player cards after exchange: {}", targetPlayer.getCards());
             bus.post(new ShareKnowledgeResponse(event.getLobbyId(), true));
         } else {
+            LOG.info(
+                    "Share knowledge request declined by target player {}",
+                    targetPlayer.getUser()
+                                .getUsername()
+            );
             bus.post(new ShareKnowledgeResponse(event.getLobbyId(), false));
         }
     }

@@ -84,6 +84,7 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(vBox);
+
     }
 
     /**

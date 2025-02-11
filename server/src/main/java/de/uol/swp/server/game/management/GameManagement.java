@@ -411,8 +411,4 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         game.setState(game.getPreviousState());
     }
 
-    public void getCard(String id, IPlayer player) {
-
-    }
-
 }
