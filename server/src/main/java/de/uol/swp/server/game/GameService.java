@@ -23,6 +23,8 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
@@ -327,6 +329,9 @@ public class GameService extends AbstractService {
             );
             LOG.trace("Current player cards after exchange: {}", currentPlayer.getCards());
             LOG.trace("Target player cards after exchange: {}", targetPlayer.getCards());
+            IGameState gameState = gameManagement.getGame(event.getLobbyId())
+                                                 .getState();
+            ((PlayerTurnState) gameState).reduceActionsRemaining(gameManagement.getGame(event.getLobbyId()));
             bus.post(new ShareKnowledgeResponse(event.getLobbyId(), true));
         } else {
             LOG.info(
