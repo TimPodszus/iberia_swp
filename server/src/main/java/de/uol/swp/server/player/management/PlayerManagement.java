@@ -9,6 +9,7 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
+import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
@@ -74,10 +75,10 @@ public class PlayerManagement implements IPlayerManagement {
         List<ICard> playerCardDrawPile = game.getPlayerCardDrawPile();
 
         if (playerCardDrawPile.isEmpty()) {
+            game.setState(new EndGameState(false));
             throw new PlayerManagementException("Player card draw pile is empty");
         }
 
-        // if 0 is the top card of the draw pile
         return playerCardDrawPile.remove(0);
     }
 

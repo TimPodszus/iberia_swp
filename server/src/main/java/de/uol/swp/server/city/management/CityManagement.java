@@ -7,6 +7,7 @@ import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
@@ -174,10 +175,7 @@ public class CityManagement implements ICityManagement {
         }
 
         if (game.getPlagueRepository().getPlagueByName(plague.getName()).getCubesRemaining() < 0) {
-            //TODO: GameOver auslösen (Implementierung mit Issue #137)
-
-            // vorübergehend für Unit-Test - muss dann entsprechend angepasst werden
-            throw new CityManagementException("Game Over");
+            game.setState(new EndGameState(false));
         }
     }
 
@@ -198,7 +196,10 @@ public class CityManagement implements ICityManagement {
 
         while (!citiesToProcess.isEmpty()) {
             game.setEscalationStage(game.getEscalationStage() + 1);
-
+            if(game.getEscalationStage() == 8){
+                game.setState(new EndGameState(false));
+                return;
+            }
             CityName currentCity = citiesToProcess.poll();
             List<CityName> connectedCityNames = game.getConnectionRepository()
                                                     .getCityNamesOfConnectedCitiesByCityName(currentCity);

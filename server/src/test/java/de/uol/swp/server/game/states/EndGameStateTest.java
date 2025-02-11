@@ -11,7 +11,7 @@ class EndGameStateTest {
 
     @BeforeEach
     void setUp() {
-        state = new EndGameState();
+        state = new EndGameState(true);
     }
 
     @Test
