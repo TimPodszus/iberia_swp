@@ -281,6 +281,7 @@ public class GameServiceTest extends EventBusBasedTest {
         DrawCardState drawCardState = new DrawCardState();
         when(game.getState()).thenReturn(drawCardState);
         when(game.getPlayerCardDrawPile()).thenReturn(List.of());
+        when(game.getGameId()).thenReturn("gameId");
 
         gameService.onGameStateChange(game);
 
