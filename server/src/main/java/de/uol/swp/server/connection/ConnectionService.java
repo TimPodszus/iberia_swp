@@ -4,11 +4,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
+import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,6 +69,31 @@ public class ConnectionService extends AbstractService {
         }
 
         AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinationsAsDtos);
+
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        request.getSession()
+               .ifPresent(response::setSession);
+
+        post(response);
+    }
+
+    /**
+     * Handles the BuildableTrainTracksRequest.
+     *
+     * @param request the request containing the city for which buildable train tracks are needed
+     */
+    @Subscribe
+    public void onBuildableTrainTracksRequest(BuildableTrainTracksRequest request) {
+        LOG.debug("[Lobby: {}] Got BuildableTrainTracksRequest for city {}",
+                request.getLobbyId(),
+                request.getCityId()
+        );
+        List<IConnection> connections = connectionManagement.getBuildableTrainTracks(
+                request.getLobbyId(),
+                request.getCityId()
+        );
+        BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(ConnectionMapper.toDTOList(connections));
 
         request.getMessageContext()
                .ifPresent(response::setMessageContext);
