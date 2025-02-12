@@ -1,6 +1,7 @@
 package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
@@ -10,14 +11,19 @@ import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.game.message.response.ExtraTrackResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.management.ICityManagement;
+import de.uol.swp.server.connection.ConnectionMapper;
+import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -42,6 +48,7 @@ public class GameService extends AbstractService {
     protected ILobbyManagement lobbyManagement;
     ICityManagement cityManagement;
     IPlayerManagement playerManagement;
+    IConnectionManagement connectionManagement;
 
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
@@ -54,13 +61,15 @@ public class GameService extends AbstractService {
             ILobbyManagement lobbyManagement,
             IGameManagement gameManagement,
             ICityManagement cityManagement,
-            IPlayerManagement playerManagement
+            IPlayerManagement playerManagement,
+            IConnectionManagement connectionManagement
     ) {
         super(bus);
         this.lobbyManagement = lobbyManagement;
         this.gameManagement = gameManagement;
         this.cityManagement = cityManagement;
         this.playerManagement = playerManagement;
+        this.connectionManagement = connectionManagement;
     }
 
     /**
@@ -96,6 +105,48 @@ public class GameService extends AbstractService {
         if (game != null && lobby != null) {
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
+    }
+
+    /**
+     * Handles incoming requests to build a train track. This method retrieves the user from the session,
+     * and then delegates the train track building to the GameManagement class.
+     *
+     * @param request the train track build request containing session, lobby code, and connection ID
+     */
+    @Subscribe
+    public void onBuildTrainTrackRequest(BuildTrainTrackRequest request) throws GameException, GameManagementException {
+        IUserDTO user = request.getSession()
+                               .map(Session::getUser)
+                               .orElse(null);
+        if (user == null) {
+            throw new GameException("User is unknown");
+        }
+        gameManagement.buildTrainTrack(
+                UserMapper.toUser(user),
+                request.getLobbyId(),
+                connectionManagement.getConnection(request.getLobbyId(), request.getConnectionId())
+        );
+
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        if (game.getState() instanceof BuildExtraTrainTrackState state) {
+            List <IConnection> connections = state.getConnections();
+            ExtraTrackResponse response = new ExtraTrackResponse(
+                    request.getLobbyId(),
+                    true,
+                    ConnectionMapper.toDTOList(connections)
+            );
+
+            request.getMessageContext()
+                   .ifPresent(response::setMessageContext);
+            request.getSession()
+                   .ifPresent(response::setSession);
+
+            post(response);
+        }
+
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 
     /**
