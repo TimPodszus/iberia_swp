@@ -76,7 +76,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         ConnectionRepository connectionRepository = game.getConnectionRepository();
         List<IConnection> buildableConnections;
 
-        if (game.getTracksLeft() >= 0) {
+        if (game.getTracksLeft() > 0) {
             buildableConnections = connectionRepository.getConnections()
                                                        .stream()
                                                        .filter(connection -> connection.getCityNames()

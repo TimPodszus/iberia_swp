@@ -1,11 +1,15 @@
 package de.uol.swp.server.game;
 
+import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.game.message.response.ExtraTrackResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -15,16 +19,24 @@ import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
+import de.uol.swp.server.connection.ConnectionMapper;
+import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.connection.data.Connection;
+import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -34,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 
 import java.util.List;
 import java.util.Set;
@@ -66,6 +79,10 @@ public class GameServiceTest extends EventBusBasedTest {
     @Mock
     private IConnectionManagement connectionManagement;
 
+    @Mock
+    IGame game;
+
+    @Spy
     @InjectMocks
     GameService gameService = new GameService(getBus(),
             lobbyManagement,
@@ -98,6 +115,11 @@ public class GameServiceTest extends EventBusBasedTest {
 
     @Subscribe
     public void onEvent(AvailableActionsResponse event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onExtraTrackResponse(ExtraTrackResponse event) {
         super.handleEvent(event);
     }
 
@@ -215,5 +237,57 @@ public class GameServiceTest extends EventBusBasedTest {
         assertNull(event, "No event should be posted when the game creation fails.");
     }
 
+    @Test
+    void testOnBuildTrainTrackRequest_UserIsNull() throws GameManagementException, GameException {
+        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
+        request.setSession(null);
 
+        assertThrows(GameException.class, () -> gameService.onBuildTrainTrackRequest(request));
+    }
+
+    @Test
+    void testOnBuildTrainTrackRequest_WithoutExtraTrackState() throws GameManagementException, GameException {
+        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+        IConnection connection = new Connection(1, List.of(CityName.ALICANTE, CityName.ALBACETE), true);
+        when(connectionManagement.getConnection("lobbyId", 1)).thenReturn(connection);
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+        when(game.getRegionRepository()).thenReturn(new RegionRepository(new CityRepository()));
+        when(game.getPlagueRepository()).thenReturn(new PlagueRepository());
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby("lobbyId", "Test", List.of(user), user, 4));
+
+        gameService.onBuildTrainTrackRequest(request);
+
+        verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
+        assertInstanceOf(BoardUpdateEvent.class, event);
+    }
+
+    @Test
+    void testOnBuildTrainTrackRequest_WithExtraTrackState() throws GameManagementException, GameException {
+        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+        IConnection connection = new Connection(1, List.of(CityName.ALICANTE, CityName.ALBACETE), true);
+        when(connectionManagement.getConnection("lobbyId", 1)).thenReturn(connection);
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection)));
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+        when(game.getRegionRepository()).thenReturn(new RegionRepository(new CityRepository()));
+        when(game.getPlagueRepository()).thenReturn(new PlagueRepository());
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby("lobbyId", "Test", List.of(user), user, 4));
+
+        gameService.onBuildTrainTrackRequest(request);
+
+        verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
+        assertInstanceOf(BoardUpdateEvent.class, event);
+        verify(gameService, times(1)).post(any(ExtraTrackResponse.class));}
 }

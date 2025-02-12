@@ -459,12 +459,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
     }
 
-    private static List<IConnection> getBuildableTrainTracks(String lobbyId, IGame game, IPlayer player) {
+    private List<IConnection> getBuildableTrainTracks(String lobbyId, IGame game, IPlayer player) {
         List<IConnection> buildableTrainTracks;
         if (game.getState() instanceof BuildExtraTrainTrackState state) {
             buildableTrainTracks = state.getConnections();
         } else {
-            IConnectionManagement connectionManagement = new ConnectionManagement();
             buildableTrainTracks = connectionManagement.getBuildableTrainTracks(
                     lobbyId,
                     player.getCurrentPosition()

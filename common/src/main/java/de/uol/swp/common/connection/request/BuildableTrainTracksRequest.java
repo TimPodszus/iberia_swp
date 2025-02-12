@@ -20,7 +20,7 @@ public class BuildableTrainTracksRequest extends AbstractGameRequest {
             return false;
         }
         BuildableTrainTracksRequest that = (BuildableTrainTracksRequest) o;
-        return Objects.equals(cityId, that.cityId);
+        return Objects.equals(cityId, that.cityId) && Objects.equals(getLobbyId(), that.getLobbyId());
     }
 
     @Override

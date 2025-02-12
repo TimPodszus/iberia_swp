@@ -20,7 +20,7 @@ public class BuildTrainTrackRequest extends AbstractGameRequest {
             return false;
         }
         BuildTrainTrackRequest that = (BuildTrainTrackRequest) o;
-        return connectionId == that.connectionId;
+        return connectionId == that.connectionId && Objects.equals(getLobbyId(), that.getLobbyId());
     }
 
     @Override

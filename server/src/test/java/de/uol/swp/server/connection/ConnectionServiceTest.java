@@ -1,9 +1,14 @@
 package de.uol.swp.server.connection;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
+import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.connection.data.Connection;
+import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import org.greenrobot.eventbus.Subscribe;
@@ -30,6 +35,11 @@ public class ConnectionServiceTest extends EventBusBasedTest {
 
     @Subscribe
     public void onEvent(AvailableDestinationsResponse e) {
+        handleEvent(e);
+    }
+
+    @Subscribe
+    public void onEvent(BuildableTrainTracksResponse e) {
         handleEvent(e);
     }
 
@@ -70,6 +80,34 @@ public class ConnectionServiceTest extends EventBusBasedTest {
                                                        .iterator()
                                                        .next(),
                 "Expected the city to be the available destination"
+        );
+    }
+
+    @Test
+    void testOnBuildableTrainTracksRequest() throws InterruptedException {
+        BuildableTrainTracksRequest request = new BuildableTrainTracksRequest("", 1);
+        List<IConnection> demoList = List.of(
+                new Connection(1, List.of(CityName.ALBACETE, CityName.ALICANTE), true)
+        );
+        when(connectionManagement.getBuildableTrainTracks("", 1)).thenReturn(demoList);
+
+        postAndWait(request);
+
+        assertInstanceOf(BuildableTrainTracksResponse.class, event, "Expected a BuildableTrainTracksResponse");
+        assertEquals(
+                1,
+                ((BuildableTrainTracksResponse) event).getConnections().get(0).getId(),
+                "Expected connection ID 1"
+        );
+        assertEquals(
+                List.of(CityName.ALBACETE, CityName.ALICANTE),
+                ((BuildableTrainTracksResponse) event).getConnections().get(0).getCityNames(),
+                "Expected connection between Albacete and Alicante"
+        );
+        assertEquals(
+                true,
+                ((BuildableTrainTracksResponse) event).getConnections().get(0).isTrainTrackBuildable(),
+                "Expected a train track"
         );
     }
 }
