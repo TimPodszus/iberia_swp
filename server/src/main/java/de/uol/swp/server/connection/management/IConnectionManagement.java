@@ -31,4 +31,12 @@ public interface IConnectionManagement {
      */
     List<IConnection> getBuildableTrainTracks(String lobbyId, int cityId);
 
+    /**
+     * Retrieves a connection by its ID.
+     *
+     * @param lobbyId      the ID of the lobby
+     * @param connectionId the ID of the connection
+     * @return the connection
+     */
+    IConnection getConnection(String lobbyId, int connectionId);
 }

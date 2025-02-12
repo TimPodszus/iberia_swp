@@ -27,6 +27,20 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
 
     private static final Logger LOG = LogManager.getLogger(ConnectionManagement.class);
 
+    /**
+     * Retrieves the connection with the given ID.
+     *
+     * @param lobbyId      the ID of the lobby
+     * @param connectionId the ID of the connection
+     * @return the connection with the given ID
+     */
+    public IConnection getConnection(String lobbyId, int connectionId) {
+        return GameStore.getInstance()
+                        .getGame(lobbyId)
+                        .getConnectionRepository()
+                        .getConnectionByID(connectionId);
+    }
+
     @Override
     public Map<ICity, List<ICard>> getAvailableDestinations(String lobbyId, int cityId) {
         CityRepository cityRepository = super.getGame(lobbyId)
