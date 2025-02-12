@@ -1,5 +1,6 @@
 package de.uol.swp.server.region.management;
 
+import de.uol.swp.common.cards.CityCardDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.server.cards.ICard;
@@ -29,16 +30,17 @@ public interface IRegionManagement {
      */
     int reduceWaterTreatments(IGame game, ICity city, int amount) throws RegionManagementException;
 
-    void increaseWaterTreatmentsFromRegion(String lobbyId, int regionId, int amount, ICard card, IUser user) throws RegionManagementException, GameManagementException;
+    void increaseWaterTreatmentsFromRegion(String lobbyId, int regionId, int amount, ICard card, IUser user,
+                                           IGame game) throws RegionManagementException, GameManagementException;
 
-    Set<IRegionDTO> getAvailableRegions(String lobbyId, IUserDTO user) throws RegionManagementException;
+    Set<IRegionDTO> getAvailableRegions(IUserDTO user, IGame game) throws RegionManagementException;
+
+    List<CityCardDTO> getPossibleCityCardsToDiscard(IUserDTO user, int regionId, IGame game) throws RegionManagementException;
 
     void decreaseWaterTreatmentsInRegions(List<IRegion> regions, int amount) throws RegionManagementException;
 
     void decreaseWaterTreatmentsInAllRegions(List<IRegion> regions) throws RegionManagementException;
 
     IGame getGame(String lobbyCode);
-
-    IPlayer getRequestPlayer(IUserDTO user, IGame game) throws RegionManagementException;
 
 }

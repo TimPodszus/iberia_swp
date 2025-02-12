@@ -42,7 +42,7 @@ public class CityManagementTest {
     private IPlayerManagement playerManagement;
     @Mock
     private RegionManagement regionManagement;
-    private final GameManagement gameManagement = new GameManagement(playerManagement, cityManagement);
+    private final GameManagement gameManagement = new GameManagement(playerManagement, cityManagement, regionManagement);
     private final InfectionManagement infectionManagement = new InfectionManagement();
 
 

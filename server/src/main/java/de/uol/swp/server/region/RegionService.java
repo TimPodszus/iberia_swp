@@ -17,6 +17,7 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.game.GameException;
 import de.uol.swp.server.game.GameMapper;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.lobby.data.ILobby;
@@ -66,7 +67,8 @@ public class RegionService extends AbstractService {
         if (user == null) {
             throw new GameException("User is unknown");
         }
-        Set<IRegionDTO> regions = regionManagement.getAvailableRegions(request.getLobbyId(), user);
+        IGame game = regionManagement.getGame(request.getLobbyId());
+        Set<IRegionDTO> regions = regionManagement.getAvailableRegions(user, game);
         response = new AvailableRegionsResponse(regions);
         response.setSession(request.getSession()
                                    .orElseThrow(() -> new IllegalStateException("Session not present")));
@@ -82,10 +84,11 @@ public class RegionService extends AbstractService {
         if (user == null) {
             throw new GameException("User is unknown");
         }
+        IGame game = regionManagement.getGame(request.getLobbyId());
         List<CityCardDTO> cityCards = regionManagement.getPossibleCityCardsToDiscard(
-                request.getLobbyId(),
                 user,
-                request.getRegionId()
+                request.getRegionId(),
+                game
         );
         response = new PossibleCityCardsToDiscardForRegionResponse(cityCards);
         response.setSession(request.getSession()
@@ -101,9 +104,10 @@ public class RegionService extends AbstractService {
         if (user == null) {
             throw new GameException("User is unknown");
         }
+        IGame game = regionManagement.getGame(request.getLobbyId());
         ICard card = playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCard().getId());
         regionManagement.increaseWaterTreatmentsFromRegion(request.getLobbyId(), request.getRegionId(),
-                request.getAmount(), card, UserMapper.toUser(user)
+                request.getAmount(), card, UserMapper.toUser(user), game
         );
 
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));

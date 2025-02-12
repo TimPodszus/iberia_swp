@@ -56,35 +56,44 @@ public class RegionManagement implements IRegionManagement {
             int regionId,
             int amount,
             ICard card,
-            IUser user
+            IUser user,
+            IGame game
     ) throws RegionManagementException, GameManagementException {
-        IGame game = getGame(lobbyId);
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             IRegion region = game.getRegionRepository()
                                  .getRegionByID(regionId);
-            region.increaseWaterTreatments(amount);
             IPlayer player = game.getCurrentPlayer();
             if (!player.getUser()
                        .equals(user)) {
                 throw new GameManagementException("Player is not the current player");
             }
+            region.increaseWaterTreatments(amount);
             playerManagement.discardCard(lobbyId, player, card);
             playerTurnState.reduceActionsRemaining(game);
         }
     }
 
     public List<CityCardDTO> getPossibleCityCardsToDiscard(
-            String lobbyId,
             IUserDTO user,
-            int regionId
+            int regionId,
+            IGame game
     ) throws RegionManagementException {
-        IGame game = getGame(lobbyId);
-        IPlayer requestPlayer = getRequestPlayer(user, game);
+        IPlayer requestPlayer = null;
+        for (IPlayer player : game.getPlayers()) {
+            if (player.getUser()
+                      .getUsername()
+                      .equals(user.getUsername())) {
+                requestPlayer = player;
+                break;
+            }
+        }
         Set<CityCard> possibleCityCards = new HashSet<>();
         IRegion region = game.getRegionRepository()
                              .getRegionByID(regionId);
         List<ICity> citiesInRegion = region.getSurroundingCities();
-        assert requestPlayer != null;
+        if (requestPlayer == null) {
+            throw new RegionManagementException("Request player not found");
+        }
         List<CityCard> playerCityCards = requestPlayer.getCards()
                                                       .stream()
                                                       .filter(CityCard.class::isInstance)
@@ -109,7 +118,7 @@ public class RegionManagement implements IRegionManagement {
                             .getPlagueName()
                             .getColorCode()
                             .equals(city.getPlagueName()
-                                        .getColorCode()) || researchedPlaguesColor.contains((city.getPlagueName()
+                                        .getColorCode()) || researchedPlaguesColor.contains((cityCard.getCity().getPlagueName()
                                                                                                  .getColorCode()))) {
                     possibleCityCards.add(cityCard);
                 }
@@ -118,9 +127,16 @@ public class RegionManagement implements IRegionManagement {
         return CardMapper.toCityCardDTOList(new ArrayList<>(possibleCityCards));
     }
 
-    public Set<IRegionDTO> getAvailableRegions(String lobbyId, IUserDTO user) throws RegionManagementException {
-        IGame game = getGame(lobbyId);
-        IPlayer requestPlayer = getRequestPlayer(user, game);
+    public Set<IRegionDTO> getAvailableRegions(IUserDTO user, IGame game) throws RegionManagementException {
+        IPlayer requestPlayer = null;
+        for (IPlayer player : game.getPlayers()) {
+            if (player.getUser()
+                      .getUsername()
+                      .equals(user.getUsername())) {
+                requestPlayer = player;
+                break;
+            }
+        }
         assert requestPlayer != null;
         ICity currentPosition = requestPlayer.getCurrentPosition();
         List<IRegion> surroundingRegions = game.getRegionRepository()
@@ -176,18 +192,5 @@ public class RegionManagement implements IRegionManagement {
     public IGame getGame(String lobbyCode) {
         return GameStore.getInstance()
                         .getGame(lobbyCode);
-    }
-
-    public IPlayer getRequestPlayer(IUserDTO user, IGame game) throws RegionManagementException {
-        IPlayer requestPlayer = null;
-        for (IPlayer player : game.getPlayers()) {
-            if (player.getUser()
-                      .getUsername()
-                      .equals(user.getUsername())) {
-                requestPlayer = player;
-                break;
-            }
-        }
-        return requestPlayer;
     }
 }

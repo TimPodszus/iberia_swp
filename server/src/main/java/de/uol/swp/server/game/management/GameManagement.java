@@ -4,6 +4,7 @@ import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
@@ -22,6 +23,7 @@ import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.region.management.IRegionManagement;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -31,10 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.inject.Inject;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages game related operations such as creating games,
@@ -45,11 +44,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     private final IPlayerManagement playerManagement;
     private final ICityManagement cityManagement;
+    private final IRegionManagement regionManagement;
 
     @Inject
-    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement) {
+    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement,
+                          IRegionManagement regionManagement
+    ) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;
+        this.regionManagement = regionManagement;
     }
 
     /**
@@ -282,7 +285,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isPlagueResearchable()) {
             actions.add(GameActions.RESEARCH_PLAGUE);
         }
-        if (isWaterTreatmentPlaceable()) {
+        if (isWaterTreatmentPlaceable(lobbyCode, user)) {
             actions.add(GameActions.TREAT_WATER);
         }
         return actions;
@@ -313,9 +316,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return true;
     }
 
-    private boolean isWaterTreatmentPlaceable() {
-        //TODO: Implement logic in #84
-        return true;
+    private boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
+        getGame(lobbyCode);
+        Set<IRegionDTO> availableRegions = regionManagement.getAvailableRegions(UserMapper.toDTO(user),
+                getGame(lobbyCode));
+        return !availableRegions.isEmpty();
     }
 
     @Override
