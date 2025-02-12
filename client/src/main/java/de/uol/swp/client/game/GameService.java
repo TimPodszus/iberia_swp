@@ -9,6 +9,9 @@ import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
+import javafx.application.Platform;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -20,6 +23,7 @@ import static de.uol.swp.client.game.ConfirmationDialog.showConfirmationDialog;
  */
 public class GameService {
     private final EventBus eventBus;
+    private static final Logger LOG = LogManager.getLogger(GameService.class);
 
     /**
      * Constructs a GameService with the specified EventBus.
@@ -29,6 +33,7 @@ public class GameService {
     @Inject
     public GameService(EventBus eventBus) {
         this.eventBus = eventBus;
+        this.eventBus.register(this);
     }
 
     /**
@@ -99,9 +104,13 @@ public class GameService {
 
     @Subscribe
     public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
-        boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard() + " with " + event.getTargetPlayer() + "in exchange for" + event.getCurrentPlayerCard() + "?");
-
-        eventBus.post(new ShareKnowledgeRequest(event.getLobbyId(), accepted, event));
+        LOG.debug("Received ShareKnowledgeEvent: " + event);
+        Platform.runLater(() -> {
+            boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
+                                                                                              .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()
+                                                                                                                                                                                 .getTitle() + "?");
+            eventBus.post(new ShareKnowledgeRequest(event.getLobbyId(), accepted, event));
+        });
     }
 
     /**

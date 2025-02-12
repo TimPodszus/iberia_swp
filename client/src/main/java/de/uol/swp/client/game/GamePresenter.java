@@ -1407,8 +1407,11 @@ public class GamePresenter extends AbstractPresenter {
     public void onShareKnowledgeResponse(ShareKnowledgeResponse response) {
         if (response.isSuccess()) {
             LOG.info("Knowledge shared");
+            updateBoard(gameDTO);
+            shareKnowledgeButton.setSelected(false);
         } else {
             LOG.info("Knowledge not shared");
+            shareKnowledgeButton.setSelected(false);
         }
     }
 }

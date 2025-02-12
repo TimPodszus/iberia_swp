@@ -404,11 +404,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IGame game = getGame(lobbyId);
         WaitForConfirmationState waitForConfirmationState = new WaitForConfirmationState();
         game.setState(waitForConfirmationState);
+        LOG.debug("[LobbyID: {}] Game locked in wait-for-confirmation state", lobbyId);
     }
 
     public void unlockGameInWaitForConfirmation(String lobbyId) {
         IGame game = getGame(lobbyId);
         game.setState(game.getPreviousState());
+        LOG.debug("[LobbyID: {}] Game unlocked from wait-for-confirmation state", lobbyId);
     }
 
 }

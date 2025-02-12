@@ -262,7 +262,7 @@ public class GameService extends AbstractService {
                                                    LOG.error("Session not found for user {}", user.getUsername());
                                                    return new GameManagementException("Session not found");
                                                });
-        LOG.trace("Session found for user {}", user.getUsername());
+        LOG.trace("Session found for user {} {}", user.getUsername(), session);
 
         shareKnowledgeEvent.setReceiver(List.of(session));
         bus.post(shareKnowledgeEvent);
