@@ -72,6 +72,7 @@ public class GamePresenter extends AbstractPresenter {
     private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
+    private static final String CONNECTION_HIGHLIGHTED_CLASS = "connection-highlighted";
     private static final String CITY_ID = "#city";
     private static final String CITY_CLASS = "city";
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
