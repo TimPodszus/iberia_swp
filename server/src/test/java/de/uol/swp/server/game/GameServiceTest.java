@@ -15,6 +15,7 @@ import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
@@ -62,12 +63,16 @@ public class GameServiceTest extends EventBusBasedTest {
     @Mock
     private IPlayerManagement playerManagement;
 
+    @Mock
+    private IConnectionManagement connectionManagement;
+
     @InjectMocks
     GameService gameService = new GameService(getBus(),
             lobbyManagement,
             gameManagement,
             cityManagement,
-            playerManagement
+            playerManagement,
+            connectionManagement
     );
 
     /**

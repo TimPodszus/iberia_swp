@@ -6,6 +6,7 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.city.management.ICityManagement;
+import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
@@ -41,7 +42,8 @@ public class CityManagementTest {
     @Mock
     private IPlayerManagement playerManagement;
     private final RegionManagement regionManagement = new RegionManagement();
-    private final GameManagement gameManagement = new GameManagement(playerManagement, cityManagement);
+    private final ConnectionManagement connectionManagement = new ConnectionManagement();
+    private final GameManagement gameManagement = new GameManagement(playerManagement, cityManagement, connectionManagement);
     private final InfectionManagement infectionManagement = new InfectionManagement();
 
 

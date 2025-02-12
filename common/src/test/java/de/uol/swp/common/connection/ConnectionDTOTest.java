@@ -1,5 +1,6 @@
 package de.uol.swp.common.connection;
 
+import de.uol.swp.common.city.CityName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -17,9 +18,9 @@ public class ConnectionDTOTest {
      */
     @Test
     void testDto() {
-        ConnectionDTO connectionDTO = new ConnectionDTO(1, List.of("city1", "city2"), true, true);
+        ConnectionDTO connectionDTO = new ConnectionDTO(1, List.of(CityName.ALBACETE, CityName.ALICANTE), true, true);
         assertEquals(1, connectionDTO.getId());
-        assertEquals(connectionDTO.getCityNames(), List.of("city1", "city2"));
+        assertEquals(connectionDTO.getCityNames(), List.of(CityName.ALBACETE, CityName.ALICANTE));
         assertTrue(connectionDTO.isTrainTrack());
         assertTrue(connectionDTO.isTrainTrackBuildable());
     }
