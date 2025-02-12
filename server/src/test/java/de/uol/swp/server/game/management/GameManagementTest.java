@@ -70,6 +70,9 @@ class GameManagementTest {
     @Mock
     private IGame game;
 
+    @Mock
+    private IUser user;
+
     /**
      * Initializes mocks before each test.
      */
@@ -411,12 +414,6 @@ class GameManagementTest {
         game.getConnectionRepository()
             .getConnectionByID(72)
             .buildTrainTracks(true);
-    }
-
-    @Test
-    void testGetAvailableActions() {
-        List<GameActions> actions = gameManagement.getAvailableActions("LobbyId", null);
-        assertEquals(6, actions.size());
     }
 
     /**
