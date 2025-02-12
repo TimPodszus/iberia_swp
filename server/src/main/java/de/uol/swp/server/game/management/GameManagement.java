@@ -258,7 +258,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     public List<GameActions> getAvailableActions(String lobbyCode, IUser user) {
         List<GameActions> actions = new ArrayList<>();
-        if (areTrainTracksBuildable()) {
+        if (areTrainTracksBuildable(lobbyCode)) {
             actions.add(GameActions.BUILD_TRAIN_TRACKS);
         }
         if (isHospitalBuildable()) {
@@ -279,9 +279,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return actions;
     }
 
-    private boolean areTrainTracksBuildable() {
-        //TODO: Implement logic in #86
-        return true;
+    private boolean areTrainTracksBuildable(String lobbyCode) {
+        IGame game = super.getGame(lobbyCode);
+        return game.getTracksLeft() >= 0;
     }
 
     private boolean isHospitalBuildable() {
