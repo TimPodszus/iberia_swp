@@ -113,7 +113,6 @@ public class LobbyService extends AbstractService {
      *
      * @param request The LobbyJoinUserRequest found on the EventBus
      * @see ILobby
-     * @see UserLeftLobbyMessage
      * @since 2019-10-08
      */
     @Subscribe
@@ -127,7 +126,13 @@ public class LobbyService extends AbstractService {
                                })
                                .getUser();
         lobbyManagement.leaveLobby(request.getLobbyId(), UserMapper.toUser(user));
-        sendToAllInLobby(lobby, new UserLeftLobbyMessage(request.getLobbyId(), user));
+        sendToAllInLobby(lobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(lobby)));
+        UserLeftLobbyResponse response = new UserLeftLobbyResponse(lobby.getLobbyId());
+        request.getSession()
+               .ifPresent(response::setSession);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        post(response);
         LOG.debug("[LobbyId: {}] Sent user left lobby message", request.getLobbyId());
     }
 
@@ -222,9 +227,11 @@ public class LobbyService extends AbstractService {
     @Subscribe
     public void onRemoveUserFromLobbyRequest(RemoveUserFromLobbyRequest request) throws LobbyStoreException {
         LOG.debug("[LobbyId: {}] Received remove user from lobby request", request.getLobbyId());
-        ILobby lobby = lobbyManagement.removeUser(request.getLobbyId(), request.getUserToRemove());
-
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         IUser user = lobby.getUser(request.getUserToRemove());
+
+        lobbyManagement.removeUser(request.getLobbyId(), request.getUserToRemove());
+
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
                                                    LOG.error(SESSION_INVALID_OR_MISSING);

@@ -11,57 +11,45 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="436.0" prefWidth="722.0" styleClass="background-pane" stylesheets="@../css/optionView.css"
-            xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="de.uol.swp.client.lobby.detail.LobbyDetailPresenter">
+<AnchorPane prefHeight="436.0" prefWidth="722.0" styleClass="background-pane" stylesheets="@../css/optionView.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.lobby.detail.LobbyDetailPresenter">
     <children>
-        <AnchorPane layoutX="261.0" layoutY="118.0" prefHeight="200.0" prefWidth="200.0" styleClass="content-pane"
-                    AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0"
-                    AnchorPane.topAnchor="20.0">
+        <AnchorPane layoutX="261.0" layoutY="118.0" prefHeight="200.0" prefWidth="200.0" styleClass="content-pane" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="20.0">
             <children>
-                <Label fx:id="lobbyName" layoutX="161.0" layoutY="70.0" styleClass="h2" text="Lobby"
-                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-                <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+            <HBox prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <children>
+                  <TextField fx:id="lobbyName" maxHeight="1.7976931348623157E308" text="LobbyName" HBox.hgrow="ALWAYS" />
+                  <Button fx:id="changeLobbyName" disable="true" mnemonicParsing="false" onAction="#onChangeLobbyName" styleClass="change-button" text="Ändern" />
+               </children>
+            </HBox>
+            <Label fx:id="lobbyId" layoutX="171.0" layoutY="80.0" text="LobbyId" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
+                <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
                     <children>
-                        <HBox prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
-                            <children>
-                                <VBox prefHeight="200.0" prefWidth="514.0" spacing="18.0" HBox.hgrow="ALWAYS">
-                                    <children>
-                                        <Label fx:id="playerCount" text="Anzahl Spieler : &lt;spieler&gt;/5"/>
-                                        <VBox maxHeight="-Infinity" prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
-                                            <children>
-                                                <Label text="Schwierigkeit"/>
-                                                <ChoiceBox fx:id="difficultyDropdown" prefWidth="150.0"/>
-                                            </children>
-                                        </VBox>
-                                        <VBox prefHeight="160.0" prefWidth="514.0">
-                                            <children>
-                                                <Label text="Lobbypasswort"/>
-                                                <TextField fx:id="lobbyPasswordField" maxWidth="150.0"
-                                                           prefWidth="150.0"/>
-                                            </children>
-                                        </VBox>
-                                    </children>
-                                </VBox>
+                          <VBox prefHeight="200.0" prefWidth="514.0" spacing="18.0" VBox.vgrow="ALWAYS">
+                              <children>
+                                  <Label fx:id="playerCount" text="Anzahl Spieler : &lt;spieler&gt;/5" />
+                                  <VBox maxHeight="-Infinity" prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
+                                      <children>
+                                          <Label text="Schwierigkeit" />
+                                          <ChoiceBox fx:id="difficultyDropdown" prefWidth="150.0" />
+                                      </children>
+                                  </VBox>
                                 <TableView fx:id="userTable" prefHeight="200.0" prefWidth="200.0">
                                     <columns>
-                                        <TableColumn prefWidth="99.0" text="Spieler"/>
+                                        <TableColumn prefWidth="99.0" text="Spieler" />
                                     </columns>
                                 </TableView>
-                            </children>
-                        </HBox>
+                              </children>
+                          </VBox>
                         <HBox prefHeight="23.0" prefWidth="514.0">
                             <children>
-                                <Button fx:id="startGameButton" mnemonicParsing="false" onAction="#onGameStart"
-                                        text="Spiel starten">
+                                <Button fx:id="startGameButton" mnemonicParsing="false" onAction="#onGameStart" text="Spiel starten">
                                     <HBox.margin>
-                                        <Insets bottom="10.0" right="10.0" top="10.0"/>
+                                        <Insets bottom="10.0" right="10.0" top="10.0" />
                                     </HBox.margin>
                                 </Button>
                                 <Button mnemonicParsing="false" onAction="#onLobbyLeave" text="Lobby verlassen">
                                     <HBox.margin>
-                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                     </HBox.margin>
                                 </Button>
                             </children>
@@ -70,8 +58,6 @@
                 </VBox>
             </children>
         </AnchorPane>
-        <Button layoutX="34.0" layoutY="40.0" mnemonicParsing="false" onAction="#onBackButtonPressed" prefHeight="48.0"
-                prefWidth="48.0" styleClass="back-button" text="&lt;-" AnchorPane.leftAnchor="16.0"
-                AnchorPane.topAnchor="20.0"/>
+        <Button layoutX="34.0" layoutY="40.0" mnemonicParsing="false" onAction="#onBackButtonPressed" prefHeight="48.0" prefWidth="48.0" styleClass="back-button" text="&lt;-" AnchorPane.leftAnchor="16.0" AnchorPane.topAnchor="20.0" />
     </children>
 </AnchorPane>

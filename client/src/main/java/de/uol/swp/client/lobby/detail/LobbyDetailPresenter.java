@@ -30,7 +30,6 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     public static final String FXML = "/fxml/LobbyScreen.fxml";
 
     private static final String MAX_PLAYERS = " / 5";
-    private static final String NO_PASSWORD = "Kein Passwort gesetzt";
     private static final String DIFFICULTY_EASY = "Einfach";
     private static final String DIFFICULTY_MEDIUM = "Mittel";
     private static final String DIFFICULTY_HARD = "Schwer";
@@ -41,13 +40,16 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     private ILobbyDTO lobbyDTO;
 
     @FXML
-    public Label lobbyName;
+    public TextField lobbyName;
+
+    @FXML
+    public Button changeLobbyName;
+
+    @FXML
+    public Label lobbyId;
 
     @FXML
     public Label playerCount;
-
-    @FXML
-    public TextField lobbyPasswordField;
 
     @FXML
     public Button startGameButton;
@@ -63,6 +65,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @FXML
     public void initialize() {
+        changeLobbyName.setDisable(true);
         difficultyDropdown.setItems(FXCollections.observableArrayList(DIFFICULTY_EASY,
                 DIFFICULTY_MEDIUM,
                 DIFFICULTY_HARD
@@ -148,9 +151,12 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     private void setFields() {
         lobbyName.setText(lobbyDTO.getName());
+        lobbyName.textProperty()
+                 .addListener((observable, oldValue, newValue) -> changeLobbyName.setDisable(newValue.equals(lobbyDTO.getName())));
+
+        lobbyId.setText(lobbyDTO.getLobbyId());
         playerCount.setText(lobbyDTO.getUsers()
                                     .size() + MAX_PLAYERS);
-        lobbyPasswordField.setText(NO_PASSWORD);
 
         String difficulty = switch (lobbyDTO.getDifficulty()) {
             case 3 -> DIFFICULTY_HARD;
@@ -165,6 +171,10 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * Adds a double click event to the user table to remove a user from the lobby.
      */
     private void setUserList() {
+        boolean isOwner = lobbyDTO.getOwner()
+                                  .equals(UserStore.getInstance()
+                                                   .getUser());
+
         List<UserListItem> userListItems = lobbyDTO.getUsers()
                                                    .stream()
                                                    .map(user -> new UserListItem(user.getUsername()))
@@ -174,7 +184,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
         userTable.setRowFactory(tv -> {
             TableRow<UserListItem> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                if (isOwner && event.getClickCount() == 2 && (!row.isEmpty())) {
                     LOG.debug("Kicking {} from lobby",
                             row.getItem()
                                .getName()
@@ -215,9 +225,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
 
         boolean moreThanOnePlayer = lobbyDTO.getUsers()
                                             .size() > 1;
-
+        lobbyName.setDisable(!isOwner);
         startGameButton.setDisable(!isOwner || !moreThanOnePlayer);
-        lobbyPasswordField.setDisable(!isOwner);
         difficultyDropdown.setDisable(!isOwner);
     }
 
@@ -243,10 +252,25 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     }
 
     /**
+     * Handles the event when the lobby name is changed.
+     * <p>
+     * This method updates the lobbyDTO with the new lobby name and sends the updated lobby data
+     * to the lobbyService to update the lobby.
+     */
+    public void onChangeLobbyName() {
+        lobbyDTO = new LobbyDTO(lobbyDTO.getLobbyId(),
+                lobbyName.getText(),
+                lobbyDTO.getUsers(),
+                lobbyDTO.getOwner(),
+                lobbyDTO.getDifficulty()
+        );
+        lobbyService.updateLobby(lobbyDTO);
+    }
+
+    /**
      * Leaves the current lobby and posts a ShowLastSceneEvent to the event bus.
      */
     private void leaveLobby() {
         lobbyService.leaveLobby(lobbyDTO.getLobbyId());
-        // TODO close lobby screen
     }
 }

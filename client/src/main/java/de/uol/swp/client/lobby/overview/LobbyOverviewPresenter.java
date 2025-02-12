@@ -128,7 +128,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
                     lobby.getName(),
                     lobby.getUsers()
                          .size(),
-                    4
+                    lobby.getDifficulty()
             ));
         }
         lobbyTable.getItems()

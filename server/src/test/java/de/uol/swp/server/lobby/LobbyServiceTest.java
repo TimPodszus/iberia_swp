@@ -16,6 +16,7 @@ import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.store.LobbyStoreException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,8 +27,10 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 /**
@@ -189,15 +192,35 @@ public class LobbyServiceTest extends EventBusBasedTest {
      */
     @Test
     void testRemoveUserFromLobby() throws LobbyStoreException, InterruptedException {
-        when(lobbyManagement.removeUser("testcode", "Marco")).thenReturn(lobby);
-        RemoveUserFromLobbyRequest request = new RemoveUserFromLobbyRequest("testcode", "Marco");
+        IUser userToRemove = new User("RemoveMe", "RemoveMe");
+        Session userToRemoveSession = UUIDSession.create(userToRemove);
+        when(authenticationService.getSession(userToRemove)).thenReturn(Optional.of(userToRemoveSession));
+        lobby.addUser(userToRemove);
+
+        when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
+        when(lobbyManagement.removeUser("testcode", "RemoveMe")).thenReturn(lobby);
+        RemoveUserFromLobbyRequest request = new RemoveUserFromLobbyRequest("testcode", "RemoveMe");
         Session session = UUIDSession.create(UserMapper.toUser(firstOwner));
         request.setSession(session);
 
         postAndWait(request);
 
         assertInstanceOf(LobbyUpdatedEvent.class, event);
-        verify(lobbyManagement, atLeast(1)).removeUser("testcode", "Marco");
+        verify(lobbyManagement, atLeast(1)).removeUser("testcode", "RemoveMe");
+    }
+
+    @Test
+    void testLeaveLobby() throws InterruptedException {
+        when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
+        IUser user = UserMapper.toUser(firstOwner);
+        LobbyLeaveUserRequest request = new LobbyLeaveUserRequest("testcode");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+
+        postAndWait(request);
+
+        assertInstanceOf(LobbyUpdatedEvent.class, event);
+        verify(lobbyManagement, atLeast(1)).leaveLobby("testcode", user);
     }
 }
 

@@ -1,7 +1,8 @@
 package de.uol.swp.common.lobby.message.response;
 
-import de.uol.swp.common.lobby.message.AbstractLobbyMessage;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.user.IUserDTO;
+import lombok.Getter;
 
 /**
  * Message sent by the server when a user successfully leaves a lobby
@@ -11,7 +12,9 @@ import de.uol.swp.common.user.IUserDTO;
  * @see IUserDTO
  * @since 2019-10-08
  */
-public class UserLeftLobbyMessage extends AbstractLobbyMessage {
+@Getter
+public class UserLeftLobbyResponse extends AbstractResponseMessage {
+    String lobbyId;
 
     /**
      * Default constructor
@@ -19,17 +22,16 @@ public class UserLeftLobbyMessage extends AbstractLobbyMessage {
      * @implNote this constructor is needed for serialization
      * @since 2019-10-08
      */
-    public UserLeftLobbyMessage() {
+    public UserLeftLobbyResponse() {
     }
 
     /**
      * Constructor
      *
      * @param lobbyId code of the lobby
-     * @param user    user who left the lobby
      * @since 2019-10-08
      */
-    public UserLeftLobbyMessage(String lobbyId, IUserDTO user) {
-        super(lobbyId, user);
+    public UserLeftLobbyResponse(String lobbyId) {
+        this.lobbyId = lobbyId;
     }
 }

@@ -5,7 +5,6 @@ import de.uol.swp.common.lobby.message.request.CreateLobbyRequest;
 import de.uol.swp.common.lobby.message.request.LobbyJoinUserRequest;
 import de.uol.swp.common.lobby.message.request.LobbyLeaveUserRequest;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
-import de.uol.swp.common.lobby.message.response.UserLeftLobbyMessage;
 import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
@@ -20,20 +19,15 @@ class LobbyMessageSerializableTest {
         assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new CreateLobbyRequest(),
                 CreateLobbyRequest.class
         ));
-        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(
-                new LobbyJoinUserRequest("test"),
+        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new LobbyJoinUserRequest("test"),
                 LobbyJoinUserRequest.class
         ));
-        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(
-                new LobbyLeaveUserRequest("test"),
+        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new LobbyLeaveUserRequest("test"),
                 LobbyLeaveUserRequest.class
         ));
         assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new UserJoinedLobbyMessage("test",
                 defaultUser
         ), UserJoinedLobbyMessage.class));
-        assertTrue(SerializationTestHelper.checkSerializableAndDeserializable(new UserLeftLobbyMessage("test",
-                defaultUser
-        ), UserLeftLobbyMessage.class));
     }
 
 

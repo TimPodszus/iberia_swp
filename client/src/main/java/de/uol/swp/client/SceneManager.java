@@ -21,6 +21,7 @@ import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.lobby.message.event.RemovedFromLobbyEvent;
 import de.uol.swp.common.lobby.message.response.LobbyCreatedResponse;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
+import de.uol.swp.common.lobby.message.response.UserLeftLobbyResponse;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
@@ -480,9 +481,22 @@ public class SceneManager {
             Stage stage = gameStages.get(event.getLobbyId());
             if (stage != null) {
                 stage.close();
+                gameStages.remove(event.getLobbyId());
             }
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Sie wurden aus der Lobby entfernt.");
             alert.show();
+        });
+    }
+
+    @Subscribe
+    public void onUserLeftLobbyResponse(UserLeftLobbyResponse response) {
+        Platform.runLater(() -> {
+            LOG.debug("[LobbyId: {}] Closing stage, because user has left", response.getLobbyId());
+            Stage stage = gameStages.get(response.getLobbyId());
+            if (stage != null) {
+                stage.close();
+                gameStages.remove(response.getLobbyId());
+            }
         });
     }
 
