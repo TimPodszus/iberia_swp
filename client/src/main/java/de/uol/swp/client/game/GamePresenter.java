@@ -10,6 +10,7 @@ import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
+import de.uol.swp.client.game.objects.dialogs.ExtraTrainTrackDialog;
 import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
@@ -18,6 +19,7 @@ import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
+import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.StateType;
@@ -27,6 +29,7 @@ import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
+import de.uol.swp.common.game.message.response.ExtraTrackResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -85,6 +88,8 @@ public class GamePresenter extends AbstractPresenter {
     private GameService gameService;
 
     private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
+
+    private List<IConnectionDTO> buildableTrainTracks = new ArrayList<>();
 
     @FXML
     private AnchorPane gameScreen;
@@ -1196,6 +1201,19 @@ public class GamePresenter extends AbstractPresenter {
     public void onAvailableDestinationsResponse(AvailableDestinationsResponse response) {
         this.availableDestinations = response.getCities();
         this.setAvailableDestinations();
+    }
+
+    @Subscribe
+    public void onBuildableTrainTracksResponse(BuildableTrainTracksResponse response) {
+        this.buildableTrainTracks = response.getConnections();
+        toggleBuildableTrainTrackHighlight(true);
+    }
+
+    @Subscribe
+    public void onExtraTrainTrackDialog(ExtraTrackResponse response) {
+        this.buildableTrainTracks = response.getConnections();
+        Platform.runLater(ExtraTrainTrackDialog::showDialog);
+        toggleBuildableTrainTrackHighlight(true);
     }
 
     /**
