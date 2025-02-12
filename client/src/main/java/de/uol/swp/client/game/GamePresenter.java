@@ -1405,6 +1405,7 @@ public class GamePresenter extends AbstractPresenter {
 
     @Subscribe
     public void onShareKnowledgeResponse(ShareKnowledgeResponse response) {
+        LOG.debug("Received ShareKnowledgeResponse");
         if (response.isSuccess()) {
             LOG.info("Knowledge shared");
             updateBoard(gameDTO);

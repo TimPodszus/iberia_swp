@@ -332,14 +332,32 @@ public class GameService extends AbstractService {
             IGameState gameState = gameManagement.getGame(event.getLobbyId())
                                                  .getState();
             ((PlayerTurnState) gameState).reduceActionsRemaining(gameManagement.getGame(event.getLobbyId()));
-            bus.post(new ShareKnowledgeResponse(event.getLobbyId(), true));
+            ShareKnowledgeResponse response = new ShareKnowledgeResponse(event.getLobbyId(), true);
+            response.setSession(request.getSession()
+                                       .orElseThrow(() -> new GameManagementException("Session not found")));
+            sendToAllInLobby(
+                    lobbyManagement.getLobby(event.getLobbyId()),
+                    new BoardUpdateEvent(
+                            event.getLobbyId(),
+                            GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()))
+                    )
+            );
+            LOG.trace("Got Session for message context: {}", response.getSession());
+            post(response);
+            LOG.trace("Posted ShareKnowledgeResponse to event bus for lobby {}", event.getLobbyId());
         } else {
             LOG.info(
                     "Share knowledge request declined by target player {}",
                     targetPlayer.getUser()
                                 .getUsername()
             );
-            bus.post(new ShareKnowledgeResponse(event.getLobbyId(), false));
+            ShareKnowledgeResponse response = new ShareKnowledgeResponse(event.getLobbyId(), false);
+            response.setSession(request.getSession()
+                                       .orElseThrow(() -> new GameManagementException("Session not found")));
+            LOG.trace("Got Session for message context: {}", response.getSession());
+
+            post(response);
+            LOG.trace("Posted ShareKnowledgeResponse to event bus for lobby {}", event.getLobbyId());
         }
     }
 
