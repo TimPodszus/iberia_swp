@@ -290,7 +290,29 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+        Node source = (Node) event.getSource();
+        int connectionId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+
+        if (!source.getStyleClass().contains(CONNECTION_HIGHLIGHTED_CLASS)) {
+            return;
+        }
+
+        boolean isBuildable = buildableTrainTracks.stream()
+                                                  .anyMatch(connection -> connection.getId() == connectionId);
+
+        if (!isBuildable) {
+            return;
+        }
+
+        StateType currentState = gameDTO.getState();
+        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) ||
+                currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
+
+        if (isValidState) {
+            gameService.buildTrainTrack(lobbyId, connectionId);
+            toggleBuildableTrainTrackHighlight(false);
+            buildTrainTracksButton.setSelected(false);
+        }
     }
 
     /**
