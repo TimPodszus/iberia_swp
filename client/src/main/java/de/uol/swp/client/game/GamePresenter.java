@@ -322,9 +322,25 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildTrainTrack(ActionEvent event) {
         if (buildTrainTracksButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
-        } else {
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE)) {
+                gameDTO.getCities()
+                       .forEach(city -> {
+                           Node stackPane = mapPane.lookup(CITY_ID + city.getId());
+                           stackPane.getStyleClass()
+                                    .remove(CITY_HIGHLIGHTED_CLASS);
+                       });
 
+                gameService.requestBuildableTrainTracks(
+                        this.lobbyId,
+                        gameDTO.getCurrentPlayer()
+                               .getCurrentPosition()
+                               .getId()
+                );
+            }
+        } else {
+            toggleBuildableTrainTrackHighlight(false);
+            this.setAvailableDestinations();
         }
     }
 
