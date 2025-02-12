@@ -1231,4 +1231,21 @@ public class GamePresenter extends AbstractPresenter {
                 .add(CITY_HIGHLIGHTED_CLASS);
         }
     }
+
+    /**
+     * Toggles the buildable train track highlight on the game map.
+     *
+     * @param highlight whether to highlight the buildable train tracks
+     */
+    public void toggleBuildableTrainTrackHighlight(boolean highlight) {
+        for (IConnectionDTO connection : this.buildableTrainTracks) {
+            Line line = (Line) mapPane.lookup(CONNECTION_ID + connection.getId());
+            line.getStyleClass()
+                .removeAll(CONNECTION_HIGHLIGHTED_CLASS);
+            if (highlight) {
+                line.getStyleClass()
+                    .add(CONNECTION_HIGHLIGHTED_CLASS);
+            }
+        }
+    }
 }
