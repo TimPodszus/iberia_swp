@@ -1,5 +1,6 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -9,11 +10,13 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
@@ -31,10 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.inject.Inject;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages game related operations such as creating games,
@@ -45,11 +45,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     private final IPlayerManagement playerManagement;
     private final ICityManagement cityManagement;
+    private final IConnectionManagement connectionManagement;
 
     @Inject
-    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement) {
+    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement, IConnectionManagement connectionManagement) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;
+        this.connectionManagement = connectionManagement;
     }
 
     /**
@@ -385,4 +387,90 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         ((PlayerTurnState) gameState).reduceActionsRemaining(game);
     }
 
+    @Override
+    public void buildTrainTrack(IUser user, String lobbyId, IConnection connection) throws GameManagementException {
+        IGame game = super.getGame(lobbyId);
+
+        IGameState gameState = game.getState();
+        if (!(gameState instanceof PlayerTurnState)) {
+            LOG.error("[LobbyID: {}] Game is not in a state that allows to build train tracks", lobbyId);
+            throw new GameManagementException("Game is not in a state that allows to build train tracks");
+        }
+
+        IPlayer player = game.getCurrentPlayer();
+        if (!player.getUser()
+                   .equals(user)) {
+            LOG.error("[LobbyID: {}] {} is not the current player", lobbyId, user.getUsername());
+            throw new GameManagementException("Player is not the current player");
+        }
+
+        List<IConnection> buildableTrainTracks = getBuildableTrainTracks(lobbyId, game, player);
+
+        if (!buildableTrainTracks.contains(connection)) {
+            LOG.error(
+                    "[LobbyID: {}] Failed to build train track. Connection between {} and {} is not buildable",
+                    lobbyId,
+                    connection.getCityNames()
+                              .get(0),
+                    connection.getCityNames()
+                              .get(1)
+            );
+            throw new GameManagementException("Connection between " + connection.getCityNames()
+                                                                                .get(0) + " and " + connection.getCityNames()
+                                                                                                              .get(1) + " is not buildable");
+        }
+
+        game.getConnectionRepository()
+            .getConnectionByID(connection.getId())
+            .buildTrainTracks(true);
+        game.setTracksLeft(game.getTracksLeft() - 1);
+        ((PlayerTurnState) gameState).reduceActionsRemaining(game);
+        LOG.debug(
+                "[LobbyID: {}] {} builds train track between {} and {}",
+                lobbyId,
+                player.getUser()
+                      .getUsername(),
+                connection.getCityNames()
+                          .get(0),
+                connection.getCityNames()
+                          .get(1)
+        );
+
+        if (game.getCurrentPlayer()
+                .getRole()
+                .getName() == RoleEnum.RAILWAY_PERSON) {
+            if (game.getState() instanceof PlayerTurnState && !(game.getState() instanceof BuildExtraTrainTrackState)) {
+                CityName cityName = connection.getCityNames()
+                                              .stream()
+                                              .filter(name -> !name.equals(player.getCurrentPosition()
+                                                                                 .getName()))
+                                              .findFirst()
+                                              .orElseThrow(() -> new GameManagementException(
+                                                      "Error while building train track"));
+
+                game.setPreviousState(game.getState());
+                game.setState(new BuildExtraTrainTrackState(connectionManagement.getBuildableTrainTracks(
+                        lobbyId,
+                        cityName.getId()
+                )));
+            } else {
+                game.setState(game.getPreviousState());
+            }
+        }
+    }
+
+    private static List<IConnection> getBuildableTrainTracks(String lobbyId, IGame game, IPlayer player) {
+        List<IConnection> buildableTrainTracks;
+        if (game.getState() instanceof BuildExtraTrainTrackState state) {
+            buildableTrainTracks = state.getConnections();
+        } else {
+            IConnectionManagement connectionManagement = new ConnectionManagement();
+            buildableTrainTracks = connectionManagement.getBuildableTrainTracks(
+                    lobbyId,
+                    player.getCurrentPosition()
+                          .getId()
+            );
+        }
+        return buildableTrainTracks;
+    }
 }
