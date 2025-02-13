@@ -9,6 +9,7 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.infection.data.IInfection;
+import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -54,23 +55,23 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         }
 
         IPlague plague = game.getPlagueRepository()
-                .getPlagues()
-                .stream()
-                .filter(p -> p.getName()
-                        .equals(plagueToResearch))
-                .findFirst()
-                .orElseThrow(() -> new PlagueManagementException("Plague not found"));
+                             .getPlagues()
+                             .stream()
+                             .filter(p -> p.getName()
+                                           .equals(plagueToResearch))
+                             .findFirst()
+                             .orElseThrow(() -> new PlagueManagementException("Plague not found"));
 
         if (plague.isResearched()) {
             throw new PlagueManagementException("The plague is already researched");
         }
         Map<PlagueName, List<CityCard>> cardsByPlague = game.getCurrentPlayer()
-                .getCards()
-                .stream()
-                .filter(CityCard.class::isInstance)
-                .map(CityCard.class::cast)
-                .collect(Collectors.groupingBy(cityCard -> cityCard.getCity()
-                        .getPlagueName()));
+                                                            .getCards()
+                                                            .stream()
+                                                            .filter(CityCard.class::isInstance)
+                                                            .map(CityCard.class::cast)
+                                                            .collect(Collectors.groupingBy(cityCard -> cityCard.getCity()
+                                                                                                               .getPlagueName()));
 
         List<CityCard> plagueCards = cardsByPlague.get(plagueToResearch);
 
@@ -79,10 +80,10 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         }
 
         ICity currentCity = game.getCurrentPlayer()
-                .getCurrentPosition();
+                                .getCurrentPosition();
 
         if (!currentCity.isHospitalBuilt() || !currentCity.getPlagueName()
-                .equals(plagueToResearch)) {
+                                                          .equals(plagueToResearch)) {
             throw new PlagueManagementException("No suitable hospital in the current city to research the plague");
         }
 
@@ -91,6 +92,23 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         playerManagement.discardCards(game.getGameId(), game.getCurrentPlayer(), cardsToDiscard);
 
         plague.setResearched(true);
+        allPlaguesResearched(game);
+    }
+
+    /**
+     * Checks if all plagues have been researched in the current game.
+     * If all plagues have been researched, the game state is transitioned to the end game state.
+     *
+     * @param game the current game instance
+     */
+    public void allPlaguesResearched(Game game) {
+        boolean allResearched = game.getPlagueRepository()
+                                    .getPlagues()
+                                    .stream()
+                                    .allMatch(IPlague::isResearched);
+        if (allResearched) {
+            game.setState(new EndGameState(true));
+        }
     }
 
     /**
