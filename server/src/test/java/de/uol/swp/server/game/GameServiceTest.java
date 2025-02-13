@@ -1,6 +1,7 @@
 package de.uol.swp.server.game;
 
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.EndGameEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
@@ -20,6 +21,8 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.DrawCardState;
+import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -32,6 +35,7 @@ import org.greenrobot.eventbus.EventBusException;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -269,5 +273,19 @@ public class GameServiceTest extends EventBusBasedTest {
         assertNull(event, "No event should be posted when the game creation fails.");
     }
 
+    @Test
+    void testOnGameStateChange_DrawCardState() {
+        ILobby lobby = mock(ILobby.class);
+        IGame game = mock(IGame.class);
+        when(lobbyManagement.getLobby("gameId")).thenReturn(lobby);
+        DrawCardState drawCardState = new DrawCardState();
+        when(game.getState()).thenReturn(drawCardState);
+        when(game.getPlayerCardDrawPile()).thenReturn(List.of());
+        when(game.getGameId()).thenReturn("gameId");
+
+        gameService.onGameStateChange(game);
+
+        verify(game).setState(any(EndGameState.class));
+    }
 
 }

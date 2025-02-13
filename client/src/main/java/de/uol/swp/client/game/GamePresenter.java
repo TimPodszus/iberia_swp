@@ -8,10 +8,7 @@ import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
-import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
-import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
-import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
-import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
+import de.uol.swp.client.game.objects.dialogs.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.ICardDTO;
@@ -25,6 +22,7 @@ import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.EndGameEvent;
 import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
@@ -1286,5 +1284,19 @@ public class GamePresenter extends AbstractPresenter {
             }
         });
 
+    }
+
+    /**
+     * Handles the EndGameEvent.
+     * <p>
+     * This method is called when an EndGameEvent is received. It creates an EndGameDialog
+     * and shows it on the JavaFX Application Thread.
+     *
+     * @param event the EndGameEvent containing the game result
+     */
+    @Subscribe
+    public void onEndGameEvent(EndGameEvent event) {
+        EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
+        Platform.runLater(dialog::showEndGameDialog);
     }
 }
