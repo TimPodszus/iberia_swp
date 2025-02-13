@@ -6,6 +6,7 @@ import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
 import de.uol.swp.common.lobby.message.response.LobbyListResponse;
 import de.uol.swp.common.lobby.message.response.LobbyUpdatedEvent;
+import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 /**
@@ -94,6 +94,16 @@ public class LobbyServiceTest extends EventBusBasedTest {
      */
     @Subscribe
     public void onLobbyUpdatedEvent(LobbyUpdatedEvent e) {
+        handleEvent(e);
+    }
+
+    /**
+     * Handles UserJoinedLobbyMessage events.
+     *
+     * @param e the UserJoinedLobbyMessage event
+     */
+    @Subscribe
+    public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage e) {
         handleEvent(e);
     }
 
@@ -209,6 +219,11 @@ public class LobbyServiceTest extends EventBusBasedTest {
         verify(lobbyManagement, atLeast(1)).removeUser("testcode", "RemoveMe");
     }
 
+    /**
+     * Tests leaving a lobby.
+     *
+     * @throws InterruptedException if the eventbus is interrupted
+     */
     @Test
     void testLeaveLobby() throws InterruptedException {
         when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
@@ -221,6 +236,26 @@ public class LobbyServiceTest extends EventBusBasedTest {
 
         assertInstanceOf(LobbyUpdatedEvent.class, event);
         verify(lobbyManagement, atLeast(1)).leaveLobby("testcode", user);
+    }
+
+    /**
+     * Tests joining a lobby.
+     *
+     * @throws LobbyStoreException  if an error occurs during lobby joining
+     * @throws InterruptedException if the eventbus is interrupted
+     */
+    @Test
+    void testJoinLobby() throws LobbyStoreException, InterruptedException {
+        when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
+        IUser user = UserMapper.toUser(firstOwner);
+        LobbyJoinUserRequest request = new LobbyJoinUserRequest("testcode");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+
+        postAndWait(request);
+
+        assertInstanceOf(UserJoinedLobbyMessage.class, event);
+        verify(lobbyManagement, atLeastOnce()).joinLobby("testcode", user);
     }
 }
 
