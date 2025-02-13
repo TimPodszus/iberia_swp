@@ -19,7 +19,7 @@ public class StartGameEvent extends AbstractGameEvent {
     /**
      * Constructs a new StartGameEvent.
      *
-     * @param lobbyId the code of the lobby associated with the event
+     * @param lobbyId the id of the lobby associated with the event
      * @param game    the game data transfer object associated with the started game
      */
     public StartGameEvent(String lobbyId, IGameDTO game) {

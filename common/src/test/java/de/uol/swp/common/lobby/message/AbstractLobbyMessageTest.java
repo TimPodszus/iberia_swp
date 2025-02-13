@@ -29,7 +29,7 @@ class AbstractLobbyMessageTest {
     void createAbstractLobbyMessage() {
         AbstractLobbyMessage message = new AbstractLobbyMessage(lobbyName, user);
 
-        assertEquals(lobbyName, message.getLobbyCode());
+        assertEquals(lobbyName, message.getLobbyId());
         assertEquals(user, message.getUser());
     }
 
@@ -44,13 +44,13 @@ class AbstractLobbyMessageTest {
     void setAbstractLobbyNameAndUser() {
         AbstractLobbyMessage message = new AbstractLobbyMessage(lobbyName, user);
 
-        assertEquals(lobbyName, message.getLobbyCode());
+        assertEquals(lobbyName, message.getLobbyId());
         assertEquals(user, message.getUser());
 
-        message.setLobbyCode("Test1");
+        message.setLobbyId("Test1");
         message.setUser(user1);
 
-        assertEquals("Test1", message.getLobbyCode());
+        assertEquals("Test1", message.getLobbyId());
         assertEquals(user1, message.getUser());
     }
 

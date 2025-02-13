@@ -1,11 +1,18 @@
 package de.uol.swp.common.lobby.message.request;
 
 import de.uol.swp.common.lobby.message.AbstractLobbyRequest;
-import de.uol.swp.common.user.IUserDTO;
 
+/**
+ * A request to get the details of a specific lobby.
+ */
 public class GetLobbyRequest extends AbstractLobbyRequest {
 
-    public GetLobbyRequest(String lobbyCode, IUserDTO userDto) {
-        super(lobbyCode, userDto);
+    /**
+     * Constructs a new GetLobbyRequest with the specified lobby ID.
+     *
+     * @param lobbyId the ID of the lobby to retrieve
+     */
+    public GetLobbyRequest(String lobbyId) {
+        super(lobbyId);
     }
 }

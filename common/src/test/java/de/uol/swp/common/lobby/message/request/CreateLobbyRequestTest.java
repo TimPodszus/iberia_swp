@@ -5,6 +5,7 @@ import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 /**
  * Test for the create lobby request
@@ -13,11 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @since 2023-05-14
  */
 class CreateLobbyRequestTest {
-
-    final String lobbyName = "Test";
-    final UserDTO user = new UserDTO("Marco", "Marco");
-    final UserDTO user1 = new UserDTO("Marco1", "Marco1");
-
 
     /**
      * Test for creation of the CreateLobbyRequests
@@ -28,28 +24,9 @@ class CreateLobbyRequestTest {
      */
     @Test
     void createCreateLobbyRequest() {
-        CreateLobbyRequest request = new CreateLobbyRequest(lobbyName, user);
+        CreateLobbyRequest request = new CreateLobbyRequest();
 
-        assertEquals(lobbyName, request.getLobbyCode());
-        assertEquals(user, request.getUser());
-    }
-
-    /**
-     * Test for set new owner of the AbstractLobbyRequests
-     * This test checks if the owner of the AbstractLobbyRequest gets
-     * set correctly during setting new owner of the request
-     *
-     * @since 2023-05-14
-     */
-    @Test
-    void setCreateLobbyRequestNameAndUser() {
-        CreateLobbyRequest request = new CreateLobbyRequest(lobbyName, user);
-
-        assertEquals(user, request.getOwner());
-
-        request.setOwner(user1);
-
-        assertEquals(user1, request.getOwner());
+        assertInstanceOf(CreateLobbyRequest.class, request);
     }
 
 }

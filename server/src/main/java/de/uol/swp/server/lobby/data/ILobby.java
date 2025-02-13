@@ -24,7 +24,7 @@ public interface ILobby extends Serializable {
      *
      * @return A String containing the id of the lobby
      */
-    String getLobbyCode();
+    String getLobbyId();
 
     /**
      * Getter for the lobby's name
@@ -41,6 +41,14 @@ public interface ILobby extends Serializable {
      * @since 2019-10-08
      */
     List<IUser> getUsers();
+
+    /**
+     * Getter for a user in the lobby by username
+     *
+     * @param username The username of the user to retrieve
+     * @return The user with the specified username, or null if not found
+     */
+    IUser getUser(String username);
 
     /**
      * Getter for the current owner of the lobby
@@ -71,7 +79,7 @@ public interface ILobby extends Serializable {
      * @param user The new user to add to the lobby
      * @since 2019-10-08
      */
-    void joinUser(IUser user);
+    void addUser(IUser user);
 
     /**
      * Removes an user from the lobby
@@ -79,7 +87,7 @@ public interface ILobby extends Serializable {
      * @param user The user to remove from the lobby
      * @since 2019-10-08
      */
-    void leaveUser(IUser user);
+    void removeUser(IUser user);
 
     /**
      * Checks if this lobby is equal to another object.

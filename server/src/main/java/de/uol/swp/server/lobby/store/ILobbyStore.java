@@ -17,15 +17,15 @@ public interface ILobbyStore {
     /**
      * Searches for a lobby by its lobby code.
      *
-     * @param lobbycode the unique code identifying the lobby
+     * @param lobbyId the unique code identifying the lobby
      * @return the {@code ILobby} object with the specified lobby code or null if no lobby is found
      */
-    ILobby findLobby(String lobbycode);
+    ILobby findLobby(String lobbyId);
 
     /**
      * Creates a new lobby with the specified name, code, users, owner, and difficulty level.
      *
-     * @param lobbyCode  the unique code identifying the lobby
+     * @param lobbyId    the unique code identifying the lobby
      * @param name       the name of the lobby to create
      * @param users      the list of users who will be part of the lobby
      * @param owner      the user who owns the lobby
@@ -33,38 +33,15 @@ public interface ILobbyStore {
      * @return the newly created {@code Lobby}
      */
     ILobby createLobby(
-            String lobbyCode,
-            String name,
-            List<IUser> users,
-            IUser owner,
-            int difficulty
-    );
-
-    /**
-     * Updates an existing lobby with the specified name, code, users, owner, and difficulty level.
-     *
-     * @param name       the name of the lobby to update
-     * @param lobbycode  the unique code identifying the lobby
-     * @param users      the list of users who will be part of the lobby
-     * @param owner      the user who owns the lobby
-     * @param difficulty the difficulty level of the lobby
-     * @return the updated {@code Lobby}
-     */
-    ILobby updateLobby(
-            String name,
-            String lobbycode,
-            List<IUser> users,
-            IUser owner,
-            int difficulty
+            String lobbyId, String name, List<IUser> users, IUser owner, int difficulty
     );
 
     /**
      * Removes the lobby with the specified name from the system.
      *
-     * @param name the name of the lobby to remove
-     * @throws LobbyStoreException if an error occurs during the removal process
+     * @param lobbyId the id of the lobby to remove
      */
-    void removeLobby(String name) throws LobbyStoreException;
+    void removeLobby(String lobbyId);
 
     /**
      * Retrieves all lobbies currently stored in the system.
@@ -80,24 +57,11 @@ public interface ILobbyStore {
      *
      * @param lobby the {@code ILobby} containing the lobby information to save
      */
-    void saveLobby(ILobby lobby);
+    ILobby saveLobby(ILobby lobby);
 
     /**
-     * Removes a user from the specified lobby.
-     *
-     * @param lobbyID the unique identifier of the lobby
-     * @param user    the user to remove from the lobby
-     * @throws LobbyStoreException if an error occurs during the removal process
+     * Removes all lobbies from the system.
      */
-    void removeUser(String lobbyID, IUser user) throws LobbyStoreException;
-
-    /**
-     * Adds a user to the specified lobby.
-     *
-     * @param lobbyCode the unique code identifying the lobby
-     * @param user      the user to add to the lobby
-     * @throws LobbyStoreException if an error occurs during the join process
-     */
-    void joinUser(String lobbyCode, IUser user) throws LobbyStoreException;
+    void removeAll();
 }
 
