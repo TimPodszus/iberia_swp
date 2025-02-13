@@ -11,7 +11,7 @@ import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
-import de.uol.swp.common.game.message.response.ShareKnowledgeResponse;
+import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -24,7 +24,6 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.IGameState;
-import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
@@ -240,7 +239,13 @@ public class GameService extends AbstractService {
                 cardsToExchange.get(currentPlayerUsername),
                 cardsToExchange.get(targetPlayerUsername)
         );
-        LOG.trace("Created ShareKnowledgeEvent: {}", shareKnowledgeEvent);
+        shareKnowledgeEvent.setMessageContext(request.getMessageContext()
+                                                     .orElse(null));
+        LOG.trace(
+                "Created ShareKnowledgeEvent: {} with MessageContext {}",
+                shareKnowledgeEvent,
+                shareKnowledgeEvent.getMessageContext()
+        );
 
         IUser user = lobbyManagement.getLobby(request.getLobbyId())
                                     .getUsers()
@@ -331,27 +336,40 @@ public class GameService extends AbstractService {
             LOG.trace("Target player cards after exchange: {}", targetPlayer.getCards());
             IGameState gameState = gameManagement.getGame(event.getLobbyId())
                                                  .getState();
-            ((PlayerTurnState) gameState).reduceActionsRemaining(gameManagement.getGame(event.getLobbyId()));
-            ShareKnowledgeResponse response = new ShareKnowledgeResponse(event.getLobbyId(), true);
-            response.setSession(request.getSession()
-                                       .orElseThrow(() -> new GameManagementException("Session not found")));
+            //  ((PlayerTurnState) gameState).reduceActionsRemaining(gameManagement.getGame(event.getLobbyId()));
+            LOG.trace("ReducedActionsRemaining");
+            KnowledgeSharedEvent response = new KnowledgeSharedEvent(
+                    event.getLobbyId(),
+                    true,
+                    GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()))
+            );
+            LOG.trace("Got MessageContext for message context: {}", response.getMessageContext());
             sendToAllInLobby(
                     lobbyManagement.getLobby(event.getLobbyId()),
-                    new BoardUpdateEvent(
+                    new KnowledgeSharedEvent(
                             event.getLobbyId(),
+                            true,
                             GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()))
                     )
             );
-            LOG.trace("Got Session for message context: {}", response.getSession());
-            post(response);
-            LOG.trace("Posted ShareKnowledgeResponse to event bus for lobby {}", event.getLobbyId());
+
+            LOG.trace(
+                    "Posted ShareKnowledgeResponse to event bus for lobby {}, and Session {}",
+                    event.getLobbyId(),
+                    response.getSession()
+            );
+
         } else {
             LOG.info(
                     "Share knowledge request declined by target player {}",
                     targetPlayer.getUser()
                                 .getUsername()
             );
-            ShareKnowledgeResponse response = new ShareKnowledgeResponse(event.getLobbyId(), false);
+            KnowledgeSharedEvent response = new KnowledgeSharedEvent(
+                    event.getLobbyId(),
+                    false,
+                    GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()))
+            );
             response.setSession(request.getSession()
                                        .orElseThrow(() -> new GameManagementException("Session not found")));
             LOG.trace("Got Session for message context: {}", response.getSession());

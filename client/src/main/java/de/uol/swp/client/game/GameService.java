@@ -109,7 +109,15 @@ public class GameService {
             boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
                                                                                               .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()
                                                                                                                                                                                  .getTitle() + "?");
-            eventBus.post(new ShareKnowledgeRequest(event.getLobbyId(), accepted, event));
+            ShareKnowledgeRequest request = new ShareKnowledgeRequest(event.getLobbyId(), accepted, event);
+            request.setMessageContext(event.getMessageContext()
+                                           .orElse(null));
+            LOG.trace(
+                    "Posting ShareKnowledgeRequest: {} with MessageContext {} ",
+                    request,
+                    request.getMessageContext()
+            );
+            eventBus.post(request);
         });
     }
 

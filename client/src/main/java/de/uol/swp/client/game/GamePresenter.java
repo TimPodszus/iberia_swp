@@ -31,7 +31,7 @@ import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
-import de.uol.swp.common.game.message.response.ShareKnowledgeResponse;
+import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -480,13 +480,21 @@ public class GamePresenter extends AbstractPresenter {
                 if (playerWithCityCard != null) {
                     LOG.debug("Found player with city card: {}", playerWithCityCard.getUsername());
                     Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+                    List<ICardDTO> playerWithCityCardOnlyCityCard = new ArrayList<>();
+                    playerWithCityCardOnlyCityCard.add(playerWithCityCard.getCards()
+                                                                         .stream()
+                                                                         .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                                                .getCurrentPosition()
+                                                                                                                .getId())
+                                                                         .findFirst()
+                                                                         .orElseThrow());
                     cardsToExchange.put(
                             gameDTO.getCurrentPlayer()
                                    .getUsername(),
                             gameDTO.getCurrentPlayer()
                                    .getCards()
                     );
-                    cardsToExchange.put(playerWithCityCard.getUsername(), playerWithCityCard.getCards());
+                    cardsToExchange.put(playerWithCityCard.getUsername(), playerWithCityCardOnlyCityCard);
                     LOG.debug(
                             "Player {} can select cards now from the following list {}",
                             gameDTO.getCurrentPlayer()
@@ -507,7 +515,7 @@ public class GamePresenter extends AbstractPresenter {
                     LOG.debug("No player found with city card");
                 }
             } else {
-                LOG.debug("Current player does not have cards that are not from the current position");
+                LOG.debug("Current Player has currentCity Card");
                 Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
                 List<IPlayerDTO> playersInSameCity = gameDTO.getPlayers()
                                                             .stream()
@@ -516,9 +524,28 @@ public class GamePresenter extends AbstractPresenter {
                                                                                                              .getCurrentPosition()
                                                                                                              .getId())
                                                             .toList();
+                List<ICardDTO> cardOfCurrentCity = new ArrayList<>();
                 for (IPlayerDTO playerDTO : playersInSameCity) {
-                    cardsToExchange.put(playerDTO.getUsername(), playerDTO.getCards());
+                    if (playerDTO.getUsername()
+                                 .equals(gameDTO.getCurrentPlayer()
+                                                .getUsername())) {
+
+                        cardOfCurrentCity.add(gameDTO.getCurrentPlayer()
+                                                     .getCards()
+                                                     .stream()
+                                                     .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                            .getCurrentPosition()
+                                                                                            .getId())
+                                                     .findFirst()
+                                                     .orElseThrow());
+                    } else {
+                        cardsToExchange.put(playerDTO.getUsername(), playerDTO.getCards());
+                    }
                 }
+                cardsToExchange.put(
+                        gameDTO.getCurrentPlayer()
+                               .getUsername(), cardOfCurrentCity
+                );
                 LOG.debug("Players in the same city: {}", playersInSameCity);
                 CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
                         gameDTO.getCurrentPlayer()
@@ -951,6 +978,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param gameDTO the game data transfer object containing the latest game state
      */
     private void updateBoard(IGameDTO gameDTO) {
+        LOG.trace("Updating game board with latest data");
         updateCities(gameDTO.getCities());
         updateConnections(gameDTO.getConnections());
         updateRegions(gameDTO.getRegions());
@@ -1404,15 +1432,17 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     @Subscribe
-    public void onShareKnowledgeResponse(ShareKnowledgeResponse response) {
+    public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
         LOG.debug("Received ShareKnowledgeResponse");
-        if (response.isSuccess()) {
+        if (response.wasSuccessful()) {
             LOG.info("Knowledge shared");
-            updateBoard(gameDTO);
+            LOG.trace("Updating board of Game {}", response.getGameDTO());
+            Platform.runLater(() -> updateBoard(response.getGameDTO()));
             shareKnowledgeButton.setSelected(false);
         } else {
             LOG.info("Knowledge not shared");
             shareKnowledgeButton.setSelected(false);
         }
+
     }
 }
