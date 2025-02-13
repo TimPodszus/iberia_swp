@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.server.cards.ICard;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.GameStateChangeListener;

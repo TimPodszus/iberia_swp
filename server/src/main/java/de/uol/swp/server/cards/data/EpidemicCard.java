@@ -1,7 +1,8 @@
-package de.uol.swp.server.cards;
+package de.uol.swp.server.cards.data;
 
 
 import de.uol.swp.common.cards.CardType;
+import de.uol.swp.server.cards.data.Card;
 import lombok.Getter;
 
 

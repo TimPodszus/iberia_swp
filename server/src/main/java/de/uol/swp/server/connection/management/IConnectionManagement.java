@@ -1,6 +1,6 @@
 package de.uol.swp.server.connection.management;
 
-import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
 
 import java.util.List;

@@ -2,8 +2,8 @@ package de.uol.swp.server.connection;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;

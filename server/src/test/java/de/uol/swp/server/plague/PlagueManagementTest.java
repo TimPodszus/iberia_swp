@@ -1,8 +1,8 @@
 package de.uol.swp.server.plague;
 
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.states.EndGameState;
@@ -54,8 +54,7 @@ class PlagueManagementTest {
     public void setup() {
         MockitoAnnotations.openMocks(this);
 
-        List<ICard> playerCards = List.of(
-                mockCityCard(PlagueName.CHOLERA),
+        List<ICard> playerCards = List.of(mockCityCard(PlagueName.CHOLERA),
                 mockCityCard(PlagueName.CHOLERA),
                 mockCityCard(PlagueName.CHOLERA),
                 mockCityCard(PlagueName.CHOLERA),
@@ -76,8 +75,7 @@ class PlagueManagementTest {
      */
     @Test
     void researchPlagueIsNullThrowsPlagueManagementException() {
-        PlagueManagementException exception = assertThrows(
-                PlagueManagementException.class,
+        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
                 () -> plagueManagement.researchPlague(null, game)
         );
         assertEquals("The plague to be researched was not specified", exception.getMessage());
@@ -91,8 +89,7 @@ class PlagueManagementTest {
     void researchPlagueAlreadyResearchedThrowsPlagueManagementException() {
         when(plague.isResearched()).thenReturn(true);
 
-        PlagueManagementException exception = assertThrows(
-                PlagueManagementException.class,
+        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
                 () -> plagueManagement.researchPlague(PlagueName.CHOLERA, game)
         );
 
@@ -107,8 +104,7 @@ class PlagueManagementTest {
     void notEnoughCardsToResearchPlagueThrowsPlagueManagementException() {
         when(currentPlayer.getCards()).thenReturn(new ArrayList<>());
 
-        PlagueManagementException exception = assertThrows(
-                PlagueManagementException.class,
+        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
                 () -> plagueManagement.researchPlague(PlagueName.CHOLERA, game)
         );
 
@@ -125,8 +121,7 @@ class PlagueManagementTest {
         when(currentCity.isHospitalBuilt()).thenReturn(false);
         when(currentCity.getPlagueName()).thenReturn(PlagueName.CHOLERA);
 
-        PlagueManagementException exception = assertThrows(
-                PlagueManagementException.class,
+        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
                 () -> plagueManagement.researchPlague(PlagueName.CHOLERA, game)
         );
 

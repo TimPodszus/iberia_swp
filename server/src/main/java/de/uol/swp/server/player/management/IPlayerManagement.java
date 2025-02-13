@@ -2,8 +2,7 @@ package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.city.CityName;
-import de.uol.swp.server.cards.ICard;
-import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 

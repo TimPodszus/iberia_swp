@@ -2,12 +2,13 @@ package de.uol.swp.server.plague.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.management.IPlayerManagement;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

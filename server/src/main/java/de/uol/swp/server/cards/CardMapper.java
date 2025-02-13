@@ -5,6 +5,10 @@ import de.uol.swp.common.cards.EpidemicCardDTO;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.CityDTO;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.EpidemicCard;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.infection.InfectionMapper;
 import lombok.AllArgsConstructor;
 
