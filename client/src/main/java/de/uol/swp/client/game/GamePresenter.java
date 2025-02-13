@@ -1285,6 +1285,15 @@ public class GamePresenter extends AbstractPresenter {
         });
 
     }
+
+    /**
+     * Handles the EndGameEvent.
+     * <p>
+     * This method is called when an EndGameEvent is received. It creates an EndGameDialog
+     * and shows it on the JavaFX Application Thread.
+     *
+     * @param event the EndGameEvent containing the game result
+     */
     @Subscribe
     public void onEndGameEvent(EndGameEvent event) {
         EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
