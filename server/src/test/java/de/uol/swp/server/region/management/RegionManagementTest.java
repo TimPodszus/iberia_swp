@@ -302,7 +302,9 @@ class RegionManagementTest {
         DrawCardState drawCardState = mock(DrawCardState.class);
         when(game.getState()).thenReturn(drawCardState);
 
-        regionManagement.increaseWaterTreatmentsFromRegion("lobbyId", 1, 5, cityCard, user, game);
+        assertThrows(GameManagementException.class, () -> {
+            regionManagement.increaseWaterTreatmentsFromRegion("lobbyId", 1, 5, cityCard, user, game);
+        });
 
         verify(region1, never()).increaseWaterTreatments(anyInt());
         verify(playerManagement, never()).discardCard(anyString(), any(), any());
