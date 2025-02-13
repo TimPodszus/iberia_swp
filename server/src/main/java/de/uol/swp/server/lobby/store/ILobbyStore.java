@@ -58,5 +58,10 @@ public interface ILobbyStore {
      * @param lobby the {@code ILobby} containing the lobby information to save
      */
     ILobby saveLobby(ILobby lobby);
+
+    /**
+     * Removes all lobbies from the system.
+     */
+    void removeAll();
 }
 

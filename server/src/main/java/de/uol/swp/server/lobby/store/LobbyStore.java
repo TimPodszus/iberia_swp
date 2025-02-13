@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class LobbyStore implements ILobbyStore {
     private static final Logger LOG = LogManager.getLogger(LobbyStore.class);
-    private static final String LOBBY_NOT_FOUND = "Lobby not found: ";
     private static LobbyStore instance = new LobbyStore();
 
     private final Map<String, ILobby> lobbies = new HashMap<>();
@@ -40,6 +39,12 @@ public class LobbyStore implements ILobbyStore {
             instance = new LobbyStore();
         }
         return instance;
+    }
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private LobbyStore() {
     }
 
     @Override
@@ -87,5 +92,11 @@ public class LobbyStore implements ILobbyStore {
         lobbies.put(lobby.getLobbyId(), lobby);
         LOG.info("[LobbyId: {}]: Lobby saved", lobby.getLobbyId());
         return lobbies.get(lobby.getLobbyId());
+    }
+
+    @Override
+    public void removeAll() {
+        LOG.info("Removing all lobbies");
+        lobbies.clear();
     }
 }
