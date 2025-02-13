@@ -11,6 +11,7 @@ import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
 import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
+import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.ICardDTO;
@@ -20,9 +21,11 @@ import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
@@ -264,22 +267,82 @@ public class GamePresenter extends AbstractPresenter {
         Node source = (Node) event.getSource();
         int cityId = Integer.parseInt(source.getId()
                                             .replaceAll("\\D+", ""));
+        LOG.debug("City {} clicked", cityId);
         if (gameDTO.getState()
                    .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
+            LOG.debug("Setting initial position to city {}", cityId);
             gameService.setPosition(gameDTO.getGameId(), cityId);
+            LOG.info("Initial position set");
         }
+
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
-            if (!availableDestinations.get(cityId)
-                                      .isEmpty()) {
+            LOG.trace("Player wants to move to city {}", cityId);
+            if (cardDiscardNeeded(cityId)) {
+                LOG.debug("Card discard needed for moving to city {}", cityId);
                 CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(true,
                         availableDestinations.get(cityId)
                 );
                 Optional<ICardDTO> result = cardSelectionDialog.showAndWait();
-                result.ifPresent(card -> gameService.movePlayerToCity(lobbyId, cityId, card.getId()));
+                result.ifPresentOrElse(card -> {
+                    LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
+                    gameService.movePlayerToCity(lobbyId, cityId, card.getId());
+                    LOG.info("Player has been moved with discarding a card");
+                }, () -> LOG.info("Player has not selected a card to discard. Aborting move."));
+                return;
             }
-            gameService.movePlayerToCity(this.lobbyId, cityId, -1);
+
+            if (movingByBoat(cityId) && gameDTO.getCurrentPlayer()
+                                               .getRole()
+                                               .getName() == RoleEnum.SAILOR && !this.getPlayersInCity()
+                                                                                     .isEmpty()) {
+                LOG.debug("Player is a sailor and take a player with him to the harbour city {}", cityId);
+                PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
+                Optional<String> result = dialog.showAndWait();
+                result.ifPresentOrElse(username -> {
+                    LOG.debug("Player {} is taken with to the harbour city {}", username, cityId);
+                    gameService.movePlayerToCity(lobbyId, cityId, username);
+                    LOG.info("Player has been moved and has taken another player with him");
+                }, () -> {
+                    gameService.movePlayerToCity(lobbyId, cityId);
+                    LOG.info("Player has not selected a player to take with him. Moving alone.");
+                });
+                return;
+            }
+            gameService.movePlayerToCity(this.lobbyId, cityId);
+            LOG.info("Player has been moved");
         }
+    }
+
+
+    /**
+     * Checks if a card discard is needed for the specified city.
+     *
+     * @param cityId the ID of the city to check
+     * @return true if a card discard is needed, false otherwise
+     */
+    private boolean cardDiscardNeeded(int cityId) {
+        LOG.debug("Checking if discarding a card is needed for moving to city {}", cityId);
+        return !availableDestinations.get(cityId)
+                                     .isEmpty();
+    }
+
+    /**
+     * Checks if the player is moving by boat.
+     *
+     * @param cityId the ID of the city to check
+     * @return true if the player is moving by boat, false otherwise
+     */
+    private boolean movingByBoat(int cityId) {
+        LOG.debug("Checking if player is moving by boat to city {}", cityId);
+        ICityDTO currentCity = gameDTO.getCurrentPlayer()
+                                      .getCurrentPosition();
+        ICityDTO destinationCity = gameDTO.getCities()
+                                          .stream()
+                                          .filter(city -> city.getId() == cityId)
+                                          .findFirst()
+                                          .orElseThrow();
+        return currentCity.isHarbourCity() && destinationCity.isHarbourCity();
     }
 
     /**
@@ -1148,8 +1211,13 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailableDestinationsResponse(AvailableDestinationsResponse response) {
+        LOG.debug("Received {} available destinations",
+                response.getCities()
+                        .size()
+        );
         this.availableDestinations = response.getCities();
-        this.setAvailableDestinations();
+        this.highlightAvailableDestinations();
+        LOG.info("Available destinations set");
     }
 
     /**
@@ -1157,14 +1225,66 @@ public class GamePresenter extends AbstractPresenter {
      * Iterates through the available destinations and updates the style class
      * of the corresponding city StackPane to indicate it is a highlighted destination.
      */
-    public void setAvailableDestinations() {
+    private void highlightAvailableDestinations() {
+        LOG.debug("Highlighting available destinations");
         for (Map.Entry<Integer, List<ICardDTO>> entry : availableDestinations.entrySet()) {
             int cityId = entry.getKey();
+            LOG.trace("Highlighting city {}", cityId);
             Node node = mapPane.lookup(CITY_ID + cityId);
             node.getStyleClass()
                 .removeAll(CITY_CLASS);
             node.getStyleClass()
                 .add(CITY_HIGHLIGHTED_CLASS);
         }
+        LOG.info("Available destinations highlighted");
+    }
+
+    /**
+     * Retrieves the list of players in the same city as the current player.
+     *
+     * @return a list of players in the same city as the current player
+     */
+    private List<IPlayerDTO> getPlayersInCity() {
+        LOG.debug("Retrieving players in the same city as the current player");
+        List<IPlayerDTO> playersInCity = new ArrayList<>();
+        for (IPlayerDTO player : gameDTO.getPlayers()) {
+            boolean isNotCurrentPlayer = !player.equals(gameDTO.getCurrentPlayer());
+            boolean playersAreInSameCity = player.getCurrentPosition()
+                                                 .equals(gameDTO.getCurrentPlayer()
+                                                                .getCurrentPosition());
+            if (isNotCurrentPlayer && playersAreInSameCity) {
+                LOG.trace("Player {} is in the same city as the current player", player.getUsername());
+                playersInCity.add(player);
+            }
+        }
+        LOG.info("Players in the same city as the current player retrieved");
+        return playersInCity;
+    }
+
+    /**
+     * Handles the ShareRideEvent.
+     * <p>
+     * This method is called when a ShareRideEvent is received. It displays a confirmation dialog
+     * asking the user if they want to be taken to the specified city. If the user confirms,
+     * a share ride request is sent with the city ID. Otherwise, a share ride request is sent without the city ID.
+     *
+     * @param event the ShareRideEvent containing the city data
+     */
+    @Subscribe
+    public void onShareRideEvent(ShareRideEvent event) {
+        Platform.runLater(() -> {
+            boolean result = ConfirmationDialog.showConfirmationDialog("Willst du zu " + event.getCity()
+                                                                                              .getName()
+                                                                                              .getDisplayName() + " mitgenommen werden?");
+            if (result) {
+                gameService.sendShareRideRequest(lobbyId,
+                        event.getCity()
+                             .getId()
+                );
+            } else {
+                gameService.sendShareRideRequest(lobbyId);
+            }
+        });
+
     }
 }

@@ -16,6 +16,7 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.WaitForConfirmationState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
@@ -24,6 +25,7 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
+import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
@@ -209,7 +211,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 playerManagement.setStartingPosition(
                         game.getGameId(),
                         game.getCityRepository()
-                            .getCityNameById(request.getCityId()), requestPlayer
+                            .getCityNameById(request.getCityId()),
+                        requestPlayer
                 );
                 waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
             } catch (PlayerManagementException e) {
@@ -383,6 +386,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         );
         player.setCurrentPosition(city);
         ((PlayerTurnState) gameState).reduceActionsRemaining(game);
+    }
+
+    public void lockGameInWaitForConfirmation(String lobbyId) {
+        IGame game = getGame(lobbyId);
+        WaitForConfirmationState waitForConfirmationState = new WaitForConfirmationState();
+        game.setState(waitForConfirmationState);
+    }
+
+    public void unlockGameInWaitForConfirmation(String lobbyId) {
+        IGame game = getGame(lobbyId);
+        game.setState(game.getPreviousState());
     }
 
 }

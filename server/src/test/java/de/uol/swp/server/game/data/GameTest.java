@@ -2,6 +2,11 @@ package de.uol.swp.server.game.data;
 
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.EpidemicCard;
+import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.WaitForConfirmationState;
+import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -56,6 +61,25 @@ class GameTest {
                 game.getPlayerCardDrawPile()
                     .size()
         );
+    }
+
+    @Test
+    void testGetCurrentPlayer() {
+        IUser user = new User("testUser", "testPassword");
+        game.getPlayers()
+            .add(new Player(user));
+        assertNotNull(game.getCurrentPlayer());
+    }
+
+    @Test
+    void testSetState() {
+        PlayerTurnState playerTurnState = new PlayerTurnState();
+        WaitForConfirmationState waitForConfirmationState = new WaitForConfirmationState();
+        game.setState(playerTurnState);
+        assertEquals(playerTurnState, game.getState());
+        game.setState(waitForConfirmationState);
+        assertEquals(waitForConfirmationState, game.getState());
+        assertEquals(playerTurnState, game.getPreviousState());
     }
 }
 
