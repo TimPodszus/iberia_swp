@@ -37,6 +37,7 @@ class LobbyManagementTest {
         MockitoAnnotations.openMocks(this);
         lobbyManagement = new LobbyManagement();
         lobbyStore = LobbyStore.getInstance();
+        lobbyStore.removeAll();
         userList.add(firstOwner);
         userList.add(user1);
     }
