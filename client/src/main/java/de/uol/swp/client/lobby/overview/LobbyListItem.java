@@ -29,10 +29,10 @@ public class LobbyListItem {
     private static final String DIFFICULTY_LEVEL_3 = "Schwer";
 
     /**
-     * The code of the lobby.
+     * The id of the lobby.
      */
     @Getter
-    private final String lobbyCode;
+    private final String lobbyId;
 
     /**
      * The name of the lobby.
@@ -53,13 +53,13 @@ public class LobbyListItem {
     /**
      * Constructs a new LobbyListItem with the specified parameters.
      *
-     * @param lobbyCode  the code of the lobby
+     * @param lobbyId    the id of the lobby
      * @param name       the name of the lobby
      * @param players    the number of players in the lobby
      * @param difficulty the difficulty level of the lobby
      */
-    public LobbyListItem(String lobbyCode, String name, int players, int difficulty) {
-        this.lobbyCode = lobbyCode;
+    public LobbyListItem(String lobbyId, String name, int players, int difficulty) {
+        this.lobbyId = lobbyId;
         this.name = name;
         this.players = players;
         this.difficulty = difficulty;

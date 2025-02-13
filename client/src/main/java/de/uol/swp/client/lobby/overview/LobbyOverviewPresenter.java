@@ -144,7 +144,7 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
                                .getName()
                     );
                     LobbyListItem rowData = row.getItem();
-                    lobbyService.joinLobby(rowData.getLobbyCode());
+                    lobbyService.joinLobby(rowData.getLobbyId());
                 }
             });
             return row;
