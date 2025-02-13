@@ -93,6 +93,30 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         plague.setResearched(true);
     }
 
+    /**
+     * @param plagueToTreat
+     * @param city
+     * @param game
+     * @throws PlagueManagementException
+     */
+    @Override
+    public void treatPlague(PlagueName plagueToTreat, ICity city, IGame game) throws PlagueManagementException {
+        if (plagueToTreat == null || city == null || game == null) {
+            throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");
+        }
+
+        if (!city.hasPlague(plagueToTreat)) {
+            throw new PlagueManagementException("The selected plague is not present in the city:" + plagueToTreat);
+        }
+
+        int plagueCubes = city.getPlagueCubes(plagueToTreat);
+        if (plagueCubes == 0) {
+            throw new PlagueManagementException("No plague cubes to remove for the selected plague.");
+        }
+
+        city.removePlagueCubes(plagueToTreat, 1);
+    }
+
     @Override
     public List<IInfection> getInfectionsInCity(IGame game) {
         IPlayer player = game.getCurrentPlayer();

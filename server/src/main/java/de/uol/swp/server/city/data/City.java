@@ -103,10 +103,9 @@ public class City implements ICity {
             if (infection.getPlagueName().equals(plagueName)) {
                 currentCount = infection.getSeverity();
                 if (currentCount < count) {
-                    throw new IllegalArgumentException("Not enough plague cubes to remove.");
+                    throw new IllegalArgumentException("No plague cubes to remove.");
                 }
                 infection.setSeverity(currentCount - count);
-//                infection.getPlague.setCubesRemaining(infection.getPlague().getCubesRemaining() - count);
             }
         }
     }
