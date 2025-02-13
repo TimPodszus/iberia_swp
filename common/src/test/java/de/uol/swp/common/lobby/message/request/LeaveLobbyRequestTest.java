@@ -7,10 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Test for the lobby leave user request
  *
- * @see LobbyLeaveUserRequest
+ * @see LeaveLobbyRequest
  * @since 2023-05-14
  */
-class LobbyLeaveUserRequestTest {
+class LeaveLobbyRequestTest {
 
     final String lobbyId = "Test";
 
@@ -24,7 +24,7 @@ class LobbyLeaveUserRequestTest {
      */
     @Test
     void createLobbyLeaveUserRequest() {
-        LobbyLeaveUserRequest request = new LobbyLeaveUserRequest(lobbyId);
+        LeaveLobbyRequest request = new LeaveLobbyRequest(lobbyId);
 
         assertEquals(lobbyId, request.getLobbyId());
     }

@@ -228,7 +228,7 @@ public class LobbyServiceTest extends EventBusBasedTest {
     void testLeaveLobby() throws InterruptedException {
         when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
         IUser user = UserMapper.toUser(firstOwner);
-        LobbyLeaveUserRequest request = new LobbyLeaveUserRequest("testcode");
+        LeaveLobbyRequest request = new LeaveLobbyRequest("testcode");
         Session session = UUIDSession.create(user);
         request.setSession(session);
 
@@ -248,7 +248,7 @@ public class LobbyServiceTest extends EventBusBasedTest {
     void testJoinLobby() throws LobbyStoreException, InterruptedException {
         when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
         IUser user = UserMapper.toUser(firstOwner);
-        LobbyJoinUserRequest request = new LobbyJoinUserRequest("testcode");
+        JoinLobbyRequest request = new JoinLobbyRequest("testcode");
         Session session = UUIDSession.create(user);
         request.setSession(session);
 

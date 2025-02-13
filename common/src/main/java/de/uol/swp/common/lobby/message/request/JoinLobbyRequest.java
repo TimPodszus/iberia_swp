@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
  * @since 2019-10-08
  */
 @NoArgsConstructor
-public class LobbyJoinUserRequest extends AbstractLobbyRequest {
+public class JoinLobbyRequest extends AbstractLobbyRequest {
 
     /**
      * Constructor
@@ -20,7 +20,7 @@ public class LobbyJoinUserRequest extends AbstractLobbyRequest {
      * @param lobbyId name of the lobby
      * @since 2019-10-08
      */
-    public LobbyJoinUserRequest(String lobbyId) {
+    public JoinLobbyRequest(String lobbyId) {
         super(lobbyId);
     }
 

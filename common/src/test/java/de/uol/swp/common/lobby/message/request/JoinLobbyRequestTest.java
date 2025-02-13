@@ -7,10 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Test for the lobby join user request
  *
- * @see LobbyJoinUserRequest
+ * @see JoinLobbyRequest
  * @since 2023-05-14
  */
-class LobbyJoinUserRequestTest {
+class JoinLobbyRequestTest {
 
     final String lobbyId = "Test";
 
@@ -24,7 +24,7 @@ class LobbyJoinUserRequestTest {
      */
     @Test
     void createLobbyJoinUserRequest() {
-        LobbyJoinUserRequest request = new LobbyJoinUserRequest(lobbyId);
+        JoinLobbyRequest request = new JoinLobbyRequest(lobbyId);
 
         assertEquals(lobbyId, request.getLobbyId());
     }

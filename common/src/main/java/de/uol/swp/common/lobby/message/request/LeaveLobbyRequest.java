@@ -9,7 +9,7 @@ import de.uol.swp.common.lobby.message.AbstractLobbyRequest;
  * @see de.uol.swp.common.lobby.message.AbstractLobbyRequest
  * @since 2019-10-08
  */
-public class LobbyLeaveUserRequest extends AbstractLobbyRequest {
+public class LeaveLobbyRequest extends AbstractLobbyRequest {
 
     /**
      * Default constructor
@@ -17,7 +17,7 @@ public class LobbyLeaveUserRequest extends AbstractLobbyRequest {
      * @implNote this constructor is needed for serialization
      * @since 2019-10-08
      */
-    public LobbyLeaveUserRequest() {
+    public LeaveLobbyRequest() {
     }
 
     /**
@@ -26,7 +26,7 @@ public class LobbyLeaveUserRequest extends AbstractLobbyRequest {
      * @param lobbyId id of the lobby
      * @since 2019-10-08
      */
-    public LobbyLeaveUserRequest(String lobbyId) {
+    public LeaveLobbyRequest(String lobbyId) {
         super(lobbyId);
     }
 

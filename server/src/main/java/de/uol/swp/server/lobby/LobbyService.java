@@ -91,7 +91,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyJoinUserRequest(LobbyJoinUserRequest request) throws LobbyStoreException {
+    public void onLobbyJoinUserRequest(JoinLobbyRequest request) throws LobbyStoreException {
         LOG.debug("[LobbyId: {}] Received join lobby request", request.getLobbyId());
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         IUserDTO user = request.getSession()
@@ -116,7 +116,7 @@ public class LobbyService extends AbstractService {
      * @since 2019-10-08
      */
     @Subscribe
-    public void onLobbyLeaveUserRequest(LobbyLeaveUserRequest request) {
+    public void onLobbyLeaveUserRequest(LeaveLobbyRequest request) {
         LOG.debug("[LobbyId: {}] Received leave lobby request", request.getLobbyId());
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         IUserDTO user = request.getSession()

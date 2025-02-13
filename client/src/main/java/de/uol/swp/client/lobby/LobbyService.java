@@ -86,12 +86,12 @@ public class LobbyService {
      * Posts a request to join a specified lobby on the EventBus
      *
      * @param lobbyId The id of the lobby to join
-     * @see LobbyJoinUserRequest
+     * @see JoinLobbyRequest
      * @since 2024-10-08
      */
     public void joinLobby(String lobbyId) {
-        LobbyJoinUserRequest lobbyJoinUserRequest = new LobbyJoinUserRequest(lobbyId);
-        eventBus.post(lobbyJoinUserRequest);
+        JoinLobbyRequest joinLobbyRequest = new JoinLobbyRequest(lobbyId);
+        eventBus.post(joinLobbyRequest);
         LOG.info("Send LobbyJoinUserRequest");
     }
 
@@ -113,12 +113,12 @@ public class LobbyService {
      * Posts a request to leave a specified lobby on the EventBus
      *
      * @param lobbyId The id of the lobby to leave
-     * @see LobbyLeaveUserRequest
+     * @see LeaveLobbyRequest
      * @since 2024-10-08
      */
     public void leaveLobby(String lobbyId) {
-        LobbyLeaveUserRequest lobbyLeaveUserRequest = new LobbyLeaveUserRequest(lobbyId);
-        eventBus.post(lobbyLeaveUserRequest);
+        LeaveLobbyRequest leaveLobbyRequest = new LeaveLobbyRequest(lobbyId);
+        eventBus.post(leaveLobbyRequest);
         LOG.info("Send LobbyLeaveUserRequest");
     }
 
