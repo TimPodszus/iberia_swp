@@ -20,6 +20,8 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.RegionMapper;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.usermanagement.IUser;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,12 +31,25 @@ import java.util.stream.Collectors;
 
 public class RegionManagement implements IRegionManagement {
     private final IPlayerManagement playerManagement;
-
+    static final Logger LOG = LogManager.getLogger(RegionManagement.class);
     @Inject
     public RegionManagement(IPlayerManagement playerManagement) {
         this.playerManagement = playerManagement;
     }
 
+    /**
+     * Reduces the water treatments in the specified city and its regions.
+     * <p>
+     * This method calculates the total water treatments available in the regions of the specified city.
+     * If the total water treatments are greater than or equal to the specified amount, it decreases the water treatments
+     * by the specified amount. Otherwise, it decreases all available water treatments and returns the remaining amount.
+     *
+     * @param game   the game instance containing the regions
+     * @param city   the city whose regions' water treatments are to be reduced
+     * @param amount the amount of water treatments to reduce
+     * @return the remaining amount of water treatments that could not be reduced, or 0 if the reduction was successful
+     * @throws RegionManagementException if an error occurs while reducing water treatments
+     */
     public int reduceWaterTreatments(IGame game, ICity city, int amount) throws RegionManagementException {
         List<IRegion> regions = game.getRegionRepository()
                                     .getRegionsByCityName(city.getName());
@@ -50,7 +65,22 @@ public class RegionManagement implements IRegionManagement {
             return amount - totalWaterTreatments;
         }
     }
-
+    /**
+     * Increases the water treatments in the specified region.
+     * <p>
+     * This method increases the water treatments in the specified region by the given amount.
+     * It also discards the specified card from the player's hand and reduces the remaining actions
+     * for the current player's turn.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param regionId the ID of the region where water treatments are to be increased
+     * @param amount the amount of water treatments to increase
+     * @param card the card to be discarded
+     * @param user the user performing the action
+     * @param game the game instance
+     * @throws RegionManagementException if an error occurs while increasing water treatments
+     * @throws GameManagementException if the player is not the current player or the game is not in a valid state
+     */
     public void increaseWaterTreatmentsFromRegion(
             String lobbyId,
             int regionId,
@@ -65,14 +95,30 @@ public class RegionManagement implements IRegionManagement {
             IPlayer player = game.getCurrentPlayer();
             if (!player.getUser()
                        .equals(user)) {
+                LOG.error("Player is not the current player: {}", user.getUsername());
                 throw new GameManagementException("Player is not the current player");
             }
             region.increaseWaterTreatments(amount);
             playerManagement.discardCard(lobbyId, player, card);
             playerTurnState.reduceActionsRemaining(game);
+            LOG.debug("Increased water treatments in region {} by {} for player {}", regionId, amount, user.getUsername());
+        } else {
+            LOG.error("Game is not in a valid state for increasing water treatments");
+            throw new GameManagementException("Game is not in a valid state");
         }
     }
-
+    /**
+     * Retrieves the possible city cards that can be discarded for a given region.
+     * <p>
+     * This method identifies the player associated with the given user and retrieves the possible city cards
+     * that can be discarded based on the player's role and the researched plagues.
+     *
+     * @param user     the user requesting the possible city cards to discard
+     * @param regionId the ID of the region for which the possible city cards are to be retrieved
+     * @param game     the game instance containing the regions and players
+     * @return a list of possible city cards that can be discarded
+     * @throws RegionManagementException if the request player is not found or an error occurs while retrieving the cards
+     */
     public List<CityCardDTO> getPossibleCityCardsToDiscard(
             IUserDTO user,
             int regionId,
@@ -92,6 +138,7 @@ public class RegionManagement implements IRegionManagement {
                              .getRegionByID(regionId);
         List<ICity> citiesInRegion = region.getSurroundingCities();
         if (requestPlayer == null) {
+            LOG.error("Request player to discard card not found for user: {}", user.getUsername());
             throw new RegionManagementException("Request player not found");
         }
         List<CityCard> playerCityCards = requestPlayer.getCards()
@@ -102,6 +149,7 @@ public class RegionManagement implements IRegionManagement {
         if (requestPlayer.getRole()
                          .getName()
                          .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)) {
+            LOG.debug("Returning all city cards for player {} with role SCIENTIST_OF_THE_ROYAL_ACADEMY", user.getUsername());
             return CardMapper.toCityCardDTOList(playerCityCards);
         }
 
@@ -124,9 +172,21 @@ public class RegionManagement implements IRegionManagement {
                 }
             }
         }
+        LOG.debug("Returning possible city cards to discard for player {}", user.getUsername());
         return CardMapper.toCityCardDTOList(new ArrayList<>(possibleCityCards));
     }
-
+    /**
+     * Retrieves the available regions for the specified user in the given game.
+     * <p>
+     * This method identifies the player associated with the given user and determines the regions
+     * surrounding the player's current position. It then checks the player's city cards and role to
+     * determine which regions are available for the player.
+     *
+     * @param user the user requesting the available regions
+     * @param game the game instance containing the regions and players
+     * @return a set of available regions for the player
+     * @throws RegionManagementException if the request player is not found or an error occurs while retrieving the regions
+     */
     public Set<IRegionDTO> getAvailableRegions(IUserDTO user, IGame game) throws RegionManagementException {
         IPlayer requestPlayer = null;
         for (IPlayer player : game.getPlayers()) {
@@ -137,7 +197,10 @@ public class RegionManagement implements IRegionManagement {
                 break;
             }
         }
-        assert requestPlayer != null;
+        if (requestPlayer == null) {
+            LOG.error("Request player not found for user: {}", user.getUsername());
+            throw new RegionManagementException("Request player not found");
+        }
         ICity currentPosition = requestPlayer.getCurrentPosition();
         List<IRegion> surroundingRegions = game.getRegionRepository()
                                                .getRegionsByCityName(currentPosition.getName());
@@ -154,6 +217,7 @@ public class RegionManagement implements IRegionManagement {
         if (requestPlayer.getRole()
                          .getName()
                          .equals(RoleEnum.AGRICULTURAL_SCIENTIST)) {
+            LOG.debug("Returning all surrounding regions for player {} with role AGRICULTURAL_SCIENTIST", user.getUsername());
             availableRegions.addAll(RegionMapper.toDTOList(surroundingRegions));
             return availableRegions;
         }
@@ -167,29 +231,59 @@ public class RegionManagement implements IRegionManagement {
                 }
             }
         }
+        LOG.debug("Returning available regions for player {}", user.getUsername());
         return availableRegions;
     }
-
+    /**
+     * Decreases the water treatments in the specified regions by the given amount.
+     * <p>
+     * This method iterates through the list of regions and decreases the water treatments
+     * by the specified amount. If a region has fewer water treatments than the specified amount,
+     * it decreases all available water treatments in that region and continues to the next region.
+     *
+     * @param regions the list of regions where water treatments are to be decreased
+     * @param amount  the total amount of water treatments to decrease
+     * @throws RegionManagementException if an error occurs while decreasing water treatments
+     */
     public void decreaseWaterTreatmentsInRegions(List<IRegion> regions, int amount) throws RegionManagementException {
         for (IRegion region : regions) {
             int waterTreatments = region.getWaterTreatments();
             if (waterTreatments >= amount) {
                 region.decreaseWaterTreatments(amount);
+                LOG.debug("Decreased water treatments in region {} by {}", region.getId(), amount);
                 return;
             } else {
                 region.decreaseWaterTreatments(waterTreatments);
                 amount -= waterTreatments;
+                LOG.debug("Decreased water treatments in region {} by {} (all available treatments)", region.getId(), waterTreatments);
             }
         }
     }
-
+    /**
+     * Decreases the water treatments in all regions by the given amount.
+     * <p>
+     * This method iterates through the list of regions and decreases all available water treatments
+     * in each region.
+     *
+     * @param regions the list of regions where water treatments are to be decreased
+     * @throws RegionManagementException if an error occurs while decreasing water treatments
+     */
     public void decreaseWaterTreatmentsInAllRegions(List<IRegion> regions) throws RegionManagementException {
         for (IRegion region : regions) {
             region.decreaseWaterTreatments(region.getWaterTreatments());
+            LOG.debug("Decreased all water treatments in region {}", region.getId());
         }
     }
-
+    /**
+     * Retrieves a game based on the lobby code.
+     * <p>
+     * This method fetches the game instance associated with the given lobby code from the game store.
+     *
+     * @param lobbyCode the code of the lobby to retrieve the game from
+     * @return the game associated with the given lobby code
+     */
     public IGame getGame(String lobbyCode) {
+        LOG.debug("Retrieving game with lobby code {}", lobbyCode);
         return GameStore.getInstance()
                         .getGame(lobbyCode);
     }

@@ -1221,11 +1221,28 @@ public class GamePresenter extends AbstractPresenter {
         Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
 
+    /**
+     * Handles the AvailableRegionsResponse.
+     * <p>
+     * This method is called when an AvailableRegionsResponse is received.
+     * It updates the available regions on the game map by highlighting them.
+     *
+     * @param response the AvailableRegionsResponse containing the available regions
+     */
     @Subscribe
     public void onAvailableRegionsResponse(AvailableRegionsResponse response) {
         setAvailableRegions(response.getRegions());
     }
 
+    /**
+     * Handles the PossibleCityCardsToDiscardForRegionResponse.
+     * <p>
+     * This method is called when a PossibleCityCardsToDiscardForRegionResponse is received.
+     * It opens a dialog for the user to select a city card and the amount of water treatments to discard.
+     * If the user makes a selection, it sends a water treatment request to the game service.
+     *
+     * @param response the PossibleCityCardsToDiscardForRegionResponse containing the possible city cards to discard
+     */
     @Subscribe
     public void onPossibleCityCardsToDiscardForRegionResponse(PossibleCityCardsToDiscardForRegionResponse response) {
         Platform.runLater(() -> {
@@ -1248,6 +1265,13 @@ public class GamePresenter extends AbstractPresenter {
         });
     }
 
+    /**
+     * Sets the available regions on the game map.
+     * Iterates through the available regions and updates the style class of the corresponding region StackPane
+     * to indicate it is a highlighted region.
+     *
+     * @param regions the set of available regions
+     */
     private void setAvailableRegions(Set<IRegionDTO> regions) {
         for (IRegionDTO region : regions) {
             Node node = mapPane.lookup(REGION_ID + region.getId());
@@ -1341,6 +1365,13 @@ public class GamePresenter extends AbstractPresenter {
         });
 
     }
+
+    /**
+     * Resets the style of all regions on the game map.
+     * <p>
+     * This method iterates through the list of regions and removes the highlight style class
+     * from each region's corresponding StackPane node on the map.
+     */
     private void resetRegionStyle () {
         List<IRegionDTO> regions = gameDTO.getRegions();
         for (IRegionDTO region : regions) {

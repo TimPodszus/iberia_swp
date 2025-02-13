@@ -1,7 +1,6 @@
 package de.uol.swp.server.region;
 
 import de.uol.swp.common.cards.CityCardDTO;
-import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.request.WaterTreatmentRegionRequest;
@@ -11,14 +10,11 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.game.GameException;
-import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
-import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.LobbyManagement;
 import de.uol.swp.server.player.management.PlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.RegionManagement;
 import org.greenrobot.eventbus.EventBus;
 import org.junit.jupiter.api.BeforeEach;

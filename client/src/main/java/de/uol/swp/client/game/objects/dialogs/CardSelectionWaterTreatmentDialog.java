@@ -57,6 +57,9 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         });
     }
 
+    /**
+     * Sets the buttons for the dialog.
+     */
     private void setButtons() {
         super.getDialogPane().getButtonTypes().add(ButtonType.OK);
         if (this.dismissible) {
@@ -64,7 +67,7 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         }
 
         okButton = (Button) super.getDialogPane().lookupButton(ButtonType.OK);
-        okButton.setDisable(true);  // Setze den Button standardmäßig auf disabled
+        okButton.setDisable(true);
 
         Label titleLabel = new Label("Wählen Sie zuerst die Anzahl");
         titleLabel.setAlignment(Pos.CENTER);
@@ -73,9 +76,11 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         buttonBox.setAlignment(Pos.CENTER);
 
         addButton("1", "1", buttonBox);
-        addButton("2", "2", buttonBox);
-        if (role.equals(RoleEnum.AGRICULTURAL_SCIENTIST)) {
-            addButton("3", "3", buttonBox);
+        if(!cityCards.isEmpty()) {
+            addButton("2", "2", buttonBox);
+            if (role.equals(RoleEnum.AGRICULTURAL_SCIENTIST)) {
+                addButton("3", "3", buttonBox);
+            }
         }
 
         VBox mainBox = (VBox) super.getDialogPane().getContent();
@@ -201,6 +206,9 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         return null;
     }
 
+    /**
+     * Enables the OK button.
+     */
     private void enableOkButton() {
         if (okButton != null) {
             okButton.setDisable(false);
