@@ -477,27 +477,46 @@ public class SceneManager {
     @Subscribe
     public void onRemovedFromLobbyEvent(RemovedFromLobbyEvent event) {
         Platform.runLater(() -> {
-            LOG.debug("[LobbyId: {}] Closing stage, because user has been removed", event.getLobbyId());
-            Stage stage = gameStages.get(event.getLobbyId());
-            if (stage != null) {
-                stage.close();
-                gameStages.remove(event.getLobbyId());
-            }
+            LOG.debug("[LobbyId: {}] User has been removed", event.getLobbyId());
+            closeStage(event.getLobbyId());
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Sie wurden aus der Lobby entfernt.");
             alert.show();
         });
     }
 
+    /**
+     * Handles UserLeftLobbyResponse detected on the EventBus.
+     * <p>
+     * If a UserLeftLobbyResponse is detected on the EventBus, this method gets
+     * called. It logs the event and closes the stage associated with the lobby ID
+     * from which the user left.
+     *
+     * @param response The UserLeftLobbyResponse detected on the EventBus
+     * @see de.uol.swp.common.lobby.message.response.UserLeftLobbyResponse
+     */
     @Subscribe
     public void onUserLeftLobbyResponse(UserLeftLobbyResponse response) {
         Platform.runLater(() -> {
-            LOG.debug("[LobbyId: {}] Closing stage, because user has left", response.getLobbyId());
-            Stage stage = gameStages.get(response.getLobbyId());
-            if (stage != null) {
-                stage.close();
-                gameStages.remove(response.getLobbyId());
-            }
+            LOG.debug("[LobbyId: {}] User has left lobby", response.getLobbyId());
+            closeStage(response.getLobbyId());
         });
+    }
+
+    /**
+     * Closes the stage associated with the given lobby ID.
+     * <p>
+     * This method retrieves the stage associated with the provided lobby ID
+     * from the `gameStages` map, closes it if it exists, and removes it from the map.
+     *
+     * @param lobbyId The ID of the lobby whose stage is to be closed.
+     */
+    private void closeStage(String lobbyId) {
+        LOG.debug("[LobbyId: {}] Closing stage", lobbyId);
+        Stage stage = gameStages.get(lobbyId);
+        if (stage != null) {
+            stage.close();
+            gameStages.remove(lobbyId);
+        }
     }
 
     /**
