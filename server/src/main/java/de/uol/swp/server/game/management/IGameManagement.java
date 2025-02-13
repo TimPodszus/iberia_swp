@@ -1,12 +1,16 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.game.GameActions;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -79,5 +83,21 @@ public interface IGameManagement {
      * @param lobbyId the ID of the lobby in which the game is happening
      */
     void unlockGameInWaitForConfirmation(String lobbyId);
+
+    void shareKnowledgeRequestAccepted(
+            IPlayer currentPlayer,
+            IPlayer targetPlayer,
+            String lobbyId,
+            ShareKnowledgeEvent event,
+            ILobbyManagement lobbyManagement,
+            GameService gameService
+    ) throws PlayerManagementException;
+
+    void postShareKnowledgeResponse(
+            ShareKnowledgeEvent event,
+            ILobbyManagement lobbyManagement,
+            GameService gameService,
+            boolean success
+    );
 }
 

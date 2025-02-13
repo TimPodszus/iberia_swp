@@ -3,8 +3,10 @@ package de.uol.swp.server.game.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
@@ -13,6 +15,8 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
+import de.uol.swp.server.game.GameMapper;
+import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.IGameState;
@@ -20,6 +24,7 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForConfirmationState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -413,4 +418,79 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         LOG.debug("[LobbyID: {}] Game unlocked from wait-for-confirmation state", lobbyId);
     }
 
+    public void shareKnowledgeRequestAccepted(
+            IPlayer currentPlayer,
+            IPlayer targetPlayer,
+            String lobbyId,
+            ShareKnowledgeEvent event,
+            ILobbyManagement lobbyManagement,
+            GameService gameService
+    ) throws PlayerManagementException {
+
+        LOG.info(
+                "Share knowledge request accepted by target player {}",
+                targetPlayer.getUser()
+                            .getUsername()
+        );
+        ICard targetPlayerCard = playerManagement.getCard(
+                event.getLobbyId(),
+                targetPlayer.getUser()
+                            .getUsername(),
+                event.getTargetPlayerCard()
+                     .getId()
+        );
+        ICard currentPlayerCard = playerManagement.getCard(
+                event.getLobbyId(),
+                currentPlayer.getUser()
+                             .getUsername(),
+                event.getCurrentPlayerCard()
+                     .getId()
+        );
+        currentPlayer.getCards()
+                     .remove(currentPlayerCard);
+        targetPlayer.getCards()
+                    .remove(targetPlayerCard);
+        currentPlayer.getCards()
+                     .add(targetPlayerCard);
+        targetPlayer.getCards()
+                    .add(currentPlayerCard);
+
+        LOG.debug(
+                "Cards exchanged between {} and {}",
+                currentPlayer.getUser()
+                             .getUsername(),
+                targetPlayer.getUser()
+                            .getUsername()
+        );
+        IGameState gameState = this.getGame(event.getLobbyId())
+                                   .getState();
+        ((PlayerTurnState) gameState).reduceActionsRemaining(this.getGame(event.getLobbyId()));
+        LOG.trace("ReducedActionsRemaining");
+        postShareKnowledgeResponse(event, lobbyManagement, gameService, true);
+
+
+    }
+
+    @Override
+    public void postShareKnowledgeResponse(
+            ShareKnowledgeEvent event,
+            ILobbyManagement lobbyManagement,
+            GameService gameService,
+            boolean success
+    ) {
+
+        gameService.sendToAllInLobby(
+                lobbyManagement.getLobby(event.getLobbyId()),
+                new KnowledgeSharedEvent(
+                        event.getLobbyId(),
+                        success,
+                        GameMapper.toDTO(this.getGame(event.getLobbyId()))
+                )
+        );
+        LOG.trace("Posted ShareKnowledgeResponse to event bus for lobby {}", event.getLobbyId());
+
+
+    }
 }
+
+
