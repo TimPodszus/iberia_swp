@@ -153,6 +153,16 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private ToggleButton shareKnowledgeButton;
 
+    @FXML
+    private ToggleButton endTurnButton;
+
+    @FXML
+    private ToggleButton roleButton1;
+
+    @FXML
+    private ToggleButton roleButton2;
+
+
     private double mouseX;
 
     private double mouseY;
@@ -589,6 +599,27 @@ public class GamePresenter extends AbstractPresenter {
             //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/84
         } else {
 
+        }
+    }
+
+    @FXML
+    private void onRoleButton1(ActionEvent event) {
+        if (roleButton1.isSelected()) {
+            //TODO
+        }
+    }
+
+    @FXML
+    private void onRoleButton2(ActionEvent event) {
+        if (roleButton2.isSelected()) {
+            //TODO
+        }
+    }
+
+    @FXML
+    private void onEndTurn(ActionEvent event) {
+        if (endTurnButton.isSelected()) {
+            //TODO
         }
     }
 
