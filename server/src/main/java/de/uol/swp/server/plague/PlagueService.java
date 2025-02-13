@@ -80,6 +80,7 @@ public class PlagueService extends AbstractService {
         List<IInfection> infections = plagueManagement.getInfectionsInCity(game);
         List<IInfectionDTO> infectionsInCity = InfectionMapper.toDTOList(infections);
 
+
         LOG.debug("Found {} infections in city {}", infectionsInCity.size(), game.getCurrentPlayer().getCurrentPosition().getName());
 
         AvailablePlaguesResponse availablePlaguesResponse = new AvailablePlaguesResponse(
@@ -88,6 +89,11 @@ public class PlagueService extends AbstractService {
                 infectionsInCity,
                 game.getCurrentPlayer().getRole().getName()
         );
+        request.getSession()
+                .ifPresent(availablePlaguesResponse::setSession);
+        request.getMessageContext()
+                .ifPresent(availablePlaguesResponse::setMessageContext);
+
         LOG.debug("Sending AvailablePlaguesResponse with {} plagues and role: {}", infectionsInCity.size(), game.getCurrentPlayer().getRole().getName());
 
         post(availablePlaguesResponse);
@@ -96,13 +102,24 @@ public class PlagueService extends AbstractService {
     @Subscribe
     public void onTreatPlagueRequest(
             TreatPlagueRequest request
-    ) {
+    ) throws PlagueManagementException {
+        LOG.debug("Received TreatPlagueRequest for lobbyId: {}, cityId: {}, plagueName: {}",
+                request.getLobbyId(), request.getCityId(), request.getPlagueName());
         IGame game = plagueManagement.getGame(request.getLobbyId());
         ICity city = game.getCurrentPlayer().getCurrentPosition();
 
-        city.removePlagueCubes(request.getPlagueName(), 1);
+        LOG.debug("Removing one plague cube of type {} from city {}", request.getPlagueName(), city.getName());
+        plagueManagement.treatPlague(request.getPlagueName(), city, game);
+//        city.removePlagueCubes(request.getPlagueName(), 1);
 
         TreatPlagueResponse treatPlagueResponse = new TreatPlagueResponse(request.getLobbyId(), true, request.getPlagueName(), city.getId());
+        request.getSession()
+                .ifPresent(treatPlagueResponse::setSession);
+        request.getMessageContext()
+                .ifPresent(treatPlagueResponse::setMessageContext);
+
+        LOG.debug("Sending TreatPlagueResponse for lobbyId: {}, cityId: {}, plagueName: {}",
+                request.getLobbyId(), city.getId(), request.getPlagueName());
         post(treatPlagueResponse);
 
     }
@@ -113,11 +130,18 @@ public class PlagueService extends AbstractService {
     ) {
         IGame game = plagueManagement.getGame(request.getLobbyId());
 
+        LOG.debug("Fetching cities near city with ID {}", game.getCurrentPlayer().getCurrentPosition().getId());
         List<ICity> citiesNearBy = plagueManagement.getCitiesNearBy(game, game.getCurrentPlayer().getCurrentPosition());
 
         List<ICityDTO> cityDTOList = CityMapper.toDTOList(citiesNearBy);
+        LOG.debug("Found {} nearby cities for treatment", cityDTOList.size());
 
         AvailableCitiesToTreatResponse availableCitiesToTreatResponse = new AvailableCitiesToTreatResponse(request.getLobbyId(), true, cityDTOList);
+
+        request.getSession().ifPresent(availableCitiesToTreatResponse::setSession);
+        request.getMessageContext().ifPresent(availableCitiesToTreatResponse::setMessageContext);
+        LOG.debug("Sending AvailableCitiesToTreatResponse with {} cities", cityDTOList.size());
+
         post(availableCitiesToTreatResponse);
     }
 

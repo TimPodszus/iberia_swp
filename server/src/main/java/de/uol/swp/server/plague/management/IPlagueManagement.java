@@ -18,6 +18,8 @@ public interface IPlagueManagement {
      */
     void researchPlague(PlagueName plagueToResearch, Game game) throws PlagueManagementException;
 
+    void treatPlague(PlagueName plagueToTreat, ICity city, IGame game) throws PlagueManagementException;
+
     IGame getGame(String lobbyId);
 
     List<IInfection> getInfectionsInCity(IGame game);

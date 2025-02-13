@@ -11,9 +11,9 @@ import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
 import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
+import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
 import de.uol.swp.client.game.objects.dialogs.SelectCityToTreatDialog;
 import de.uol.swp.client.game.objects.dialogs.TreatPlagueDialog;
-import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.ICardDTO;
@@ -284,17 +284,17 @@ public class GamePresenter extends AbstractPresenter {
     private void onCityClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
         int cityId = Integer.parseInt(source.getId()
-                                            .replaceAll("\\D+", ""));
+                .replaceAll("\\D+", ""));
         LOG.debug("City {} clicked", cityId);
         if (gameDTO.getState()
-                   .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
+                .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
             LOG.debug("Setting initial position to city {}", cityId);
             gameService.setPosition(gameDTO.getGameId(), cityId);
             LOG.info("Initial position set");
         }
 
         if (source.getStyleClass()
-                  .contains(CITY_HIGHLIGHTED_CLASS)) {
+                .contains(CITY_HIGHLIGHTED_CLASS)) {
             LOG.trace("Player wants to move to city {}", cityId);
             if (cardDiscardNeeded(cityId)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
@@ -311,9 +311,9 @@ public class GamePresenter extends AbstractPresenter {
             }
 
             if (movingByBoat(cityId) && gameDTO.getCurrentPlayer()
-                                               .getRole()
-                                               .getName() == RoleEnum.SAILOR && !this.getPlayersInCity()
-                                                                                     .isEmpty()) {
+                    .getRole()
+                    .getName() == RoleEnum.SAILOR && !this.getPlayersInCity()
+                    .isEmpty()) {
                 LOG.debug("Player is a sailor and take a player with him to the harbour city {}", cityId);
                 PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
                 Optional<String> result = dialog.showAndWait();
@@ -342,7 +342,7 @@ public class GamePresenter extends AbstractPresenter {
     private boolean cardDiscardNeeded(int cityId) {
         LOG.debug("Checking if discarding a card is needed for moving to city {}", cityId);
         return !availableDestinations.get(cityId)
-                                     .isEmpty();
+                .isEmpty();
     }
 
     /**
@@ -354,12 +354,12 @@ public class GamePresenter extends AbstractPresenter {
     private boolean movingByBoat(int cityId) {
         LOG.debug("Checking if player is moving by boat to city {}", cityId);
         ICityDTO currentCity = gameDTO.getCurrentPlayer()
-                                      .getCurrentPosition();
+                .getCurrentPosition();
         ICityDTO destinationCity = gameDTO.getCities()
-                                          .stream()
-                                          .filter(city -> city.getId() == cityId)
-                                          .findFirst()
-                                          .orElseThrow();
+                .stream()
+                .filter(city -> city.getId() == cityId)
+                .findFirst()
+                .orElseThrow();
         return currentCity.isHarbourCity() && destinationCity.isHarbourCity();
     }
 
@@ -442,29 +442,33 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
         System.out.println("AvailablePlaguesResponse empfangen! Anzahl Seuchen: " + response.getAvailablePlagues().size());
-        TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
-        System.out.println("Dialog wird geöffnet...");
-        Optional<PlagueName> result = dialog.showAndWait(); // Optional nutzen!
-        System.out.println("Dialog wurde geschlossen.");
 
-        result.ifPresent(selectedPlague -> {
-            System.out.println("Ausgewählte Seuche: " + selectedPlague);
-            gameService.sendTreatPlagueRequest(
-                    lobbyId,
-                    gameDTO.getCurrentPlayer().getCurrentPosition().getId(),
-                    selectedPlague
-            );
+        Platform.runLater(() -> {
+            TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
+            System.out.println("Dialog wird geöffnet...");
+            Optional<PlagueName> result = dialog.showAndWait();
+            System.out.println("Dialog wurde geschlossen.");
 
-            treatInfectionButton.setSelected(false);
-
-            if (response.getRole() == RoleEnum.COUNTRY_DOCTOR) {
-                gameService.sendAvailableCitiesToTreatRequest(
+            result.ifPresent(selectedPlague -> {
+                System.out.println("Ausgewählte Seuche: " + selectedPlague);
+                gameService.sendTreatPlagueRequest(
                         lobbyId,
-                        gameDTO.getCurrentPlayer().getCurrentPosition().getId()
+                        gameDTO.getCurrentPlayer().getCurrentPosition().getId(),
+                        selectedPlague
                 );
-            }
+
+                treatInfectionButton.setSelected(false);
+
+//                if (response.getRole().equals(RoleEnum.COUNTRY_DOCTOR)) {
+//                    gameService.sendAvailableCitiesToTreatRequest(
+//                            lobbyId,
+//                            gameDTO.getCurrentPlayer().getCurrentPosition().getId()
+//                    );
+//                }
+            });
         });
     }
+
 
     @Subscribe
     public void onTreatPlagueResponse(TreatPlagueResponse response) {
@@ -492,12 +496,14 @@ public class GamePresenter extends AbstractPresenter {
 
     @Subscribe
     public void onAvailableCitiesToTreatResponse(AvailableCitiesToTreatResponse response) {
-        SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(response.getAvailableCities());
-        Optional<ICityDTO> selectedCity = dialog.showAndWait();
+        Platform.runLater(() -> {
+            SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(response.getAvailableCities());
+            Optional<ICityDTO> selectedCity = dialog.showAndWait();
 
-        selectedCity.ifPresent(city ->
-                gameService.sendAvailablePlaguesRequest(lobbyId, city.getId())
-        );
+            selectedCity.ifPresent(city ->
+                    gameService.sendAvailablePlaguesRequest(lobbyId, city.getId())
+            );
+        });
     }
 
     /**
@@ -1335,8 +1341,8 @@ public class GamePresenter extends AbstractPresenter {
         for (IPlayerDTO player : gameDTO.getPlayers()) {
             boolean isNotCurrentPlayer = !player.equals(gameDTO.getCurrentPlayer());
             boolean playersAreInSameCity = player.getCurrentPosition()
-                                                 .equals(gameDTO.getCurrentPlayer()
-                                                                .getCurrentPosition());
+                    .equals(gameDTO.getCurrentPlayer()
+                            .getCurrentPosition());
             if (isNotCurrentPlayer && playersAreInSameCity) {
                 LOG.trace("Player {} is in the same city as the current player", player.getUsername());
                 playersInCity.add(player);
@@ -1359,12 +1365,12 @@ public class GamePresenter extends AbstractPresenter {
     public void onShareRideEvent(ShareRideEvent event) {
         Platform.runLater(() -> {
             boolean result = ConfirmationDialog.showConfirmationDialog("Willst du zu " + event.getCity()
-                                                                                              .getName()
-                                                                                              .getDisplayName() + " mitgenommen werden?");
+                    .getName()
+                    .getDisplayName() + " mitgenommen werden?");
             if (result) {
                 gameService.sendShareRideRequest(lobbyId,
                         event.getCity()
-                             .getId()
+                                .getId()
                 );
             } else {
                 gameService.sendShareRideRequest(lobbyId);

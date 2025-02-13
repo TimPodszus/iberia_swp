@@ -77,9 +77,13 @@ class PlagueServiceTest {
     }
 
     @Test
-    void testOnTreatPlague() {
+    void testOnTreatPlague() throws PlagueManagementException {
+        String lobbyId = "lobbyId";
+
         TreatPlagueRequest request = new TreatPlagueRequest("lobby1", 123, PlagueName.CHOLERA);
         when(city.getId()).thenReturn(123);
+
+        when(plagueManagement.getGame(lobbyId)).thenReturn(game);
 
         plagueService.onTreatPlagueRequest(request);
 
