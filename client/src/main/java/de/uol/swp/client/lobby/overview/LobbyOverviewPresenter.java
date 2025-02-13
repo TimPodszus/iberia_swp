@@ -56,9 +56,6 @@ public class LobbyOverviewPresenter extends AbstractPresenter {
         lobbyTable.getColumns()
                   .get(2)
                   .setCellValueFactory(new PropertyValueFactory<>("difficulty"));
-        lobbyTable.getColumns()
-                  .get(3)
-                  .setCellValueFactory(new PropertyValueFactory<>("access"));
         lobbyTable.setPlaceholder(new Label("Keine Lobby gefunden"));
 
         lobbyService.requestLobbyList();
