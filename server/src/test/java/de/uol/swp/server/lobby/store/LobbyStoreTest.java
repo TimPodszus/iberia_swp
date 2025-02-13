@@ -88,6 +88,11 @@ class LobbyStoreTest {
         );
     }
 
+    /**
+     * Tests retrieving all lobbies.
+     * This test creates two lobbies and verifies that the total number of lobbies
+     * returned by the `getAllLobbies` method is 2.
+     */
     @Test
     void testGetAllLobbies() {
         lobbyStore.createLobby("lobby1", "Lobby1", users, owner, 3);
