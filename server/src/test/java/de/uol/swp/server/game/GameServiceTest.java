@@ -1,6 +1,7 @@
 package de.uol.swp.server.game;
 
 import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
@@ -16,16 +17,20 @@ import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
+import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -293,6 +298,9 @@ public class GameServiceTest extends EventBusBasedTest {
         IUser targetUser = mock(IUser.class);
         List<ICard> currentPlayerCards = mock(List.class);
         List<ICard> targetPlayerCards = mock(List.class);
+        CityRepository cityRepository = mock(CityRepository.class);
+        GameManagement gameManagement = mock(GameManagement.class);
+        GameMapper gameMapper = mock(GameMapper.class);
 
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
         when(game.getCurrentPlayer()).thenReturn(currentPlayer);
@@ -301,20 +309,17 @@ public class GameServiceTest extends EventBusBasedTest {
         when(targetPlayer.getUser()).thenReturn(targetUser);
         when(currentUser.getUsername()).thenReturn("currentPlayer");
         when(targetUser.getUsername()).thenReturn("targetPlayer");
-        when(playerManagement.getCard(
-                "lobbyId",
-                "currentPlayer",
-                event.getCurrentPlayerCard()
-                     .getId()
-        )).thenReturn(currentPlayerCard);
-        when(playerManagement.getCard(
-                "lobbyId",
-                "targetPlayer",
-                event.getTargetPlayerCard()
-                     .getId()
-        )).thenReturn(targetPlayerCard);
         when(currentPlayer.getCards()).thenReturn(currentPlayerCards);
         when(targetPlayer.getCards()).thenReturn(targetPlayerCards);
+        when(game.getCityRepository()).thenReturn(cityRepository);
+        when(game.getConnectionRepository()).thenReturn(mock(ConnectionRepository.class));
+        when(game.getRegionRepository()).thenReturn(mock(RegionRepository.class));
+        when(game.getPlagueRepository()).thenReturn(mock(PlagueRepository.class));
+        when(game.getPlayers()).thenReturn(List.of(currentPlayer, targetPlayer));
+        when(game.getDifficulty()).thenReturn(2);
+        when(game.getGameId()).thenReturn("lobbyId");
+        when(gameMapper.toDTO(game)).thenReturn(mock(IGameDTO.class));
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
 
         // Act
         gameService.onShareKnowledgeRequest(request);
@@ -327,7 +332,7 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnShareKnowledgeReqeust_Denied() throws PlayerManagementException, GameManagementException {
+    void testOnShareKnowledgeRequest_Denied() throws GameManagementException, PlayerManagementException {
         // Arrange
         ShareKnowledgeEvent event = new ShareKnowledgeEvent(
                 "lobbyId",
@@ -379,6 +384,6 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(currentPlayerCards, never()).add(targetPlayerCard);
         verify(targetPlayerCards, never()).add(currentPlayerCard);
     }
-
-
 }
+
+

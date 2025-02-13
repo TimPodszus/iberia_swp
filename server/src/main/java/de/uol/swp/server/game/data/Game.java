@@ -37,6 +37,7 @@ public class Game implements IGame {
     /**
      * Repository for city-related data.
      */
+    @Getter
     private CityRepository cityRepository;
 
     /**

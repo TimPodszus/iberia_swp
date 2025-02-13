@@ -332,8 +332,6 @@ public class GameService extends AbstractService {
                     targetPlayer.getUser()
                                 .getUsername()
             );
-            LOG.trace("Current player cards after exchange: {}", currentPlayer.getCards());
-            LOG.trace("Target player cards after exchange: {}", targetPlayer.getCards());
             IGameState gameState = gameManagement.getGame(event.getLobbyId())
                                                  .getState();
             //  ((PlayerTurnState) gameState).reduceActionsRemaining(gameManagement.getGame(event.getLobbyId()));
