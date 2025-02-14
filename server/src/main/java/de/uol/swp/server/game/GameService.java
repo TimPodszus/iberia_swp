@@ -216,7 +216,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         if (game.getState() instanceof DrawCardState && game.getPlayerCardDrawPile()
                     .isEmpty()){
                 game.setState(new EndGameState(false));
-                LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyCode());
+                LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
             }
     }
 }
