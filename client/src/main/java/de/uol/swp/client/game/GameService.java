@@ -3,6 +3,7 @@ package de.uol.swp.client.game;
 import com.google.inject.Inject;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
@@ -76,6 +77,11 @@ public class GameService {
      */
     public void drawPlayerCard(String lobbyCode) {
         DrawPlayerCardRequest request = new DrawPlayerCardRequest(lobbyCode);
+        eventBus.post(request);
+    }
+
+    public void drawInfectionCard(String lobbyId) {
+        DrawInfectionCardRequest request = new DrawInfectionCardRequest(lobbyId);
         eventBus.post(request);
     }
 

@@ -39,6 +39,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static de.uol.swp.common.city.CityName.ALBACETE;
@@ -456,5 +457,43 @@ class GameManagementTest {
                 testGame.getState()
                         .getStateType()
         );
+    }
+
+    @Test
+    void testDrawBottomInfectionCard() {
+        InfectionCard infectionCard1 = new InfectionCard(1, "InfectionCard1", cityRepository.getCityByName(CityName.BARCELONA));
+        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard2", cityRepository.getCityByName(CityName.ALICANTE));
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard1, infectionCard2)));
+
+        InfectionCard drawnCard = gameManagement.drawBottomInfectionCard(game);
+
+        assertEquals(infectionCard2, drawnCard, "Expected the last infection card to be drawn from the bottom of the draw pile");
+    }
+
+    @Test
+    void testDrawBottomInfectionCardWithEmptyDiscardPile() {
+        when(game.getInfectionCardDiscardPile()).thenReturn(new ArrayList<>());
+
+        assertThrows(IllegalStateException.class, () -> gameManagement.drawBottomInfectionCard(game), "Expected IllegalStateException when the discard pile is empty");
+    }
+
+    @Test
+    void testShuffleInfectionCardsFromDrawPile() {
+        InfectionCard infectionCard1 = new InfectionCard(1, "InfectionCard1", cityRepository.getCityByName(CityName.BARCELONA));
+        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard2", cityRepository.getCityByName(CityName.ALICANTE));
+        InfectionCard infectionCard3 = new InfectionCard(3, "InfectionCard3", cityRepository.getCityByName(CityName.MADRID));
+
+        List<InfectionCard> discardPile = new ArrayList<>(List.of(infectionCard1, infectionCard2));
+        List<InfectionCard> drawPile = new ArrayList<>(List.of(infectionCard3));
+
+        when(game.getInfectionCardDiscardPile()).thenReturn(discardPile);
+        when(game.getInfectionCardDrawPile()).thenReturn(drawPile);
+
+        gameManagement.shuffleInfectionCardsFromDrawPile(game);
+
+        assertTrue(drawPile.contains(infectionCard1), "Expected draw pile to contain infectionCard1");
+        assertTrue(drawPile.contains(infectionCard2), "Expected draw pile to contain infectionCard2");
+        assertTrue(drawPile.contains(infectionCard3), "Expected draw pile to contain infectionCard3");
+        assertTrue(discardPile.isEmpty(), "Expected discard pile to be empty after shuffling");
     }
 }

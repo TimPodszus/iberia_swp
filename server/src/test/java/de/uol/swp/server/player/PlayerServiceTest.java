@@ -3,9 +3,13 @@ package de.uol.swp.server.player;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.city.management.CityManagementException;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
@@ -33,6 +37,9 @@ public class PlayerServiceTest extends EventBusBasedTest {
     @Mock
     private IGameManagement gameManagement;
 
+    @Mock
+    private ICityManagement cityManagement;
+
     private final IGame game = new Game(1, "validGameId");
 
     @Mock
@@ -55,7 +62,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        playerService = new PlayerService(super.getBus(), playerManagement, gameManagement);
+        playerService = new PlayerService(super.getBus(), playerManagement, gameManagement, cityManagement);
         IUser user = new User("testUser", "testPassword");
 
         when(request.getLobbyId()).thenReturn("validGameId");
@@ -119,5 +126,25 @@ public class PlayerServiceTest extends EventBusBasedTest {
         assertInstanceOf(BoardUpdateEvent.class, super.event);
         verify(playerManagement, never()).setPlayerLocation(eq("validGameId"), eq("testUser"), anyInt());
         verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("validGameId");
+    }
+
+    @Test
+    void onDrawInfectionCardRequest_Success() throws CityManagementException, InterruptedException {
+        DrawInfectionCardRequest request = mock(DrawInfectionCardRequest.class);
+        Session session = mock(Session.class);
+        InfectionCard infectionCard = mock(InfectionCard.class);
+
+        when(request.getLobbyId()).thenReturn("validGameId");
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(UserMapper.toDTO(new User("testUser", "testPassword")));
+        when(gameManagement.getGame("validGameId")).thenReturn(game);
+        when(gameManagement.drawInfectionCard(game)).thenReturn(infectionCard);
+
+        postAndWait(request);
+
+        verify(cityManagement, times(1)).infectCityWithOwnPlague(game, infectionCard, 1);
+        verify(gameManagement, times(1)).getGame("validGameId");
+        verify(gameManagement, times(1)).drawInfectionCard(game);
+        assertInstanceOf(BoardUpdateEvent.class, super.event);
     }
 }

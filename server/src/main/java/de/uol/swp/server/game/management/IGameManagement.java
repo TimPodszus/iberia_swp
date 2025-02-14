@@ -34,6 +34,11 @@ public interface IGameManagement {
     InfectionCard drawInfectionCard(IGame game);
 
     /**
+     * Draws a player card from the DiscardPile. The specific behavior of this method should be defined.
+     */
+    InfectionCard drawBottomInfectionCard(IGame game);
+
+    /**
      * Adds an infection card to the infection card discard pile.
      */
     void discardInfectionCard(IGame game, InfectionCard infectionCard);
@@ -79,5 +84,10 @@ public interface IGameManagement {
      * @param lobbyId the ID of the lobby in which the game is happening
      */
     void unlockGameInWaitForConfirmation(String lobbyId);
+
+    /**
+     * Shuffles the infection cards in the discard pile and adds them to the draw pile.
+     */
+    void shuffleInfectionCardsFromDrawPile(IGame game);
 }
 

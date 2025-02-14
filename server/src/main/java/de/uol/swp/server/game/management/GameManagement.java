@@ -33,10 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.inject.Inject;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages game related operations such as creating games,
@@ -244,6 +241,34 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return infectionCardDrawPile.remove(0);
     }
 
+    /**
+     * Draws an infection card from the bottom of the deck.
+     *
+     * @return The drawn infection card, or null if no card can be drawn
+     */
+    public InfectionCard drawBottomInfectionCard(IGame game) {
+        List<InfectionCard> infectionCardDrawPile = game.getInfectionCardDrawPile();
+
+        if (infectionCardDrawPile.isEmpty()) {
+            throw new IllegalStateException("Infection card draw pile is empty");
+        }
+
+        return infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1);
+    }
+
+    /**
+     * Shuffles the infection cards from the discard pile back into the draw pile.
+     *
+     * @param game The game from which the infection cards are to be shuffled
+     */
+    public void shuffleInfectionCardsFromDrawPile(IGame game){
+        List<InfectionCard> infectionCardsDrawPile = game.getInfectionCardDrawPile();
+        List<InfectionCard> infectionCardsDiscardPile = game.getInfectionCardDiscardPile();
+        Collections.shuffle(infectionCardsDiscardPile);
+        infectionCardsDrawPile.addAll(0, infectionCardsDiscardPile);
+        game.setInfectionCardDrawPile(infectionCardsDrawPile);
+        infectionCardsDiscardPile.clear();
+    }
 
     /**
      * Discards an infection card by adding it to the infection card discard pile of the specified game.

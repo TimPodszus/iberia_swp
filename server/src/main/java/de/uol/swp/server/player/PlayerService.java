@@ -6,10 +6,14 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
+import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.city.management.CityManagementException;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
@@ -25,6 +29,7 @@ import org.greenrobot.eventbus.Subscribe;
 public class PlayerService extends AbstractService {
     private final IPlayerManagement playerManagement;
     private final IGameManagement gameManagement;
+    private final ICityManagement cityManagement;
 
     /**
      * Constructs a new PlayerService.
@@ -33,10 +38,13 @@ public class PlayerService extends AbstractService {
      * @param playerManagement the player management instance for player operations
      */
     @Inject
-    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement) {
+    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement,
+                         ICityManagement cityManagement
+    ) {
         super(bus);
         this.playerManagement = playerManagement;
         this.gameManagement = gameManagement;
+        this.cityManagement = cityManagement;
     }
 
     /**
@@ -58,6 +66,31 @@ public class PlayerService extends AbstractService {
         response.setSession(session);
         post(response);
         IGame game = gameManagement.getGame(request.getLobbyId());
+        post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    /**
+     * Handles the DrawInfectionCardRequest event.
+     *
+     * @param request the request to draw an infection card
+     */
+    @Subscribe
+    public void onDrawInfectionCardRequest(DrawInfectionCardRequest request){
+        AbstractResponseMessage response;
+        Session session = request.getSession()
+                                 .orElseThrow(() -> new IllegalStateException("Session not present"));
+        IGame game = gameManagement.getGame(request.getLobbyId());
+
+        InfectionCard infectionCard = gameManagement.drawInfectionCard(game);
+        try {
+            cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
+            response = new StatusResponse(request.getLobbyId(), true, "Infection card drawn successfully");
+        }catch (CityManagementException e){
+            response = new StatusResponse(request.getLobbyId(), true, e.getMessage());
+        }
+
+        response.setSession(session);
+        post(response);
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 

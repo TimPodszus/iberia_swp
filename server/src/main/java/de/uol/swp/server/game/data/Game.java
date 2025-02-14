@@ -79,6 +79,7 @@ public class Game implements IGame {
     /**
      * Draw pile for infection cards.
      */
+    @Setter
     private List<InfectionCard> infectionCardDrawPile;
 
     /**

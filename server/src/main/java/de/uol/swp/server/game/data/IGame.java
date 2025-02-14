@@ -186,4 +186,6 @@ public interface IGame {
     IPlayer getCurrentPlayer();
 
     void setGameStateChangeListener(GameStateChangeListener listener);
+
+    void setInfectionCardDrawPile(List<InfectionCard> infectionCardDrawPile);
 }

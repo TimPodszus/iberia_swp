@@ -29,6 +29,17 @@ public class PlayerManagement implements IPlayerManagement {
         this.cityManagement = cityManagement;
     }
 
+    /**
+     * Draws a player card for the specified user in the given lobby.
+     * <p>
+     * This method retrieves the player associated with the given user in the specified lobby,
+     * and then calls the overloaded method to draw a player card for that player.
+     *
+     * @param lobbyCode the code of the lobby in which the game is happening
+     * @param user      the user for whom the player card is to be drawn
+     * @return the drawn player card as a data transfer object (DTO)
+     * @throws PlayerManagementException if the player is not found for the given user
+     */
     public ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException {
         IPlayer player = GameStore.getInstance()
                                   .getGame(lobbyCode)
@@ -41,6 +52,19 @@ public class PlayerManagement implements IPlayerManagement {
         return drawPlayerCard(lobbyCode, player);
     }
 
+    /**
+     * Draws a player card for the specified player in the given lobby.
+     * <p>
+     * This method retrieves a card from the player's card draw pile. If the drawn card is an EpidemicCard,
+     * it increases the infection counter, draws the bottom infection card, and infects the city with the plague.
+     * The EpidemicCard is then added to the player card discard pile. If the drawn card is not an EpidemicCard,
+     * it is added to the player's hand. The method also updates the game state to reflect the number of cards drawn.
+     *
+     * @param lobbyCode the code of the lobby in which the game is happening
+     * @param player    the player for whom the card is to be drawn
+     * @return the drawn player card as a data transfer object (DTO)
+     * @throws PlayerManagementException if there is an issue with drawing the card
+     */
     public ICardDTO drawPlayerCard(
             String lobbyCode, IPlayer player
     ) throws PlayerManagementException {
@@ -50,13 +74,13 @@ public class PlayerManagement implements IPlayerManagement {
         ICard card = getCard(game, player);
 
         if (card instanceof EpidemicCard) {
+            InfectionCard infectionCard = gameManagement.drawBottomInfectionCard(game);
+            cityManagement.infectCityWithOwnPlague(game, infectionCard, 3);
+
             game.setInfectionCounter(game.getInfectionCounter() + 1);
-
-            InfectionCard epidemicCard = gameManagement.drawInfectionCard(game);
-            cityManagement.infectCityWithOwnPlague(game, epidemicCard, 3);
-
             game.getPlayerCardDiscardPile()
                 .add(card);
+            gameManagement.shuffleInfectionCardsFromDrawPile(game);
         } else {
             addCard(player, card);
         }
@@ -66,6 +90,18 @@ public class PlayerManagement implements IPlayerManagement {
         return CardMapper.toDTO(card);
     }
 
+    /**
+     * Retrieves a card from the player's card draw pile.
+     * <p>
+     * This method checks if it is the player's turn to draw a card by verifying the current game state and the current player.
+     * If the conditions are met, it retrieves and removes the top card from the player's card draw pile.
+     * If the draw pile is empty, it sets the game state to end the game and throws an exception.
+     *
+     * @param game   the game instance from which the card is to be drawn
+     * @param player the player who is drawing the card
+     * @return the drawn card
+     * @throws PlayerManagementException if it is not the player's turn to draw a card or if the draw pile is empty
+     */
     private ICard getCard(IGame game, IPlayer player) throws PlayerManagementException {
         if (!player.equals(game.getPlayers()
                                .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState) && !(game.getState() instanceof StartState)) {
@@ -82,6 +118,17 @@ public class PlayerManagement implements IPlayerManagement {
         return playerCardDrawPile.remove(0);
     }
 
+    /**
+     * Moves a player to a specified city in the game.
+     * <p>
+     * This method retrieves the player associated with the given user in the specified lobby,
+     * and then calls the overloaded method to move the player to the specified city.
+     *
+     * @param lobbyCode the code of the lobby in which the game is happening
+     * @param player    the player  to be moved
+     * @param cityName    the city to which the player will be moved
+     * @throws PlayerManagementException if the player is not found for the given user
+     */
     public void setStartingPosition(
             String lobbyCode, CityName cityName, IPlayer player
     ) throws PlayerManagementException {
@@ -111,15 +158,40 @@ public class PlayerManagement implements IPlayerManagement {
         }
     }
 
+    /**
+     * Adds a card to the player's hand.
+     * <p>
+     * This method adds the specified card to the list of cards held by the player.
+     *
+     * @param player the player to whom the card is to be added
+     * @param card   the card to be added to the player's hand
+     */
     public void addCard(IPlayer player, ICard card) {
         player.getCards()
               .add(card);
     }
-
+    /**
+     * Discards a single card from the player's hand.
+     * <p>
+     * This method removes the specified card from the player's hand and adds it to the player card discard pile in the game.
+     *
+     * @param lobbyCode the code of the lobby in which the game is happening
+     * @param player    the player from whose hand the card is to be discarded
+     * @param card      the card to be discarded
+     */
     public void discardCard(String lobbyCode, IPlayer player, ICard card) {
         discardCards(lobbyCode, player, List.of(card));
     }
 
+    /**
+     * Discards multiple cards from the player's hand.
+     * <p>
+     * This method removes the specified cards from the player's hand and adds them to the player card discard pile in the game.
+     *
+     * @param lobbyCode the code of the lobby in which the game is happening
+     * @param player    the player from whose hand the cards are to be discarded
+     * @param cards     the list of cards to be discarded
+     */
     public void discardCards(String lobbyCode, IPlayer player, List<? extends ICard> cards) {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyCode);
@@ -132,6 +204,19 @@ public class PlayerManagement implements IPlayerManagement {
             .addAll(cards);
     }
 
+    /**
+     * Retrieves a specific card from a player's hand.
+     * <p>
+     * This method retrieves the game instance using the provided lobby ID, then finds the player by their name.
+     * It then searches the player's hand for a card with the specified card ID and returns it.
+     * If the card is not found, it returns null.
+     *
+     * @param lobbyId    the ID of the lobby in which the game is happening
+     * @param playerName the name of the player whose card is to be retrieved
+     * @param cardId     the ID of the card to be retrieved
+     * @return the card with the specified ID, or null if not found
+     * @throws PlayerManagementException if the player is not found
+     */
     public ICard getCard(String lobbyId, String playerName, int cardId) throws PlayerManagementException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyId);
@@ -143,6 +228,17 @@ public class PlayerManagement implements IPlayerManagement {
                      .orElse(null);
     }
 
+    /**
+     * Retrieves a player from the game by their username.
+     * <p>
+     * This method searches the list of players in the game for a player with the specified username.
+     * If the player is found, it is returned. If the player is not found, a PlayerManagementException is thrown.
+     *
+     * @param game       the game instance from which the player is to be retrieved
+     * @param playerName the username of the player to be retrieved
+     * @return the player with the specified username
+     * @throws PlayerManagementException if the player is not found
+     */
     private IPlayer getPlayer(IGame game, String playerName) throws PlayerManagementException {
         return game.getPlayers()
                    .stream()
@@ -153,6 +249,17 @@ public class PlayerManagement implements IPlayerManagement {
                    .orElseThrow(() -> new PlayerManagementException("Player not found"));
     }
 
+    /**
+     * Sets the current position of a player in the game.
+     * <p>
+     * This method retrieves the game instance using the provided lobby ID, then finds the player by their name.
+     * It then retrieves the city with the specified city ID and sets it as the player's current position.
+     *
+     * @param lobbyId   the ID of the lobby in which the game is happening
+     * @param playerName the name of the player whose position is to be set
+     * @param cityId    the ID of the city to which the player will be moved
+     * @throws PlayerManagementException if the player is not found
+     */
     public void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyId);
