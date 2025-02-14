@@ -18,7 +18,7 @@ public interface IPlagueManagement {
      */
     void researchPlague(PlagueName plagueToResearch, Game game) throws PlagueManagementException;
 
-    void treatPlague(PlagueName plagueToTreat, ICity city, IGame game) throws PlagueManagementException;
+    void treatPlague(PlagueName plagueToTreat, ICity city, IGame game, boolean isCountryDoctor) throws PlagueManagementException;
 
     IGame getGame(String lobbyId);
 

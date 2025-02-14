@@ -120,6 +120,9 @@ public class City implements ICity {
         boolean hasPlague = false;
         for (IInfection infection : infections) {
             hasPlague = infection.getPlagueName().equals(plagueName);
+            if(hasPlague) {
+                break;
+            }
         }
         return hasPlague;
     }

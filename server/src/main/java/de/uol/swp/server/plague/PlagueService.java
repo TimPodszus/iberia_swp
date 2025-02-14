@@ -69,6 +69,12 @@ public class PlagueService extends AbstractService {
         sendToAll(new PlagueResearchedMessage(name));
     }
 
+    /**
+     * Handles an incoming request for available plagues in the player's current city.
+     * Retrieves the list of infections in the city and sends a response with available plagues.
+     *
+     * @param request The request containing the lobby ID and session details.
+     */
     @Subscribe
     public void onAvailablePlaguesRequest(
             AvailablePlaguesRequest request
@@ -99,6 +105,13 @@ public class PlagueService extends AbstractService {
         post(availablePlaguesResponse);
     }
 
+    /**
+     * Handles a request to treat a plague in a city.
+     * Removes one instance of the specified plague from the city and sends a response.
+     *
+     * @param request The request containing the lobby ID, city ID, plague name, and doctor role.
+     * @throws PlagueManagementException if there is an issue treating the plague.
+     */
     @Subscribe
     public void onTreatPlagueRequest(
             TreatPlagueRequest request
@@ -109,8 +122,8 @@ public class PlagueService extends AbstractService {
         ICity city = game.getCurrentPlayer().getCurrentPosition();
 
         LOG.debug("Removing one plague cube of type {} from city {}", request.getPlagueName(), city.getName());
-        plagueManagement.treatPlague(request.getPlagueName(), city, game);
-//        city.removePlagueCubes(request.getPlagueName(), 1);
+        boolean isCountryDoctor = request.isCountryDoctor();
+        plagueManagement.treatPlague(request.getPlagueName(), city, game, isCountryDoctor);
 
         TreatPlagueResponse treatPlagueResponse = new TreatPlagueResponse(request.getLobbyId(), true, request.getPlagueName(), city.getId());
         request.getSession()
@@ -124,6 +137,12 @@ public class PlagueService extends AbstractService {
 
     }
 
+    /**
+     * Handles a request for cities where a player can treat plagues.
+     * Retrieves nearby cities and sends a response with the list of available cities.
+     *
+     * @param request The request containing the lobby ID and session details.
+     */
     @Subscribe
     public void onAvailableCitiesToTreatRequest(
             AvailableCitiesToTreatRequest request
