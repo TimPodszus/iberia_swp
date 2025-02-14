@@ -462,9 +462,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 targetPlayer.getUser()
                             .getUsername()
         );
-        IGameState gameState = this.getGame(event.getLobbyId())
-                                   .getState();
-        ((PlayerTurnState) gameState).reduceActionsRemaining(this.getGame(event.getLobbyId()));
+        //   IGameState gameState = this.getGame(event.getLobbyId())
+        //                             .getState();
+        //   ((PlayerTurnState) gameState).reduceActionsRemaining(this.getGame(event.getLobbyId()));
         LOG.trace("ReducedActionsRemaining");
         postShareKnowledgeResponse(event, lobbyManagement, gameService, true);
 

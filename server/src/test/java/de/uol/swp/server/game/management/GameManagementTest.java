@@ -1,13 +1,15 @@
-package de.uol.swp.server.Game.management;
+package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.StateType;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
@@ -16,21 +18,24 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
-import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForConfirmationState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.role.Nurse;
+import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -496,5 +501,79 @@ class GameManagementTest {
                 testGame.getState()
                         .getStateType()
         );
+    }
+
+
+    @Test
+    void shareKnowledgeRequestAcceptedTest() throws PlayerManagementException {
+        IGame notMockedGame = new Game(
+                "testGame",
+                mock(RoleRepository.class),
+                mock(CityRepository.class),
+                mock(RegionRepository.class),
+                mock(ConnectionRepository.class),
+                mock(PlagueRepository.class),
+                1,
+                0,
+                14,
+                20,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                0,
+                mock(IGameState.class),
+                mock(IGameState.class),
+                1
+        );
+        IPlayer currentPlayer = new Player(new User("test", "test"));
+        ICard currentPlayerCard = new CityCard(1, "test", mock(ICity.class));
+        currentPlayer.getCards()
+                     .add(currentPlayerCard);
+
+
+        IPlayer targetPlayer = new Player(new User("test2", "test2"));
+        ICard targetPlayerCard = new CityCard(2, "test2", mock(ICity.class));
+        targetPlayer.getCards()
+                    .add(targetPlayerCard);
+
+        String lobbyId = "testLobby";
+        ILobbyManagement lobbyManagement = mock(ILobbyManagement.class);
+        GameStore.getInstance()
+                 .addGame(lobbyId, notMockedGame);
+
+        when(playerManagement.getCard("testLobby", "test", 1)).thenReturn(currentPlayerCard);
+        when(playerManagement.getCard("testLobby", "test2", 2)).thenReturn(targetPlayerCard);
+
+        GameService gameService = mock(GameService.class);
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                lobbyId,
+                currentPlayer.getUser()
+                             .getUsername(),
+                targetPlayer.getUser()
+                            .getUsername(),
+                CardMapper.toDTO(currentPlayerCard),
+                CardMapper.toDTO(targetPlayerCard)
+        );
+
+
+        gameManagement.shareKnowledgeRequestAccepted(
+                currentPlayer,
+                targetPlayer,
+                lobbyId,
+                event,
+                lobbyManagement,
+                gameService
+        );
+        System.out.println("Current Player Cards: " + currentPlayer.getCards() + currentPlayerCard.getTitle());
+        System.out.println("Target Player Cards: " + targetPlayer.getCards() + targetPlayerCard.getTitle());
+
+
+        assert (currentPlayer.getCards()
+                             .contains(targetPlayerCard));
+        assert (targetPlayer.getCards()
+                            .contains(currentPlayerCard));
+        verify(gameService, times(1)).sendToAllInLobby(any(), any());
     }
 }
