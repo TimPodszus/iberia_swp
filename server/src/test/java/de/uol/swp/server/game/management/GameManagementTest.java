@@ -175,6 +175,22 @@ class GameManagementTest {
     }
 
     @Test
+    void testSetPositioning_PlayerAlreadyPositioned() {
+        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
+        IUser testUser = new User("test", "test");
+        Session session = UUIDSession.create(testUser);
+        request.setSession(session);
+
+        IPlayer player = new Player(testUser);
+        player.setCurrentPosition(cityRepository.getCityByName(CityName.BARCELONA));
+        when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getState()).thenReturn(mock(WaitForPositioning.class));
+
+        GameManagementException exception = assertThrows(GameManagementException.class, () -> gameManagement.setPositioning(request));
+        assertEquals("Player is already positioned", exception.getMessage());
+    }
+
+    @Test
     void testDrawInfectionCard() {
         InfectionCard infectionCard1 = new InfectionCard(1,
                 "InfectionCard",
