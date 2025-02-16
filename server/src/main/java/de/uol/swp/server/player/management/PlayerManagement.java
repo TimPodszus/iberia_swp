@@ -1,7 +1,7 @@
 package de.uol.swp.server.player.management;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.*;
 import de.uol.swp.server.cards.data.CityCard;

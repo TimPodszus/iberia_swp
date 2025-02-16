@@ -1,6 +1,6 @@
 package de.uol.swp.server.cards.data;
 
-import de.uol.swp.common.cards.CardType;
+import de.uol.swp.common.cards.data.CardType;
 
 public interface ICard {
     /**

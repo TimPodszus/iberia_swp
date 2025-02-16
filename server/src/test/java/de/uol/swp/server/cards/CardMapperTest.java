@@ -1,6 +1,6 @@
 package de.uol.swp.server.cards;
 
-import de.uol.swp.common.cards.*;
+import de.uol.swp.common.cards.data.*;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.data.Card;

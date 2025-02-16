@@ -1,4 +1,4 @@
-package de.uol.swp.common.cards;
+package de.uol.swp.common.cards.data;
 
 import de.uol.swp.common.city.ICityDTO;
 import lombok.Getter;

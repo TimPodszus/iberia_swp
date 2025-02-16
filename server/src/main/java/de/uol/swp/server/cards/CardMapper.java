@@ -1,9 +1,9 @@
 package de.uol.swp.server.cards;
 
-import de.uol.swp.common.cards.CityCardDTO;
-import de.uol.swp.common.cards.EpidemicCardDTO;
-import de.uol.swp.common.cards.ICardDTO;
-import de.uol.swp.common.cards.InfectionCardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
+import de.uol.swp.common.cards.data.EpidemicCardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
