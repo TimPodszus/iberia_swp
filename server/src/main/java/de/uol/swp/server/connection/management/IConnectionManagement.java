@@ -20,4 +20,12 @@ public interface IConnectionManagement {
      * empty, the city is accessible without discarding a card
      */
     Map<ICity, List<ICard>> getAvailableDestinations(String lobbyId, int cityId);
+
+    /**
+     * Retrieves a map of all destinations from the given lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @return a map of all destinations and the list of cards that can be discarded to access them
+     */
+    Map<ICity, List<ICard>> getAllDestinations(String lobbyId);
 }

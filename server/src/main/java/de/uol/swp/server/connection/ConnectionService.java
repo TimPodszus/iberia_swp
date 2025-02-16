@@ -5,11 +5,16 @@ import com.google.inject.Singleton;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
+import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.IConnectionManagement;
+import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.management.ServerUserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
@@ -25,17 +30,23 @@ public class ConnectionService extends AbstractService {
 
     IConnectionManagement connectionManagement;
 
+    ServerUserService userManagement;
+
     /**
      * Constructor
      *
      * @param bus                  the EvenBus used throughout the server
      * @param connectionManagement the ConnectionManagement used to handle the connections
-     * @since 2019-10-08
+     * @param userManagement       the UserManagement used to handle the users
+     * @since 2024-09-20
      */
     @Inject
-    public ConnectionService(EventBus bus, IConnectionManagement connectionManagement) {
+    public ConnectionService(
+            EventBus bus, IConnectionManagement connectionManagement, ServerUserService userManagement
+    ) {
         super(bus);
         this.connectionManagement = connectionManagement;
+        this.userManagement = userManagement;
     }
 
 
@@ -50,9 +61,58 @@ public class ConnectionService extends AbstractService {
                 request.getLobbyId(),
                 request.getCityId()
         );
-        Map<ICity, List<ICard>> availableDestinations = connectionManagement.getAvailableDestinations(request.getLobbyId(),
+
+        Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(request.getLobbyId(),
+                request.getCityId()
+        ));
+
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        request.getSession()
+               .ifPresent(response::setSession);
+        post(response);
+        LOG.debug("[Lobby: {}] Sent AvailableDestinationsResponse for city {}",
+                request.getLobbyId(),
                 request.getCityId()
         );
+    }
+
+    /**
+     * Handles the MovePlayerAnywhereEvent.
+     *
+     * @param event the event containing the lobby ID and the username of the player to be moved
+     * @throws GameException if the user is not logged in
+     */
+    @Subscribe
+    public void onMovePlayerAnywhereEvent(MovePlayerAnywhereEvent event) throws GameException {
+        LOG.debug("[Lobby: {}] Got MovePlayerAnywhereEvent for player {}", event.getLobbyId(), event.getUsername());
+        IUser user = userManagement.getUser(event.getUsername());
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow(() -> {
+                                                   LOG.error("User not logged in");
+                                                   return new GameException("User not logged in");
+                                               });
+
+        Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAllDestinations(
+                event.getLobbyId()));
+
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+        response.setSession(session);
+        post(response);
+        LOG.debug("[Lobby: {}] Sent AvailableDestinationsResponse for player {}",
+                event.getLobbyId(),
+                event.getUsername()
+        );
+    }
+
+    /**
+     * Converts a map of available destinations from ICity and ICard to a map of Integer and ICardDTO.
+     *
+     * @param availableDestinations the map of available destinations with ICity as keys and lists of ICard as values
+     * @return a map of available destinations with Integer as keys and lists of ICardDTO as values
+     */
+    private Map<Integer, List<ICardDTO>> convertToDtoMap(Map<ICity, List<ICard>> availableDestinations) {
         Map<Integer, List<ICardDTO>> availableDestinationsAsDtos = new HashMap<>();
 
         for (Map.Entry<ICity, List<ICard>> entry : availableDestinations.entrySet()) {
@@ -64,13 +124,6 @@ public class ConnectionService extends AbstractService {
                                                  .getId(), cards);
         }
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinationsAsDtos);
-
-        request.getMessageContext()
-               .ifPresent(response::setMessageContext);
-        request.getSession()
-               .ifPresent(response::setSession);
-
-        post(response);
+        return availableDestinationsAsDtos;
     }
 }

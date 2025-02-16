@@ -136,4 +136,20 @@ class ConnectionManagementTest {
                 "Expected Alicante to be accessible without discarding a city card, because the player is a Sailor"
         );
     }
+
+    /**
+     * Tests the retrieval of all available destinations for all cities.
+     * It verifies that the number of available destinations is as expected.
+     */
+    @Test
+    void testGetAllDestinations() {
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getCards()).thenReturn(new ArrayList<>());
+
+        Map<ICity, List<ICard>> cities = connectionManagement.getAllDestinations("lobbyCode");
+
+        assertEquals(48, cities.size(), "Expected 48 available destinations for all cities");
+    }
 }

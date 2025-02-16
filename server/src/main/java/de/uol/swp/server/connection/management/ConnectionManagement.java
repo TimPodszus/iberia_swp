@@ -184,4 +184,15 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         }
         return cards;
     }
+
+    @Override
+    public Map<ICity, List<ICard>> getAllDestinations(String lobbyId) {
+        IGame game = super.getGame(lobbyId);
+        Map<ICity, List<ICard>> allDestinations = new HashMap<>();
+        for (ICity city : game.getCityRepository()
+                              .getCities()) {
+            allDestinations.put(city, new ArrayList<>());
+        }
+        return allDestinations;
+    }
 }
