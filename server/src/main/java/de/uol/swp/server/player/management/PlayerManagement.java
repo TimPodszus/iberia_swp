@@ -15,6 +15,7 @@ import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -80,7 +81,7 @@ public class PlayerManagement implements IPlayerManagement {
             game.setInfectionCounter(game.getInfectionCounter() + 1);
             game.getPlayerCardDiscardPile()
                 .add(card);
-            gameManagement.shuffleInfectionCardsFromDrawPile(game);
+            shuffleInfectionCardsFromDrawPile(game);
         } else {
             addCard(player, card);
         }
@@ -266,5 +267,19 @@ public class PlayerManagement implements IPlayerManagement {
         IPlayer player = getPlayer(game, playerName);
         ICity city = cityManagement.getCity(lobbyId, cityId);
         player.setCurrentPosition(city);
+    }
+
+    /**
+     * Shuffles the infection cards from the discard pile back into the draw pile.
+     *
+     * @param game The game from which the infection cards are to be shuffled
+     */
+    public void shuffleInfectionCardsFromDrawPile(IGame game){
+        List<InfectionCard> infectionCardsDrawPile = game.getInfectionCardDrawPile();
+        List<InfectionCard> infectionCardsDiscardPile = game.getInfectionCardDiscardPile();
+        Collections.shuffle(infectionCardsDiscardPile);
+        infectionCardsDrawPile.addAll(0, infectionCardsDiscardPile);
+        game.setInfectionCardDrawPile(infectionCardsDrawPile);
+        infectionCardsDiscardPile.clear();
     }
 }

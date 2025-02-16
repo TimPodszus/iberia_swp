@@ -84,10 +84,5 @@ public interface IGameManagement {
      * @param lobbyId the ID of the lobby in which the game is happening
      */
     void unlockGameInWaitForConfirmation(String lobbyId);
-
-    /**
-     * Shuffles the infection cards in the discard pile and adds them to the draw pile.
-     */
-    void shuffleInfectionCardsFromDrawPile(IGame game);
 }
 

@@ -476,24 +476,4 @@ class GameManagementTest {
 
         assertThrows(IllegalStateException.class, () -> gameManagement.drawBottomInfectionCard(game), "Expected IllegalStateException when the discard pile is empty");
     }
-
-    @Test
-    void testShuffleInfectionCardsFromDrawPile() {
-        InfectionCard infectionCard1 = new InfectionCard(1, "InfectionCard1", cityRepository.getCityByName(CityName.BARCELONA));
-        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard2", cityRepository.getCityByName(CityName.ALICANTE));
-        InfectionCard infectionCard3 = new InfectionCard(3, "InfectionCard3", cityRepository.getCityByName(CityName.MADRID));
-
-        List<InfectionCard> discardPile = new ArrayList<>(List.of(infectionCard1, infectionCard2));
-        List<InfectionCard> drawPile = new ArrayList<>(List.of(infectionCard3));
-
-        when(game.getInfectionCardDiscardPile()).thenReturn(discardPile);
-        when(game.getInfectionCardDrawPile()).thenReturn(drawPile);
-
-        gameManagement.shuffleInfectionCardsFromDrawPile(game);
-
-        assertTrue(drawPile.contains(infectionCard1), "Expected draw pile to contain infectionCard1");
-        assertTrue(drawPile.contains(infectionCard2), "Expected draw pile to contain infectionCard2");
-        assertTrue(drawPile.contains(infectionCard3), "Expected draw pile to contain infectionCard3");
-        assertTrue(discardPile.isEmpty(), "Expected discard pile to be empty after shuffling");
-    }
 }

@@ -257,20 +257,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     /**
-     * Shuffles the infection cards from the discard pile back into the draw pile.
-     *
-     * @param game The game from which the infection cards are to be shuffled
-     */
-    public void shuffleInfectionCardsFromDrawPile(IGame game){
-        List<InfectionCard> infectionCardsDrawPile = game.getInfectionCardDrawPile();
-        List<InfectionCard> infectionCardsDiscardPile = game.getInfectionCardDiscardPile();
-        Collections.shuffle(infectionCardsDiscardPile);
-        infectionCardsDrawPile.addAll(0, infectionCardsDiscardPile);
-        game.setInfectionCardDrawPile(infectionCardsDrawPile);
-        infectionCardsDiscardPile.clear();
-    }
-
-    /**
      * Discards an infection card by adding it to the infection card discard pile of the specified game.
      *
      * @param game          The game from which the infection card is to be discarded

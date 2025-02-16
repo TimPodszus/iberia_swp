@@ -8,6 +8,7 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
@@ -44,13 +45,19 @@ public class CityManagement implements ICityManagement {
      * @param amount        the amount of infection cubes to add
      */
     public void infectCityWithOwnPlague(IGame game, InfectionCard infectionCard, int amount) {
-        try {
-            PlagueName plagueName = findCity(game, infectionCard).getPlagueName();
-            infectCity(game, infectionCard, plagueName, amount);
-            LOG.debug("Infected city with its own plague: {}, amount: {}", infectionCard.getCity().getName(), amount);
-        } catch (CityManagementException e) {
-            LOG.error("Error infecting city with its own plague: {}", e.getMessage());
-            throw e;
+        if(game.getState() instanceof InfectionState || game.getState() instanceof StartState){
+            try {
+                PlagueName plagueName = findCity(game, infectionCard).getPlagueName();
+                infectCity(game, infectionCard, plagueName, amount);
+                LOG.debug("Infected city with its own plague: {}, amount: {}",
+                        infectionCard.getCity()
+                                     .getName(),
+                        amount
+                );
+            } catch (CityManagementException e) {
+                LOG.error("Error infecting city with its own plague: {}", e.getMessage());
+                throw e;
+            }
         }
     }
 

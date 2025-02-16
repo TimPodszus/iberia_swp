@@ -80,6 +80,11 @@ public class GameService {
         eventBus.post(request);
     }
 
+    /**
+     * Sends a request to draw an infection card for the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     */
     public void drawInfectionCard(String lobbyId) {
         DrawInfectionCardRequest request = new DrawInfectionCardRequest(lobbyId);
         eventBus.post(request);

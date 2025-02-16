@@ -84,13 +84,11 @@ public class PlayerService extends AbstractService {
         InfectionCard infectionCard = gameManagement.drawInfectionCard(game);
         try {
             cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
-            response = new StatusResponse(request.getLobbyId(), true, "Infection card drawn successfully");
         }catch (CityManagementException e){
             response = new StatusResponse(request.getLobbyId(), true, e.getMessage());
+            response.setSession(session);
+            post(response);
         }
-
-        response.setSession(session);
-        post(response);
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
