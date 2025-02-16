@@ -278,10 +278,8 @@ public class GamePresenter extends AbstractPresenter {
             LOG.trace("Player wants to move to city {}", cityId);
             if (cardDiscardNeeded(cityId)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
-                CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(true,
-                        availableDestinations.get(cityId)
-                );
-                Optional<ICardDTO> result = cardSelectionDialog.showAndWait();
+                CardDialog cardDialog = new CardDialog(true, true, availableDestinations.get(cityId));
+                Optional<ICardDTO> result = cardDialog.showAndWait();
                 result.ifPresentOrElse(card -> {
                     LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
                     gameService.movePlayerToCity(lobbyId, cityId, card.getId());
@@ -476,7 +474,20 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onPlayerButtonClickedEvent(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/146
+        PlayerButton playerButton = (PlayerButton) event.getSource();
+        LOG.debug("[LobbyId: {}]Player button {} clicked", this.lobbyId, playerButton.getUsername());
+        IPlayerDTO player = gameDTO.getPlayers()
+                                   .stream()
+                                   .filter(p -> p.getUsername()
+                                                 .equals(playerButton.getUsername()))
+                                   .findFirst()
+                                   .orElseThrow();
+
+        List<ICardDTO> cards = player.getCards();
+        RoleCard playerRoleCard = new RoleCard(player.getRole()
+                                                     .getName());
+        CardDialog cardDialog = new CardDialog(cards, playerRoleCard);
+        cardDialog.show();
     }
 
     /**
@@ -1190,7 +1201,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onCardSelectionResponse(CardSelectionResponse response) {
-        CardSelectionDialog dialog = new CardSelectionDialog(response.isDismissible(), response.getCards());
+        CardDialog dialog = new CardDialog(true, response.isDismissible(), response.getCards());
         Optional<ICardDTO> result = dialog.showAndWait();
     }
 
