@@ -13,7 +13,7 @@ import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.lobby.LobbyService;
 import de.uol.swp.server.player.PlayerService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
-import de.uol.swp.server.usermanagement.UserManagement;
+import de.uol.swp.server.usermanagement.management.UserManagement;
 import de.uol.swp.server.usermanagement.UserService;
 import io.netty.channel.ChannelHandler;
 import org.apache.logging.log4j.LogManager;

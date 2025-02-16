@@ -1,4 +1,6 @@
-package de.uol.swp.server.usermanagement;
+package de.uol.swp.server.usermanagement.management;
+
+import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
 
@@ -35,7 +37,7 @@ public interface ServerUserService {
      * Log out from server
      *
      * @implNote the User Object has to contain a unique identifier in order to
-     * 			 remove the correct user
+     * remove the correct user
      * @since 2017-03-17
      */
     void logout(IUser user);
@@ -43,10 +45,10 @@ public interface ServerUserService {
     /**
      * Create a new persistent user
      *
-     * @implNote the User Object has to contain a unique identifier in order to
-     * 			 remove the correct user
      * @param user The user to create
      * @return the new created user
+     * @implNote the User Object has to contain a unique identifier in order to
+     * remove the correct user
      * @since 2019-09-02
      */
     IUser createUser(IUser user);
@@ -55,9 +57,9 @@ public interface ServerUserService {
      * Removes a user from the sore
      * Remove the User specified by the User object.
      *
-     * @implNote the User Object has to contain a unique identifier in order to
-     * 			 remove the correct user
      * @param user The user to remove
+     * @implNote the User Object has to contain a unique identifier in order to
+     * remove the correct user
      * @since 2019-10-10
      */
     void dropUser(IUser user);
@@ -66,12 +68,12 @@ public interface ServerUserService {
      * Update a user
      * Updates the User specified by the User object.
      *
-     * @implNote the User Object has to contain a unique identifier in order to
-     * 			 update the correct user
      * @param user the user object containing all infos to
      *             update, if some values are not set, (e.g. password is "")
      *             these fields are not updated
      * @return the updated user object
+     * @implNote the User Object has to contain a unique identifier in order to
+     * update the correct user
      * @since 2019-09-02
      */
     IUser updateUser(IUser user);
@@ -83,5 +85,14 @@ public interface ServerUserService {
      * @since 2017-03-17
      */
     List<IUser> retrieveAllUsers();
+
+    /**
+     * Retrieves a user by their username.
+     *
+     * @param username the username of the user to retrieve
+     * @return the user object corresponding to the given username
+     * @since 2017-03-17
+     */
+    IUser getUser(String username);
 
 }
