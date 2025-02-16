@@ -2011,77 +2011,79 @@
                     <Insets bottom="5.0" left="40.0" right="5.0" top="5.0"/>
                 </HBox.margin>
                 <children>
-                    <VBox prefHeight="195.0" prefWidth="320.0" spacing="10.0" alignment="CENTER">
+                    <VBox alignment="CENTER" spacing="10.0">
                         <children>
-                            <HBox spacing="20.0" alignment="CENTER">
-                                <children>
-                                    <VBox alignment="CENTER" spacing="10.0">
-                                        <children>
-                                            <ToggleButton fx:id="buildTrainTracksButton" mnemonicParsing="false"
-                                                          onAction="#onBuildTrainTrack" prefHeight="30.0"
-                                                          prefWidth="150.0" styleClass="action-button"
-                                                          text="Schienen bauen">
-                                                <VBox.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                                </VBox.margin>
-                                            </ToggleButton>
-                                            <ToggleButton fx:id="buildHospitalButton" mnemonicParsing="false"
-                                                          onAction="#onBuildHospital" prefHeight="30.0"
-                                                          prefWidth="150.0" styleClass="action-button"
-                                                          text="Krankenhaus bauen">
-                                                <VBox.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                                </VBox.margin>
-                                            </ToggleButton>
-                                            <ToggleButton fx:id="treatInfectionButton" mnemonicParsing="false"
-                                                          onAction="#onTreatPlague" prefHeight="30.0" prefWidth="150.0"
-                                                          styleClass="action-button" text="Seuche behandeln">
-                                                <VBox.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                                </VBox.margin>
-                                            </ToggleButton>
-                                            <ToggleButton fx:id="roleButton1" mnemonicParsing="false"
-                                                          onAction="#onRoleButton1" prefHeight="30.0" prefWidth="150.0"
-                                                          styleClass="action-button" text="Rollenaktion 1"/>
-                                        </children>
-                                    </VBox>
-                                    <VBox alignment="CENTER" spacing="10.0">
-                                        <children>
-                                            <ToggleButton fx:id="shareKnowledgeButton" mnemonicParsing="false"
-                                                          onAction="#onShareKnowledge" prefHeight="30.0"
-                                                          prefWidth="150.0" styleClass="action-button"
-                                                          text="Wissen teilen">
-                                                <VBox.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                                </VBox.margin>
-                                            </ToggleButton>
-                                            <ToggleButton fx:id="researchPlagueButton" mnemonicParsing="false"
-                                                          onAction="#onResearchPlague" prefHeight="30.0"
-                                                          prefWidth="150.0" styleClass="action-button"
-                                                          text="Seuche erforschen">
-                                                <VBox.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                                </VBox.margin>
-                                            </ToggleButton>
-                                            <ToggleButton fx:id="treatWaterButton" mnemonicParsing="false"
-                                                          onAction="#onPlaceWaterTreatment" prefHeight="30.0"
-                                                          prefWidth="150.0" styleClass="action-button"
-                                                          text="Wasser aufbereiten">
-                                                <VBox.margin>
-                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                                </VBox.margin>
-                                            </ToggleButton>
-                                            <ToggleButton fx:id="roleButton2" mnemonicParsing="false"
-                                                          onAction="#onRoleButton2" prefHeight="30.0"
-                                                          prefWidth="150.0" styleClass="action-button"
-                                                          text="Rollenaktion 2"/>
-                                        </children>
-                                    </VBox>
-                                </children>
-                            </HBox>
-                            <ToggleButton fx:id="endTurnButton" contentDisplay="CENTER" mnemonicParsing="false"
-                                          onAction="#onEndTurn" prefHeight="31.0" prefWidth="320.0"
-                                          styleClass="action-button" text="Zug beenden"/>
+                            <ToggleButton fx:id="buildTrainTracksButton" mnemonicParsing="false"
+                                          onAction="#onBuildTrainTrack" prefHeight="30.0" prefWidth="150.0"
+                                          styleClass="action-button" text="Schienen bauen">
+                                <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </ToggleButton>
+                            <ToggleButton fx:id="buildHospitalButton" mnemonicParsing="false"
+                                          onAction="#onBuildHospital" prefHeight="30.0" prefWidth="150.0"
+                                          styleClass="action-button" text="Krankenhaus bauen">
+                                <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </ToggleButton>
+                            <ToggleButton fx:id="treatInfectionButton" mnemonicParsing="false" onAction="#onTreatPlague"
+                                          prefHeight="30.0" prefWidth="150.0" styleClass="action-button"
+                                          text="Seuche behandeln">
+                                <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </ToggleButton>
+                        </children>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="10.0">
+                        <children>
+                            <ToggleButton fx:id="shareKnowledgeButton" mnemonicParsing="false"
+                                          onAction="#onShareKnowledge" prefHeight="30.0" prefWidth="150.0"
+                                          styleClass="action-button" text="Wissen teilen">
+                                <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </ToggleButton>
+                            <ToggleButton fx:id="researchPlagueButton" mnemonicParsing="false"
+                                          onAction="#onResearchPlague" prefHeight="30.0" prefWidth="150.0"
+                                          styleClass="action-button" text="Seuche erforschen">
+                                <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </ToggleButton>
+                            <ToggleButton fx:id="treatWaterButton" mnemonicParsing="false"
+                                          onAction="#onPlaceWaterTreatment" prefHeight="30.0" prefWidth="150.0"
+                                          styleClass="action-button" text="Wasser aufbereiten">
+                                <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </ToggleButton>
+                        </children>
+                    </VBox>
+                    <VBox alignment="CENTER" layoutX="179.0" layoutY="17.0" spacing="10.0">
+                        <children>
+                            <ToggleButton fx:id="roleButton1" mnemonicParsing="false" onAction="#onRoleButton1"
+                                          prefHeight="30.0"
+                                          prefWidth="150.0" styleClass="action-button" text="Rollenaktion 1">
+                                <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </ToggleButton>
+                            <ToggleButton fx:id="roleButton2" mnemonicParsing="false" onAction="#onRoleButton2"
+                                          prefHeight="30.0"
+                                          prefWidth="150.0" styleClass="action-button" text="Rollenaktion 2">
+                                <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </ToggleButton>
+                            <ToggleButton fx:id="endTurnButton" mnemonicParsing="false" onAction="#onEndTurn"
+                                          prefHeight="30.0" prefWidth="150.0" styleClass="end-turn-button"
+                                          text="Zug beenden">
+                                <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </VBox.margin>
+                            </ToggleButton>
                         </children>
                     </VBox>
                 </children>
