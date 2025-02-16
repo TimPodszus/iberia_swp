@@ -186,4 +186,12 @@ public interface IGame {
     IPlayer getCurrentPlayer();
 
     void setGameStateChangeListener(GameStateChangeListener listener);
+
+    /**
+     * Gets the player by username.
+     *
+     * @param username the username of the player
+     * @return the player with the specified username
+     */
+    IPlayer getPlayer(String username);
 }

@@ -1,6 +1,8 @@
 package de.uol.swp.server.di;
 
 import com.google.inject.AbstractModule;
+import de.uol.swp.server.cards.management.CardManagement;
+import de.uol.swp.server.cards.management.ICardManagement;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.management.ConnectionManagement;
@@ -49,5 +51,6 @@ public class ServerModule extends AbstractModule {
         bind(IInfectionManagement.class).to(InfectionManagement.class);
         bind(IRegionManagement.class).to(RegionManagement.class);
         bind(ServerUserService.class).to(UserManagement.class);
+        bind(ICardManagement.class).to(CardManagement.class);
     }
 }

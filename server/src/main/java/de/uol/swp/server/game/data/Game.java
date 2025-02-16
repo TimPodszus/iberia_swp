@@ -243,4 +243,15 @@ public class Game implements IGame {
             gameStateChangeListener.onGameStateChange(this);
         }
     }
+
+    public IPlayer getPlayer(String username) {
+        for (IPlayer player : players) {
+            if (player.getUser()
+                      .getUsername()
+                      .equals(username)) {
+                return player;
+            }
+        }
+        return null;
+    }
 }
