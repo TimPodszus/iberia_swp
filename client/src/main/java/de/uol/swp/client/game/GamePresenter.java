@@ -374,7 +374,7 @@ public class GamePresenter extends AbstractPresenter {
 
         if (isValidState) {
             gameService.buildTrainTrack(lobbyId, connectionId);
-            toggleBuildableTrainTrackHighlight(false);
+            highlightBuildableTrainTrackHighlight(false);
             buildTrainTracksButton.setSelected(false);
         }
     }
@@ -419,7 +419,7 @@ public class GamePresenter extends AbstractPresenter {
                 );
             }
         } else {
-            toggleBuildableTrainTrackHighlight(false);
+            highlightBuildableTrainTrackHighlight(false);
             this.highlightAvailableDestinations();
         }
     }
@@ -1257,7 +1257,7 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onBuildableTrainTracksResponse(BuildableTrainTracksResponse response) {
         this.buildableTrainTracks = response.getConnections();
-        toggleBuildableTrainTrackHighlight(true);
+        highlightBuildableTrainTrackHighlight(true);
     }
 
     /**
@@ -1347,7 +1347,7 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param highlight whether to highlight the buildable train tracks
      */
-    public void toggleBuildableTrainTrackHighlight(boolean highlight) {
+    public void highlightBuildableTrainTrackHighlight(boolean highlight) {
         for (IConnectionDTO connection : this.buildableTrainTracks) {
             Line line = (Line) mapPane.lookup(CONNECTION_ID + connection.getId());
             line.getStyleClass()
