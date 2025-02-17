@@ -1,14 +1,9 @@
-package de.uol.swp.server.Game;
+package de.uol.swp.server.game;
 
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
-import de.uol.swp.common.game.message.event.EndGameEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
@@ -20,8 +15,6 @@ import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
-import de.uol.swp.server.game.GameException;
-import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
@@ -41,7 +34,6 @@ import org.greenrobot.eventbus.EventBusException;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -328,20 +320,6 @@ public class GameServiceTest extends EventBusBasedTest {
         IPlayer targetPlayer = mock(IPlayer.class);
         IUser currentUser = mock(IUser.class);
         IUser targetUser = mock(IUser.class);
-    @Test
-    void testOnGameStateChange_DrawCardState() {
-        ILobby lobby = mock(ILobby.class);
-        IGame game = mock(IGame.class);
-        when(lobbyManagement.getLobby("gameId")).thenReturn(lobby);
-        DrawCardState drawCardState = new DrawCardState();
-        when(game.getState()).thenReturn(drawCardState);
-        when(game.getPlayerCardDrawPile()).thenReturn(List.of());
-        when(game.getGameId()).thenReturn("gameId");
-
-        gameService.onGameStateChange(game);
-
-        verify(game).setState(any(EndGameState.class));
-    }
 
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
         when(game.getCurrentPlayer()).thenReturn(currentPlayer);
@@ -399,5 +377,20 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement).unlockGameInWaitForConfirmation("lobbyId");
         verify(gameManagement).postShareKnowledgeResponse(eq(event), eq(lobbyManagement), eq(gameService), eq(false));
+    }
+
+    @Test
+    void testOnGameStateChange_DrawCardState() {
+        ILobby lobby = mock(ILobby.class);
+        IGame game = mock(IGame.class);
+        when(lobbyManagement.getLobby("gameId")).thenReturn(lobby);
+        DrawCardState drawCardState = new DrawCardState();
+        when(game.getState()).thenReturn(drawCardState);
+        when(game.getPlayerCardDrawPile()).thenReturn(List.of());
+        when(game.getGameId()).thenReturn("gameId");
+
+        gameService.onGameStateChange(game);
+
+        verify(game).setState(any(EndGameState.class));
     }
 }
