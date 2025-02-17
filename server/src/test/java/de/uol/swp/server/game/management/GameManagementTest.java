@@ -45,6 +45,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static de.uol.swp.common.city.CityName.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -245,6 +246,11 @@ class GameManagementTest {
 
     @Test
     void testMoveByLand() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
+                List.of()
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
         IUser user = new User("user1");
@@ -290,6 +296,13 @@ class GameManagementTest {
                                .toString(),
                 destinationCity
         );
+
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.ALICANTE),
+                List.of(destinationCityCard)
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+
         IUser user = new User("user1", "");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
@@ -322,6 +335,11 @@ class GameManagementTest {
 
     @Test
     void testMoveSailorBySea() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.ALICANTE),
+                List.of()
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
         IUser user = new User("user1");
@@ -344,6 +362,13 @@ class GameManagementTest {
                                .toString(),
                 destinationCity
         );
+
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.ALICANTE),
+                List.of(destinationCityCard)
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+
         IUser user = new User("user1");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
@@ -365,6 +390,12 @@ class GameManagementTest {
 
     @Test
     void testTrainRide() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.VALLADOLID),
+                List.of()
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 5)).thenReturn(availableDestinations);
+
         ICity startCity = cityRepository.getCityByName(CityName.EVORA);
         ICity destinationCity = cityRepository.getCityByName(CityName.VALLADOLID);
         IUser user = new User("user1");
@@ -422,7 +453,7 @@ class GameManagementTest {
 
     @Test
     void testGetAvailableActions() {
-        List<GameActions> actions = gameManagement.getAvailableActions("LobbyId", null);
+        List<GameActions> actions = gameManagement.getAvailableActions(LOBBY_CODE, null);
         assertEquals(6, actions.size());
     }
 
