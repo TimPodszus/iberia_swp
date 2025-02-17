@@ -93,7 +93,11 @@ public class ConnectionService extends AbstractService {
                 request.getLobbyId(),
                 request.getCityId()
         );
-        BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(ConnectionMapper.toDTOList(connections));
+        BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(
+                request.getLobbyId(),
+                true,
+                ConnectionMapper.toDTOList(connections)
+        );
 
         request.getMessageContext()
                .ifPresent(response::setMessageContext);

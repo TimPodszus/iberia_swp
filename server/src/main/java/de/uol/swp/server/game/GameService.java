@@ -1,6 +1,7 @@
 package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
@@ -13,7 +14,6 @@ import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
-import de.uol.swp.common.game.message.response.ExtraTrackResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -137,7 +137,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGame game = gameManagement.getGame(request.getLobbyId());
         if (game.getState() instanceof BuildExtraTrainTrackState state) {
             List <IConnection> connections = state.getConnections();
-            ExtraTrackResponse response = new ExtraTrackResponse(
+            BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(
                     request.getLobbyId(),
                     true,
                     ConnectionMapper.toDTOList(connections)

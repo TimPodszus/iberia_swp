@@ -3,7 +3,6 @@ package de.uol.swp.server.game;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.event.EndGameEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -11,7 +10,6 @@ import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
-import de.uol.swp.common.game.message.response.ExtraTrackResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -21,7 +19,6 @@ import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
-import de.uol.swp.server.connection.ConnectionMapper;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
@@ -48,7 +45,6 @@ import org.greenrobot.eventbus.EventBusException;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -127,11 +123,6 @@ public class GameServiceTest extends EventBusBasedTest {
 
     @Subscribe
     public void onShareRideEvent(ShareRideRequest event) {
-        super.handleEvent(event);
-    }
-
-    @Subscribe
-    public void onExtraTrackResponse(ExtraTrackResponse event) {
         super.handleEvent(event);
     }
 
@@ -366,5 +357,5 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
-        verify(gameService, times(1)).post(any(ExtraTrackResponse.class));}
+        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));}
 }

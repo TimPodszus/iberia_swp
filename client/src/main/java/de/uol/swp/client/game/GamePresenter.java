@@ -29,7 +29,6 @@ import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
-import de.uol.swp.common.game.message.response.ExtraTrackResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -1258,13 +1257,6 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onBuildableTrainTracksResponse(BuildableTrainTracksResponse response) {
         this.buildableTrainTracks = response.getConnections();
-        toggleBuildableTrainTrackHighlight(true);
-    }
-
-    @Subscribe
-    public void onExtraTrainTrackDialog(ExtraTrackResponse response) {
-        this.buildableTrainTracks = response.getConnections();
-        Platform.runLater(ExtraTrainTrackDialog::showDialog);
         toggleBuildableTrainTrackHighlight(true);
     }
 

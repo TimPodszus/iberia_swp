@@ -19,9 +19,9 @@ class BuildableTrainTracksResponseTest {
         List<IConnectionDTO> connections2 = List.of(connection1, connection2);
         List<IConnectionDTO> differentConnections = List.of(connection1);
 
-        BuildableTrainTracksResponse response1 = new BuildableTrainTracksResponse(connections1);
-        BuildableTrainTracksResponse response2 = new BuildableTrainTracksResponse(connections2);
-        BuildableTrainTracksResponse response3 = new BuildableTrainTracksResponse(differentConnections);
+        BuildableTrainTracksResponse response1 = new BuildableTrainTracksResponse("lobbyId", true, connections1);
+        BuildableTrainTracksResponse response2 = new BuildableTrainTracksResponse("lobbyId", true, connections2);
+        BuildableTrainTracksResponse response3 = new BuildableTrainTracksResponse("lobbyId", true, differentConnections);
 
         assertEquals(response1, response2, "Responses with the same connections should be equal");
         assertEquals(response1.hashCode(), response2.hashCode(), "Hash codes should be the same for equal objects");
@@ -35,7 +35,7 @@ class BuildableTrainTracksResponseTest {
         IConnectionDTO connection = mock(IConnectionDTO.class);
         List<IConnectionDTO> connections = List.of(connection);
 
-        BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(connections);
+        BuildableTrainTracksResponse response = new BuildableTrainTracksResponse("lobbyId", true, connections);
 
         assertNotEquals(response, null, "Response should not be equal to null");
         assertNotEquals(response, new Object(), "Response should not be equal to an object of a different class");
