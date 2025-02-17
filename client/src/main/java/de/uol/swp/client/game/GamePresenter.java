@@ -411,13 +411,7 @@ public class GamePresenter extends AbstractPresenter {
         if (buildTrainTracksButton.isSelected()) {
             if (gameDTO.getState()
                        .equals(StateType.PLAYER_TURN_STATE)) {
-                gameDTO.getCities()
-                       .forEach(city -> {
-                           Node stackPane = mapPane.lookup(CITY_ID + city.getId());
-                           stackPane.getStyleClass()
-                                    .remove(CITY_HIGHLIGHTED_CLASS);
-                       });
-
+                resetBuildableTrainTrackHighlight();
                 gameService.requestBuildableTrainTracks(
                         this.lobbyId,
                         gameDTO.getCurrentPlayer()
@@ -1371,5 +1365,20 @@ public class GamePresenter extends AbstractPresenter {
                     .add(CONNECTION_HIGHLIGHTED_CLASS);
             }
         }
+    }
+
+    /**
+     * Resets the highlight for buildable train tracks.
+     * <p>
+     * This method iterates through all cities in the game and removes the
+     * highlight style class from the corresponding StackPane elements.
+     */
+    public void resetBuildableTrainTrackHighlight() {
+        gameDTO.getCities()
+               .forEach(city -> {
+                   Node stackPane = mapPane.lookup(CITY_ID + city.getId());
+                   stackPane.getStyleClass()
+                            .remove(CITY_HIGHLIGHTED_CLASS);
+               });
     }
 }
