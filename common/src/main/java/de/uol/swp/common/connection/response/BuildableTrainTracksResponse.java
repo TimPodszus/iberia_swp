@@ -27,10 +27,7 @@ public class BuildableTrainTracksResponse extends AbstractGameResponse {
             return false;
         }
         BuildableTrainTracksResponse that = (BuildableTrainTracksResponse) o;
-        return Objects.equals(connections, that.connections) && Objects.equals(
-                super.getLobbyId(),
-                that.getLobbyId()
-        ) && super.isSuccess() == that.isSuccess();
+        return Objects.equals(connections, that.connections);
     }
 
     @Override

@@ -22,12 +22,14 @@ class BuildableTrainTracksResponseTest {
         BuildableTrainTracksResponse response1 = new BuildableTrainTracksResponse("lobbyId", true, connections1);
         BuildableTrainTracksResponse response2 = new BuildableTrainTracksResponse("lobbyId", true, connections2);
         BuildableTrainTracksResponse response3 = new BuildableTrainTracksResponse("lobbyId", true, differentConnections);
+        BuildableTrainTracksResponse response4 = new BuildableTrainTracksResponse("lobbyId2", true, connections1);
 
         assertEquals(response1, response2, "Responses with the same connections should be equal");
         assertEquals(response1.hashCode(), response2.hashCode(), "Hash codes should be the same for equal objects");
 
         assertNotEquals(response1, response3, "Responses with different connections should not be equal");
         assertNotEquals(response1.hashCode(), response3.hashCode(), "Hash codes should be different for non-equal objects");
+        assertNotEquals(response1, response4, "Responses with different lobbyIds should not be equal");
     }
 
     @Test
