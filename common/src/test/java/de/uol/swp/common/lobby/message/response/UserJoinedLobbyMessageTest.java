@@ -29,7 +29,7 @@ class UserJoinedLobbyMessageTest {
     void createUserJoinedLobbyMessage() {
         UserJoinedLobbyMessage message = new UserJoinedLobbyMessage(lobbyName, user);
 
-        assertEquals(lobbyName, message.getLobbyCode());
+        assertEquals(lobbyName, message.getLobbyId());
         assertEquals(user, message.getUser());
     }
 

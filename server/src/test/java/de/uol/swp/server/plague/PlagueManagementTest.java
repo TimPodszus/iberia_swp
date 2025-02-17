@@ -5,6 +5,8 @@ import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.plague.data.Plague;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.plague.management.PlagueManagement;
@@ -163,5 +165,31 @@ class PlagueManagementTest {
         when(cityCard.getCity()).thenReturn(city);
 
         return cityCard;
+    }
+
+    @Test
+    void testAllPlaguesResearched_AllResearched() {
+        IPlague plague1 = mock(Plague.class);
+        IPlague plague2 = mock(Plague.class);
+        when(plagueRepository.getPlagues()).thenReturn(List.of(plague1, plague2));
+        when(plague1.isResearched()).thenReturn(true);
+        when(plague2.isResearched()).thenReturn(true);
+
+        plagueManagement.allPlaguesResearched(game);
+
+        verify(game).setState(any(EndGameState.class));
+    }
+
+    @Test
+    void testAllPlaguesResearched_NotAllResearched() {
+        IPlague plague1 = mock(Plague.class);
+        IPlague plague2 = mock(Plague.class);
+        when(plagueRepository.getPlagues()).thenReturn(List.of(plague1, plague2));
+        when(plague1.isResearched()).thenReturn(true);
+        when(plague2.isResearched()).thenReturn(false);
+
+        plagueManagement.allPlaguesResearched(game);
+
+        verify(game, never()).setState(any(EndGameState.class));
     }
 }

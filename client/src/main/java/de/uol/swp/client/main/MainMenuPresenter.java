@@ -94,10 +94,7 @@ public class MainMenuPresenter extends AbstractPresenter {
      */
     @FXML
     void onCreateLobbyButtonPressed(ActionEvent event) {
-        lobbyService.createNewLobby(
-                "Lobby" + loggedInUser.getUsername(),
-                new UserDTO(loggedInUser.getUsername(), loggedInUser.getPassword())
-        );
+        lobbyService.createNewLobby();
     }
 
     /**

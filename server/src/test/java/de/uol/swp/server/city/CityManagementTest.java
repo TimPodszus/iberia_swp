@@ -1,6 +1,7 @@
 package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.game.StateType;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
@@ -162,7 +163,7 @@ public class CityManagementTest {
     }
 
     /**
-     * Tests that infecting a city with its own plague when no cubes are left throws an exception.
+     * Tests that infecting a city with its own plague when no cubes are left changes the game state to Game Over.
      */
     @Test
     void testInfectCityWithOwnPlagueNoCubesLeft() {
@@ -171,7 +172,13 @@ public class CityManagementTest {
             .filter(plague -> plague.getName() == city.getPlagueName())
             .findFirst().ifPresent(plague -> plague.setCubesRemaining(0));
 
-        assertThrows(CityManagementException.class, () -> cityManagement.infectCityWithOwnPlague(game, infectionCard, 1), "Game Over");
+        cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
+
+        assertEquals(
+                StateType.END_GAME_STATE,
+                game.getState()
+                    .getStateType()
+        );
     }
 
     /**
