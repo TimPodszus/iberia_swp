@@ -329,7 +329,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             throw new GameManagementException("Player is not the current player");
         }
 
-        IConnectionManagement connectionManagement = new ConnectionManagement();
         Map<ICity, List<ICard>> availableDestinations = connectionManagement.getAvailableDestinations(
                 lobbyId,
                 player.getCurrentPosition()
