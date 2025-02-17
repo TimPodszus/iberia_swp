@@ -9,8 +9,14 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
+/**
+ * Test class for CardsExchangeRequest.
+ */
 public class CardsExchangeRequestTest {
 
+    /**
+     * Tests the CardsExchangeRequest constructor and its getters.
+     */
     @Test
     public void testCardsExchangeRequest() {
         Map<String, ICardDTO> cardsToExchange = new HashMap<>();
@@ -24,6 +30,9 @@ public class CardsExchangeRequestTest {
         assertEquals(lobbyCode, request.getLobbyId());
     }
 
+    /**
+     * Tests the equals and hashCode methods of CardsExchangeRequest.
+     */
     @Test
     public void testEqualsAndHashCode() {
         ICardDTO mockCityCard1 = mock(ICardDTO.class);

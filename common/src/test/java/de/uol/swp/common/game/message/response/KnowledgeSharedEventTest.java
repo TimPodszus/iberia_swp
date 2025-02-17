@@ -7,8 +7,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
+/**
+ * Test class for KnowledgeSharedEvent.
+ */
 public class KnowledgeSharedEventTest {
 
+    /**
+     * Tests the KnowledgeSharedEvent constructor and its getters.
+     */
     @Test
     public void testKnowledgeSharedEvent() {
         String lobbyId = "testLobby";

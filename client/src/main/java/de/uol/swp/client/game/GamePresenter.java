@@ -155,10 +155,10 @@ public class GamePresenter extends AbstractPresenter {
     private ToggleButton endTurnButton;
 
     @FXML
-    private ToggleButton roleButton1;
+    private ToggleButton roleButtonOne;
 
     @FXML
-    private ToggleButton roleButton2;
+    private ToggleButton roleButtonTwo;
 
 
     private double mouseX;
@@ -479,9 +479,9 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     @FXML
-    private void onRoleButton1(ActionEvent event) {
-        if (roleButton1.isSelected()) {
-            LOG.debug("Role button 1 is selected");
+    private void onRoleButtonOne(ActionEvent event) {
+        if (roleButtonOne.isSelected()) {
+            LOG.debug("Role button one is selected");
             if (gameDTO.getCurrentPlayer()
                        .getRole()
                        .getName()
@@ -524,8 +524,8 @@ public class GamePresenter extends AbstractPresenter {
 
 
     @FXML
-    private void onRoleButton2(ActionEvent event) {
-        if (roleButton2.isSelected()) {
+    private void onRoleButtonTwo(ActionEvent event) {
+        if (roleButtonTwo.isSelected()) {
             //TODO
         }
     }
@@ -1376,6 +1376,14 @@ public class GamePresenter extends AbstractPresenter {
 
     }
 
+    /**
+     * Handles the KnowledgeSharedEvent.
+     * <p>
+     * This method is called when a KnowledgeSharedEvent is received. It updates the game board
+     * with the latest data from the event and logs the result of the knowledge sharing action.
+     *
+     * @param response the KnowledgeSharedEvent containing the game data
+     */
     @Subscribe
     public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
         LOG.debug("Received ShareKnowledgeResponse");
@@ -1388,7 +1396,6 @@ public class GamePresenter extends AbstractPresenter {
             LOG.info("Knowledge not shared");
             shareKnowledgeButton.setSelected(false);
         }
-
     }
 
     /**

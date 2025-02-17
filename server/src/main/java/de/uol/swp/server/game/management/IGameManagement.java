@@ -84,6 +84,17 @@ public interface IGameManagement {
      */
     void unlockGameInWaitForConfirmation(String lobbyId);
 
+    /**
+     * Handles the acceptance of a share knowledge request.
+     *
+     * @param currentPlayer   the player currently taking the action
+     * @param targetPlayer    the player with whom knowledge is being shared
+     * @param lobbyId         the ID of the lobby in which the game is happening
+     * @param event           the event representing the share knowledge request
+     * @param lobbyManagement the lobby management service
+     * @param gameService     the game service
+     * @throws PlayerManagementException if an error occurs during the process
+     */
     void shareKnowledgeRequestAccepted(
             IPlayer currentPlayer,
             IPlayer targetPlayer,
@@ -93,6 +104,14 @@ public interface IGameManagement {
             GameService gameService
     ) throws PlayerManagementException;
 
+    /**
+     * Posts the response to a share knowledge request.
+     *
+     * @param event           the event representing the share knowledge request
+     * @param lobbyManagement the lobby management service
+     * @param gameService     the game service
+     * @param success         whether the share knowledge request was successful
+     */
     void postShareKnowledgeResponse(
             ShareKnowledgeEvent event,
             ILobbyManagement lobbyManagement,

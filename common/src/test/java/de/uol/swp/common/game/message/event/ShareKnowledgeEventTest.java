@@ -7,8 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
+/**
+ * Unit tests for the ShareKnowledgeEvent class.
+ */
 public class ShareKnowledgeEventTest {
 
+    /**
+     * Tests the ShareKnowledgeEvent constructor and its getters.
+     */
     @Test
     public void testShareKnowledgeEvent() {
         String lobbyId = "testLobby";
@@ -32,6 +38,9 @@ public class ShareKnowledgeEventTest {
         assertEquals(targetPlayerCard, event.getTargetPlayerCard());
     }
 
+    /**
+     * Tests that the ShareKnowledgeEvent object is not null after instantiation.
+     */
     @Test
     public void testShareKnowledgeEventNotNull() {
         String lobbyId = "testLobby";

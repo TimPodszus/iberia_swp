@@ -15,18 +15,24 @@ import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
+import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -38,9 +44,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -377,6 +381,55 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement).unlockGameInWaitForConfirmation("lobbyId");
         verify(gameManagement).postShareKnowledgeResponse(eq(event), eq(lobbyManagement), eq(gameService), eq(false));
+    }
+
+
+    @Test
+    void onCardsExchangeRequestTest() throws GameManagementException {
+        String lobbyId = "lobbyId";
+        IPlayer player1 = new Player(new User("player1", "password"));
+        IPlayer player2 = new Player(new User("player2", "password"));
+        ILobby lobby = new Lobby(lobbyId, "test", List.of(player1.getUser(), player2.getUser()), player1.getUser(), 4);
+        Session session = UUIDSession.create(player1.getUser());
+        Session session2 = UUIDSession.create(player2.getUser());
+        when(authenticationService.getSession(player1.getUser())).thenReturn(Optional.of(session));
+        when(authenticationService.getSession(player2.getUser())).thenReturn(Optional.of(session2));
+
+        ArrayList<IPlayer> players = new ArrayList<>();
+        players.add(player1);
+        IGame notMockedGame = new Game(
+                "testGame",
+                mock(RoleRepository.class),
+                mock(CityRepository.class),
+                mock(RegionRepository.class),
+                mock(ConnectionRepository.class),
+                mock(PlagueRepository.class),
+                1,
+                0,
+                14,
+                20,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                players,
+                0,
+                mock(IGameState.class),
+                mock(IGameState.class),
+                1,
+                mock(GameStateChangeListener.class)
+        );
+
+        when(gameManagement.getGame(any())).thenReturn(notMockedGame);
+        when(lobbyManagement.getLobby(any())).thenReturn(lobby);
+
+
+        Map<String, ICardDTO> cards = Map.of("player1", mock(ICardDTO.class), "player2", mock(ICardDTO.class));
+
+        CardsExchangeRequest request = new CardsExchangeRequest(cards, lobbyId);
+        gameService.onCardsExchangeRequest(request);
+
+        verify(gameManagement).lockGameInWaitForConfirmation(lobbyId);
     }
 
     @Test

@@ -36,7 +36,6 @@ public class GameService {
     @Inject
     public GameService(EventBus eventBus) {
         this.eventBus = eventBus;
-        this.eventBus.register(this);
     }
 
     /**
@@ -105,6 +104,11 @@ public class GameService {
         eventBus.post(new AvailableActionsRequest(lobbyCode));
     }
 
+    /**
+     * Handles the ShareKnowledgeEvent.
+     *
+     * @param event the ShareKnowledgeEvent containing information about the knowledge sharing
+     */
     @Subscribe
     public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
         LOG.debug("Received ShareKnowledgeEvent: " + event);
@@ -143,6 +147,12 @@ public class GameService {
         eventBus.post(new ShareRideRequest(lobbyCode));
     }
 
+    /**
+     * Sends a request to share knowledge between players.
+     *
+     * @param gameDTO the game data transfer object containing game state information
+     * @param lobbyId the ID of the lobby where the request is to be sent
+     */
     public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
         LOG.debug("Share knowledge button is selected");
         if (gameDTO.getCurrentPlayer()

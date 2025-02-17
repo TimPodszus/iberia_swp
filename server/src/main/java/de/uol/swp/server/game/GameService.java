@@ -4,14 +4,7 @@ import com.google.inject.Inject;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.event.EndGameEvent;
-import de.uol.swp.common.game.message.event.StartGameEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
-import de.uol.swp.common.game.message.event.ShareRideEvent;
-import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
@@ -47,7 +40,7 @@ import java.util.Map;
  * It handles requests to create a game, initializing and validating the game setup,
  * and communicates the result back to the client through status responses.
  */
-public class GameService extends AbstractService implements GameStateChangeListener{
+public class GameService extends AbstractService implements GameStateChangeListener {
     private static final Logger LOG = LogManager.getLogger(GameService.class);
     IGameManagement gameManagement;
     protected ILobbyManagement lobbyManagement;
@@ -213,6 +206,14 @@ public class GameService extends AbstractService implements GameStateChangeListe
         gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
     }
 
+    /**
+     * Handles incoming requests to exchange cards between players.
+     * This method locks the game in wait for confirmation, creates a ShareKnowledgeEvent,
+     * and posts it to the event bus.
+     *
+     * @param request the CardsExchangeRequest containing the lobby ID and cards to exchange
+     * @throws GameManagementException if the target player is not found or session is not found
+     */
     @Subscribe
     public void onCardsExchangeRequest(CardsExchangeRequest request) throws GameManagementException {
         LOG.info("Received CardsExchangeRequest for lobby {}", request.getLobbyId());
@@ -243,13 +244,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 cardsToExchange.get(currentPlayerUsername),
                 cardsToExchange.get(targetPlayerUsername)
         );
-        shareKnowledgeEvent.setMessageContext(request.getMessageContext()
-                                                     .orElse(null));
-        LOG.trace(
-                "Created ShareKnowledgeEvent: {} with MessageContext {}",
-                shareKnowledgeEvent,
-                shareKnowledgeEvent.getMessageContext()
-        );
 
         IUser user = lobbyManagement.getLobby(request.getLobbyId())
                                     .getUsers()
@@ -278,6 +272,15 @@ public class GameService extends AbstractService implements GameStateChangeListe
         LOG.info("Posted ShareKnowledgeEvent to event bus for lobby {}", request.getLobbyId());
     }
 
+    /**
+     * Handles incoming requests to share knowledge between players.
+     * This method unlocks the game from wait for confirmation, processes the ShareKnowledgeEvent,
+     * and updates the game state based on whether the request was accepted or not.
+     *
+     * @param request the ShareKnowledgeRequest containing the event and acceptance status
+     * @throws GameManagementException   if the target player is not found
+     * @throws PlayerManagementException if there is an error in player management
+     */
     @Subscribe
     public void onShareKnowledgeRequest(ShareKnowledgeRequest request) throws GameManagementException, PlayerManagementException {
         LOG.info("Received ShareKnowledgeRequest for lobby {}", request.getLobbyId());
@@ -322,9 +325,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
             sendToAllInLobby(lobby, new EndGameEvent(game.getGameId(), endGameState.isVictory()));
         }
         if (game.getState() instanceof DrawCardState && game.getPlayerCardDrawPile()
-                    .isEmpty()){
-                game.setState(new EndGameState(false));
-                LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
-            }
+                                                            .isEmpty()) {
+            game.setState(new EndGameState(false));
+            LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
+        }
     }
 }

@@ -29,7 +29,6 @@ import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
-import de.uol.swp.server.role.Politician;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -294,6 +293,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return true;
     }
 
+    /**
+     * Checks if knowledge can be shared in the current game state.
+     *
+     * @param lobbyCode The code of the lobby where the game is being played
+     * @return true if knowledge can be shared, false otherwise
+     */
     private boolean isKnowledgeShareable(String lobbyCode) {
         IGame game = this.getGame(lobbyCode);
         IPlayer currentPlayer = game.getCurrentPlayer();
@@ -418,6 +423,18 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         LOG.debug("[LobbyID: {}] Game unlocked from wait-for-confirmation state", lobbyId);
     }
 
+    /**
+     * Handles the acceptance of a share knowledge request.
+     * This method exchanges the specified cards between the current player and the target player.
+     *
+     * @param currentPlayer   The player who initiated the share knowledge request
+     * @param targetPlayer    The player who accepted the share knowledge request
+     * @param lobbyId         The ID of the lobby where the game is being played
+     * @param event           The event containing details of the share knowledge request
+     * @param lobbyManagement The lobby management instance
+     * @param gameService     The game service instance
+     * @throws PlayerManagementException If there is an error during the card exchange
+     */
     public void shareKnowledgeRequestAccepted(
             IPlayer currentPlayer,
             IPlayer targetPlayer,
@@ -462,15 +479,21 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 targetPlayer.getUser()
                             .getUsername()
         );
-        //   IGameState gameState = this.getGame(event.getLobbyId())
-        //                             .getState();
-        //   ((PlayerTurnState) gameState).reduceActionsRemaining(this.getGame(event.getLobbyId()));
+        IGameState gameState = this.getGame(event.getLobbyId())
+                                   .getState();
+        ((PlayerTurnState) gameState).reduceActionsRemaining(this.getGame(event.getLobbyId()));
         LOG.trace("ReducedActionsRemaining");
         postShareKnowledgeResponse(event, lobbyManagement, gameService, true);
-
-
     }
 
+    /**
+     * Posts a response to the share knowledge event.
+     *
+     * @param event           The event containing details of the share knowledge request
+     * @param lobbyManagement The lobby management instance
+     * @param gameService     The game service instance
+     * @param success         Indicates whether the share knowledge request was successful
+     */
     @Override
     public void postShareKnowledgeResponse(
             ShareKnowledgeEvent event,
@@ -488,7 +511,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 )
         );
         LOG.trace("Posted ShareKnowledgeResponse to event bus for lobby {}", event.getLobbyId());
-
 
     }
 }

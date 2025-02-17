@@ -505,6 +505,12 @@ class GameManagementTest {
     }
 
 
+    /**
+     * Tests the shareKnowledgeRequestAccepted method.
+     * Ensures that the knowledge sharing between players is handled correctly.
+     *
+     * @throws PlayerManagementException if there is an error in player management
+     */
     @Test
     void shareKnowledgeRequestAcceptedTest() throws PlayerManagementException {
         IGame notMockedGame = new Game(
@@ -534,7 +540,6 @@ class GameManagementTest {
         currentPlayer.getCards()
                      .add(currentPlayerCard);
 
-
         IPlayer targetPlayer = new Player(new User("test2", "test2"));
         ICard targetPlayerCard = new CityCard(2, "test2", mock(ICity.class));
         targetPlayer.getCards()
@@ -559,7 +564,6 @@ class GameManagementTest {
                 CardMapper.toDTO(targetPlayerCard)
         );
 
-
         gameManagement.shareKnowledgeRequestAccepted(
                 currentPlayer,
                 targetPlayer,
@@ -571,7 +575,6 @@ class GameManagementTest {
         System.out.println("Current Player Cards: " + currentPlayer.getCards() + currentPlayerCard.getTitle());
         System.out.println("Target Player Cards: " + targetPlayer.getCards() + targetPlayerCard.getTitle());
 
-
         assert (currentPlayer.getCards()
                              .contains(targetPlayerCard));
         assert (targetPlayer.getCards()
@@ -579,3 +582,4 @@ class GameManagementTest {
         verify(gameService, times(1)).sendToAllInLobby(any(), any());
     }
 }
+

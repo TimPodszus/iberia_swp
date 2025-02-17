@@ -2063,14 +2063,14 @@
                     </VBox>
                     <VBox alignment="CENTER" layoutX="179.0" layoutY="17.0" spacing="10.0">
                         <children>
-                            <ToggleButton fx:id="roleButton1" mnemonicParsing="false" onAction="#onRoleButton1"
+                            <ToggleButton fx:id="roleButtonOne" mnemonicParsing="false" onAction="#onRoleButtonOne"
                                           prefHeight="30.0"
                                           prefWidth="150.0" styleClass="action-button" text="Rollenaktion 1">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                 </VBox.margin>
                             </ToggleButton>
-                            <ToggleButton fx:id="roleButton2" mnemonicParsing="false" onAction="#onRoleButton2"
+                            <ToggleButton fx:id="roleButtonTwo" mnemonicParsing="false" onAction="#onRoleButtonTwo"
                                           prefHeight="30.0"
                                           prefWidth="150.0" styleClass="action-button" text="Rollenaktion 2">
                                 <VBox.margin>
