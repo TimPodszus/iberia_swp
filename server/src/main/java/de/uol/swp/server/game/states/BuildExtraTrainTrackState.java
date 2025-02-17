@@ -8,12 +8,22 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * Represents the state of building extra train tracks during a player's turn.
+ * <p>
+ * This state holds the list of connections that can be built by the player.
+ */
 @Setter
 @Getter
 @AllArgsConstructor
 public class BuildExtraTrainTrackState extends PlayerTurnState {
     private List<IConnection> connections;
 
+    /**
+     * Retrieves the type of this state.
+     *
+     * @return The state type, which is BUILD_EXTRA_TRAIN_TRACK_STATE.
+     */
     @Override
     public StateType getStateType() {
         return StateType.BUILD_EXTRA_TRAIN_TRACK_STATE;

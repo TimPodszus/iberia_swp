@@ -461,6 +461,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
     }
 
+    /**
+     * Retrieves a list of buildable train tracks for the current player in the specified game.
+     * <p>
+     * If the game is in the BuildExtraTrainTrackState, it returns the connections from that state.
+     * Otherwise, it fetches the buildable train tracks based on the player's current position.
+     *
+     * @param lobbyId The ID of the lobby
+     * @param game The game instance
+     * @param player The current player
+     * @return A list of buildable train tracks
+     */
     private List<IConnection> getBuildableTrainTracks(String lobbyId, IGame game, IPlayer player) {
         List<IConnection> buildableTrainTracks;
         if (game.getState() instanceof BuildExtraTrainTrackState state) {
