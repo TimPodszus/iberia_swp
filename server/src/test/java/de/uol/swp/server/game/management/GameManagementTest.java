@@ -2,6 +2,7 @@ package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
+import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.user.IUserDTO;
@@ -18,10 +19,12 @@ import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
+import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.WaitForConfirmationState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
@@ -256,8 +259,7 @@ class GameManagementTest {
                 player.getCurrentPosition(),
                 "Expected player to have moved to Palma de Mallorca"
         );
-        assertEquals(
-                3,
+        assertEquals(3,
                 ((PlayerTurnState) game.getState()).getActionsRemaining(),
                 "Expected player to have 3 actions left"
         );
@@ -284,15 +286,18 @@ class GameManagementTest {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
         ICard destinationCityCard = new CityCard(destinationCity.getId(),
-                destinationCity.getName().toString(),
+                destinationCity.getName()
+                               .toString(),
                 destinationCity
         );
         IUser user = new User("user1", "");
         createTestPlayers(user);
-        IPlayer player = game.getPlayers().get(0);
+        IPlayer player = game.getPlayers()
+                             .get(0);
         setupPlayerForMove(startCity, player, new Nurse(), new ArrayList<>(List.of(destinationCityCard)));
 
-        assertTrue(player.getCards().contains(destinationCityCard), "Expected player to have the destination city card");
+        assertTrue(player.getCards()
+                         .contains(destinationCityCard), "Expected player to have the destination city card");
 
         gameManagement.movePlayer(user, "lobbyCode", destinationCity, destinationCityCard);
 
@@ -415,6 +420,7 @@ class GameManagementTest {
             .buildTrainTracks(true);
     }
 
+    @Test
     void testGetAvailableActions() {
         List<GameActions> actions = gameManagement.getAvailableActions("LobbyId", null);
         assertEquals(6, actions.size());
@@ -564,5 +570,44 @@ class GameManagementTest {
                        .isTrainTrack());
 
         verify(game, times(1)).setState(any(PlayerTurnState.class));
+    }
+
+    /**
+     * Tests the lockGameInWaitForConfirmation method.
+     * Ensures that the game state is correctly set to WAIT_FOR_CONFIRMATION_STATE.
+     */
+    @Test
+    void testLockGameInWaitForConfirmation() {
+        IGame testGame = new Game(1, "testLobby");
+        GameStore.getInstance()
+                 .addGame("testLobby", testGame);
+        testGame.setState(new PlayerTurnState());
+
+        gameManagement.lockGameInWaitForConfirmation("testLobby");
+
+        assertEquals(StateType.WAIT_FOR_CONFIRMATION_STATE,
+                testGame.getState()
+                        .getStateType()
+        );
+    }
+
+    /**
+     * Tests the unlockGameInWaitForConfirmation method.
+     * Ensures that the game state is correctly set back to PLAYER_TURN_STATE.
+     */
+    @Test
+    void testUnlockGameInWaitForConfirmation() {
+        IGame testGame = new Game(1, "testLobby");
+        GameStore.getInstance()
+                 .addGame("testLobby", testGame);
+        testGame.setState(new PlayerTurnState());
+        testGame.setState(new WaitForConfirmationState());
+
+        gameManagement.unlockGameInWaitForConfirmation("testLobby");
+
+        assertEquals(StateType.PLAYER_TURN_STATE,
+                testGame.getState()
+                        .getStateType()
+        );
     }
 }

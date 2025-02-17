@@ -15,7 +15,7 @@ class LobbyListItemTest {
     @Test
     void testLobbyListItem() {
         LobbyListItem lobbyListItem = new LobbyListItem("testcode", "testlobby", 1, 2);
-        assertEquals("testcode", lobbyListItem.getLobbyCode());
+        assertEquals("testcode", lobbyListItem.getLobbyId());
         assertEquals("testlobby", lobbyListItem.getName());
         assertEquals("1/5", lobbyListItem.getPlayers());
         assertEquals("Mittel", lobbyListItem.getDifficulty());

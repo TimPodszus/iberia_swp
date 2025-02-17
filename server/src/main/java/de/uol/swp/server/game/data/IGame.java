@@ -1,10 +1,10 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
@@ -186,4 +186,6 @@ public interface IGame {
     int getDifficulty();
 
     IPlayer getCurrentPlayer();
+
+    void setGameStateChangeListener(GameStateChangeListener listener);
 }

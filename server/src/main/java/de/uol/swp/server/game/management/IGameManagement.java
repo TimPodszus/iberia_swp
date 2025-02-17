@@ -76,5 +76,19 @@ public interface IGameManagement {
      * @throws GameManagementException if building the train track fails
      */
     void buildTrainTrack(IUser user, String lobbyId, IConnection connection) throws GameManagementException;
+
+    /**
+     * Locks the game in a wait-for-confirmation state.
+     *
+     * @param lobbyId the ID of the lobby in which the game is happening
+     */
+    void lockGameInWaitForConfirmation(String lobbyId);
+
+    /**
+     * Unlocks the game from a wait-for-confirmation state and sets the game state to the previous state.
+     *
+     * @param lobbyId the ID of the lobby in which the game is happening
+     */
+    void unlockGameInWaitForConfirmation(String lobbyId);
 }
 

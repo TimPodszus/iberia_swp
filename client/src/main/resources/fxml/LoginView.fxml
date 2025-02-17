@@ -16,24 +16,28 @@
             <children>
                <VBox prefHeight="200.0" prefWidth="273.0" styleClass="input">
                   <children>
-                     <Label text="Login" />
-                     <TextField id="loginField" fx:id="loginField" promptText="Enter Login">
+                     <Label text="Benutzername" />
+                     <TextField id="loginField" fx:id="loginField" promptText="Benutzernamen eingeben">
                         <tooltip>
-                           <Tooltip text="Enter your login here" />
+                           <Tooltip text="Geben Sie hier ihren Benutzernamen ein" />
                         </tooltip>
                      </TextField>
                   </children>
                </VBox>
                <VBox prefWidth="100.0" styleClass="input">
                   <children>
-                     <Label text="Password" />
-                     <PasswordField id="passwordField" fx:id="passwordField" promptText="Enter Password" />
+                     <Label text="Passwort" />
+                     <PasswordField id="passwordField" fx:id="passwordField" promptText="Passwort eingeben" />
                   </children>
                </VBox>
             </children>
          </VBox>
-         <Button id="loginButton" defaultButton="true" layoutX="353.0" layoutY="272.0" mnemonicParsing="false" onAction="#onLoginButtonPressed" styleClass="login-button" text="Login" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-         <Button id="registerButton" layoutX="69.0" layoutY="274.0" mnemonicParsing="false" onAction="#onRegisterButtonPressed" styleClass="register-button" text="Register" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+         <Button id="loginButton" defaultButton="true" layoutX="353.0" layoutY="272.0" mnemonicParsing="false"
+                 onAction="#onLoginButtonPressed" styleClass="login-button" text="Anmelden"
+                 AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+         <Button id="registerButton" layoutX="69.0" layoutY="274.0" mnemonicParsing="false"
+                 onAction="#onRegisterButtonPressed" styleClass="register-button" text="Registrieren"
+                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
          <Label alignment="CENTER" layoutX="227.0" layoutY="144.0" style="-fx-font-size: 2em;" text="IBERIA" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0">
             <font>
                <Font size="72.0" />

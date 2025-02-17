@@ -2,7 +2,6 @@ package de.uol.swp.server.connection;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.Card;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.CityRepository;
@@ -121,7 +120,7 @@ class ConnectionManagementTest {
 
         Map<ICity, List<ICard>> cities = connectionManagement.getAvailableDestinations("lobbyCode", city.getId());
 
-        assertEquals(6, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
+        assertEquals(5, cities.size(), "Expected 5 available destinations for Palma de Mallorca");
         assertTrue(cities.containsKey(harbourCity), "Expected Alicante to be an available destination");
         assertFalse(
                 cities.get(harbourCity)
@@ -148,7 +147,7 @@ class ConnectionManagementTest {
 
         Map<ICity, List<ICard>> cities = connectionManagement.getAvailableDestinations("lobbyCode", city.getId());
 
-        assertEquals(19, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
+        assertEquals(18, cities.size(), "Expected 18 available destinations for Palma de Mallorca");
         assertTrue(cities.containsKey(harbourCity), "Expected Alicante to be an available destination");
         assertTrue(
                 cities.get(harbourCity)

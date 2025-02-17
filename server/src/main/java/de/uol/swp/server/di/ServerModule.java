@@ -44,5 +44,7 @@ public class ServerModule extends AbstractModule {
         bind(IPlayerManagement.class).to(PlayerManagement.class);
         bind(IInfectionManagement.class).to(InfectionManagement.class);
         bind(IRegionManagement.class).to(RegionManagement.class);
+        bind(IInfectionManagement.class).to(InfectionManagement.class);
+        bind(IRegionManagement.class).to(RegionManagement.class);
     }
 }
