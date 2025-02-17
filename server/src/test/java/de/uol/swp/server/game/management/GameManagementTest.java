@@ -19,6 +19,7 @@ import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.GameService;
+import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.IGameState;
@@ -525,7 +526,8 @@ class GameManagementTest {
                 0,
                 mock(IGameState.class),
                 mock(IGameState.class),
-                1
+                1,
+                mock(GameStateChangeListener.class)
         );
         IPlayer currentPlayer = new Player(new User("test", "test"));
         ICard currentPlayerCard = new CityCard(1, "test", mock(ICity.class));
