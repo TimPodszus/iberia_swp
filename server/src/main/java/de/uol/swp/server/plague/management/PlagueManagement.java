@@ -5,6 +5,7 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import java.util.List;
@@ -82,6 +83,23 @@ public class PlagueManagement implements IPlagueManagement {
         playerManagement.discardCards(game.getGameId(), game.getCurrentPlayer(), cardsToDiscard);
 
         plague.setResearched(true);
+        allPlaguesResearched(game);
+    }
+
+    /**
+     * Checks if all plagues have been researched in the current game.
+     * If all plagues have been researched, the game state is transitioned to the end game state.
+     *
+     * @param game the current game instance
+     */
+    public void allPlaguesResearched(Game game) {
+        boolean allResearched = game.getPlagueRepository()
+                                    .getPlagues()
+                                    .stream()
+                                    .allMatch(IPlague::isResearched);
+        if (allResearched) {
+            game.setState(new EndGameState(true));
+        }
     }
 }
 

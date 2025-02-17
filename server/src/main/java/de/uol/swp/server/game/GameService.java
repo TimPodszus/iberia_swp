@@ -5,6 +5,10 @@ import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.EndGameEvent;
+import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
@@ -21,6 +25,8 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.DrawCardState;
+import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
@@ -41,7 +47,7 @@ import java.util.Map;
  * It handles requests to create a game, initializing and validating the game setup,
  * and communicates the result back to the client through status responses.
  */
-public class GameService extends AbstractService {
+public class GameService extends AbstractService implements GameStateChangeListener{
     private static final Logger LOG = LogManager.getLogger(GameService.class);
     IGameManagement gameManagement;
     protected ILobbyManagement lobbyManagement;
@@ -81,6 +87,7 @@ public class GameService extends AbstractService {
         IGame game = gameManagement.createAndInitializeGame(request);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null) {
+            game.setGameStateChangeListener(this);
             LOG.debug("Game created for lobby {}", request.getLobbyId());
             post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
             sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
@@ -306,5 +313,18 @@ public class GameService extends AbstractService {
             gameManagement.postShareKnowledgeResponse(event, lobbyManagement, this, false);
         }
 
+    }
+
+    @Override
+    public void onGameStateChange(IGame game) {
+        ILobby lobby = lobbyManagement.getLobby(game.getGameId());
+        if (game.getState() instanceof EndGameState endGameState) {
+            sendToAllInLobby(lobby, new EndGameEvent(game.getGameId(), endGameState.isVictory()));
+        }
+        if (game.getState() instanceof DrawCardState && game.getPlayerCardDrawPile()
+                    .isEmpty()){
+                game.setState(new EndGameState(false));
+                LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
+            }
     }
 }

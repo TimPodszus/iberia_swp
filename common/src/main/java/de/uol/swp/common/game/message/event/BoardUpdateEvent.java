@@ -19,7 +19,7 @@ public class BoardUpdateEvent extends AbstractGameEvent {
     /**
      * Constructs a new BoardUpdateEvent.
      *
-     * @param lobbyId the code of the lobby associated with the event
+     * @param lobbyId the id of the lobby associated with the event
      * @param gameDTO the game data transfer object associated with the update
      */
     public BoardUpdateEvent(String lobbyId, IGameDTO gameDTO) {

@@ -161,7 +161,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                 .size(); i++) {
             game.getPlayers()
                 .get(i)
-                .setRole(new Politician());
+                .setRole(allRoles.get(i));
         }
     }
 
