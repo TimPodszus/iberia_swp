@@ -539,7 +539,6 @@ class GameManagementTest {
                        .getConnectionByID(connection.getId())
                        .isTrainTrack());
 
-        verify(game, times(1)).setPreviousState(state);
         verify(game, times(1)).setState(any(BuildExtraTrainTrackState.class));
     }
 

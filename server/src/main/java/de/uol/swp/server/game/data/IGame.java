@@ -155,8 +155,6 @@ public interface IGame {
 
     IGameState getPreviousState();
 
-    void setPreviousState(IGameState state);
-
     /**
      * Sets the current player index.
      *

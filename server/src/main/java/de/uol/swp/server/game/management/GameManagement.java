@@ -451,7 +451,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                               .orElseThrow(() -> new GameManagementException(
                                                       "Error while building train track"));
 
-                game.setPreviousState(game.getState());
                 game.setState(new BuildExtraTrainTrackState(connectionManagement.getBuildableTrainTracks(
                         lobbyId,
                         cityName.getId()
