@@ -1,12 +1,13 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
+import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
-import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.game.message.request.*;
+import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import javafx.application.Platform;
@@ -14,6 +15,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+
+import java.util.*;
 
 import static de.uol.swp.client.game.ConfirmationDialog.showConfirmationDialog;
 
@@ -138,6 +141,107 @@ public class GameService {
      */
     public void sendShareRideRequest(String lobbyCode) {
         eventBus.post(new ShareRideRequest(lobbyCode));
+    }
+
+    public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
+        LOG.debug("Share knowledge button is selected");
+        if (gameDTO.getCurrentPlayer()
+                   .getCards()
+                   .stream()
+                   .anyMatch(card -> card.getId() != gameDTO.getCurrentPlayer()
+                                                            .getCurrentPosition()
+                                                            .getId())) {
+            LOG.debug("Current player has cards that are not from the current position");
+            IPlayerDTO playerWithCityCard = gameDTO.getPlayers()
+                                                   .stream()
+                                                   .filter(playerDTO -> playerDTO.getCards()
+                                                                                 .stream()
+                                                                                 .anyMatch(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                                                          .getCurrentPosition()
+                                                                                                                          .getId()))
+                                                   .findFirst()
+                                                   .orElse(null);
+            if (playerWithCityCard != null) {
+                LOG.debug("Found player with city card: {}", playerWithCityCard.getUsername());
+                Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+                List<ICardDTO> playerWithCityCardOnlyCityCard = new ArrayList<>();
+                playerWithCityCardOnlyCityCard.add(playerWithCityCard.getCards()
+                                                                     .stream()
+                                                                     .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                                            .getCurrentPosition()
+                                                                                                            .getId())
+                                                                     .findFirst()
+                                                                     .orElseThrow());
+                cardsToExchange.put(
+                        gameDTO.getCurrentPlayer()
+                               .getUsername(),
+                        gameDTO.getCurrentPlayer()
+                               .getCards()
+                );
+                cardsToExchange.put(playerWithCityCard.getUsername(), playerWithCityCardOnlyCityCard);
+                LOG.debug(
+                        "Player {} can select cards now from the following list {}",
+                        gameDTO.getCurrentPlayer()
+                               .getUsername(),
+                        cardsToExchange
+                );
+                CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                        gameDTO.getCurrentPlayer()
+                               .getUsername(), cardsToExchange
+                );
+                Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+                result.ifPresent(map -> {
+                    LOG.debug("Card exchange result: {}", map);
+                    eventBus.post(new CardsExchangeRequest(map, lobbyId));
+                });
+                LOG.trace("Card Exchange Request sent to {}", playerWithCityCard.getUsername());
+            } else {
+                LOG.debug("No player found with city card");
+            }
+        } else {
+            LOG.debug("Current Player has currentCity Card");
+            Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+            List<IPlayerDTO> playersInSameCity = gameDTO.getPlayers()
+                                                        .stream()
+                                                        .filter(playerDTO -> playerDTO.getCurrentPosition()
+                                                                                      .getId() == gameDTO.getCurrentPlayer()
+                                                                                                         .getCurrentPosition()
+                                                                                                         .getId())
+                                                        .toList();
+            List<ICardDTO> cardOfCurrentCity = new ArrayList<>();
+            for (IPlayerDTO playerDTO : playersInSameCity) {
+                if (playerDTO.getUsername()
+                             .equals(gameDTO.getCurrentPlayer()
+                                            .getUsername())) {
+
+                    cardOfCurrentCity.add(gameDTO.getCurrentPlayer()
+                                                 .getCards()
+                                                 .stream()
+                                                 .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                        .getCurrentPosition()
+                                                                                        .getId())
+                                                 .findFirst()
+                                                 .orElseThrow());
+                } else {
+                    cardsToExchange.put(playerDTO.getUsername(), playerDTO.getCards());
+                }
+            }
+            cardsToExchange.put(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(), cardOfCurrentCity
+            );
+            LOG.debug("Players in the same city: {}", playersInSameCity);
+            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(), cardsToExchange
+            );
+            Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+            result.ifPresent(map -> {
+                LOG.debug("Card exchange result: {}", map);
+                eventBus.post(new CardsExchangeRequest(map, lobbyId));
+            });
+            LOG.trace("Card Exchange Request sent");
+        }
     }
 
 

@@ -29,9 +29,9 @@ import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.role.Politician;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
-import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
@@ -161,7 +161,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                 .size(); i++) {
             game.getPlayers()
                 .get(i)
-                .setRole(new Sailor());
+                .setRole(new Politician());
         }
     }
 
