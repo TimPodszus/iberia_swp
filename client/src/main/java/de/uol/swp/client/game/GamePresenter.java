@@ -427,7 +427,7 @@ public class GamePresenter extends AbstractPresenter {
             }
         } else {
             toggleBuildableTrainTrackHighlight(false);
-            this.setAvailableDestinations();
+            this.highlightAvailableDestinations();
         }
     }
 
