@@ -4,6 +4,8 @@ import de.uol.swp.common.message.AbstractMessage;
 import de.uol.swp.server.message.ServerInternalMessage;
 import lombok.Getter;
 
+import java.util.Objects;
+
 /**
  * Event to move a player to any location within a lobby.
  */
@@ -21,5 +23,26 @@ public class MovePlayerAnywhereEvent extends AbstractMessage implements ServerIn
     public MovePlayerAnywhereEvent(String lobbyId, String username) {
         this.lobbyId = lobbyId;
         this.username = username;
+    }
+
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        if (!super.equals(object)) {
+            return false;
+        }
+        MovePlayerAnywhereEvent that = (MovePlayerAnywhereEvent) object;
+        return Objects.equals(lobbyId, that.lobbyId) && Objects.equals(username, that.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), lobbyId, username);
     }
 }
