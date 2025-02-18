@@ -8,9 +8,9 @@ import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
-import de.uol.swp.common.region.request.AvailableRegionsRequest;
-import de.uol.swp.common.region.request.WaterTreatmentRegionRequest;
-import de.uol.swp.common.region.request.WaterTreatmentRequest;
+import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
+import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
+import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
 import org.greenrobot.eventbus.EventBus;
 
 /**
@@ -104,6 +104,12 @@ public class GameService {
     public void sendShareRideRequest(String lobbyCode, int cityId) {
         eventBus.post(new ShareRideRequest(lobbyCode, cityId));
     }
+
+    /**
+     * Sends a request to get available regions for the specified lobby.
+     *
+     * @param lobbyCode the code of the lobby
+     */
     public void sendAvailableRegionsRequest(String lobbyCode) {
         eventBus.post(new AvailableRegionsRequest(lobbyCode));
     }
@@ -116,9 +122,25 @@ public class GameService {
     public void sendShareRideRequest(String lobbyCode) {
         eventBus.post(new ShareRideRequest(lobbyCode));
     }
-    public void sendRegionForWaterTreatmentRequest(String lobbyCode, int regionId) {
+
+    /**
+     * Sends a request to perform water treatment in the specified region.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param regionId  the ID of the region where the water treatment is to be performed
+     */
+    public void sendWaterTreatmentRegionRequest(String lobbyCode, int regionId) {
         eventBus.post(new WaterTreatmentRegionRequest(lobbyCode, regionId));
     }
+
+    /**
+     * Sends a request to perform water treatment in the specified region.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param regionId  the ID of the region where the water treatment is to be performed
+     * @param amount    the amount of water treatments to be performed
+     * @param card      the city card to be used for the water treatment
+     */
     public void sendWaterTreatmentRequest(String lobbyCode, int regionId, int amount, CityCardDTO card) {
         eventBus.post(new WaterTreatmentRequest(lobbyCode, regionId, amount, card));
     }

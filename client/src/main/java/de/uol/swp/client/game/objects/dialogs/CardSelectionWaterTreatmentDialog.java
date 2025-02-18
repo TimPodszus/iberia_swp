@@ -30,6 +30,7 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
     private AbstractCard selectedCard;
     private final ToggleGroup buttonGroup = new ToggleGroup();
     private final RoleEnum role;
+    private final int waterTreatmentsLeft;
     private Button okButton;
     private int selectedAmount = 0;
 
@@ -39,10 +40,13 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
      * @param dismissible whether the dialog can be dismissed
      * @param cityCards   the list of player cards to display
      */
-    public CardSelectionWaterTreatmentDialog(boolean dismissible, List<CityCardDTO> cityCards, RoleEnum role) {
+    public CardSelectionWaterTreatmentDialog(boolean dismissible, List<CityCardDTO> cityCards, RoleEnum role,
+                                             int waterTreatmentsLeft) {
         this.dismissible = dismissible;
         this.cityCards = cityCards;
+
         this.role = role;
+        this.waterTreatmentsLeft = waterTreatmentsLeft;
         this.displayedPlayerCards = createCards();
         super.initStyle(StageStyle.DECORATED);
         super.setHeaderText(HEADER);
@@ -76,9 +80,9 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         buttonBox.setAlignment(Pos.CENTER);
 
         addButton("1", "1", buttonBox);
-        if(!cityCards.isEmpty()) {
+        if(!cityCards.isEmpty() && waterTreatmentsLeft >= 2) {
             addButton("2", "2", buttonBox);
-            if (role.equals(RoleEnum.AGRICULTURAL_SCIENTIST)) {
+            if (role.equals(RoleEnum.AGRICULTURAL_SCIENTIST) && waterTreatmentsLeft >= 3) {
                 addButton("3", "3", buttonBox);
             }
         }

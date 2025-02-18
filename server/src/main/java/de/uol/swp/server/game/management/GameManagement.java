@@ -27,7 +27,6 @@ import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
-import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
@@ -233,17 +232,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     /**
-     * Retrieves a game based on the lobby code.
-     *
-     * @param lobbyCode The code of the lobby to retrieve the game from
-     * @return The game associated with the given lobby code
-     */
-    public IGame getGame(String lobbyCode) {
-        return GameStore.getInstance()
-                        .getGame(lobbyCode);
-    }
-
-    /**
      * Draws an infection card from the deck.
      *
      * @return The drawn infection card, or null if no card can be drawn
@@ -320,9 +308,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     private boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
-        getGame(lobbyCode);
-        Set<IRegionDTO> availableRegions = regionManagement.getAvailableRegions(UserMapper.toDTO(user),
-                getGame(lobbyCode));
+        IGame game = getGame(lobbyCode);
+        Set<IRegionDTO> availableRegions = new HashSet<>();
+        if(game.getWaterTreatmentsLeft() > 0) {
+            availableRegions = regionManagement.getAvailableRegions(UserMapper.toDTO(user), lobbyCode);
+        }
         return !availableRegions.isEmpty();
     }
 

@@ -6,6 +6,7 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.IUserDTO;
+import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
@@ -13,7 +14,6 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -29,9 +29,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RegionManagement implements IRegionManagement {
+public class RegionManagement extends AbstractManagement implements IRegionManagement {
     private final IPlayerManagement playerManagement;
     static final Logger LOG = LogManager.getLogger(RegionManagement.class);
+
     @Inject
     public RegionManagement(IPlayerManagement playerManagement) {
         this.playerManagement = playerManagement;
@@ -72,23 +73,22 @@ public class RegionManagement implements IRegionManagement {
      * It also discards the specified card from the player's hand and reduces the remaining actions
      * for the current player's turn.
      *
-     * @param lobbyId the ID of the lobby
+     * @param lobbyCode the ID of the lobby
      * @param regionId the ID of the region where water treatments are to be increased
      * @param amount the amount of water treatments to increase
      * @param card the card to be discarded
      * @param user the user performing the action
-     * @param game the game instance
      * @throws RegionManagementException if an error occurs while increasing water treatments
      * @throws GameManagementException if the player is not the current player or the game is not in a valid state
      */
     public void increaseWaterTreatmentsFromRegion(
-            String lobbyId,
+            String lobbyCode,
             int regionId,
             int amount,
             ICard card,
-            IUser user,
-            IGame game
+            IUser user
     ) throws RegionManagementException, GameManagementException {
+        IGame game = getGame(lobbyCode);
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             IRegion region = game.getRegionRepository()
                                  .getRegionByID(regionId);
@@ -99,7 +99,7 @@ public class RegionManagement implements IRegionManagement {
                 throw new GameManagementException("Player is not the current player");
             }
             region.increaseWaterTreatments(amount);
-            playerManagement.discardCard(lobbyId, player, card);
+            playerManagement.discardCard(lobbyCode, player, card);
             playerTurnState.reduceActionsRemaining(game);
             LOG.debug("Increased water treatments in region {} by {} for player {}", regionId, amount, user.getUsername());
         } else {
@@ -107,6 +107,7 @@ public class RegionManagement implements IRegionManagement {
             throw new GameManagementException("Game is not in a valid state");
         }
     }
+
     /**
      * Retrieves the possible city cards that can be discarded for a given region.
      * <p>
@@ -115,15 +116,16 @@ public class RegionManagement implements IRegionManagement {
      *
      * @param user     the user requesting the possible city cards to discard
      * @param regionId the ID of the region for which the possible city cards are to be retrieved
-     * @param game     the game instance containing the regions and players
+     * @param lobbyCode     the lobbyCode to get the game from
      * @return a list of possible city cards that can be discarded
      * @throws RegionManagementException if the request player is not found or an error occurs while retrieving the cards
      */
     public List<CityCardDTO> getPossibleCityCardsToDiscard(
             IUserDTO user,
             int regionId,
-            IGame game
+            String lobbyCode
     ) throws RegionManagementException {
+        IGame game = getGame(lobbyCode);
         IPlayer requestPlayer = null;
         for (IPlayer player : game.getPlayers()) {
             if (player.getUser()
@@ -133,14 +135,14 @@ public class RegionManagement implements IRegionManagement {
                 break;
             }
         }
-        Set<CityCard> possibleCityCards = new HashSet<>();
-        IRegion region = game.getRegionRepository()
-                             .getRegionByID(regionId);
-        List<ICity> citiesInRegion = region.getSurroundingCities();
         if (requestPlayer == null) {
             LOG.error("Request player to discard card not found for user: {}", user.getUsername());
             throw new RegionManagementException("Request player not found");
         }
+        Set<CityCard> possibleCityCards = new HashSet<>();
+        IRegion region = game.getRegionRepository()
+                             .getRegionByID(regionId);
+        List<ICity> citiesInRegion = region.getSurroundingCities();
         List<CityCard> playerCityCards = requestPlayer.getCards()
                                                       .stream()
                                                       .filter(CityCard.class::isInstance)
@@ -175,6 +177,7 @@ public class RegionManagement implements IRegionManagement {
         LOG.debug("Returning possible city cards to discard for player {}", user.getUsername());
         return CardMapper.toCityCardDTOList(new ArrayList<>(possibleCityCards));
     }
+
     /**
      * Retrieves the available regions for the specified user in the given game.
      * <p>
@@ -183,12 +186,13 @@ public class RegionManagement implements IRegionManagement {
      * determine which regions are available for the player.
      *
      * @param user the user requesting the available regions
-     * @param game the game instance containing the regions and players
+     * @param lobbyCode the lobbyCode to get the game from
      * @return a set of available regions for the player
      * @throws RegionManagementException if the request player is not found or an error occurs while retrieving the regions
      */
-    public Set<IRegionDTO> getAvailableRegions(IUserDTO user, IGame game) throws RegionManagementException {
+    public Set<IRegionDTO> getAvailableRegions(IUserDTO user, String lobbyCode) throws RegionManagementException {
         IPlayer requestPlayer = null;
+        IGame game = getGame(lobbyCode);
         for (IPlayer player : game.getPlayers()) {
             if (player.getUser()
                       .getUsername()
@@ -234,6 +238,7 @@ public class RegionManagement implements IRegionManagement {
         LOG.debug("Returning available regions for player {}", user.getUsername());
         return availableRegions;
     }
+
     /**
      * Decreases the water treatments in the specified regions by the given amount.
      * <p>
@@ -259,6 +264,7 @@ public class RegionManagement implements IRegionManagement {
             }
         }
     }
+
     /**
      * Decreases the water treatments in all regions by the given amount.
      * <p>
@@ -273,18 +279,5 @@ public class RegionManagement implements IRegionManagement {
             region.decreaseWaterTreatments(region.getWaterTreatments());
             LOG.debug("Decreased all water treatments in region {}", region.getId());
         }
-    }
-    /**
-     * Retrieves a game based on the lobby code.
-     * <p>
-     * This method fetches the game instance associated with the given lobby code from the game store.
-     *
-     * @param lobbyCode the code of the lobby to retrieve the game from
-     * @return the game associated with the given lobby code
-     */
-    public IGame getGame(String lobbyCode) {
-        LOG.debug("Retrieving game with lobby code {}", lobbyCode);
-        return GameStore.getInstance()
-                        .getGame(lobbyCode);
     }
 }

@@ -111,6 +111,9 @@ class RegionManagementTest {
     @Test
     void testGetPossibleCityCardsToDiscard_ScientistOfTheRoyalAcademy() throws RegionManagementException {
         IRole role = new ScientistAtTheRoyalAcademy();
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         when(requestPlayer.getRole()).thenReturn(role);
         when(game.getPlayers()).thenReturn(List.of(requestPlayer));
         when(requestPlayer.getUser()).thenReturn(user);
@@ -124,7 +127,7 @@ class RegionManagementTest {
         when(region1.getSurroundingCities()).thenReturn(List.of(city));
         when(city.getPlagueName()).thenReturn(PlagueName.MALARIA);
 
-        List<CityCardDTO> result = regionManagement.getPossibleCityCardsToDiscard( userDTO, 1, game);
+        List<CityCardDTO> result = spyRegionManagement.getPossibleCityCardsToDiscard( userDTO, 1, lobbyId);
 
         assertEquals(1, result.size());
     }
@@ -133,6 +136,9 @@ class RegionManagementTest {
     void testGetPossibleCityCardsToDiscard_NoMatchingCityCards() throws RegionManagementException {
         IRole role = new Sailor();
         ICity city1 = mock(ICity.class);
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         when(requestPlayer.getRole()).thenReturn(role);
         when(game.getPlayers()).thenReturn(List.of(requestPlayer));
         when(requestPlayer.getUser()).thenReturn(user);
@@ -147,7 +153,7 @@ class RegionManagementTest {
         when(region1.getSurroundingCities()).thenReturn(List.of(city));
         when(city.getPlagueName()).thenReturn(PlagueName.MALARIA);
 
-        List<CityCardDTO> result = regionManagement.getPossibleCityCardsToDiscard(userDTO, 1, game);
+        List<CityCardDTO> result = spyRegionManagement.getPossibleCityCardsToDiscard(userDTO, 1, lobbyId);
 
         assertEquals(0, result.size());
     }
@@ -156,6 +162,9 @@ class RegionManagementTest {
     void testGetPossibleCityCardsToDiscard_MatchingCityCards() throws RegionManagementException {
         IRole role = new Sailor();
         ICity city1 = mock(ICity.class);
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         when(requestPlayer.getRole()).thenReturn(role);
         when(game.getPlayers()).thenReturn(List.of(requestPlayer));
         when(requestPlayer.getUser()).thenReturn(user);
@@ -170,7 +179,7 @@ class RegionManagementTest {
         when(region1.getSurroundingCities()).thenReturn(List.of(city));
         when(city.getPlagueName()).thenReturn(PlagueName.MALARIA);
 
-        List<CityCardDTO> result = regionManagement.getPossibleCityCardsToDiscard(userDTO, 1, game);
+        List<CityCardDTO> result = spyRegionManagement.getPossibleCityCardsToDiscard(userDTO, 1, lobbyId);
 
         assertEquals(1, result.size());
     }
@@ -180,6 +189,9 @@ class RegionManagementTest {
         IRole role = new Sailor();
         ICity city1 = mock(ICity.class);
         IPlague plague = mock(IPlague.class);
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         when(requestPlayer.getRole()).thenReturn(role);
         when(game.getPlayers()).thenReturn(List.of(requestPlayer));
         when(requestPlayer.getUser()).thenReturn(user);
@@ -196,13 +208,17 @@ class RegionManagementTest {
         when(region1.getSurroundingCities()).thenReturn(List.of(city));
         when(city.getPlagueName()).thenReturn(PlagueName.MALARIA);
 
-        List<CityCardDTO> result = regionManagement.getPossibleCityCardsToDiscard(userDTO, 1, game);
+        List<CityCardDTO> result = spyRegionManagement.getPossibleCityCardsToDiscard(userDTO, 1, lobbyId);
 
         assertEquals(1, result.size());
         assertEquals(PlagueName.TYPHUS, result.get(0).getCity().getPlagueName());
     }
+
     @Test
     void testGetAvailableRegions_AgriculturalScientist() throws RegionManagementException {
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         IRole role = new AgriculturalScientist();
         when(requestPlayer.getRole()).thenReturn(role);
         when(requestPlayer.getCurrentPosition()).thenReturn(city);
@@ -213,7 +229,7 @@ class RegionManagementTest {
         when(user.getUsername()).thenReturn("username");
         when(userDTO.getUsername()).thenReturn("username");
 
-        Set<IRegionDTO> result = regionManagement.getAvailableRegions(userDTO, game);
+        Set<IRegionDTO> result = spyRegionManagement.getAvailableRegions(userDTO, lobbyId);
 
         assertEquals(2, result.size());
         verify(regionRepository, times(1)).getRegionsByCityName(CityName.A_CORUNA);
@@ -222,6 +238,9 @@ class RegionManagementTest {
     @Test
     void testGetAvailableRegions_MatchingCityCardColors() throws RegionManagementException {
         IRole role = new Sailor();
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         when(requestPlayer.getRole()).thenReturn(role);
         when(requestPlayer.getCurrentPosition()).thenReturn(city);
         when(city.getName()).thenReturn(CityName.A_CORUNA);
@@ -235,7 +254,7 @@ class RegionManagementTest {
         when(city.getPlagueName()).thenReturn(PlagueName.MALARIA);
         when(region1.getSurroundingCities()).thenReturn(List.of(city));
 
-        Set<IRegionDTO> result = regionManagement.getAvailableRegions(userDTO, game);
+        Set<IRegionDTO> result = spyRegionManagement.getAvailableRegions(userDTO, lobbyId);
 
         assertEquals(1, result.size());
         verify(regionRepository, times(1)).getRegionsByCityName(CityName.A_CORUNA);
@@ -245,6 +264,9 @@ class RegionManagementTest {
     void testGetAvailableRegions_NoMatchingCityCardColors() throws RegionManagementException {
         IRole role = new Sailor();
         ICity city1 = mock(ICity.class);
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         when(requestPlayer.getRole()).thenReturn(role);
         when(requestPlayer.getCurrentPosition()).thenReturn(city);
         when(city.getName()).thenReturn(CityName.A_CORUNA);
@@ -259,27 +281,33 @@ class RegionManagementTest {
         when(city1.getPlagueName()).thenReturn(PlagueName.MALARIA);
         when(region1.getSurroundingCities()).thenReturn(List.of(city));
 
-        Set<IRegionDTO> result = regionManagement.getAvailableRegions(userDTO, game);
+        Set<IRegionDTO> result = spyRegionManagement.getAvailableRegions(userDTO, lobbyId);
 
         assertEquals(0, result.size());
         verify(regionRepository, times(1)).getRegionsByCityName(CityName.A_CORUNA);
     }
     @Test
     void testIncreaseWaterTreatmentsFromRegion_Success() throws RegionManagementException, GameManagementException {
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         when(game.getState()).thenReturn(playerTurnState);
         when(game.getRegionRepository().getRegionByID(anyInt())).thenReturn(region1);
         when(game.getCurrentPlayer()).thenReturn(requestPlayer);
         when(requestPlayer.getUser()).thenReturn(user);
 
-        regionManagement.increaseWaterTreatmentsFromRegion("lobbyId", 1, 5, cityCard, user, game);
+        spyRegionManagement.increaseWaterTreatmentsFromRegion(lobbyId, 1, 5, cityCard, user);
 
         verify(region1, times(1)).increaseWaterTreatments(5);
-        verify(playerManagement, times(1)).discardCard("lobbyId", requestPlayer, cityCard);
+        verify(playerManagement, times(1)).discardCard(lobbyId, requestPlayer, cityCard);
         verify(playerTurnState, times(1)).reduceActionsRemaining(game);
     }
 
     @Test
     void testIncreaseWaterTreatmentsFromRegion_PlayerNotCurrent() {
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         when(game.getState()).thenReturn(playerTurnState);
         when(game.getRegionRepository().getRegionByID(anyInt())).thenReturn(region1);
         when(game.getCurrentPlayer()).thenReturn(requestPlayer);
@@ -289,7 +317,7 @@ class RegionManagementTest {
         when(requestPlayer.getUser()).thenReturn(differentUser);
 
         assertThrows(GameManagementException.class, () -> {
-            regionManagement.increaseWaterTreatmentsFromRegion("lobbyId", 1, 5, cityCard, user, game);
+            spyRegionManagement.increaseWaterTreatmentsFromRegion(lobbyId, 1, 5, cityCard, user);
         });
 
         verify(region1, never()).increaseWaterTreatments(anyInt());
@@ -298,16 +326,47 @@ class RegionManagementTest {
     }
 
     @Test
-    void testIncreaseWaterTreatmentsFromRegion_NotPlayerTurnState() throws RegionManagementException, GameManagementException {
+    void testIncreaseWaterTreatmentsFromRegion_NotPlayerTurnState() throws RegionManagementException {
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
         DrawCardState drawCardState = mock(DrawCardState.class);
         when(game.getState()).thenReturn(drawCardState);
 
         assertThrows(GameManagementException.class, () -> {
-            regionManagement.increaseWaterTreatmentsFromRegion("lobbyId", 1, 5, cityCard, user, game);
+            spyRegionManagement.increaseWaterTreatmentsFromRegion(lobbyId, 1, 5, cityCard, user);
         });
 
         verify(region1, never()).increaseWaterTreatments(anyInt());
         verify(playerManagement, never()).discardCard(anyString(), any(), any());
         verify(playerTurnState, never()).reduceActionsRemaining(any());
+    }
+
+    @Test
+    void testGetPossibleCityCardsToDiscard_PlayerNotFound() throws RegionManagementException {
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
+        when(game.getPlayers()).thenReturn(List.of());
+
+        RegionManagementException exception = assertThrows(RegionManagementException.class, () -> {
+            spyRegionManagement.getPossibleCityCardsToDiscard(userDTO, 1, lobbyId);
+        });
+
+        assertEquals("Request player not found", exception.getMessage());
+    }
+
+    @Test
+    void testGetAvailableRegions_PlayerNotFound() throws RegionManagementException {
+        String lobbyId = "testLobbyId";
+        RegionManagement spyRegionManagement = spy(regionManagement);
+        doReturn(game).when(spyRegionManagement).getGame(lobbyId);
+        when(game.getPlayers()).thenReturn(List.of());
+
+        RegionManagementException exception = assertThrows(RegionManagementException.class, () -> {
+            spyRegionManagement.getAvailableRegions(userDTO, lobbyId);
+        });
+
+        assertEquals("Request player not found", exception.getMessage());
     }
 }

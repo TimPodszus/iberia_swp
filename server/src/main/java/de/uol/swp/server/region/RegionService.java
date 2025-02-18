@@ -6,25 +6,24 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.region.IRegionDTO;
-import de.uol.swp.common.region.request.AvailableRegionsRequest;
-import de.uol.swp.common.region.request.WaterTreatmentRegionRequest;
-import de.uol.swp.common.region.request.WaterTreatmentRequest;
-import de.uol.swp.common.region.response.AvailableRegionsResponse;
-import de.uol.swp.common.region.response.PossibleCityCardsToDiscardForRegionResponse;
+import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
+import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
+import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
+import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
+import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.game.GameException;
 import de.uol.swp.server.game.GameMapper;
-import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
+import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.lobby.data.ILobby;
-import de.uol.swp.server.lobby.management.LobbyManagement;
-import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
-import de.uol.swp.server.region.management.RegionManagement;
+import de.uol.swp.server.region.management.IRegionManagement;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -33,10 +32,11 @@ import java.util.List;
 import java.util.Set;
 
 public class RegionService extends AbstractService {
-    private final RegionManagement regionManagement;
-    private final PlayerManagement playerManagement;
-    private final GameManagement gameManagement;
-    private final LobbyManagement lobbyManagement;
+    private IRegionManagement regionManagement;
+    private IPlayerManagement playerManagement;
+    private IGameManagement gameManagement;
+    private ILobbyManagement lobbyManagement;
+
     /**
      * Constructor
      *
@@ -46,10 +46,10 @@ public class RegionService extends AbstractService {
     @Inject
     public RegionService(
             EventBus bus,
-            RegionManagement regionManagement,
-            PlayerManagement playerManagement,
-            GameManagement gameManagement,
-            LobbyManagement lobbyManagement
+            IRegionManagement regionManagement,
+            IPlayerManagement playerManagement,
+            IGameManagement gameManagement,
+            ILobbyManagement lobbyManagement
     ) {
         super(bus);
         this.regionManagement = regionManagement;
@@ -67,8 +67,7 @@ public class RegionService extends AbstractService {
         if (user == null) {
             throw new GameException("User is unknown");
         }
-        IGame game = regionManagement.getGame(request.getLobbyId());
-        Set<IRegionDTO> regions = regionManagement.getAvailableRegions(user, game);
+        Set<IRegionDTO> regions = regionManagement.getAvailableRegions(user, request.getLobbyId());
         response = new AvailableRegionsResponse(regions);
         response.setSession(request.getSession()
                                    .orElseThrow(() -> new IllegalStateException("Session not present")));
@@ -84,13 +83,12 @@ public class RegionService extends AbstractService {
         if (user == null) {
             throw new GameException("User is unknown");
         }
-        IGame game = regionManagement.getGame(request.getLobbyId());
         List<CityCardDTO> cityCards = regionManagement.getPossibleCityCardsToDiscard(
                 user,
                 request.getRegionId(),
-                game
+                request.getLobbyId()
         );
-        response = new PossibleCityCardsToDiscardForRegionResponse(cityCards);
+        response = new CardsToDiscardForRegionResponse(cityCards);
         response.setSession(request.getSession()
                                    .orElseThrow(() -> new IllegalStateException("Session not present")));
         post(response);
@@ -104,10 +102,18 @@ public class RegionService extends AbstractService {
         if (user == null) {
             throw new GameException("User is unknown");
         }
-        IGame game = regionManagement.getGame(request.getLobbyId());
-        ICard card = playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCard().getId());
-        regionManagement.increaseWaterTreatmentsFromRegion(request.getLobbyId(), request.getRegionId(),
-                request.getAmount(), card, UserMapper.toUser(user), game
+        ICard card = playerManagement.getCard(
+                request.getLobbyId(),
+                user.getUsername(),
+                request.getCard()
+                       .getId()
+        );
+        regionManagement.increaseWaterTreatmentsFromRegion(
+                request.getLobbyId(),
+                request.getRegionId(),
+                request.getAmount(),
+                card,
+                UserMapper.toUser(user)
         );
 
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));

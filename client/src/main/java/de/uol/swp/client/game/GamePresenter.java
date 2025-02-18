@@ -38,8 +38,8 @@ import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
-import de.uol.swp.common.region.response.AvailableRegionsResponse;
-import de.uol.swp.common.region.response.PossibleCityCardsToDiscardForRegionResponse;
+import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
+import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
 import de.uol.swp.common.user.IUserDTO;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -378,7 +378,7 @@ public class GamePresenter extends AbstractPresenter {
                    .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
             regionId = Integer.parseInt(source.getId()
                                                   .replaceAll("\\D+", ""));
-            gameService.sendRegionForWaterTreatmentRequest(lobbyId, regionId);
+            gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
         }
     }
 
@@ -473,13 +473,19 @@ public class GamePresenter extends AbstractPresenter {
         if (treatWaterButton.isSelected()) {
             if (gameDTO.getState()
                        .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
+                gameDTO.getCities()
+                       .forEach(city -> {
+                           Node stackPane = mapPane.lookup(CITY_ID + city.getId());
+                           stackPane.getStyleClass()
+                                    .remove(CITY_HIGHLIGHTED_CLASS);
+                       });
                 gameService.sendAvailableRegionsRequest(lobbyId);
             }
-        }
-        else {
+        } else {
+            this.highlightAvailableDestinations();
             resetRegionStyle();
-            }
         }
+    }
 
     /**
      * Handles the options clicked event.
@@ -1237,23 +1243,24 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Handles the PossibleCityCardsToDiscardForRegionResponse.
+     * Handles the CardsToDiscardForRegionResponse.
      * <p>
-     * This method is called when a PossibleCityCardsToDiscardForRegionResponse is received.
+     * This method is called when a CardsToDiscardForRegionResponse is received.
      * It opens a dialog for the user to select a city card and the amount of water treatments to discard.
      * If the user makes a selection, it sends a water treatment request to the game service.
      *
-     * @param response the PossibleCityCardsToDiscardForRegionResponse containing the possible city cards to discard
+     * @param response the CardsToDiscardForRegionResponse containing the possible city cards to discard
      */
     @Subscribe
-    public void onPossibleCityCardsToDiscardForRegionResponse(PossibleCityCardsToDiscardForRegionResponse response) {
+    public void onCardsToDiscardForRegionResponse(CardsToDiscardForRegionResponse response) {
         Platform.runLater(() -> {
             CardSelectionWaterTreatmentDialog cardSelectionDialog = new CardSelectionWaterTreatmentDialog(
                     true,
                     response.getCityCards(),
                     gameDTO.getCurrentPlayer()
                            .getRole()
-                           .getName()
+                           .getName(),
+                    gameDTO.getWaterTreatmentsLeft()
             );
             Optional<Pair<CityCardDTO, Integer>> result = cardSelectionDialog.showAndWait();
             result.ifPresent(cardAndAmount -> {
@@ -1262,7 +1269,6 @@ public class GamePresenter extends AbstractPresenter {
                 gameService.sendWaterTreatmentRequest(lobbyId, regionId, amount, card);
                 treatWaterButton.setSelected(false);
                 resetRegionStyle();
-
             });
         });
     }

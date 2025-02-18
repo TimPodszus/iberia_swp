@@ -1,4 +1,4 @@
-package de.uol.swp.common.region.response;
+package de.uol.swp.common.region.message.response;
 
 import de.uol.swp.common.cards.CityCardDTO;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
@@ -9,7 +9,7 @@ import java.util.Objects;
 
 @Getter
 @AllArgsConstructor
-public class PossibleCityCardsToDiscardForRegionResponse extends AbstractResponseMessage {
+public class CardsToDiscardForRegionResponse extends AbstractResponseMessage {
     private List<CityCardDTO> cityCards;
 
     @Override
@@ -20,7 +20,7 @@ public class PossibleCityCardsToDiscardForRegionResponse extends AbstractRespons
         if (!super.equals(o)) {
             return false;
         }
-        PossibleCityCardsToDiscardForRegionResponse that = (PossibleCityCardsToDiscardForRegionResponse) o;
+        CardsToDiscardForRegionResponse that = (CardsToDiscardForRegionResponse) o;
         return Objects.equals(getCityCards(), that.getCityCards());
     }
 

@@ -1,4 +1,4 @@
-package de.uol.swp.common.region.response;
+package de.uol.swp.common.region.message.response;
 
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.region.IRegionDTO;
