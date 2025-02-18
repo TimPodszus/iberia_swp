@@ -210,6 +210,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             }
             try {
                 assert requestPlayer != null;
+                if(requestPlayer.getCurrentPosition() != null) {
+                    throw new GameManagementException("Player is already positioned");
+                }
                 playerManagement.setStartingPosition(
                         game.getGameId(),
                         game.getCityRepository()
