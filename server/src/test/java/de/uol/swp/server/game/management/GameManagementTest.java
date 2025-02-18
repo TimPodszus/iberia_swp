@@ -3,11 +3,14 @@ package de.uol.swp.server.game.management;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.StateType;
+import de.uol.swp.common.game.TransportMode;
+import de.uol.swp.common.game.dto.DestinationInfo;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
@@ -262,9 +265,9 @@ class GameManagementTest {
 
     @Test
     void testMoveByLand() throws GameManagementException {
-        Map<ICity, List<ICard>> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
-                List.of()
+        Map<Integer, DestinationInfo> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
+                new DestinationInfo(List.of(), TransportMode.CARRIAGE)
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
@@ -313,9 +316,9 @@ class GameManagementTest {
                 destinationCity
         );
 
-        Map<ICity, List<ICard>> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.ALICANTE),
-                List.of(destinationCityCard)
+        Map<Integer, DestinationInfo> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.ALICANTE).getId(),
+                new DestinationInfo(CardMapper.toMixedCardDTOList(List.of(destinationCityCard)), TransportMode.SHIP)
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
 
@@ -351,9 +354,9 @@ class GameManagementTest {
 
     @Test
     void testMoveSailorBySea() throws GameManagementException {
-        Map<ICity, List<ICard>> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.ALICANTE),
-                List.of()
+        Map<Integer, DestinationInfo> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.ALICANTE).getId(),
+                new DestinationInfo(List.of(), TransportMode.SHIP)
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
@@ -379,9 +382,9 @@ class GameManagementTest {
                 destinationCity
         );
 
-        Map<ICity, List<ICard>> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.ALICANTE),
-                List.of(destinationCityCard)
+        Map<Integer, DestinationInfo> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.ALICANTE).getId(),
+                new DestinationInfo(CardMapper.toMixedCardDTOList(List.of(destinationCityCard)), TransportMode.SHIP)
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
 
@@ -406,9 +409,9 @@ class GameManagementTest {
 
     @Test
     void testTrainRide() throws GameManagementException {
-        Map<ICity, List<ICard>> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.VALLADOLID),
-                List.of()
+        Map<Integer, DestinationInfo> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.VALLADOLID).getId(),
+                new DestinationInfo(List.of(), TransportMode.TRAIN)
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 5)).thenReturn(availableDestinations);
 

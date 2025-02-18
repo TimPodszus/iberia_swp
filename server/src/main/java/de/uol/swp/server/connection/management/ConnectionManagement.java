@@ -2,6 +2,9 @@ package de.uol.swp.server.connection.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.RoleEnum;
+import de.uol.swp.common.game.TransportMode;
+import de.uol.swp.common.game.dto.DestinationInfo;
+import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.ICard;
@@ -42,20 +45,20 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     }
 
     @Override
-    public Map<ICity, List<ICard>> getAvailableDestinations(String lobbyId, int cityId) {
+    public Map<Integer, DestinationInfo> getAvailableDestinations(String lobbyId, int cityId) {
         CityRepository cityRepository = super.getGame(lobbyId)
                                              .getCityRepository();
         ICity startCity = cityRepository.getCity(cityId);
 
-        Map<ICity, List<ICard>> availableDestinations = getByLandConnectedCities(lobbyId, startCity);
+        Map<Integer, DestinationInfo> availableDestinations = getByLandConnectedCities(lobbyId, startCity);
 
         if (startCity.isHarbourCity()) {
             LOG.debug("[Lobby: {}] City {} is a harbour city, continuing to retrieve available harbour cities",
                     lobbyId,
                     startCity.getName()
             );
-            Map<ICity, List<ICard>> seaConnections = getBySeaConnectedCities(lobbyId, cityId);
-            for (Map.Entry<ICity, List<ICard>> entry : seaConnections.entrySet()) {
+            Map<Integer, DestinationInfo> seaConnections = getBySeaConnectedCities(lobbyId, cityId);
+            for (Map.Entry<Integer, DestinationInfo> entry : seaConnections.entrySet()) {
                 availableDestinations.putIfAbsent(entry.getKey(), entry.getValue());
             }
         }
@@ -98,9 +101,9 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
      * @param startCity the starting city
      * @return a map of cities that can be reached via land connections
      */
-    private Map<ICity, List<ICard>> getByLandConnectedCities(String lobbyId, ICity startCity) {
+    private Map<Integer, DestinationInfo> getByLandConnectedCities(String lobbyId, ICity startCity) {
         IGame game = super.getGame(lobbyId);
-        Map<ICity, List<ICard>> availableDestinations = new HashMap<>();
+        Map<Integer, DestinationInfo> availableDestinations = new HashMap<>();
         List<IConnection> connections = game.getConnectionRepository()
                                             .getConnectionsOfCity(startCity.getName());
 
@@ -118,7 +121,10 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                                 availableDestinations
                         );
                     }
-                    availableDestinations.putIfAbsent(city, new ArrayList<>());
+                    availableDestinations.putIfAbsent(
+                            city.getId(),
+                            new DestinationInfo(new ArrayList<>(), TransportMode.CARRIAGE)
+                    );
                 }
             }
         }
@@ -138,8 +144,11 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
      * @param currentCity the starting city
      * @return a map of cities that can be reached via train connections
      */
-    private Map<ICity, List<ICard>> getAdditionalTrainConnectionsForCity(
-            String lobbyId, ICity previousCity, ICity currentCity, Map<ICity, List<ICard>> availableDestinations
+    private Map<Integer, DestinationInfo> getAdditionalTrainConnectionsForCity(
+            String lobbyId,
+            ICity previousCity,
+            ICity currentCity,
+            Map<Integer, DestinationInfo> availableDestinations
     ) {
         IGame game = super.getGame(lobbyId);
         List<IConnection> connections = game.getConnectionRepository()
@@ -156,7 +165,8 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                         if (city.equals(previousCity)) {
                             continue;
                         }
-                        availableDestinations.putIfAbsent(city, new ArrayList<>());
+                        availableDestinations.putIfAbsent(city.getId(), new DestinationInfo(new ArrayList<>(),
+                                TransportMode.TRAIN));
                         availableDestinations = getAdditionalTrainConnectionsForCity(lobbyId,
                                 currentCity,
                                 city,
@@ -175,8 +185,8 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
      * @param lobbyId the ID of the lobby
      * @return a map of cities that can be reached via sea connections
      */
-    private Map<ICity, List<ICard>> getBySeaConnectedCities(String lobbyId, int cityId) {
-        Map<ICity, List<ICard>> availableConnections = new HashMap<>();
+    private Map<Integer, DestinationInfo> getBySeaConnectedCities(String lobbyId, int cityId) {
+        Map<Integer, DestinationInfo> availableConnections = new HashMap<>();
         CityRepository cityRepository = super.getGame(lobbyId)
                                              .getCityRepository();
 
@@ -193,7 +203,10 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         for (ICity city : harbourCities) {
             List<ICard> cards = isSailor ? new ArrayList<>() : getCardsWithSameColor(lobbyId, city);
             if (city.getId() != cityId && (!cards.isEmpty() || isSailor)) {
-                availableConnections.put(city, cards);
+                availableConnections.put(
+                        city.getId(),
+                        new DestinationInfo(CardMapper.toMixedCardDTOList(cards), TransportMode.SHIP)
+                );
             }
         }
 
@@ -226,12 +239,12 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     }
 
     @Override
-    public Map<ICity, List<ICard>> getAllDestinations(String lobbyId) {
+    public Map<Integer, DestinationInfo> getAllDestinations(String lobbyId) {
         IGame game = super.getGame(lobbyId);
-        Map<ICity, List<ICard>> allDestinations = new HashMap<>();
+        Map<Integer, DestinationInfo> allDestinations = new HashMap<>();
         for (ICity city : game.getCityRepository()
                               .getCities()) {
-            allDestinations.put(city, new ArrayList<>());
+            allDestinations.put(city.getId(), new DestinationInfo(new ArrayList<>(), TransportMode.NONE));
         }
         return allDestinations;
     }

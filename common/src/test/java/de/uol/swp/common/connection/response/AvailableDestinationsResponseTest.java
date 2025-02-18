@@ -6,6 +6,8 @@ import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.game.TransportMode;
+import de.uol.swp.common.game.dto.DestinationInfo;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ public class AvailableDestinationsResponseTest {
                 CityName.PALMA_DE_MALLORCA.getDisplayName(),
                 city
         )));
-        Map<Integer, List<ICardDTO>> destinations = Map.of(1, cards);
+        Map<Integer, DestinationInfo> destinations = Map.of(1, new DestinationInfo(cards, TransportMode.CARRIAGE));
         AvailableDestinationsResponse availableDestinationsResponse = new AvailableDestinationsResponse(destinations);
 
         assertEquals(destinations, availableDestinationsResponse.getCities());

@@ -1,7 +1,6 @@
 package de.uol.swp.server.connection.management;
 
-import de.uol.swp.server.cards.data.ICard;
-import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.common.game.dto.DestinationInfo;
 import de.uol.swp.server.connection.data.IConnection;
 
 import java.util.List;
@@ -17,18 +16,21 @@ public interface IConnectionManagement {
      *
      * @param lobbyId the ID of the lobby
      * @param cityId  the city from which to get available destinations
-     * @return a map of available destinations, and a list of cards that can be discarded to access them, if the list is
-     * empty, the city is accessible without discarding a card
+     * @return a map of available destinations as cityIds, and an object with list of cards that can be discarded to
+     * access them,
+     * and a flag indicating the way to access the city
      */
-    Map<ICity, List<ICard>> getAvailableDestinations(String lobbyId, int cityId);
+    Map<Integer, DestinationInfo> getAvailableDestinations(String lobbyId, int cityId);
 
     /**
      * Retrieves a map of all destinations from the given lobby.
      *
      * @param lobbyId the ID of the lobby
-     * @return a map of all destinations and the list of cards that can be discarded to access them
+     * @return a map of all destinations as cityIds, and an object with list of cards that can be discarded to access
+     * them,
+     * and a flag indicating the way to access the city
      */
-    Map<ICity, List<ICard>> getAllDestinations(String lobbyId);
+    Map<Integer, DestinationInfo> getAllDestinations(String lobbyId);
 
     /**
      * Retrieves a list of buildable train tracks from the given city.

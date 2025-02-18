@@ -22,6 +22,7 @@ import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.StateType;
+import de.uol.swp.common.game.dto.DestinationInfo;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.EndGameEvent;
@@ -87,7 +88,7 @@ public class GamePresenter extends AbstractPresenter {
     @Inject
     private GameService gameService;
 
-    private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
+    private Map<Integer, DestinationInfo> availableDestinations = new HashMap<>();
 
     private List<IConnectionDTO> buildableTrainTracks = new ArrayList<>();
 
@@ -283,7 +284,7 @@ public class GamePresenter extends AbstractPresenter {
             LOG.trace("Player wants to move to city {}", cityId);
             if (cardDiscardNeeded(cityId)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
-                CardDialog cardDialog = new CardDialog(true, true, availableDestinations.get(cityId));
+                CardDialog cardDialog = new CardDialog(true, true, availableDestinations.get(cityId).getCardsUsableForMove());
                 Optional<ICardDTO> result = cardDialog.showAndWait();
                 result.ifPresentOrElse(card -> {
                     LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
@@ -325,6 +326,7 @@ public class GamePresenter extends AbstractPresenter {
     private boolean cardDiscardNeeded(int cityId) {
         LOG.debug("Checking if discarding a card is needed for moving to city {}", cityId);
         return !availableDestinations.get(cityId)
+                                     .getCardsUsableForMove()
                                      .isEmpty();
     }
 
@@ -1278,7 +1280,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void highlightAvailableDestinations() {
         LOG.debug("Highlighting available destinations");
-        for (Map.Entry<Integer, List<ICardDTO>> entry : availableDestinations.entrySet()) {
+        for (Map.Entry<Integer, DestinationInfo> entry : availableDestinations.entrySet()) {
             int cityId = entry.getKey();
             LOG.trace("Highlighting city {}", cityId);
             Node node = mapPane.lookup(CITY_ID + cityId);

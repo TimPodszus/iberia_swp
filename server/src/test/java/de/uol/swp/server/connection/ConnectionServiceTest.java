@@ -4,6 +4,8 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
+import de.uol.swp.common.game.TransportMode;
+import de.uol.swp.common.game.dto.DestinationInfo;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.server.EventBusBasedTest;
@@ -75,8 +77,8 @@ public class ConnectionServiceTest extends EventBusBasedTest {
     @Test
     void testOnAvailableDestinationsRequest() throws InterruptedException {
         AvailableDestinationsRequest request = new AvailableDestinationsRequest("", 1);
-        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(cityRepository.getCity(1),
-                List.of()
+        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(1,
+                new DestinationInfo(List.of(), TransportMode.NONE)
         ));
 
         postAndWait(request);
@@ -102,7 +104,7 @@ public class ConnectionServiceTest extends EventBusBasedTest {
         Session session = UUIDSession.create(user);
         when(userManagement.getUser("testuser")).thenReturn(user);
         when(authenticationService.getSession(user)).thenReturn(java.util.Optional.of(session));
-        when(connectionManagement.getAllDestinations("")).thenReturn(Map.of(cityRepository.getCity(1), List.of()));
+        when(connectionManagement.getAllDestinations("")).thenReturn(Map.of(1, new DestinationInfo(List.of(), TransportMode.NONE)));
         MovePlayerAnywhereEvent movePlayerAnywhereEvent = new MovePlayerAnywhereEvent("", "testuser");
 
         postAndWait(movePlayerAnywhereEvent);

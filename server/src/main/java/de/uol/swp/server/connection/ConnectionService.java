@@ -2,17 +2,14 @@ package de.uol.swp.server.connection;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
+import de.uol.swp.common.game.dto.DestinationInfo;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.cards.CardMapper;
-import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
-import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.GameException;
@@ -23,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,9 +61,10 @@ public class ConnectionService extends AbstractService {
                 request.getCityId()
         );
 
-        Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(request.getLobbyId(),
+        Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
+                request.getLobbyId(),
                 request.getCityId()
-        ));
+        );
 
         AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
         request.getMessageContext()
@@ -97,8 +94,9 @@ public class ConnectionService extends AbstractService {
                                                    return new GameException("User not logged in");
                                                });
 
-        Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAllDestinations(
-                event.getLobbyId()));
+        Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAllDestinations(
+                event.getLobbyId()
+        );
 
         AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
         response.setSession(session);
@@ -107,27 +105,6 @@ public class ConnectionService extends AbstractService {
                 event.getLobbyId(),
                 event.getUsername()
         );
-    }
-
-    /**
-     * Converts a map of available destinations from ICity and ICard to a map of Integer and ICardDTO.
-     *
-     * @param availableDestinations the map of available destinations with ICity as keys and lists of ICard as values
-     * @return a map of available destinations with Integer as keys and lists of ICardDTO as values
-     */
-    private Map<Integer, List<ICardDTO>> convertToDtoMap(Map<ICity, List<ICard>> availableDestinations) {
-        Map<Integer, List<ICardDTO>> availableDestinationsAsDtos = new HashMap<>();
-
-        for (Map.Entry<ICity, List<ICard>> entry : availableDestinations.entrySet()) {
-            List<ICardDTO> cards = entry.getValue()
-                                        .stream()
-                                        .map(CardMapper::toDTO)
-                                        .toList();
-            availableDestinationsAsDtos.put(entry.getKey()
-                                                 .getId(), cards);
-        }
-
-        return availableDestinationsAsDtos;
     }
 
     /**

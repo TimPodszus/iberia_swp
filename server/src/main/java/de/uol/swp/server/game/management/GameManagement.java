@@ -3,6 +3,7 @@ package de.uol.swp.server.game.management;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
+import de.uol.swp.common.game.dto.DestinationInfo;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.AbstractManagement;
@@ -11,7 +12,6 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
-import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
@@ -49,7 +49,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private final IConnectionManagement connectionManagement;
 
     @Inject
-    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement, IConnectionManagement connectionManagement) {
+    public GameManagement(
+            IPlayerManagement playerManagement,
+            ICityManagement cityManagement,
+            IConnectionManagement connectionManagement
+    ) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;
         this.connectionManagement = connectionManagement;
@@ -209,7 +213,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             }
             try {
                 assert requestPlayer != null;
-                if(requestPlayer.getCurrentPosition() != null) {
+                if (requestPlayer.getCurrentPosition() != null) {
                     throw new GameManagementException("Player is already positioned");
                 }
                 playerManagement.setStartingPosition(
@@ -331,15 +335,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             throw new GameManagementException("Player is not the current player");
         }
 
-        Map<ICity, List<ICard>> availableDestinations = connectionManagement.getAvailableDestinations(
+        Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
                 lobbyId,
                 player.getCurrentPosition()
                       .getId()
         );
-        boolean citiesConnectedByLand = availableDestinations.containsKey(city) && availableDestinations.get(city)
-                                                                                                        .isEmpty();
-        boolean citiesConnectedBySea = availableDestinations.containsKey(city) && !availableDestinations.get(city)
-                                                                                                        .isEmpty();
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId()) && availableDestinations.get(city.getId())
+                                                                                                                .getCardsUsableForMove()
+                                                                                                                .isEmpty();
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId()) && !availableDestinations.get(city.getId())
+                                                                                                                .getCardsUsableForMove()
+                                                                                                                .isEmpty();
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error(
                     "[LobbyID: {}] Failed to move {}.There is no available connection between {} and {}",
@@ -469,8 +475,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Otherwise, it fetches the buildable train tracks based on the player's current position.
      *
      * @param lobbyId The ID of the lobby
-     * @param game The game instance
-     * @param player The current player
+     * @param game    The game instance
+     * @param player  The current player
      * @return A list of buildable train tracks
      */
     private List<IConnection> getBuildableTrainTracks(String lobbyId, IGame game, IPlayer player) {
