@@ -530,7 +530,7 @@ class GameManagementTest {
                 new ArrayList<>(),
                 new ArrayList<>(),
                 0,
-                mock(IGameState.class),
+                new PlayerTurnState(),
                 mock(IGameState.class),
                 1,
                 mock(GameStateChangeListener.class)
