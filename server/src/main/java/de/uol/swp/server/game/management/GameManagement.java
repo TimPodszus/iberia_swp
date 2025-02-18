@@ -10,7 +10,6 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
-import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
