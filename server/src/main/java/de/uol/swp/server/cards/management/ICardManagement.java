@@ -17,10 +17,10 @@ public interface ICardManagement {
     void playCard(String lobbyId, String username, int cardId);
 
     /**
-         * Retrieves the game associated with the specified lobby.
-         *
-         * @param lobbyId the ID of the lobby
-         * @return the game associated with the specified lobby
-         */
-        IGame getGame(String lobbyId);
+     * Retrieves the game associated with the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @return the game associated with the specified lobby
+     */
+    IGame getGame(String lobbyId);
 }
