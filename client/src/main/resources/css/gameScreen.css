@@ -83,6 +83,11 @@
     -fx-stroke: brown;
 }
 
+.connection-highlighted {
+    -fx-stroke-width: 10;
+    -fx-stroke: #77E44C;
+}
+
 .action-button {
     -fx-padding: 6 8 8 8;
     -fx-background-insets: 0, 0 0 5 0, 0 0 6 0, 0 0 7 0;

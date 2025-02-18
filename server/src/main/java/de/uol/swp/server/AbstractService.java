@@ -53,7 +53,7 @@ public class AbstractService {
      * @see de.uol.swp.common.message.Message
      * @since 2019-10-08
      */
-    protected void post(Message message) {
+    public void post(Message message) {
         bus.post(message);
     }
 

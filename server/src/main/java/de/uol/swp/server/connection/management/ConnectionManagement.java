@@ -7,14 +7,17 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Manages connections and provides available destinations.
@@ -23,6 +26,20 @@ import java.util.*;
 public class ConnectionManagement extends AbstractManagement implements IConnectionManagement {
 
     private static final Logger LOG = LogManager.getLogger(ConnectionManagement.class);
+
+    /**
+     * Retrieves the connection with the given ID.
+     *
+     * @param lobbyId      the ID of the lobby
+     * @param connectionId the ID of the connection
+     * @return the connection with the given ID
+     */
+    public IConnection getConnection(String lobbyId, int connectionId) {
+        return GameStore.getInstance()
+                        .getGame(lobbyId)
+                        .getConnectionRepository()
+                        .getConnectionByID(connectionId);
+    }
 
     @Override
     public Map<ICity, List<ICard>> getAvailableDestinations(String lobbyId, int cityId) {
@@ -49,6 +66,29 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                 startCity.getName()
         );
         return availableDestinations;
+    }
+
+    @Override
+    public List<IConnection> getBuildableTrainTracks(String lobbyId, int cityId) {
+        IGame game = super.getGame(lobbyId);
+        CityRepository cityRepository = game.getCityRepository();
+        ICity position = cityRepository.getCity(cityId);
+        ConnectionRepository connectionRepository = game.getConnectionRepository();
+        List<IConnection> buildableConnections;
+
+        if (game.getTracksLeft() > 0) {
+            buildableConnections = connectionRepository.getConnections()
+                                                       .stream()
+                                                       .filter(connection -> connection.getCityNames()
+                                                                                       .contains(position.getName()))
+                                                       .filter(IConnection::isTrainTrackBuildable)
+                                                       .filter(Predicate.not(IConnection::isTrainTrack))
+                                                       .toList();
+        } else {
+            buildableConnections = List.of();
+        }
+
+        return buildableConnections;
     }
 
     /**

@@ -9,13 +9,12 @@ public class RoleRepository
     {
         List<Role> roles = new ArrayList<>();
 
-        roles.add(new AgriculturalScientist());
-        roles.add(new CountryDoctor());
-        roles.add(new Nurse());
-        roles.add(new Politician());
         roles.add(new RailwayWorker());
-        roles.add(new Sailor());
-        roles.add(new ScientistAtTheRoyalAcademy());
+        roles.add(new RailwayWorker());
+        roles.add(new RailwayWorker());
+        roles.add(new RailwayWorker());
+        roles.add(new RailwayWorker());
+        roles.add(new RailwayWorker());
 
         return roles;
     }

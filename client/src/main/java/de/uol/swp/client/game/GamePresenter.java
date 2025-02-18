@@ -16,6 +16,7 @@ import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
+import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
@@ -73,6 +74,7 @@ public class GamePresenter extends AbstractPresenter {
     private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
     private static final String CONNECTION_ID = "#connection";
+    private static final String CONNECTION_HIGHLIGHTED_CLASS = "connection-highlighted";
     private static final String CITY_ID = "#city";
     private static final String CITY_CLASS = "city";
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
@@ -85,6 +87,8 @@ public class GamePresenter extends AbstractPresenter {
     private GameService gameService;
 
     private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
+
+    private List<IConnectionDTO> buildableTrainTracks = new ArrayList<>();
 
     @FXML
     private AnchorPane gameScreen;
@@ -348,7 +352,29 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+        Node source = (Node) event.getSource();
+        int connectionId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+
+        if (!source.getStyleClass().contains(CONNECTION_HIGHLIGHTED_CLASS)) {
+            return;
+        }
+
+        boolean isBuildable = buildableTrainTracks.stream()
+                                                  .anyMatch(connection -> connection.getId() == connectionId);
+
+        if (!isBuildable) {
+            return;
+        }
+
+        StateType currentState = gameDTO.getState();
+        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) ||
+                currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
+
+        if (isValidState) {
+            gameService.buildTrainTrack(lobbyId, connectionId);
+            highlightBuildableTrainTrackHighlight(false);
+            buildTrainTracksButton.setSelected(false);
+        }
     }
 
     /**
@@ -380,9 +406,19 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildTrainTrack(ActionEvent event) {
         if (buildTrainTracksButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE)) {
+                resetBuildableTrainTrackHighlight();
+                gameService.requestBuildableTrainTracks(
+                        this.lobbyId,
+                        gameDTO.getCurrentPlayer()
+                               .getCurrentPosition()
+                               .getId()
+                );
+            }
         } else {
-
+            highlightBuildableTrainTrackHighlight(false);
+            this.highlightAvailableDestinations();
         }
     }
 
@@ -1229,6 +1265,12 @@ public class GamePresenter extends AbstractPresenter {
         LOG.info("Available destinations set");
     }
 
+    @Subscribe
+    public void onBuildableTrainTracksResponse(BuildableTrainTracksResponse response) {
+        this.buildableTrainTracks = response.getConnections();
+        highlightBuildableTrainTrackHighlight(true);
+    }
+
     /**
      * Highlights the available destination cities on the game map.
      * Iterates through the available destinations and updates the style class
@@ -1309,5 +1351,37 @@ public class GamePresenter extends AbstractPresenter {
     public void onEndGameEvent(EndGameEvent event) {
         EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
         Platform.runLater(dialog::showEndGameDialog);
+    }
+
+    /**
+     * Toggles the buildable train track highlight on the game map.
+     *
+     * @param highlight whether to highlight the buildable train tracks
+     */
+    public void highlightBuildableTrainTrackHighlight(boolean highlight) {
+        for (IConnectionDTO connection : this.buildableTrainTracks) {
+            Line line = (Line) mapPane.lookup(CONNECTION_ID + connection.getId());
+            line.getStyleClass()
+                .removeAll(CONNECTION_HIGHLIGHTED_CLASS);
+            if (highlight) {
+                line.getStyleClass()
+                    .add(CONNECTION_HIGHLIGHTED_CLASS);
+            }
+        }
+    }
+
+    /**
+     * Resets the highlight for buildable train tracks.
+     * <p>
+     * This method iterates through all cities in the game and removes the
+     * highlight style class from the corresponding StackPane elements.
+     */
+    public void resetBuildableTrainTrackHighlight() {
+        gameDTO.getCities()
+               .forEach(city -> {
+                   Node stackPane = mapPane.lookup(CITY_ID + city.getId());
+                   stackPane.getStyleClass()
+                            .remove(CITY_HIGHLIGHTED_CLASS);
+               });
     }
 }
