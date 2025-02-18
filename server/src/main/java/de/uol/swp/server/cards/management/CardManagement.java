@@ -14,14 +14,8 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
     @Override
     public void playCard(String lobbyId, String username, int cardId) {
         IGame game = super.getGame(lobbyId);
-
-        if (!game.getPlayer(username).equals(game.getCurrentPlayer())) {
-            LOG.error("[LobbyId: {}] Player is not current player", game.getGameId());
-            //TODO think, wether to throw an exception or not
-            return;
-        }
-
         ICard card = game.getPlayer(username).playCard(cardId);
+        
         if (card instanceof EventCard eventCard) {
             LOG.debug("[LobbyId: {}] Card is Event Card and will be played directly", game.getGameId());
             setGameInEventCardState(game);
