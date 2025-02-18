@@ -643,7 +643,7 @@ class GameManagementTest {
      * Tests the movePlayer method with a game in the event state after the OnTheMoveDayAndNightEventCard has been
      * thrown.
      *
-     * @throws GameManagementException
+     * @throws GameManagementException if the movePlayer method throws an exception
      */
     @Test
     void testMovePlayer_OnTheMoveDayAndNightEvent() throws GameManagementException {
