@@ -2038,13 +2038,13 @@
                     </VBox>
                     <VBox alignment="CENTER" spacing="10.0">
                         <children>
-                            <ToggleButton fx:id="shareKnowledgeButton" mnemonicParsing="false"
-                                          onAction="#onShareKnowledge" prefHeight="30.0" prefWidth="150.0"
-                                          styleClass="action-button" text="Wissen teilen">
+                            <Button fx:id="shareKnowledgeButton" mnemonicParsing="false"
+                                    onAction="#onShareKnowledge" prefHeight="30.0" prefWidth="150.0"
+                                    styleClass="action-button" text="Wissen teilen">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                 </VBox.margin>
-                            </ToggleButton>
+                            </Button>
                             <ToggleButton fx:id="researchPlagueButton" mnemonicParsing="false"
                                           onAction="#onResearchPlague" prefHeight="30.0" prefWidth="150.0"
                                           styleClass="action-button" text="Seuche erforschen">

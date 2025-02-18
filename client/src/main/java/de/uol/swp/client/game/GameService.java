@@ -36,6 +36,7 @@ public class GameService {
     @Inject
     public GameService(EventBus eventBus) {
         this.eventBus = eventBus;
+        eventBus.register(this);
     }
 
     /**

@@ -41,6 +41,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
@@ -149,7 +150,7 @@ public class GamePresenter extends AbstractPresenter {
     private ToggleButton treatInfectionButton;
 
     @FXML
-    private ToggleButton shareKnowledgeButton;
+    private Button shareKnowledgeButton;
 
     @FXML
     private ToggleButton endTurnButton;
@@ -442,11 +443,8 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onShareKnowledge(ActionEvent event) {
         LOG.debug("Share knowledge action triggered");
-        if (shareKnowledgeButton.isSelected()) {
-            gameService.sendShareKnowledgeRequest(this.gameDTO, this.lobbyId);
-        } else {
-            LOG.debug("Share knowledge button is not selected");
-        }
+        gameService.sendShareKnowledgeRequest(this.gameDTO, this.lobbyId);
+
     }
 
     /**
@@ -588,7 +586,6 @@ public class GamePresenter extends AbstractPresenter {
         researchPlagueButton.setToggleGroup(toggleGroup);
         treatWaterButton.setToggleGroup(toggleGroup);
         treatInfectionButton.setToggleGroup(toggleGroup);
-        shareKnowledgeButton.setToggleGroup(toggleGroup);
 
         toggleGroup.selectedToggleProperty()
                    .addListener((observable, oldToggle, newToggle) -> {
@@ -1390,12 +1387,12 @@ public class GamePresenter extends AbstractPresenter {
         if (response.wasSuccessful()) {
             LOG.info("Knowledge shared");
             LOG.trace("Updating board of Game {}", response.getGameDTO());
+            this.gameDTO = response.getGameDTO();
             Platform.runLater(() -> updateBoard(response.getGameDTO()));
-            shareKnowledgeButton.setSelected(false);
         } else {
             LOG.info("Knowledge not shared");
-            shareKnowledgeButton.setSelected(false);
         }
+
     }
 
     /**
