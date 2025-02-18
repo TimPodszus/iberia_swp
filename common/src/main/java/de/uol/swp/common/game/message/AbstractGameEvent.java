@@ -13,15 +13,15 @@ import java.util.Objects;
  */
 @Getter
 public abstract class AbstractGameEvent extends AbstractEventMessage {
-    private final String lobbyCode;
+    private final String lobbyId;
 
     /**
      * Constructs a new AbstractGameEvent.
      *
-     * @param lobbyCode the code of the lobby associated with the event
+     * @param lobbyId the code of the lobby associated with the event
      */
-    protected AbstractGameEvent(String lobbyCode) {
-        this.lobbyCode = lobbyCode;
+    protected AbstractGameEvent(String lobbyId) {
+        this.lobbyId = lobbyId;
     }
 
     /**
@@ -42,7 +42,7 @@ public abstract class AbstractGameEvent extends AbstractEventMessage {
             return false;
         }
         AbstractGameEvent that = (AbstractGameEvent) o;
-        return Objects.equals(lobbyCode, that.lobbyCode);
+        return Objects.equals(lobbyId, that.lobbyId);
     }
 
     /**
@@ -52,6 +52,6 @@ public abstract class AbstractGameEvent extends AbstractEventMessage {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), lobbyCode);
+        return Objects.hash(super.hashCode(), lobbyId);
     }
 }

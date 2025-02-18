@@ -1,14 +1,19 @@
 package de.uol.swp.server.player.management;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.*;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.EpidemicCard;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
+import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
@@ -29,19 +34,22 @@ public class PlayerManagement implements IPlayerManagement {
     }
 
     public ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException {
-        IPlayer player = GameStore.getInstance().getGame(lobbyCode).getPlayers()
-                             .stream()
-                             .filter(p -> Objects.equals(p.getUser()
-                                                          .getUsername(), user.getUsername()))
-                             .findFirst()
-                             .orElseThrow(() -> new PlayerManagementException("Player not found for the given user"));
+        IPlayer player = GameStore.getInstance()
+                                  .getGame(lobbyCode)
+                                  .getPlayers()
+                                  .stream()
+                                  .filter(p -> Objects.equals(p.getUser()
+                                                               .getUsername(), user.getUsername()))
+                                  .findFirst()
+                                  .orElseThrow(() -> new PlayerManagementException("Player not found for the given user"));
         return drawPlayerCard(lobbyCode, player);
     }
 
     public ICardDTO drawPlayerCard(
             String lobbyCode, IPlayer player
     ) throws PlayerManagementException {
-        IGame game = GameStore.getInstance().getGame(lobbyCode);
+        IGame game = GameStore.getInstance()
+                              .getGame(lobbyCode);
 
         ICard card = getCard(game, player);
 
@@ -71,15 +79,18 @@ public class PlayerManagement implements IPlayerManagement {
         List<ICard> playerCardDrawPile = game.getPlayerCardDrawPile();
 
         if (playerCardDrawPile.isEmpty()) {
+            game.setState(new EndGameState(false));
             throw new PlayerManagementException("Player card draw pile is empty");
         }
 
-        // if 0 is the top card of the draw pile
         return playerCardDrawPile.remove(0);
     }
 
-    public void setStartingPosition(String lobbyCode, CityName cityName, IPlayer player) throws PlayerManagementException {
-        IGame game = GameStore.getInstance().getGame(lobbyCode);
+    public void setStartingPosition(
+            String lobbyCode, CityName cityName, IPlayer player
+    ) throws PlayerManagementException {
+        IGame game = GameStore.getInstance()
+                              .getGame(lobbyCode);
 
         boolean validRequest = false;
         int cityCardCount = 0;
@@ -94,8 +105,9 @@ public class PlayerManagement implements IPlayerManagement {
             }
         }
         if (validRequest || cityCardCount == 0) {
-            ICity city = game.getCityRepository().getCitiesByNames(cityName)
-                                       .get(0);
+            ICity city = game.getCityRepository()
+                             .getCitiesByNames(cityName)
+                             .get(0);
             player.setCurrentPosition(city);
         } else {
             throw new PlayerManagementException(
@@ -104,7 +116,8 @@ public class PlayerManagement implements IPlayerManagement {
     }
 
     public void addCard(IPlayer player, ICard card) {
-        player.getCards().add(card);
+        player.getCards()
+              .add(card);
     }
 
     public void discardCard(String lobbyCode, IPlayer player, ICard card) {
@@ -112,12 +125,15 @@ public class PlayerManagement implements IPlayerManagement {
     }
 
     public void discardCards(String lobbyCode, IPlayer player, List<? extends ICard> cards) {
-        IGame game = GameStore.getInstance().getGame(lobbyCode);
+        IGame game = GameStore.getInstance()
+                              .getGame(lobbyCode);
 
         for (ICard card : cards) {
-            player.getCards().remove(card);
+            player.getCards()
+                  .remove(card);
         }
-        game.getPlayerCardDiscardPile().addAll(cards);
+        game.getPlayerCardDiscardPile()
+            .addAll(cards);
     }
 
     public ICard getCard(String lobbyId, String playerName, int cardId) throws PlayerManagementException {
@@ -139,5 +155,13 @@ public class PlayerManagement implements IPlayerManagement {
                                  .equals(playerName))
                    .findFirst()
                    .orElseThrow(() -> new PlayerManagementException("Player not found"));
+    }
+
+    public void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException {
+        IGame game = GameStore.getInstance()
+                              .getGame(lobbyId);
+        IPlayer player = getPlayer(game, playerName);
+        ICity city = cityManagement.getCity(lobbyId, cityId);
+        player.setCurrentPosition(city);
     }
 }

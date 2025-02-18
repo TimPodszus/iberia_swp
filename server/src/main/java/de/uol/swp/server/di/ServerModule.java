@@ -1,6 +1,8 @@
 package de.uol.swp.server.di;
 
 import com.google.inject.AbstractModule;
+import de.uol.swp.server.cards.management.CardManagement;
+import de.uol.swp.server.cards.management.ICardManagement;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.management.ConnectionManagement;
@@ -15,6 +17,8 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.management.IRegionManagement;
 import de.uol.swp.server.region.management.RegionManagement;
+import de.uol.swp.server.usermanagement.management.ServerUserService;
+import de.uol.swp.server.usermanagement.management.UserManagement;
 import de.uol.swp.server.usermanagement.store.DatabaseBasedUserStore;
 import de.uol.swp.server.usermanagement.store.UserStore;
 import org.greenrobot.eventbus.EventBus;
@@ -44,5 +48,9 @@ public class ServerModule extends AbstractModule {
         bind(IPlayerManagement.class).to(PlayerManagement.class);
         bind(IInfectionManagement.class).to(InfectionManagement.class);
         bind(IRegionManagement.class).to(RegionManagement.class);
+        bind(IInfectionManagement.class).to(InfectionManagement.class);
+        bind(IRegionManagement.class).to(RegionManagement.class);
+        bind(ServerUserService.class).to(UserManagement.class);
+        bind(ICardManagement.class).to(CardManagement.class);
     }
 }

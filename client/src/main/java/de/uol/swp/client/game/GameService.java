@@ -1,14 +1,20 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
+import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
+import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
+import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
+import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
+import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
+import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
 import org.greenrobot.eventbus.EventBus;
-
 
 /**
  * Service class for handling game-related operations.
@@ -38,6 +44,17 @@ public class GameService {
     }
 
     /**
+     * Moves the player to the specified city and taking a player with him.
+     *
+     * @param lobbyId  the lobby ID of the game in which the player is to be moved
+     * @param cityId   the city to which the player is to be moved
+     * @param username the username of the player that is taken with
+     */
+    public void movePlayerToCity(String lobbyId, int cityId, String username) {
+        eventBus.post(new MovePlayerRequest(lobbyId, cityId, username));
+    }
+
+    /**
      * Moves the player to the specified city.
      *
      * @param lobbyId the lobby ID of the game in which the player is to be moved
@@ -46,6 +63,16 @@ public class GameService {
      */
     public void movePlayerToCity(String lobbyId, int cityId, int cardId) {
         eventBus.post(new MovePlayerRequest(lobbyId, cityId, cardId));
+    }
+
+    /**
+     * Moves the player to the specified city.
+     *
+     * @param lobbyId the lobby ID of the game in which the player is to be moved
+     * @param cityId  the city to which the player is to be moved
+     */
+    public void movePlayerToCity(String lobbyId, int cityId) {
+        eventBus.post(new MovePlayerRequest(lobbyId, cityId));
     }
 
     /*
@@ -71,5 +98,83 @@ public class GameService {
         eventBus.post(new AvailableActionsRequest(lobbyCode));
     }
 
+    /**
+     * Sends a request to get buildable train tracks for the specified city.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param cityId    the ID of the city
+     */
+    public void requestBuildableTrainTracks(String lobbyCode, int cityId) {
+        eventBus.post(new BuildableTrainTracksRequest(lobbyCode, cityId));
+    }
 
+    /**
+     * Sends a request to build a train track.
+     *
+     * @param lobbyCode    the code of the lobby
+     * @param connectionId the ID of the connection
+     */
+    public void buildTrainTrack(String lobbyCode, int connectionId) {
+        eventBus.post(new BuildTrainTrackRequest(lobbyCode, connectionId));
+    }
+
+    /**
+     * Sends a request to share a ride to the specified city.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param cityId    the ID of the city to which the ride is to be shared
+     */
+    public void sendShareRideRequest(String lobbyCode, int cityId) {
+        eventBus.post(new ShareRideRequest(lobbyCode, cityId));
+    }
+
+    /**
+     * Sends a request to get available regions for the specified lobby.
+     *
+     * @param lobbyCode the code of the lobby
+     */
+    public void sendAvailableRegionsRequest(String lobbyCode) {
+        eventBus.post(new AvailableRegionsRequest(lobbyCode));
+    }
+
+    /**
+     * Sends a request to deny the ride-share.
+     *
+     * @param lobbyCode the code of the lobby
+     */
+    public void sendShareRideRequest(String lobbyCode) {
+        eventBus.post(new ShareRideRequest(lobbyCode));
+    }
+
+    /**
+     * Sends a request to perform water treatment in the specified region.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param regionId  the ID of the region where the water treatment is to be performed
+     */
+    public void sendWaterTreatmentRegionRequest(String lobbyCode, int regionId) {
+        eventBus.post(new WaterTreatmentRegionRequest(lobbyCode, regionId));
+    }
+
+    /**
+     * Sends a request to perform water treatment in the specified region.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param regionId  the ID of the region where the water treatment is to be performed
+     * @param amount    the amount of water treatments to be performed
+     * @param card      the city card to be used for the water treatment
+     */
+    public void sendWaterTreatmentRequest(String lobbyCode, int regionId, int amount, CityCardDTO card) {
+        eventBus.post(new WaterTreatmentRequest(lobbyCode, regionId, amount, card));
+    }
+
+    /**
+     * Sends a request to play a card in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param cardId  the ID of the card to be played
+     */
+    public void sendPlayCardRequest(String lobbyId, int cardId) {
+        eventBus.post(new PlayCardRequest(lobbyId, cardId));
+    }
 }

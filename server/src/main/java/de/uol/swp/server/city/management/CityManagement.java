@@ -3,13 +3,14 @@ package de.uol.swp.server.city.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
-import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
@@ -63,10 +64,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @throws CityManagementException if any parameter is invalid or an error occurs during infection
      */
     public void infectCity(
-            IGame game,
-            InfectionCard infectionCard,
-            PlagueName plagueName,
-            int amount
+            IGame game, InfectionCard infectionCard, PlagueName plagueName, int amount
     ) throws CityManagementException {
         infectCity(game, findCity(game, infectionCard), plagueName, amount, true);
         gameManagement.discardInfectionCard(game, infectionCard);
@@ -83,11 +81,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @throws CityManagementException if any parameter is invalid or an error occurs during infection
      */
     private void infectCity(
-            IGame game,
-            ICity city,
-            PlagueName plagueName,
-            int amount,
-            boolean triggerEscalation
+            IGame game, ICity city, PlagueName plagueName, int amount, boolean triggerEscalation
     ) throws CityManagementException {
         validateParameters(game, city, plagueName, amount);
 
@@ -116,10 +110,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @throws CityManagementException if any parameter is invalid
      */
     private void validateParameters(
-            IGame game,
-            ICity city,
-            PlagueName plagueName,
-            int amount
+            IGame game, ICity city, PlagueName plagueName, int amount
     ) throws CityManagementException {
         if (game == null || city == null || plagueName == null || amount < 1) {
             throw new CityManagementException("Invalid parameters");
@@ -172,12 +163,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param triggerEscalation whether to trigger escalation if the infection severity exceeds the threshold
      */
     private void increaseInfectionSeverity(
-            IGame game,
-            IInfection infection,
-            IPlague plague,
-            int amount,
-            ICity city,
-            boolean triggerEscalation
+            IGame game, IInfection infection, IPlague plague, int amount, ICity city, boolean triggerEscalation
     ) {
         int newSeverity;
 
@@ -200,10 +186,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         if (game.getPlagueRepository()
                 .getPlagueByName(plague.getName())
                 .getCubesRemaining() < 0) {
-            //TODO: GameOver auslösen (Implementierung mit Issue #137)
-
-            // vorübergehend für Unit-Test - muss dann entsprechend angepasst werden
-            throw new CityManagementException("Game Over");
+            game.setState(new EndGameState(false));
         }
     }
 
@@ -224,7 +207,10 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
 
         while (!citiesToProcess.isEmpty()) {
             game.setEscalationStage(game.getEscalationStage() + 1);
-
+            if (game.getEscalationStage() == 8) {
+                game.setState(new EndGameState(false));
+                return;
+            }
             CityName currentCity = citiesToProcess.poll();
             List<CityName> connectedCityNames = game.getConnectionRepository()
                                                     .getCityNamesOfConnectedCitiesByCityName(currentCity);

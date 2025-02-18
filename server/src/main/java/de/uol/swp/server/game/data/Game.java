@@ -1,9 +1,13 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.server.cards.*;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.EpidemicCard;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.plague.data.PlagueRepository;
@@ -109,7 +113,6 @@ public class Game implements IGame {
     /**
      * Current state of the game.
      */
-    @Setter
     private IGameState state;
 
     /**
@@ -122,6 +125,12 @@ public class Game implements IGame {
      * Difficulty level of the game.
      */
     private int difficulty;
+
+    /**
+     * Listener for game state changes.
+     */
+    @Setter
+    private GameStateChangeListener gameStateChangeListener;
 
     /**
      * Constructs a new Game instance with default values.
@@ -225,5 +234,24 @@ public class Game implements IGame {
      */
     public IPlayer getCurrentPlayer() {
         return this.players.get(currentPlayerIndex);
+    }
+
+    public void setState(IGameState state) {
+        this.previousState = this.state;
+        this.state = state;
+        if (gameStateChangeListener != null) {
+            gameStateChangeListener.onGameStateChange(this);
+        }
+    }
+
+    public IPlayer getPlayer(String username) {
+        for (IPlayer player : players) {
+            if (player.getUser()
+                      .getUsername()
+                      .equals(username)) {
+                return player;
+            }
+        }
+        return null;
     }
 }

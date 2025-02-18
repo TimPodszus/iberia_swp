@@ -20,7 +20,7 @@ import java.util.Objects;
 @Setter
 public class AbstractLobbyMessage extends AbstractServerMessage {
 
-    String lobbyCode;
+    String lobbyId;
     IUserDTO user;
 
     /**
@@ -35,12 +35,12 @@ public class AbstractLobbyMessage extends AbstractServerMessage {
     /**
      * Constructor
      *
-     * @param lobbyCode code of the lobby
-     * @param user      user responsible for the creation of this message
+     * @param lobbyId code of the lobby
+     * @param user    user responsible for the creation of this message
      * @since 2019-10-08
      */
-    public AbstractLobbyMessage(String lobbyCode, IUserDTO user) {
-        this.lobbyCode = lobbyCode;
+    public AbstractLobbyMessage(String lobbyId, IUserDTO user) {
+        this.lobbyId = lobbyId;
         this.user = user;
     }
 
@@ -53,11 +53,11 @@ public class AbstractLobbyMessage extends AbstractServerMessage {
             return false;
         }
         AbstractLobbyMessage that = (AbstractLobbyMessage) o;
-        return Objects.equals(lobbyCode, that.lobbyCode) && Objects.equals(user, that.user);
+        return Objects.equals(lobbyId, that.lobbyId) && Objects.equals(user, that.user);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(lobbyCode, user);
+        return Objects.hash(lobbyId, user);
     }
 }

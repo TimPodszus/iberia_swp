@@ -14,12 +14,11 @@ public interface ILobbyManagement {
     /**
      * Creates a new lobby.
      *
-     * @param lobbyName the name of the lobby
-     * @param owner     the owner of the lobby
+     * @param owner the owner of the lobby
      * @return the created lobby
      * @throws LobbyStoreException if an error occurs during lobby creation
      */
-    ILobby createLobby(String lobbyName, IUser owner) throws LobbyStoreException;
+    ILobby createLobby(IUser owner) throws LobbyStoreException;
 
     /**
      * Deletes an existing lobby.
@@ -48,10 +47,10 @@ public interface ILobbyManagement {
     /**
      * Allows a user to join a specified lobby.
      *
-     * @param lobby an Optional containing the lobby to join
+     * @param lobbyId the ID of the lobby to join
      * @throws LobbyStoreException if an error occurs during the join process
      */
-    void joinLobby(ILobby lobby, IUser user) throws LobbyStoreException;
+    void joinLobby(String lobbyId, IUser user) throws LobbyStoreException;
 
     /**
      * Updates an existing lobby.
@@ -61,5 +60,22 @@ public interface ILobbyManagement {
      * @throws LobbyStoreException if an error occurs during lobby update
      */
     ILobby updateLobby(ILobby lobby) throws LobbyStoreException;
+
+    /**
+     * Removes a user from a specified lobby.
+     *
+     * @param lobbyId  the ID of the lobby
+     * @param username the username of the user to remove
+     * @return the updated lobby after the user is removed
+     */
+    public ILobby removeUser(String lobbyId, String username) throws LobbyStoreException;
+
+    /**
+     * Allows a user to leave a specified lobby.
+     *
+     * @param lobbyID the ID of the lobby to leave
+     * @param user    the user who wants to leave the lobby
+     */
+    void leaveLobby(String lobbyID, IUser user);
 }
 

@@ -30,9 +30,8 @@ class UpdateLobbyRequestTest {
      */
     @Test
     void testUpdateLobbyRequest() {
-        UpdateLobbyRequest updateLobbyRequest = new UpdateLobbyRequest(lobbyDTO, owner);
-        assertEquals("testcode", updateLobbyRequest.getLobbyCode());
+        UpdateLobbyRequest updateLobbyRequest = new UpdateLobbyRequest(lobbyDTO);
+        assertEquals("testcode", updateLobbyRequest.getLobbyId());
         assertEquals(lobbyDTO, updateLobbyRequest.getLobbyDTO());
-        assertEquals(owner, updateLobbyRequest.getUser());
     }
 }
