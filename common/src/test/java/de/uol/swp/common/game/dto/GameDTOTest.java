@@ -166,6 +166,12 @@ public class GameDTOTest {
         assertEquals(players.get(currentPlayerIndex), game.getCurrentPlayer());
     }
 
+    @Test
+    void testGetPlayer() {
+        IGameDTO game = createTestGameDTO("gameId");
+        assertEquals(players.get(0), game.getPlayer("player1"));
+    }
+
     private IGameDTO createTestGameDTO(String gameId) {
         return new GameDTO(gameId,
                 cities,

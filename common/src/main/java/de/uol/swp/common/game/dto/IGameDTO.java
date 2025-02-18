@@ -129,4 +129,12 @@ public interface IGameDTO {
      * @return the current player
      */
     IPlayerDTO getCurrentPlayer();
+
+    /**
+     * Gets the player with the specified username.
+     *
+     * @param username the username of the player to get
+     * @return the player with the specified username or null if no player with the specified username exists
+     */
+    IPlayerDTO getPlayer(String username);
 }

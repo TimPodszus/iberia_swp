@@ -39,6 +39,16 @@ public class GameDTO implements IGameDTO, Serializable {
         return players.get(currentPlayerIndex);
     }
 
+    public IPlayerDTO getPlayer(String username) {
+        for (IPlayerDTO player : players) {
+            if (player.getUsername()
+                      .equals(username)) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (this == object) {
