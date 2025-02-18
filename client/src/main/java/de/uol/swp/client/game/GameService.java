@@ -1,6 +1,7 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
@@ -109,5 +110,9 @@ public class GameService {
      */
     public void sendShareRideRequest(String lobbyCode) {
         eventBus.post(new ShareRideRequest(lobbyCode));
+    }
+
+    public void sendPlayCardRequest(String lobbyId, int cardId) {
+        eventBus.post(new PlayCardRequest(lobbyId, cardId));
     }
 }

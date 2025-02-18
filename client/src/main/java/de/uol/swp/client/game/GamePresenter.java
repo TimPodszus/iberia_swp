@@ -7,6 +7,7 @@ import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.EventCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
@@ -848,7 +849,7 @@ public class GamePresenter extends AbstractPresenter {
         updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
         updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
         updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
-        updatePlayerHandCards(gameDTO.getPlayers());
+        updatePlayerHandCards();
 
         if (!gameDTO.getState()
                     .equals(StateType.START_STATE)) {
@@ -878,22 +879,21 @@ public class GamePresenter extends AbstractPresenter {
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
      *
-     * @param players the list of players
      */
-    private void updatePlayerHandCards(List<IPlayerDTO> players) {
+    private void updatePlayerHandCards() {
         removePlayerHandCards();
-        for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
-                    UserStore.getInstance()
-                             .getUser()
-                             .getUsername()
-            )) {
-                List<ICardDTO> playerHand = player.getCards();
-                for (ICardDTO card : playerHand) {
-                    AbstractCard abstractCard = CardFactory.createCard(card);
-                    addPlayerHandCard(abstractCard);
-                }
+        IPlayerDTO player = gameDTO.getPlayer(user.getUsername());
+        List<ICardDTO> playerHand = player.getCards();
+        for (ICardDTO card : playerHand) {
+            AbstractCard abstractCard = CardFactory.createCard(card);
+            if (abstractCard instanceof EventCard eventCard) {
+                abstractCard.setOnMouseClicked(event -> {
+                    if (event.getButton() == MouseButton.PRIMARY) {
+                        gameService.sendPlayCardRequest(lobbyId, eventCard.getCardId());
+                    }
+                });
             }
+            addPlayerHandCard(abstractCard);
         }
     }
 
