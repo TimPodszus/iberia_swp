@@ -2,9 +2,9 @@ package de.uol.swp.server.connection.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.AbstractManagement;
-import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
@@ -223,5 +223,16 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
             }
         }
         return cards;
+    }
+
+    @Override
+    public Map<ICity, List<ICard>> getAllDestinations(String lobbyId) {
+        IGame game = super.getGame(lobbyId);
+        Map<ICity, List<ICard>> allDestinations = new HashMap<>();
+        for (ICity city : game.getCityRepository()
+                              .getCities()) {
+            allDestinations.put(city, new ArrayList<>());
+        }
+        return allDestinations;
     }
 }

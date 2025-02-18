@@ -1,6 +1,6 @@
 package de.uol.swp.server.player;
 
-import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.role.IRole;

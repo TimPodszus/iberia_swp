@@ -3,7 +3,7 @@ package de.uol.swp.server.city.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
@@ -27,7 +27,11 @@ public class CityManagement implements ICityManagement {
     private final IInfectionManagement infectionManagement;
 
     @Inject
-    public CityManagement(IRegionManagement regionManagement, IGameManagement gameManagement, IInfectionManagement infectionManagement) {
+    public CityManagement(
+            IRegionManagement regionManagement,
+            IGameManagement gameManagement,
+            IInfectionManagement infectionManagement
+    ) {
         this.regionManagement = regionManagement;
         this.gameManagement = gameManagement;
         this.infectionManagement = infectionManagement;
@@ -86,7 +90,7 @@ public class CityManagement implements ICityManagement {
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
 
-        if (game.getState() instanceof InfectionState infectionState){
+        if (game.getState() instanceof InfectionState infectionState) {
             infectionState.increaseInfectedCities(game);
         }
     }
@@ -174,7 +178,9 @@ public class CityManagement implements ICityManagement {
             escalation(game, city.getName(), city.getPlagueName());
         }
 
-        if (game.getPlagueRepository().getPlagueByName(plague.getName()).getCubesRemaining() < 0) {
+        if (game.getPlagueRepository()
+                .getPlagueByName(plague.getName())
+                .getCubesRemaining() < 0) {
             game.setState(new EndGameState(false));
         }
     }
@@ -182,9 +188,9 @@ public class CityManagement implements ICityManagement {
     /**
      * Handles the escalation process for a city and its connected cities.
      *
-     * @param game            the game instance
-     * @param cityName        the name of the city to escalate
-     * @param plagueName      the name of the plague causing the escalation
+     * @param game       the game instance
+     * @param cityName   the name of the city to escalate
+     * @param plagueName the name of the plague causing the escalation
      */
     private void escalation(IGame game, CityName cityName, PlagueName plagueName) {
 
@@ -196,7 +202,7 @@ public class CityManagement implements ICityManagement {
 
         while (!citiesToProcess.isEmpty()) {
             game.setEscalationStage(game.getEscalationStage() + 1);
-            if(game.getEscalationStage() == 8){
+            if (game.getEscalationStage() == 8) {
                 game.setState(new EndGameState(false));
                 return;
             }

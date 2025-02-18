@@ -2,7 +2,7 @@ package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.StateType;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.CityManagementException;
@@ -48,8 +48,6 @@ public class CityManagementTest {
     private final InfectionManagement infectionManagement = new InfectionManagement();
 
 
-
-
     /**
      * Sets up the test environment before each test.
      */
@@ -89,17 +87,18 @@ public class CityManagementTest {
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
 
         List<CityName> cityNames = game.getConnectionRepository()
-                     .getCityNamesOfConnectedCitiesByCityName(CityName.BARCELONA);
+                                       .getCityNamesOfConnectedCitiesByCityName(CityName.BARCELONA);
 
-        List<ICity> connectedCitys = game.getCityRepository().getCitiesByNames(cityNames);
+        List<ICity> connectedCitys = game.getCityRepository()
+                                         .getCitiesByNames(cityNames);
 
         for (ICity connectedCity : connectedCitys) {
             assertTrue(connectedCity.getInfections()
-                           .stream()
-                           .filter(infection -> infection.getPlagueName() == this.city.getPlagueName())
-                           .findFirst()
-                           .map(infection -> infection.getSeverity() == 1)
-                           .orElse(false));
+                                    .stream()
+                                    .filter(infection -> infection.getPlagueName() == this.city.getPlagueName())
+                                    .findFirst()
+                                    .map(infection -> infection.getSeverity() == 1)
+                                    .orElse(false));
         }
 
         assertEquals(1, game.getEscalationStage());
@@ -138,7 +137,9 @@ public class CityManagementTest {
     @Test
     void testInfectCityWithOwnPlagueWithInvalidParameters() {
         assertThrows(
-            CityManagementException.class, () -> cityManagement.infectCityWithOwnPlague(game, infectionCard, -1));
+                CityManagementException.class,
+                () -> cityManagement.infectCityWithOwnPlague(game, infectionCard, -1)
+        );
     }
 
     /**
@@ -146,7 +147,10 @@ public class CityManagementTest {
      */
     @Test
     void testInfectCityWithOwnPlagueWithEnoughWaterTreatments() {
-        game.getRegionRepository().getRegionsByCityName(CityName.BARCELONA).get(0).increaseWaterTreatments(3);
+        game.getRegionRepository()
+            .getRegionsByCityName(CityName.BARCELONA)
+            .get(0)
+            .increaseWaterTreatments(3);
 
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 3);
 
@@ -162,15 +166,16 @@ public class CityManagementTest {
      */
     @Test
     void testInfectCityWithOwnPlagueNoCubesLeft() {
-        game.getPlagueRepository().getPlagues()
+        game.getPlagueRepository()
+            .getPlagues()
             .stream()
             .filter(plague -> plague.getName() == city.getPlagueName())
-            .findFirst().ifPresent(plague -> plague.setCubesRemaining(0));
+            .findFirst()
+            .ifPresent(plague -> plague.setCubesRemaining(0));
 
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
 
-        assertEquals(
-                StateType.END_GAME_STATE,
+        assertEquals(StateType.END_GAME_STATE,
                 game.getState()
                     .getStateType()
         );
@@ -183,7 +188,8 @@ public class CityManagementTest {
     void testGetCity() {
         IGame mockGame = mock(IGame.class);
         when(mockGame.getGameId()).thenReturn("lobbyCode");
-        GameStore.getInstance().addGame(mockGame.getGameId(), mockGame);
+        GameStore.getInstance()
+                 .addGame(mockGame.getGameId(), mockGame);
 
         when(mockGame.getCityRepository()).thenReturn(new CityRepository());
 

@@ -1,4 +1,4 @@
-package de.uol.swp.server.usermanagement;
+package de.uol.swp.server.usermanagement.management;
 
 /**
  * Exception thrown in UserManagement
@@ -8,21 +8,18 @@ package de.uol.swp.server.usermanagement;
  * exist within the UserStore.
  *
  * @author Marco Grawunder
- * @see de.uol.swp.server.usermanagement.UserManagement
+ * @see UserManagement
  * @since 2019-07-08
  */
-public class UserManagementException extends RuntimeException
-{
+public class UserManagementException extends RuntimeException {
 
     /**
      * Constructor
      *
      * @param s String containing the cause for the exception.
-     *
      * @since 2019-07-08
      */
-    public UserManagementException(String s)
-    {
+    public UserManagementException(String s) {
         super(s);
     }
 }

@@ -1,7 +1,7 @@
 package de.uol.swp.common.game.dto;
 
-import de.uol.swp.common.cards.ICardDTO;
-import de.uol.swp.common.cards.InfectionCardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.game.StateType;
@@ -37,6 +37,16 @@ public class GameDTO implements IGameDTO, Serializable {
 
     public IPlayerDTO getCurrentPlayer() {
         return players.get(currentPlayerIndex);
+    }
+
+    public IPlayerDTO getPlayer(String username) {
+        for (IPlayerDTO player : players) {
+            if (player.getUsername()
+                      .equals(username)) {
+                return player;
+            }
+        }
+        return null;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
@@ -131,5 +132,15 @@ public class GameService {
      */
     public void sendShareRideRequest(String lobbyCode) {
         eventBus.post(new ShareRideRequest(lobbyCode));
+    }
+
+    /**
+     * Sends a request to play a card in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param cardId  the ID of the card to be played
+     */
+    public void sendPlayCardRequest(String lobbyId, int cardId) {
+        eventBus.post(new PlayCardRequest(lobbyId, cardId));
     }
 }

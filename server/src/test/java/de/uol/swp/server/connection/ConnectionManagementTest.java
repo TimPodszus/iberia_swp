@@ -2,8 +2,8 @@ package de.uol.swp.server.connection;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
@@ -154,6 +154,22 @@ class ConnectionManagementTest {
                       .isEmpty(),
                 "Expected Alicante to be accessible without discarding a city card, because the player is a Sailor"
         );
+    }
+
+    /**
+     * Tests the retrieval of all available destinations for all cities.
+     * It verifies that the number of available destinations is as expected.
+     */
+    @Test
+    void testGetAllDestinations() {
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getCards()).thenReturn(new ArrayList<>());
+
+        Map<ICity, List<ICard>> cities = connectionManagement.getAllDestinations("lobbyCode");
+
+        assertEquals(48, cities.size(), "Expected 48 available destinations for all cities");
     }
 
     @Test

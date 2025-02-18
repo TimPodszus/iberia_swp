@@ -1,4 +1,4 @@
-package de.uol.swp.server.usermanagement;
+package de.uol.swp.server.usermanagement.management;
 
 
 abstract class AbstractUserManagement implements ServerUserService {

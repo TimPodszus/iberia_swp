@@ -3,7 +3,7 @@ package de.uol.swp.client.game.objects.dialogs;
 import de.uol.swp.client.game.CardFactory;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.ScrollPane;
