@@ -16,8 +16,12 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.connection.data.Connection;
+import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForConfirmationState;
@@ -29,6 +33,7 @@ import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.role.Nurse;
+import de.uol.swp.server.role.RailwayWorker;
 import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -40,9 +45,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import static de.uol.swp.common.city.CityName.ALBACETE;
-import static de.uol.swp.common.city.CityName.ALICANTE;
+import static de.uol.swp.common.city.CityName.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -60,6 +65,9 @@ class GameManagementTest {
 
     @Mock
     private CityManagement cityManagement;
+
+    @Mock
+    private IConnectionManagement connectionManagement;
 
     @InjectMocks
     private GameManagement gameManagement;
@@ -238,6 +246,11 @@ class GameManagementTest {
 
     @Test
     void testMoveByLand() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
+                List.of()
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
         IUser user = new User("user1");
@@ -283,6 +296,13 @@ class GameManagementTest {
                                .toString(),
                 destinationCity
         );
+
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.ALICANTE),
+                List.of(destinationCityCard)
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+
         IUser user = new User("user1", "");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
@@ -315,6 +335,11 @@ class GameManagementTest {
 
     @Test
     void testMoveSailorBySea() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.ALICANTE),
+                List.of()
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
         IUser user = new User("user1");
@@ -337,6 +362,13 @@ class GameManagementTest {
                                .toString(),
                 destinationCity
         );
+
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.ALICANTE),
+                List.of(destinationCityCard)
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+
         IUser user = new User("user1");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
@@ -358,6 +390,12 @@ class GameManagementTest {
 
     @Test
     void testTrainRide() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.VALLADOLID),
+                List.of()
+        );
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 5)).thenReturn(availableDestinations);
+
         ICity startCity = cityRepository.getCityByName(CityName.EVORA);
         ICity destinationCity = cityRepository.getCityByName(CityName.VALLADOLID);
         IUser user = new User("user1");
@@ -415,8 +453,153 @@ class GameManagementTest {
 
     @Test
     void testGetAvailableActions() {
-        List<GameActions> actions = gameManagement.getAvailableActions("LobbyId", null);
+        List<GameActions> actions = gameManagement.getAvailableActions(LOBBY_CODE, null);
         assertEquals(6, actions.size());
+    }
+
+    @Test
+    void buildTrainTrack_Successful() throws GameManagementException {
+        IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
+        IUser user = mock(IUser.class);
+        IPlayer player = mock(IPlayer.class);
+        ICity city = mock(ICity.class);
+
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(player.getRole()).thenReturn(new Nurse());
+        when(player.getUser()).thenReturn(user);
+        when(player.getCurrentPosition()).thenReturn(city);
+        when(city.getId()).thenReturn(1);
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(
+                List.of(connection)
+        );
+
+        gameManagement.buildTrainTrack(user, LOBBY_CODE, connection);
+
+        assertTrue(game.getConnectionRepository()
+                       .getConnectionByID(connection.getId())
+                       .isTrainTrack());
+    }
+
+    @Test
+    void buildTrainTrack_GameNotInPlayerTurnState_ThrowsException() {
+        IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
+        IUser user = mock(IUser.class);
+
+        when(game.getState()).thenReturn(new WaitForPositioning());
+
+        GameManagementException exception = assertThrows(
+                GameManagementException.class,
+                () -> gameManagement.buildTrainTrack(user, LOBBY_CODE, connection)
+        );
+
+        assertEquals("Game is not in a state that allows to build train tracks", exception.getMessage());
+    }
+
+    @Test
+    void buildTrainTrack_UserNotCurrentPlayer_ThrowsException() {
+        IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
+        IUser user = new User("test", "test");
+        IPlayer player = mock(IPlayer.class);
+
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        when(player.getUser()).thenReturn(user);
+        when(game.getCurrentPlayer()).thenReturn(player);
+
+        GameManagementException exception = assertThrows(
+                GameManagementException.class,
+                () -> gameManagement.buildTrainTrack(new User("test2", "test2"), LOBBY_CODE, connection)
+        );
+
+        assertEquals("Player is not the current player", exception.getMessage());
+    }
+
+    @Test
+    void buildTrainTrack_ConnectionNotBuildable_ThrowsException() throws GameManagementException {
+        IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
+        IUser user = mock(IUser.class);
+        IPlayer player = mock(IPlayer.class);
+        ICity city = mock(ICity.class);
+
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(player.getRole()).thenReturn(new Nurse());
+        when(player.getUser()).thenReturn(user);
+        when(player.getCurrentPosition()).thenReturn(city);
+        when(city.getId()).thenReturn(1);
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(
+                List.of(new Connection(2, List.of(BARCELONA, TERUEL), false))
+        );
+
+        GameManagementException exception = assertThrows(
+                GameManagementException.class,
+                () -> gameManagement.buildTrainTrack(user, LOBBY_CODE, connection)
+        );
+
+        assertEquals("Connection between " + connection.getCityNames()
+                                                       .get(0) + " and " + connection.getCityNames()
+                                                                                     .get(1) + " is not buildable"
+                , exception.getMessage());
+    }
+
+    @Test
+    void buildTrainTrack_RailwayPersonGetsExtraBuild() throws GameManagementException {
+        IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
+        IUser user = mock(IUser.class);
+        IPlayer player = mock(IPlayer.class);
+        ICity city = mock(ICity.class);
+        IGameState state = new PlayerTurnState();
+
+        when(game.getState()).thenReturn(state);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(player.getRole()).thenReturn(new RailwayWorker());
+        when(player.getUser()).thenReturn(user);
+        when(player.getCurrentPosition()).thenReturn(city);
+        when(city.getId()).thenReturn(1);
+        when(city.getName()).thenReturn(ALICANTE);
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(
+                List.of(connection)
+        );
+
+        gameManagement.buildTrainTrack(user, LOBBY_CODE, connection);
+
+        assertTrue(game.getConnectionRepository()
+                       .getConnectionByID(connection.getId())
+                       .isTrainTrack());
+
+        verify(game, times(1)).setState(any(BuildExtraTrainTrackState.class));
+    }
+
+    @Test
+    void buildTrainTrack_RailwayPersonUsesExtraBuild() throws GameManagementException {
+        IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
+        IUser user = mock(IUser.class);
+        IPlayer player = mock(IPlayer.class);
+        ICity city = mock(ICity.class);
+
+        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection)));
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(game.getPreviousState()).thenReturn(new PlayerTurnState());
+        when(player.getRole()).thenReturn(new RailwayWorker());
+        when(player.getUser()).thenReturn(user);
+        when(player.getCurrentPosition()).thenReturn(city);
+        when(city.getId()).thenReturn(1);
+        when(city.getName()).thenReturn(ALICANTE);
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(
+                List.of(connection)
+        );
+
+        gameManagement.buildTrainTrack(user, LOBBY_CODE, connection);
+
+        assertTrue(game.getConnectionRepository()
+                       .getConnectionByID(connection.getId())
+                       .isTrainTrack());
+
+        verify(game, times(1)).setState(any(PlayerTurnState.class));
     }
 
     /**

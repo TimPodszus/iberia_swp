@@ -6,6 +6,7 @@ import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -65,6 +66,16 @@ public interface IGameManagement {
      * @return the game with the specified lobby code
      */
     IGame getGame(String lobbyId);
+
+    /**
+     * Builds a train track between two cities in the game.
+     *
+     * @param user        the user representing the player building the train track
+     * @param lobbyId     the id of the lobby in which the game is happening
+     * @param connection  the connection representing the train track to be built
+     * @throws GameManagementException if building the train track fails
+     */
+    void buildTrainTrack(IUser user, String lobbyId, IConnection connection) throws GameManagementException;
 
     /**
      * Locks the game in a wait-for-confirmation state.

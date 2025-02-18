@@ -7,6 +7,8 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.connection.data.Connection;
+import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
@@ -26,19 +28,36 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ConnectionManagementTest {
-    final ConnectionManagement connectionManagement = new ConnectionManagement();
+    ConnectionManagement connectionManagement = new ConnectionManagement();
     IGame game;
     Player player;
+    ConnectionRepository connectionRepository;
+    CityRepository cityRepository;
+    ICity city;
 
     @BeforeEach
     void setUp() {
         game = mock(Game.class);
         player = mock(Player.class);
+        connectionRepository = mock(ConnectionRepository.class);
+        cityRepository = mock(CityRepository.class);
+        city = mock(City.class);
         GameStore.getInstance()
                  .addGame("lobbyCode", game);
 
         when(game.getCityRepository()).thenReturn(new CityRepository());
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+    }
+
+    @Test
+    void testGetConnection() {
+        IConnection connection = new Connection(1, List.of(CityName.ALBACETE, CityName.ALICANTE), true, true);
+        when(game.getConnectionRepository()).thenReturn(connectionRepository);
+        when(connectionRepository.getConnectionByID(1)).thenReturn(connection);
+
+        IConnection result = connectionManagement.getConnection("lobbyCode", 1);
+
+        assertEquals(connection, result, "Expected the connection with ID 1");
     }
 
     /**
@@ -151,5 +170,43 @@ class ConnectionManagementTest {
         Map<ICity, List<ICard>> cities = connectionManagement.getAllDestinations("lobbyCode");
 
         assertEquals(48, cities.size(), "Expected 48 available destinations for all cities");
+    }
+
+    @Test
+    void testGetBuildableTrainTracks_WhenTracksLeftZero() {
+        String lobbyId = "lobbyCode";
+        int cityId = 1;
+
+        when(game.getTracksLeft()).thenReturn(-5);
+
+        List<IConnection> result = connectionManagement.getBuildableTrainTracks(lobbyId, cityId);
+
+        assertEquals(0, result.size(), "Expected no buildable train tracks");
+    }
+
+    @Test
+    void testGetBuildableTrainTracks_WhenTracksLeftGreaterThanZero() {
+        String lobbyId = "lobbyCode";
+        int cityId = 1;
+
+        when(game.getTracksLeft()).thenReturn(5);
+        when(game.getCityRepository()).thenReturn(cityRepository);
+        when(game.getConnectionRepository()).thenReturn(connectionRepository);
+
+        when(cityRepository.getCity(cityId)).thenReturn(new City(1, PlagueName.MALARIA, CityName.ALICANTE, 1, false));
+
+        List<IConnection> connections = List.of(
+                new Connection(1, List.of(CityName.ALICANTE, CityName.BARCELONA), false, true),
+                new Connection(2, List.of(CityName.ALICANTE, CityName.ZARAGOZA), true, true)
+        );
+
+        when(connectionRepository.getConnections()).thenReturn(connections);
+
+        List<IConnection> result = connectionManagement.getBuildableTrainTracks(lobbyId, cityId);
+
+        assertEquals(1, result.size(), "Expected only one buildable train track");
+        assertTrue(result.get(0).getCityNames().contains(CityName.BARCELONA), "City should be Barcelona");
+        assertTrue(result.get(0).getCityNames().contains(CityName.ALICANTE), "City should be Alicante");
+        assertFalse(result.get(0).isTrainTrack(), "The connection should not be a train track");
     }
 }
