@@ -18,7 +18,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
         
         if (card instanceof EventCard eventCard) {
             LOG.debug("[LobbyId: {}] Card is Event Card and will be played directly", game.getGameId());
-            setGameInEventCardState(game);
+            setGameInEventCardState(game, eventCard);
             eventCard.execute(lobbyId, username);
         }
     }
@@ -28,8 +28,8 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
      *
      * @param game the game instance to update
      */
-    private void setGameInEventCardState(IGame game) {
+    private void setGameInEventCardState(IGame game, EventCard eventCard) {
         LOG.debug("[LobbyId: {}] Setting game in EventState", game.getGameId());
-        game.setState(new EventState());
+        game.setState(new EventState(eventCard));
     }
 }
