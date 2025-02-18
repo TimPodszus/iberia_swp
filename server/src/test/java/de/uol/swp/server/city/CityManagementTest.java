@@ -17,12 +17,15 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.management.RegionManagement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,11 +45,18 @@ public class CityManagementTest {
 
     @Mock
     private IPlayerManagement playerManagement;
-    private final RegionManagement regionManagement = new RegionManagement();
-    private final ConnectionManagement connectionManagement = new ConnectionManagement();
-    private final GameManagement gameManagement = new GameManagement(playerManagement, cityManagement, connectionManagement);
+    @Mock
+    private RegionManagement regionManagement;
+    @Mock
+    private ConnectionManagement connectionManagement;
+    @InjectMocks
+    private final GameManagement gameManagement = new GameManagement(
+            playerManagement,
+            cityManagement,
+            connectionManagement,
+            regionManagement
+    );
     private final InfectionManagement infectionManagement = new InfectionManagement();
-
 
     /**
      * Sets up the test environment before each test.
@@ -55,6 +65,7 @@ public class CityManagementTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         cityManagement = new CityManagement(regionManagement, gameManagement, infectionManagement);
+        when(regionManagement.reduceWaterTreatments(any(IGame.class), any(ICity.class), anyInt())).thenReturn(1);
     }
 
     /**
@@ -175,7 +186,8 @@ public class CityManagementTest {
 
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
 
-        assertEquals(StateType.END_GAME_STATE,
+        assertEquals(
+                StateType.END_GAME_STATE,
                 game.getState()
                     .getStateType()
         );

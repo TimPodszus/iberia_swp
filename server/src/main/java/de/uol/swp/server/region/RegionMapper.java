@@ -5,7 +5,6 @@ import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.RegionDTO;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.region.data.IRegion;
-import de.uol.swp.server.region.data.Region;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ public class RegionMapper {
      * @param region the Region object to be converted into a DTO
      * @return an IRegionDTO that represents the region with simplified data suitable for transmission
      */
-    public static IRegionDTO toDTO(Region region) {
+    public static IRegionDTO toDTO(IRegion region) {
         return new RegionDTO(
                 region.getId(),
                 region.getSurroundingCities()
