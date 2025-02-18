@@ -2,6 +2,7 @@ package de.uol.swp.server.game;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
+import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
@@ -15,6 +16,7 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -125,6 +127,9 @@ public class GameServiceTest extends EventBusBasedTest {
     public void onShareRideEvent(ShareRideRequest event) {
         super.handleEvent(event);
     }
+
+    @Subscribe
+    public void onAnotherDayEvent(AnotherDayEvent event) { super.handleEvent(event); }
 
     /**
      * Sets up the test environment.
@@ -358,4 +363,26 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
         verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));}
+
+    @Test
+    void testOnAnotherDayEvent() {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        AnotherDayEvent anotherDayEvent = new AnotherDayEvent("lobbycode", "testuser");
+        anotherDayEvent.setSession(session);
+
+        IGame game = new Game(2, "lobbycode");
+        when(gameManagement.getGame("lobbycode")).thenReturn(game);
+        ILobby lobby = new Lobby("lobbycode", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
+
+        gameService.onAnotherDayEvent(anotherDayEvent);
+
+        verify(gameManagement, times(1)).increaseCurrentPlayerActions(game, 2);
+        verify(gameManagement, times(2)).getGame("lobbycode");
+        verify(lobbyManagement, times(1)).getLobby("lobbycode");
+        verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+    }
 }

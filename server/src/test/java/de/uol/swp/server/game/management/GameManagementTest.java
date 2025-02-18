@@ -656,4 +656,38 @@ class GameManagementTest {
                         .getStateType()
         );
     }
+
+    @Test
+    void testIncreaseCurrentPlayerActions_CurrentState() {
+        PlayerTurnState playerTurnState = mock(PlayerTurnState.class);
+        when(game.getState()).thenReturn(playerTurnState);
+        when(playerTurnState.getActionsRemaining()).thenReturn(5);
+
+        gameManagement.increaseCurrentPlayerActions(game, 3);
+
+        verify(playerTurnState).setActionsRemaining(8);
+    }
+
+    @Test
+    void testIncreaseCurrentPlayerActions_PreviousState() {
+        PlayerTurnState playerTurnState = mock(PlayerTurnState.class);
+        when(game.getState()).thenReturn(mock(IGameState.class));
+        when(game.getPreviousState()).thenReturn(playerTurnState);
+        when(playerTurnState.getActionsRemaining()).thenReturn(5);
+
+        gameManagement.increaseCurrentPlayerActions(game, 3);
+
+        verify(playerTurnState).setActionsRemaining(8);
+    }
+
+    @Test
+    void testIncreaseCurrentPlayerActions_NoPlayerTurnState() {
+        PlayerTurnState playerTurnState = mock(PlayerTurnState.class);
+        when(game.getState()).thenReturn(mock(IGameState.class));
+        when(game.getPreviousState()).thenReturn(mock(IGameState.class));
+
+        gameManagement.increaseCurrentPlayerActions(game, 3);
+
+        verify(playerTurnState, never()).setActionsRemaining(anyInt());
+    }
 }

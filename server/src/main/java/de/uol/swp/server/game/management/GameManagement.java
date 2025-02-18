@@ -9,9 +9,9 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
-import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
@@ -498,4 +498,24 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         game.setState(game.getPreviousState());
     }
 
+    /**
+     * Increases the number of actions remaining for the current player in the game.
+     * <p>
+     * This method checks if the current state or the previous state of the game is an instance of
+     * {@link PlayerTurnState}. If so, it increases the actions remaining for the player by the specified amount.
+     *
+     * @param game   the game instance where the player's actions are to be increased
+     * @param amount the amount by which to increase the actions remaining
+     */
+    public void increaseCurrentPlayerActions(IGame game, int amount) {
+        PlayerTurnState playerTurnState = null;
+        if (game.getState() instanceof PlayerTurnState state) {
+            playerTurnState = state;
+        } else if (game.getPreviousState() instanceof PlayerTurnState state) {
+            playerTurnState = state;
+        }
+        if (playerTurnState != null) {
+            playerTurnState.setActionsRemaining(playerTurnState.getActionsRemaining() + amount);
+        }
+    }
 }

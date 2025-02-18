@@ -18,6 +18,7 @@ import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -269,5 +270,20 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 game.setState(new EndGameState(false));
                 LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
             }
+    }
+
+    /**
+     * Handles the AnotherDayEvent.
+     *
+     * @param event the event containing the lobby ID and the username of the player to increase the actions
+     */
+    @Subscribe
+    public void onAnotherDayEvent(AnotherDayEvent event){
+        LOG.debug("[Lobby: {}] Got AnotherDayEvent for current player {}", event.getLobbyId(), event.getUsername());
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        gameManagement.increaseCurrentPlayerActions(game, 2);
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
 }
