@@ -50,8 +50,12 @@ public class CityManagementTest {
     @Mock
     private ConnectionManagement connectionManagement;
     @InjectMocks
-    private final GameManagement gameManagement = new GameManagement(playerManagement, cityManagement,
-            connectionManagement, regionManagement);
+    private final GameManagement gameManagement = new GameManagement(
+            playerManagement,
+            cityManagement,
+            connectionManagement,
+            regionManagement
+    );
     private final InfectionManagement infectionManagement = new InfectionManagement();
 
     /**
@@ -148,6 +152,7 @@ public class CityManagementTest {
                 () -> cityManagement.infectCityWithOwnPlague(game, infectionCard, -1)
         );
     }
+
     /**
      * Tests that infecting a city with its own plague with enough water treatments does not increase severity.
      */
@@ -181,7 +186,8 @@ public class CityManagementTest {
 
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
 
-        assertEquals(StateType.END_GAME_STATE,
+        assertEquals(
+                StateType.END_GAME_STATE,
                 game.getState()
                     .getStateType()
         );

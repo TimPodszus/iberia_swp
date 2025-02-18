@@ -66,6 +66,7 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
             return amount - totalWaterTreatments;
         }
     }
+
     /**
      * Increases the water treatments in the specified region.
      * <p>
@@ -74,12 +75,12 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
      * for the current player's turn.
      *
      * @param lobbyCode the ID of the lobby
-     * @param regionId the ID of the region where water treatments are to be increased
-     * @param amount the amount of water treatments to increase
-     * @param card the card to be discarded
-     * @param user the user performing the action
+     * @param regionId  the ID of the region where water treatments are to be increased
+     * @param amount    the amount of water treatments to increase
+     * @param card      the card to be discarded
+     * @param user      the user performing the action
      * @throws RegionManagementException if an error occurs while increasing water treatments
-     * @throws GameManagementException if the player is not the current player or the game is not in a valid state
+     * @throws GameManagementException   if the player is not the current player or the game is not in a valid state
      */
     public void increaseWaterTreatmentsFromRegion(
             String lobbyCode,
@@ -101,7 +102,12 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
             region.increaseWaterTreatments(amount);
             playerManagement.discardCard(lobbyCode, player, card);
             playerTurnState.reduceActionsRemaining(game);
-            LOG.debug("Increased water treatments in region {} by {} for player {}", regionId, amount, user.getUsername());
+            LOG.debug(
+                    "Increased water treatments in region {} by {} for player {}",
+                    regionId,
+                    amount,
+                    user.getUsername()
+            );
         } else {
             LOG.error("Game is not in a valid state for increasing water treatments");
             throw new GameManagementException("Game is not in a valid state");
@@ -114,9 +120,9 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
      * This method identifies the player associated with the given user and retrieves the possible city cards
      * that can be discarded based on the player's role and the researched plagues.
      *
-     * @param user     the user requesting the possible city cards to discard
-     * @param regionId the ID of the region for which the possible city cards are to be retrieved
-     * @param lobbyCode     the lobbyCode to get the game from
+     * @param user      the user requesting the possible city cards to discard
+     * @param regionId  the ID of the region for which the possible city cards are to be retrieved
+     * @param lobbyCode the lobbyCode to get the game from
      * @return a list of possible city cards that can be discarded
      * @throws RegionManagementException if the request player is not found or an error occurs while retrieving the cards
      */
@@ -151,7 +157,10 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
         if (requestPlayer.getRole()
                          .getName()
                          .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)) {
-            LOG.debug("Returning all city cards for player {} with role SCIENTIST_OF_THE_ROYAL_ACADEMY", user.getUsername());
+            LOG.debug(
+                    "Returning all city cards for player {} with role SCIENTIST_OF_THE_ROYAL_ACADEMY",
+                    user.getUsername()
+            );
             return CardMapper.toCityCardDTOList(playerCityCards);
         }
 
@@ -168,8 +177,9 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
                             .getPlagueName()
                             .getColorCode()
                             .equals(city.getPlagueName()
-                                        .getColorCode()) || researchedPlaguesColor.contains((cityCard.getCity().getPlagueName()
-                                                                                                 .getColorCode()))) {
+                                        .getColorCode()) || researchedPlaguesColor.contains((cityCard.getCity()
+                                                                                                     .getPlagueName()
+                                                                                                     .getColorCode()))) {
                     possibleCityCards.add(cityCard);
                 }
             }
@@ -185,7 +195,7 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
      * surrounding the player's current position. It then checks the player's city cards and role to
      * determine which regions are available for the player.
      *
-     * @param user the user requesting the available regions
+     * @param user      the user requesting the available regions
      * @param lobbyCode the lobbyCode to get the game from
      * @return a set of available regions for the player
      * @throws RegionManagementException if the request player is not found or an error occurs while retrieving the regions
@@ -221,7 +231,10 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
         if (requestPlayer.getRole()
                          .getName()
                          .equals(RoleEnum.AGRICULTURAL_SCIENTIST)) {
-            LOG.debug("Returning all surrounding regions for player {} with role AGRICULTURAL_SCIENTIST", user.getUsername());
+            LOG.debug(
+                    "Returning all surrounding regions for player {} with role AGRICULTURAL_SCIENTIST",
+                    user.getUsername()
+            );
             availableRegions.addAll(RegionMapper.toDTOList(surroundingRegions));
             return availableRegions;
         }
@@ -229,7 +242,8 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
         for (IRegion region : surroundingRegions) {
             List<ICity> citiesInRegion = region.getSurroundingCities();
             for (ICity city : citiesInRegion) {
-                if (playerCityCardColors.contains(city.getPlagueName().getColorCode())) {
+                if (playerCityCardColors.contains(city.getPlagueName()
+                                                      .getColorCode())) {
                     availableRegions.add(RegionMapper.toDTO(region));
                     break;
                 }
@@ -260,7 +274,11 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
             } else {
                 region.decreaseWaterTreatments(waterTreatments);
                 amount -= waterTreatments;
-                LOG.debug("Decreased water treatments in region {} by {} (all available treatments)", region.getId(), waterTreatments);
+                LOG.debug(
+                        "Decreased water treatments in region {} by {} (all available treatments)",
+                        region.getId(),
+                        waterTreatments
+                );
             }
         }
     }

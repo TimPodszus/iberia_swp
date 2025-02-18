@@ -427,7 +427,7 @@ public class GamePresenter extends AbstractPresenter {
         if (buildTrainTracksButton.isSelected()) {
             if (gameDTO.getState()
                        .equals(StateType.PLAYER_TURN_STATE)) {
-                resetBuildableTrainTrackHighlight();
+                resetHighlightetCities();
                 gameService.requestBuildableTrainTracks(
                         this.lobbyId,
                         gameDTO.getCurrentPlayer()
@@ -507,12 +507,7 @@ public class GamePresenter extends AbstractPresenter {
         if (treatWaterButton.isSelected()) {
             if (gameDTO.getState()
                        .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
-                gameDTO.getCities()
-                       .forEach(city -> {
-                           Node stackPane = mapPane.lookup(CITY_ID + city.getId());
-                           stackPane.getStyleClass()
-                                    .remove(CITY_HIGHLIGHTED_CLASS);
-                       });
+                resetHighlightetCities();
                 gameService.sendAvailableRegionsRequest(lobbyId);
             }
         } else {
@@ -1478,7 +1473,7 @@ public class GamePresenter extends AbstractPresenter {
      * This method iterates through all cities in the game and removes the
      * highlight style class from the corresponding StackPane elements.
      */
-    public void resetBuildableTrainTrackHighlight() {
+    public void resetHighlightetCities() {
         gameDTO.getCities()
                .forEach(city -> {
                    Node stackPane = mapPane.lookup(CITY_ID + city.getId());
