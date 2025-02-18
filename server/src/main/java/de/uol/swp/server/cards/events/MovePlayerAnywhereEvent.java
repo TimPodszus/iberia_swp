@@ -34,9 +34,6 @@ public class MovePlayerAnywhereEvent extends AbstractMessage implements ServerIn
         if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        if (!super.equals(object)) {
-            return false;
-        }
         MovePlayerAnywhereEvent that = (MovePlayerAnywhereEvent) object;
         return Objects.equals(lobbyId, that.lobbyId) && Objects.equals(username, that.username);
     }
