@@ -134,6 +134,12 @@ public class GameService {
         eventBus.post(new ShareRideRequest(lobbyCode));
     }
 
+    /**
+     * Sends a request to play a card in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param cardId  the ID of the card to be played
+     */
     public void sendPlayCardRequest(String lobbyId, int cardId) {
         eventBus.post(new PlayCardRequest(lobbyId, cardId));
     }
