@@ -7,6 +7,7 @@ import de.uol.swp.client.game.objects.HospitalSymbol;
 import de.uol.swp.client.game.objects.PlagueCube;
 import de.uol.swp.client.game.objects.PlayerButton;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.EventCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
@@ -16,12 +17,15 @@ import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
 import de.uol.swp.client.game.objects.dialogs.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.cards.CityCardDTO;
 import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.cards.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
+import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
@@ -84,6 +88,7 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CONNECTION_ID = "#connection";
     private static final String REGION_HIGHLIGHTED_CLASS = "region-highlight";
     private static final String REGION_ID = "#region";
+    private static final String CONNECTION_HIGHLIGHTED_CLASS = "connection-highlighted";
     private static final String CITY_ID = "#city";
     private static final String CITY_CLASS = "city";
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
@@ -96,6 +101,8 @@ public class GamePresenter extends AbstractPresenter {
     private GameService gameService;
 
     private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
+
+    private List<IConnectionDTO> buildableTrainTracks = new ArrayList<>();
 
     private int regionId;
 
@@ -291,10 +298,8 @@ public class GamePresenter extends AbstractPresenter {
             LOG.trace("Player wants to move to city {}", cityId);
             if (cardDiscardNeeded(cityId)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
-                CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(true,
-                        availableDestinations.get(cityId)
-                );
-                Optional<ICardDTO> result = cardSelectionDialog.showAndWait();
+                CardDialog cardDialog = new CardDialog(true, true, availableDestinations.get(cityId));
+                Optional<ICardDTO> result = cardDialog.showAndWait();
                 result.ifPresentOrElse(card -> {
                     LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
                     gameService.movePlayerToCity(lobbyId, cityId, card.getId());
@@ -363,7 +368,29 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+        Node source = (Node) event.getSource();
+        int connectionId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+
+        if (!source.getStyleClass().contains(CONNECTION_HIGHLIGHTED_CLASS)) {
+            return;
+        }
+
+        boolean isBuildable = buildableTrainTracks.stream()
+                                                  .anyMatch(connection -> connection.getId() == connectionId);
+
+        if (!isBuildable) {
+            return;
+        }
+
+        StateType currentState = gameDTO.getState();
+        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) ||
+                currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
+
+        if (isValidState) {
+            gameService.buildTrainTrack(lobbyId, connectionId);
+            highlightBuildableTrainTrackHighlight(false);
+            buildTrainTracksButton.setSelected(false);
+        }
     }
 
     /**
@@ -401,9 +428,19 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildTrainTrack(ActionEvent event) {
         if (buildTrainTracksButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/86
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE)) {
+                resetBuildableTrainTrackHighlight();
+                gameService.requestBuildableTrainTracks(
+                        this.lobbyId,
+                        gameDTO.getCurrentPlayer()
+                               .getCurrentPosition()
+                               .getId()
+                );
+            }
         } else {
-
+            highlightBuildableTrainTrackHighlight(false);
+            this.highlightAvailableDestinations();
         }
     }
 
@@ -505,7 +542,20 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onPlayerButtonClickedEvent(ActionEvent event) {
-        //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/146
+        PlayerButton playerButton = (PlayerButton) event.getSource();
+        LOG.debug("[LobbyId: {}]Player button {} clicked", this.lobbyId, playerButton.getUsername());
+        IPlayerDTO player = gameDTO.getPlayers()
+                                   .stream()
+                                   .filter(p -> p.getUsername()
+                                                 .equals(playerButton.getUsername()))
+                                   .findFirst()
+                                   .orElseThrow();
+
+        List<ICardDTO> cards = player.getCards();
+        RoleCard playerRoleCard = new RoleCard(player.getRole()
+                                                     .getName());
+        CardDialog cardDialog = new CardDialog(cards, playerRoleCard);
+        cardDialog.show();
     }
 
     /**
@@ -877,7 +927,7 @@ public class GamePresenter extends AbstractPresenter {
         updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
         updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
         updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
-        updatePlayerHandCards(gameDTO.getPlayers());
+        updatePlayerHandCards();
 
         if (!gameDTO.getState()
                     .equals(StateType.START_STATE)) {
@@ -907,22 +957,21 @@ public class GamePresenter extends AbstractPresenter {
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
      *
-     * @param players the list of players
      */
-    private void updatePlayerHandCards(List<IPlayerDTO> players) {
+    private void updatePlayerHandCards() {
         removePlayerHandCards();
-        for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
-                    UserStore.getInstance()
-                             .getUser()
-                             .getUsername()
-            )) {
-                List<ICardDTO> playerHand = player.getCards();
-                for (ICardDTO card : playerHand) {
-                    AbstractCard abstractCard = CardFactory.createCard(card);
-                    addPlayerHandCard(abstractCard);
-                }
+        IPlayerDTO player = gameDTO.getPlayer(user.getUsername());
+        List<ICardDTO> playerHand = player.getCards();
+        for (ICardDTO card : playerHand) {
+            AbstractCard abstractCard = CardFactory.createCard(card);
+            if (abstractCard instanceof EventCard eventCard) {
+                abstractCard.setOnMouseClicked(event -> {
+                    if (event.getButton() == MouseButton.PRIMARY) {
+                        gameService.sendPlayCardRequest(lobbyId, eventCard.getCardId());
+                    }
+                });
             }
+            addPlayerHandCard(abstractCard);
         }
     }
 
@@ -1219,7 +1268,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onCardSelectionResponse(CardSelectionResponse response) {
-        CardSelectionDialog dialog = new CardSelectionDialog(response.isDismissible(), response.getCards());
+        CardDialog dialog = new CardDialog(true, response.isDismissible(), response.getCards());
         Optional<ICardDTO> result = dialog.showAndWait();
     }
 
@@ -1304,6 +1353,12 @@ public class GamePresenter extends AbstractPresenter {
         this.availableDestinations = response.getCities();
         this.highlightAvailableDestinations();
         LOG.info("Available destinations set");
+    }
+
+    @Subscribe
+    public void onBuildableTrainTracksResponse(BuildableTrainTracksResponse response) {
+        this.buildableTrainTracks = response.getConnections();
+        highlightBuildableTrainTrackHighlight(true);
     }
 
     /**
@@ -1401,5 +1456,37 @@ public class GamePresenter extends AbstractPresenter {
             stackPane.getStyleClass()
                      .remove(REGION_HIGHLIGHTED_CLASS);
         }
+    }
+
+    /**
+     * Toggles the buildable train track highlight on the game map.
+     *
+     * @param highlight whether to highlight the buildable train tracks
+     */
+    public void highlightBuildableTrainTrackHighlight(boolean highlight) {
+        for (IConnectionDTO connection : this.buildableTrainTracks) {
+            Line line = (Line) mapPane.lookup(CONNECTION_ID + connection.getId());
+            line.getStyleClass()
+                .removeAll(CONNECTION_HIGHLIGHTED_CLASS);
+            if (highlight) {
+                line.getStyleClass()
+                    .add(CONNECTION_HIGHLIGHTED_CLASS);
+            }
+        }
+    }
+
+    /**
+     * Resets the highlight for buildable train tracks.
+     * <p>
+     * This method iterates through all cities in the game and removes the
+     * highlight style class from the corresponding StackPane elements.
+     */
+    public void resetBuildableTrainTrackHighlight() {
+        gameDTO.getCities()
+               .forEach(city -> {
+                   Node stackPane = mapPane.lookup(CITY_ID + city.getId());
+                   stackPane.getStyleClass()
+                            .remove(CITY_HIGHLIGHTED_CLASS);
+               });
     }
 }

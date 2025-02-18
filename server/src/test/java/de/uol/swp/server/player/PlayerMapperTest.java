@@ -3,7 +3,7 @@ package de.uol.swp.server.player;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.server.cards.Card;
+import de.uol.swp.server.cards.data.Card;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.player.data.IPlayer;
@@ -60,7 +60,8 @@ class PlayerMapperTest {
         IPlayerDTO playerDTO = PlayerMapper.toDTO(mockPlayer);
 
         assertEquals(TEST_USER_NAME, playerDTO.getUsername());
-        assertEquals(RoleEnum.valueOf(TEST_ROLE_NAME),
+        assertEquals(
+                RoleEnum.valueOf(TEST_ROLE_NAME),
                 playerDTO.getRole()
                          .getName()
         );

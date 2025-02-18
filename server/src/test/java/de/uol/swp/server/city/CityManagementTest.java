@@ -2,11 +2,12 @@ package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.StateType;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.city.management.ICityManagement;
+import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
@@ -51,9 +52,6 @@ public class CityManagementTest {
             regionManagement);
     private final InfectionManagement infectionManagement = new InfectionManagement();
 
-
-
-
     /**
      * Sets up the test environment before each test.
      */
@@ -96,7 +94,8 @@ public class CityManagementTest {
         List<CityName> cityNames = game.getConnectionRepository()
                                        .getCityNamesOfConnectedCitiesByCityName(CityName.BARCELONA);
 
-        List<ICity> connectedCitys = game.getCityRepository().getCitiesByNames(cityNames);
+        List<ICity> connectedCitys = game.getCityRepository()
+                                         .getCitiesByNames(cityNames);
 
         for (ICity connectedCity : connectedCitys) {
             assertTrue(connectedCity.getInfections()
@@ -143,15 +142,19 @@ public class CityManagementTest {
     @Test
     void testInfectCityWithOwnPlagueWithInvalidParameters() {
         assertThrows(
-                CityManagementException.class, () -> cityManagement.infectCityWithOwnPlague(game, infectionCard, -1));
+                CityManagementException.class,
+                () -> cityManagement.infectCityWithOwnPlague(game, infectionCard, -1)
+        );
     }
-
     /**
      * Tests that infecting a city with its own plague with enough water treatments does not increase severity.
      */
     @Test
     void testInfectCityWithOwnPlagueWithEnoughWaterTreatments() {
-        game.getRegionRepository().getRegionsByCityName(CityName.BARCELONA).get(0).increaseWaterTreatments(3);
+        game.getRegionRepository()
+            .getRegionsByCityName(CityName.BARCELONA)
+            .get(0)
+            .increaseWaterTreatments(3);
 
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 3);
 
@@ -167,15 +170,16 @@ public class CityManagementTest {
      */
     @Test
     void testInfectCityWithOwnPlagueNoCubesLeft() {
-        game.getPlagueRepository().getPlagues()
+        game.getPlagueRepository()
+            .getPlagues()
             .stream()
             .filter(plague -> plague.getName() == city.getPlagueName())
-            .findFirst().ifPresent(plague -> plague.setCubesRemaining(0));
+            .findFirst()
+            .ifPresent(plague -> plague.setCubesRemaining(0));
 
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
 
-        assertEquals(
-                StateType.END_GAME_STATE,
+        assertEquals(StateType.END_GAME_STATE,
                 game.getState()
                     .getStateType()
         );
@@ -188,7 +192,8 @@ public class CityManagementTest {
     void testGetCity() {
         IGame mockGame = mock(IGame.class);
         when(mockGame.getGameId()).thenReturn("lobbyCode");
-        GameStore.getInstance().addGame(mockGame.getGameId(), mockGame);
+        GameStore.getInstance()
+                 .addGame(mockGame.getGameId(), mockGame);
 
         when(mockGame.getCityRepository()).thenReturn(new CityRepository());
 

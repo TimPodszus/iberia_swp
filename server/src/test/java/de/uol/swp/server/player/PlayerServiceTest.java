@@ -1,6 +1,6 @@
 package de.uol.swp.server.player;
 
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;

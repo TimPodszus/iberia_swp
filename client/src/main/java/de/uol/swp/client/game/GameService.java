@@ -2,7 +2,10 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.CityCardDTO;
+import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
+import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
@@ -96,6 +99,26 @@ public class GameService {
     }
 
     /**
+     * Sends a request to get buildable train tracks for the specified city.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param cityId    the ID of the city
+     */
+    public void requestBuildableTrainTracks(String lobbyCode, int cityId) {
+        eventBus.post(new BuildableTrainTracksRequest(lobbyCode, cityId));
+    }
+
+    /**
+     * Sends a request to build a train track.
+     *
+     * @param lobbyCode    the code of the lobby
+     * @param connectionId the ID of the connection
+     */
+    public void buildTrainTrack(String lobbyCode, int connectionId) {
+        eventBus.post(new BuildTrainTrackRequest(lobbyCode, connectionId));
+    }
+
+    /**
      * Sends a request to share a ride to the specified city.
      *
      * @param lobbyCode the code of the lobby
@@ -143,5 +166,15 @@ public class GameService {
      */
     public void sendWaterTreatmentRequest(String lobbyCode, int regionId, int amount, CityCardDTO card) {
         eventBus.post(new WaterTreatmentRequest(lobbyCode, regionId, amount, card));
+    }
+
+    /**
+     * Sends a request to play a card in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param cardId  the ID of the card to be played
+     */
+    public void sendPlayCardRequest(String lobbyId, int cardId) {
+        eventBus.post(new PlayCardRequest(lobbyId, cardId));
     }
 }
