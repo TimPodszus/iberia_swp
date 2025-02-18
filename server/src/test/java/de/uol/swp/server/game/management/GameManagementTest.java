@@ -639,6 +639,12 @@ class GameManagementTest {
         );
     }
 
+    /**
+     * Tests the movePlayer method with a game in the event state after the OnTheMoveDayAndNightEventCard has been
+     * thrown.
+     *
+     * @throws GameManagementException
+     */
     @Test
     void testMovePlayer_OnTheMoveDayAndNightEvent() throws GameManagementException {
         Map<ICity, List<ICard>> availableDestinations = Map.of(cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
