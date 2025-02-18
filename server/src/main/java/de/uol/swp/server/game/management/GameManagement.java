@@ -9,18 +9,15 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
+import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
-import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
-import de.uol.swp.server.game.states.IGameState;
-import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.states.WaitForConfirmationState;
-import de.uol.swp.server.game.states.WaitForPositioning;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
@@ -316,30 +313,18 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IGame game = super.getGame(lobbyId);
 
         IGameState gameState = game.getState();
-        if (!(gameState instanceof PlayerTurnState)) {
-            LOG.error("[LobbyID: {}] Game is not in a state that allows moving players", lobbyId);
-            throw new GameManagementException("Game is not in a state that allows moving players");
-        }
+        validateGameStateForMove(lobbyId, gameState);
 
-        IPlayer player = game.getCurrentPlayer();
-        if (!player.getUser()
-                   .equals(user)) {
-            LOG.error("[LobbyID: {}] {} is not the current player", lobbyId, user.getUsername());
-            throw new GameManagementException("Player is not the current player");
-        }
+        IPlayer player = getPlayerForMove(game, user);
 
-        Map<ICity, List<ICard>> availableDestinations = connectionManagement.getAvailableDestinations(
-                lobbyId,
-                player.getCurrentPosition()
-                      .getId()
-        );
+        Map<ICity, List<ICard>> availableDestinations = retrieveAvailableDestinations(game, player);
         boolean citiesConnectedByLand = availableDestinations.containsKey(city) && availableDestinations.get(city)
                                                                                                         .isEmpty();
         boolean citiesConnectedBySea = availableDestinations.containsKey(city) && !availableDestinations.get(city)
                                                                                                         .isEmpty();
+
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
-            LOG.error(
-                    "[LobbyID: {}] Failed to move {}.There is no available connection between {} and {}",
+            LOG.error("[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
                     lobbyId,
                     player.getUser()
                           .getUsername(),
@@ -351,24 +336,104 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             );
             throw new GameManagementException("There is no available connection between " + player.getCurrentPosition()
                                                                                                   .getName()
-                                                                                                  .getDisplayName() + " " + "and " + city.getName()
-                                                                                                                                         .getDisplayName());
+                                                                                                  .getDisplayName() + " and " + city.getName()
+                                                                                                                                    .getDisplayName());
         }
 
         if (citiesConnectedByLand) {
-            LOG.debug(
-                    "[LobbyID: {}] Moving {} to city {}",
-                    lobbyId,
-                    player.getUser()
-                          .getUsername(),
-                    city.getName()
-                        .getDisplayName()
-            );
-            player.setCurrentPosition(city);
-            ((PlayerTurnState) gameState).reduceActionsRemaining(game);
-            return;
+            movePlayerByLand(game, player, city);
+        } else {
+            movePlayerBySea(game, player, city, card);
         }
+    }
 
+    /**
+     * Validates if the game states allows moving players.
+     *
+     * @param lobbyId   the ID of the lobby
+     * @param gameState the current game state
+     * @throws GameManagementException when the game state does not allow moving players
+     */
+    private void validateGameStateForMove(String lobbyId, IGameState gameState) throws GameManagementException {
+        if (!(gameState instanceof PlayerTurnState) && !(gameState instanceof EventState)) {
+            LOG.error("[LobbyID: {}] Game is not in a state that allows moving players", lobbyId);
+            throw new GameManagementException("Game is not in a state that allows moving players");
+        }
+    }
+
+    /**
+     * Retrieves the player for move.
+     * When the game is in PlayerTurnState the current player will be returned.
+     * When the game is in EventState the player with the given user will be returned.
+     *
+     * @param game the game instance
+     * @param user the user requesting the move
+     * @return the player for the move
+     * @throws GameManagementException when the user requesting the move is not the current player
+     */
+    private IPlayer getPlayerForMove(IGame game, IUser user) throws GameManagementException {
+        IPlayer player = game.getState() instanceof PlayerTurnState ? game.getCurrentPlayer() : game.getPlayer(user.getUsername());
+        if (game.getState() instanceof PlayerTurnState && !player.getUser()
+                                                                 .equals(user)) {
+            LOG.error("[LobbyID: {}] {} is not the current player", game.getGameId(), user.getUsername());
+            throw new GameManagementException("Player is not the current player");
+        }
+        return player;
+    }
+
+    /**
+     * Retrieves the available destinations for the player.
+     * When the event card on the move day and night has been played all destinations will be returned.
+     * Else only the available destinations from the current position will be returned.
+     *
+     * @param game   the game instance
+     * @param player the player requesting the move
+     * @return a map of available destinations
+     */
+    private Map<ICity, List<ICard>> retrieveAvailableDestinations(IGame game, IPlayer player) {
+        if (game.getState() instanceof EventState eventState && eventState.getEventCard() instanceof OnTheMoveDayAndNightEventCard) {
+            return connectionManagement.getAllDestinations(game.getGameId());
+        }
+        return connectionManagement.getAvailableDestinations(
+                game.getGameId(),
+                player.getCurrentPosition()
+                      .getId()
+        );
+    }
+
+    /**
+     * Moves the player to the specified city by land.
+     *
+     * @param game   the game instance
+     * @param player the player to move
+     * @param city   the destination city
+     */
+    private void movePlayerByLand(IGame game, IPlayer player, ICity city) {
+        LOG.debug("[LobbyID: {}] Moving {} to city {}",
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                city.getName()
+                    .getDisplayName()
+        );
+        player.setCurrentPosition(city);
+        if (game.getState() instanceof PlayerTurnState playerTurnState) {
+            playerTurnState.reduceActionsRemaining(game);
+        } else {
+            game.setState(game.getPreviousState());
+        }
+    }
+
+    /**
+     * Moves the player to the specified city by sea.
+     * If necessary the given card will be discarded.
+     *
+     * @param game   the game instance
+     * @param player the player to move
+     * @param city   the destination harbour city
+     * @param card   the card used for the move
+     */
+    private void movePlayerBySea(IGame game, IPlayer player, ICity city, ICard card) {
         boolean playerIsSailor = player.getRole()
                                        .getName()
                                        .equals(RoleEnum.SAILOR);
@@ -376,16 +441,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             playerManagement.discardCard(game.getGameId(), player, card);
         }
 
-        LOG.debug(
-                "[LobbyID: {}] {} sails to {}",
-                lobbyId,
-                player.getUser()
+        LOG.debug("[LobbyID: {}] {} sails to {}", game.getGameId(), player.getUser()
                       .getUsername(),
                 city.getName()
                     .getDisplayName()
         );
         player.setCurrentPosition(city);
-        ((PlayerTurnState) gameState).reduceActionsRemaining(game);
+        if (game.getState() instanceof PlayerTurnState playerTurnState) {
+            playerTurnState.reduceActionsRemaining(game);
+        } else {
+            game.setState(game.getPreviousState());
+        }
     }
 
     @Override

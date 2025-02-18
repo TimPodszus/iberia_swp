@@ -11,6 +11,7 @@ import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
@@ -21,11 +22,7 @@ import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
-import de.uol.swp.server.game.states.IGameState;
-import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.states.WaitForConfirmationState;
-import de.uol.swp.server.game.states.WaitForPositioning;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
@@ -86,6 +83,7 @@ class GameManagementTest {
         MockitoAnnotations.openMocks(this);
         GameStore.getInstance()
                  .addGame(LOBBY_CODE, game);
+        when(game.getGameId()).thenReturn(LOBBY_CODE);
         cityRepository = new CityRepository();
     }
 
@@ -516,7 +514,7 @@ class GameManagementTest {
     }
 
     @Test
-    void buildTrainTrack_ConnectionNotBuildable_ThrowsException() throws GameManagementException {
+    void buildTrainTrack_ConnectionNotBuildable_ThrowsException() {
         IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
         IUser user = mock(IUser.class);
         IPlayer player = mock(IPlayer.class);
@@ -638,6 +636,30 @@ class GameManagementTest {
         assertEquals(StateType.PLAYER_TURN_STATE,
                 testGame.getState()
                         .getStateType()
+        );
+    }
+
+    @Test
+    void testMovePlayer_OnTheMoveDayAndNightEvent() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
+                List.of()
+        );
+        when(connectionManagement.getAllDestinations(LOBBY_CODE)).thenReturn(availableDestinations);
+        ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
+        ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
+        IUser user = new User("user1", "test");
+        createTestPlayers(user);
+        IPlayer player = game.getPlayers()
+                             .get(0);
+        setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
+        when(game.getPlayer("user1")).thenReturn(player);
+        when(game.getState()).thenReturn(new EventState(new OnTheMoveDayAndNightEventCard(1)));
+
+        gameManagement.movePlayer(user, "lobbyCode", destinationCity, null);
+
+        assertEquals(destinationCity,
+                player.getCurrentPosition(),
+                "Expected player to have moved to Palma de Mallorca"
         );
     }
 }
