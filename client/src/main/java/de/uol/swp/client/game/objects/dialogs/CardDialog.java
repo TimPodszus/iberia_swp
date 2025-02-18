@@ -2,6 +2,7 @@ package de.uol.swp.client.game.objects.dialogs;
 
 import de.uol.swp.client.game.CardFactory;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.common.cards.data.ICardDTO;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -13,46 +14,60 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A dialog for selecting a card from a list of player cards.
- * Returns the selected card as result
+ * A dialog for showing a list of player cards.
+ * When cardsSelectable is true, the user can select a card.
  */
-public class CardSelectionDialog extends Dialog<ICardDTO> {
-    private static final String HEADER = "Karte auswählen";
+public class CardDialog extends Dialog<ICardDTO> {
+    private static final String TITLE = "Kartendialog";
+    private static final String SELECT_CARDS_HEADER = "Karte auswählen";
+    private final boolean cardsSelectable;
     private final boolean dismissible;
     private final List<ICardDTO> playerCards;
     private final List<AbstractCard> displayedPlayerCards;
     private AbstractCard selectedCard;
 
     /**
-     * Constructs a CardSelectionDialog.
+     * Constructs a CardDialog.
      *
-     * @param dismissible whether the dialog can be dismissed
-     * @param playerCards the list of player cards to display
+     * @param playerCards    the list of player cards to display
+     * @param playerRoleCard the role card of the player
      */
-    public CardSelectionDialog(boolean dismissible, List<ICardDTO> playerCards) {
+    public CardDialog(List<ICardDTO> playerCards, RoleCard playerRoleCard) {
+        this.cardsSelectable = false;
+        this.dismissible = true;
+        this.playerCards = playerCards;
+        this.displayedPlayerCards = createCards();
+        this.displayedPlayerCards.add(0, playerRoleCard);
+
+        this.setContent();
+        this.setButtons();
+    }
+
+    public CardDialog(boolean cardsSelectable, boolean dismissible, List<ICardDTO> playerCards) {
+        this.cardsSelectable = cardsSelectable;
         this.dismissible = dismissible;
         this.playerCards = playerCards;
         this.displayedPlayerCards = createCards();
-        super.initStyle(StageStyle.DECORATED);
-        super.setHeaderText(HEADER);
+
         this.setContent();
         this.setButtons();
-        super.setResultConverter(dialogButton -> {
-            if (dialogButton == ButtonType.OK) {
-                return convertToCardDTO(this.selectedCard);
-            } else {
-                return null;
-            }
-        });
     }
 
     /**
      * Sets the content of the dialog, including the cards to be displayed.
      */
     private void setContent() {
+        super.initStyle(StageStyle.DECORATED);
+        super.setTitle(TITLE);
+        if (cardsSelectable) {
+            super.setHeaderText(SELECT_CARDS_HEADER);
+        }
+
         HBox cardBox = new HBox();
         for (AbstractCard card : this.displayedPlayerCards) {
-            card.setOnMouseClicked(mouseEvent -> onCardClicked(card.getCardId()));
+            if (this.cardsSelectable) {
+                card.setOnMouseClicked(mouseEvent -> onCardClicked(card.getCardId()));
+            }
             cardBox.getChildren()
                    .add(card);
         }
@@ -82,13 +97,25 @@ public class CardSelectionDialog extends Dialog<ICardDTO> {
      * Sets the buttons for the dialog.
      */
     private void setButtons() {
-        super.getDialogPane()
-             .getButtonTypes()
-             .add(ButtonType.OK);
-        if (this.dismissible) {
+        if (this.cardsSelectable) {
+            super.getDialogPane()
+                 .getButtonTypes()
+                 .add(ButtonType.OK);
+        }
+        if (this.dismissible || !this.cardsSelectable) {
             super.getDialogPane()
                  .getButtonTypes()
                  .add(ButtonType.CANCEL);
+        }
+
+        if (cardsSelectable) {
+            super.setResultConverter(dialogButton -> {
+                if (dialogButton == ButtonType.OK) {
+                    return convertToCardDTO(this.selectedCard);
+                } else {
+                    return null;
+                }
+            });
         }
     }
 
