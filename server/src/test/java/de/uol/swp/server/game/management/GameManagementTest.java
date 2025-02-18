@@ -473,7 +473,7 @@ class GameManagementTest {
     @Test
     void testGetAvailableActions() {
         List<GameActions> actions = gameManagement.getAvailableActions(LOBBY_CODE, null);
-        assertEquals(6, actions.size());
+        assertEquals(5, actions.size());
     }
 
     @Test

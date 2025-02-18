@@ -1,6 +1,6 @@
 package de.uol.swp.common.region.message.request;
 
-import de.uol.swp.common.cards.CityCardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.game.message.AbstractGameRequest;
 import lombok.Getter;
 import java.util.Objects;

@@ -1,6 +1,6 @@
 package de.uol.swp.common.region.message.response;
 
-import de.uol.swp.common.cards.CityCardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

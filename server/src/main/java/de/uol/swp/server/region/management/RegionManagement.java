@@ -1,15 +1,15 @@
 package de.uol.swp.server.region.management;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.CityCardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.CardMapper;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;

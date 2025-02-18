@@ -1,13 +1,13 @@
 package de.uol.swp.server.region;
 
-import de.uol.swp.common.cards.CityCardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
-import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;

@@ -54,7 +54,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     @Inject
     public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement,
-                          IConnectionManagement connectionManagement, RegionManagement regionManagement
+                          IConnectionManagement connectionManagement, IRegionManagement regionManagement
                           ) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;

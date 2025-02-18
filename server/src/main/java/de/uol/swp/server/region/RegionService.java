@@ -1,7 +1,7 @@
 package de.uol.swp.server.region;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.CityCardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
@@ -14,7 +14,7 @@ import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.game.GameException;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.management.IGameManagement;

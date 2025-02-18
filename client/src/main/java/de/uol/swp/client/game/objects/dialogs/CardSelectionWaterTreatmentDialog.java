@@ -2,7 +2,7 @@ package de.uol.swp.client.game.objects.dialogs;
 
 import de.uol.swp.client.game.CardFactory;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
-import de.uol.swp.common.cards.CityCardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.game.RoleEnum;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
