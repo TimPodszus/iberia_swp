@@ -1285,6 +1285,8 @@ public class GamePresenter extends AbstractPresenter {
             node.getStyleClass()
                 .removeAll(CITY_CLASS);
             node.getStyleClass()
+                .removeAll(CITY_HIGHLIGHTED_CLASS);
+            node.getStyleClass()
                 .add(CITY_HIGHLIGHTED_CLASS);
         }
         LOG.info("Available destinations highlighted");
