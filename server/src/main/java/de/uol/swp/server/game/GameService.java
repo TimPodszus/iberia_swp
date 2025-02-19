@@ -1,6 +1,8 @@
 package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.game.GameActions;
@@ -18,6 +20,7 @@ import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -30,8 +33,10 @@ import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -42,6 +47,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service responsible for managing game-related requests such as creating games.
@@ -184,11 +190,54 @@ public class GameService extends AbstractService implements GameStateChangeListe
         if (!request.getUsername()
                     .isEmpty()) {
             this.sendShareRideEvent(request, destination);
+            LOG.debug(
+                    "[LobbyID: {}] Send share ride event and asked {} if he wants to be picked up",
+                    request.getLobbyId(),
+                    request.getUsername()
+            );
         }
 
-        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        LOG.info("[LobbyId: {}] Player has been moved. Sending board update event", request.getLobbyId());
+
+        if (game.getState() instanceof EventState eventState && eventState.getEventCard() instanceof StateMobilizationEventCard eventCard) {
+            LOG.debug(
+                    "[LobbyID: {}] State mobilization is ongoing. Sending available destinations for remaining players to move",
+                    request.getLobbyId()
+            );
+            for (IPlayer player : eventCard.getPlayersToMove()) {
+                LOG.trace(
+                        "[LobbyID: {}] {} has not moved yet. Sending available destinations for him",
+                        request.getLobbyId(),
+                        player.getUser()
+                              .getUsername()
+                );
+                Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
+                        request.getLobbyId(),
+                        player.getCurrentPosition()
+                              .getId()
+                ));
+                AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+                Session session = authenticationService.getSession(player.getUser())
+                                                       .orElseThrow(() -> {
+                                                           LOG.error(USER_NOT_LOGGED_IN);
+                                                           return new GameException(USER_NOT_LOGGED_IN);
+                                                       });
+                response.setSession(session);
+                post(response);
+                LOG.trace(
+                        "[LobbyID: {}] Sent {} available destinations for {}",
+                        request.getLobbyId(),
+                        availableDestinations.size(),
+                        player.getUser()
+                              .getUsername()
+                );
+            }
+            LOG.info("[LobbyID: {}] Sent available destinations for remaining players to move", request.getLobbyId());
+        }
     }
 
     /**

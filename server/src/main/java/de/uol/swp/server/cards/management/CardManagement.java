@@ -34,8 +34,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
         setGameInEventCardState(game, eventCard);
 
         if (eventCard instanceof StateMobilizationEventCard stateMobilizationEventCard) {
-            stateMobilizationEventCard.setPlayersToMove(game.getPlayers()
-                                                            .size());
+            stateMobilizationEventCard.setPlayersToMove(game.getPlayers());
         }
 
         eventCard.execute(game.getGameId(), username);

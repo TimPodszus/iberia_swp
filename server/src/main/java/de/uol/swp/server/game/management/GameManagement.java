@@ -25,7 +25,6 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.region.management.RegionManagement;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -486,8 +485,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         } else if (game.getState() instanceof EventState eventState) {
             if (eventState.getEventCard() instanceof StateMobilizationEventCard stateMobilizationEventCard) {
                 LOG.info("[LobbyId: {}] Decreasing players to move.", game.getGameId());
-                stateMobilizationEventCard.reducePlayersToMove();
-                if (stateMobilizationEventCard.getPlayersToMove() != 0) {
+                stateMobilizationEventCard.playerMoved(player);
+                if (!stateMobilizationEventCard.getPlayersToMove()
+                                               .isEmpty()) {
                     LOG.debug(
                             "[LobbyId: {}] Decreased players to move. {} players left to move.",
                             game.getGameId(),

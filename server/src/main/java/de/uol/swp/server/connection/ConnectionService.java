@@ -9,16 +9,12 @@ import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.cards.CardMapper;
-import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
 import de.uol.swp.server.cards.events.StateMobilizationEvent;
-import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.GameException;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.management.ServerUserService;
@@ -27,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +30,6 @@ import java.util.Map;
 public class ConnectionService extends AbstractService {
     private static final Logger LOG = LogManager.getLogger(ConnectionService.class);
 
-    private static final String USER_NOT_LOGGED_IN = "User not logged in";
 
     IConnectionManagement connectionManagement;
 
@@ -113,27 +107,6 @@ public class ConnectionService extends AbstractService {
                 event.getLobbyId(),
                 event.getUsername()
         );
-    }
-
-    /**
-     * Converts a map of available destinations from ICity and ICard to a map of Integer and ICardDTO.
-     *
-     * @param availableDestinations the map of available destinations with ICity as keys and lists of ICard as values
-     * @return a map of available destinations with Integer as keys and lists of ICardDTO as values
-     */
-    private Map<Integer, List<ICardDTO>> convertToDtoMap(Map<ICity, List<ICard>> availableDestinations) {
-        Map<Integer, List<ICardDTO>> availableDestinationsAsDtos = new HashMap<>();
-
-        for (Map.Entry<ICity, List<ICard>> entry : availableDestinations.entrySet()) {
-            List<ICardDTO> cards = entry.getValue()
-                                        .stream()
-                                        .map(CardMapper::toDTO)
-                                        .toList();
-            availableDestinationsAsDtos.put(entry.getKey()
-                                                 .getId(), cards);
-        }
-
-        return availableDestinationsAsDtos;
     }
 
     /**

@@ -1,8 +1,12 @@
 package de.uol.swp.server.cards.data.eventcards;
 
 import de.uol.swp.server.cards.events.StateMobilizationEvent;
+import de.uol.swp.server.player.data.IPlayer;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an event card that triggers the StateMobilizationEvent.
@@ -14,7 +18,7 @@ public class StateMobilizationEventCard extends EventCard{
     private static final String DESCRIPTION = "Alle Spieler dürfen sich einmal bewegen.";
 
     @Setter
-    private int playersToMove = 0;
+    private List<IPlayer> playersToMove = new ArrayList<>();
 
     public StateMobilizationEventCard(int id) {
         super(id, TITLE, DESCRIPTION);
@@ -27,9 +31,11 @@ public class StateMobilizationEventCard extends EventCard{
     }
 
     /**
-     * Reduces the number of players who are left to move.
+     * Removes the player from the list of players that still need to move.
+     *
+     * @param player the player that moved
      */
-    public void reducePlayersToMove() {
-        playersToMove--;
+    public void playerMoved(IPlayer player) {
+        playersToMove.remove(player);
     }
 }
