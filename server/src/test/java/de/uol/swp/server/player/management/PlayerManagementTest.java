@@ -1,13 +1,16 @@
 package de.uol.swp.server.player.management;
 
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.*;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.EpidemicCard;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;

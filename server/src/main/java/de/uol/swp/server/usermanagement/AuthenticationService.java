@@ -1,4 +1,6 @@
 package de.uol.swp.server.usermanagement;
+
+import de.uol.swp.server.usermanagement.management.UserManagement;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -24,8 +26,8 @@ import java.util.*;
 /**
  * Mapping authentication event bus calls to user management calls
  *
- * @see de.uol.swp.server.AbstractService
  * @author Marco Grawunder
+ * @see de.uol.swp.server.AbstractService
  * @since 2019-08-30
  */
 
@@ -44,9 +46,9 @@ public class AuthenticationService extends AbstractService {
     /**
      * Constructor
      *
-     * @param bus The EventBus used throughout the entire server
+     * @param bus            The EventBus used throughout the entire server
      * @param userManagement object of the UserManagement to use
-     * @see de.uol.swp.server.usermanagement.UserManagement
+     * @see UserManagement
      * @since 2019-08-30
      */
     @Inject
@@ -65,7 +67,11 @@ public class AuthenticationService extends AbstractService {
      * @since 2019-09-04
      */
     public Optional<Session> getSession(IUser user) {
-        Optional<Map.Entry<Session, IUser>> entry = userSessions.entrySet().stream().filter(e -> e.getValue().equals(user)).findFirst();
+        Optional<Map.Entry<Session, IUser>> entry = userSessions.entrySet()
+                                                                .stream()
+                                                                .filter(e -> e.getValue()
+                                                                              .equals(user))
+                                                                .findFirst();
         return entry.map(Map.Entry::getKey);
     }
 
@@ -104,7 +110,7 @@ public class AuthenticationService extends AbstractService {
     @Subscribe
     public void onLoginRequest(LoginRequest msg) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Got new auth message with {} {}", msg.getUsername() , msg.getPassword());
+            LOG.debug("Got new auth message with {} {}", msg.getUsername(), msg.getPassword());
         }
         ServerInternalMessage returnMessage;
         try {
@@ -117,7 +123,8 @@ public class AuthenticationService extends AbstractService {
             LOG.error(e);
             returnMessage = new ServerExceptionMessage(new LoginException("Cannot auth user " + msg.getUsername()));
         }
-        msg.getMessageContext().ifPresent(returnMessage::setMessageContext);
+        msg.getMessageContext()
+           .ifPresent(returnMessage::setMessageContext);
         post(returnMessage);
     }
 

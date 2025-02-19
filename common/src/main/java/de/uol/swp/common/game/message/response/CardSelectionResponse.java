@@ -1,6 +1,6 @@
 package de.uol.swp.common.game.message.response;
 
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.CardSelectionType;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import lombok.Getter;

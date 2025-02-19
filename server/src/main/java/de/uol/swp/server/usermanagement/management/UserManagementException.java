@@ -1,0 +1,25 @@
+package de.uol.swp.server.usermanagement.management;
+
+/**
+ * Exception thrown in UserManagement
+ *
+ * This exception is thrown if someone wants to register a with a username that
+ * is already taken or someone tries to modify or remove a user that does not (yet)
+ * exist within the UserStore.
+ *
+ * @author Marco Grawunder
+ * @see UserManagement
+ * @since 2019-07-08
+ */
+public class UserManagementException extends RuntimeException {
+
+    /**
+     * Constructor
+     *
+     * @param s String containing the cause for the exception.
+     * @since 2019-07-08
+     */
+    public UserManagementException(String s) {
+        super(s);
+    }
+}
