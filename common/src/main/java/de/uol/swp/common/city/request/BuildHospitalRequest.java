@@ -1,16 +1,15 @@
 package de.uol.swp.common.city.request;
 
-import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.message.AbstractGameRequest;
 import lombok.Getter;
 
 @Getter
 public class BuildHospitalRequest extends AbstractGameRequest {
-    CityName cityName;
+    Integer cityId;
 
-    public BuildHospitalRequest(String lobbyId, CityName cityName) {
+    public BuildHospitalRequest(String lobbyId, Integer cityId) {
         super(lobbyId);
-        this.cityName = cityName;
+        this.cityId = cityId;
     }
 
     @Override

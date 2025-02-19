@@ -3,6 +3,7 @@ package de.uol.swp.client.game;
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.request.PlayCardRequest;
+import de.uol.swp.common.city.request.BuildHospitalRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
@@ -176,5 +177,15 @@ public class GameService {
      */
     public void sendPlayCardRequest(String lobbyId, int cardId) {
         eventBus.post(new PlayCardRequest(lobbyId, cardId));
+    }
+
+    /**
+     * Sends a request to build a hospital in the specified city.
+     *
+     * @param lobbyId the ID of the lobby where the hospital is to be built
+     * @param cityId  the ID of the city where the hospital is to be built
+     */
+    public void sendBuildHospitalRequest(String lobbyId, int cityId) {
+        eventBus.post(new BuildHospitalRequest(lobbyId, cityId));
     }
 }

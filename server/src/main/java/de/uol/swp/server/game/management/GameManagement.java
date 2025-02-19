@@ -49,9 +49,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private final IConnectionManagement connectionManagement;
 
     @Inject
-    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement,
-                          IConnectionManagement connectionManagement, IRegionManagement regionManagement
-                          ) {
+    public GameManagement(
+            IPlayerManagement playerManagement,
+            ICityManagement cityManagement,
+            IConnectionManagement connectionManagement,
+            IRegionManagement regionManagement
+    ) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;
         this.connectionManagement = connectionManagement;
@@ -212,7 +215,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             }
             try {
                 assert requestPlayer != null;
-                if(requestPlayer.getCurrentPosition() != null) {
+                if (requestPlayer.getCurrentPosition() != null) {
                     throw new GameManagementException("Player is already positioned");
                 }
                 playerManagement.setStartingPosition(
@@ -269,7 +272,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (areTrainTracksBuildable(lobbyCode)) {
             actions.add(GameActions.BUILD_TRAIN_TRACKS);
         }
-        if (isHospitalBuildable()) {
+        if (cityManagement.isHospitalBuildable(lobbyCode, user.getUsername())) {
             actions.add(GameActions.BUILD_HOSPITAL);
         }
         if (isKnowledgeShareable()) {
@@ -292,11 +295,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return game.getTracksLeft() >= 0;
     }
 
-    private boolean isHospitalBuildable() {
-        //TODO: Implement logic in #85
-        return true;
-    }
-
     private boolean isKnowledgeShareable() {
         //TODO: Implement logic in #87
         return true;
@@ -315,7 +313,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
         IGame game = getGame(lobbyCode);
         Set<IRegionDTO> availableRegions = new HashSet<>();
-        if(game.getWaterTreatmentsLeft() > 0) {
+        if (game.getWaterTreatmentsLeft() > 0) {
             availableRegions = regionManagement.getAvailableRegions(UserMapper.toDTO(user), lobbyCode);
         }
         return !availableRegions.isEmpty();
@@ -337,7 +335,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                                                                         .isEmpty();
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
-            LOG.error("[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
+            LOG.error(
+                    "[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
                     lobbyId,
                     player.getUser()
                           .getUsername(),
@@ -422,7 +421,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param city   the destination city
      */
     private void movePlayerByLand(IGame game, IPlayer player, ICity city) {
-        LOG.debug("[LobbyID: {}] Moving {} to city {}",
+        LOG.debug(
+                "[LobbyID: {}] Moving {} to city {}",
                 game.getGameId(),
                 player.getUser()
                       .getUsername(),
@@ -454,7 +454,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             playerManagement.discardCard(game.getGameId(), player, card);
         }
 
-        LOG.debug("[LobbyID: {}] {} sails to {}", game.getGameId(), player.getUser()
+        LOG.debug(
+                "[LobbyID: {}] {} sails to {}",
+                game.getGameId(),
+                player.getUser()
                       .getUsername(),
                 city.getName()
                     .getDisplayName()
@@ -545,8 +548,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Otherwise, it fetches the buildable train tracks based on the player's current position.
      *
      * @param lobbyId The ID of the lobby
-     * @param game The game instance
-     * @param player The current player
+     * @param game    The game instance
+     * @param player  The current player
      * @return A list of buildable train tracks
      */
     private List<IConnection> getBuildableTrainTracks(String lobbyId, IGame game, IPlayer player) {
