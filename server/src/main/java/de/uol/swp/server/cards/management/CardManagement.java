@@ -3,6 +3,7 @@ package de.uol.swp.server.cards.management;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.EventState;
 import org.apache.logging.log4j.LogManager;
@@ -17,10 +18,27 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
         ICard card = game.getPlayer(username).playCard(cardId);
         
         if (card instanceof EventCard eventCard) {
-            LOG.debug("[LobbyId: {}] Card is Event Card and will be played directly", game.getGameId());
-            setGameInEventCardState(game, eventCard);
-            eventCard.execute(lobbyId, username);
+            playEventCard(game, username, eventCard);
         }
+    }
+
+    /**
+     * Plays the event card.
+     *
+     * @param game      the game instance
+     * @param username  the username of the player, who plays the card
+     * @param eventCard the event card to play
+     */
+    private void playEventCard(IGame game, String username, EventCard eventCard) {
+        LOG.debug("[LobbyId: {}] Card is Event Card and will be played directly", game.getGameId());
+        setGameInEventCardState(game, eventCard);
+
+        if (eventCard instanceof StateMobilizationEventCard stateMobilizationEventCard) {
+            stateMobilizationEventCard.setPlayersToMove(game.getPlayers()
+                                                            .size());
+        }
+
+        eventCard.execute(game.getGameId(), username);
     }
 
     /**
