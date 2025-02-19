@@ -7,19 +7,17 @@ import de.uol.swp.server.cards.data.eventcards.EventCard;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.PlayerTurnState;
-import lombok.Setter;
+import de.uol.swp.server.player.data.IPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Setter
 public class CardManagement extends AbstractManagement implements ICardManagement {
     private static final Logger LOG = LogManager.getLogger(CardManagement.class);
-    private IGame game;
 
     @Override
     public void playCard(String lobbyId, String username, int cardId) {
-        game = super.getGame(lobbyId);
-        if (isCardPlayable(cardId, username)) {
+        IGame game = super.getGame(lobbyId);
+        if (isCardPlayable(game, cardId, username)) {
             ICard card = game.getPlayer(username)
                              .playCard(cardId);
             if (card instanceof EventCard eventCard) {
@@ -27,33 +25,28 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
                 setGameInEventCardState(game, eventCard);
                 eventCard.execute(lobbyId, username);
             }
+        } else {
+            LOG.warn("[LobbyId: {}] Card with id {} is not playable", game.getGameId(), cardId);
         }
     }
 
     /**
      * Checks if the card is playable.
      *
+     * @param game     the game instance to check
      * @param cardId   the id of the card to check
      * @param username the username of the player
      * @return true if the card is playable, false otherwise
      */
-    boolean isCardPlayable(int cardId, String username) {
-        ICard playedCard = game.getPlayer(username)
-                               .getCards()
-                               .stream()
-                               .filter(card -> card.getId() == cardId)
-                               .findFirst()
-                               .orElseThrow(() -> {
-                                   LOG.error(
-                                           "[LobbyId: {}] Card with id {} not found in player's hand",
-                                           game.getGameId(),
-                                           cardId
-                                   );
-                                   return new IllegalArgumentException("Card with id " + cardId + " not found in player's hand");
-                               });
-
+    boolean isCardPlayable(IGame game, int cardId, String username) {
+        IPlayer player = game.getPlayer(username);
+        ICard playedCard = player.getCard(cardId);
+        if (playedCard == null) {
+            LOG.warn("[LobbyId: {}] Card with id {} not found in player's hand", game.getGameId(), cardId);
+            return false;
+        }
         if (playedCard instanceof AnotherDayEventCard) {
-            return isAnotherDayEventCardPlayable();
+            return isAnotherDayEventCardPlayable(game);
         } else {
             return true;
         }
@@ -64,11 +57,11 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
      *
      * @return true if the card is playable, false otherwise
      */
-    boolean isAnotherDayEventCardPlayable() {
+    boolean isAnotherDayEventCardPlayable(IGame game) {
         if (game.getState() instanceof PlayerTurnState) {
             return true;
         } else {
-            LOG.error(
+            LOG.warn(
                     "[LobbyId: {}] AnotherDayEventCard can only be played during the PlayerTurnState",
                     game.getGameId()
             );

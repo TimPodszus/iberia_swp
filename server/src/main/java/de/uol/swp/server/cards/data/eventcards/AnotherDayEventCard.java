@@ -4,7 +4,7 @@ import de.uol.swp.server.cards.events.AnotherDayEvent;
 
 public class AnotherDayEventCard extends EventCard {
     private static final String TITLE = "Ein weiterer Tag";
-    private static final String DESCRIPTION = "Der Aktuelle Spieler darf zwei weitere Züge machen.";
+    private static final String DESCRIPTION = "Der aktuelle Spieler darf zwei weitere Züge machen.";
 
     /**
      * Constructs a new AnotherDayEventCard.

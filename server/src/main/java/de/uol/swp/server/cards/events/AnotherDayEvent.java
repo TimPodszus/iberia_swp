@@ -13,6 +13,7 @@ import java.util.Objects;
 public class AnotherDayEvent extends AbstractMessage implements ServerInternalMessage {
     private final String lobbyId;
     private final String username;
+    private final int amountOfActions;
 
     /**
      * Constructs a new MovePlayerAnywhereEvent.
@@ -23,26 +24,27 @@ public class AnotherDayEvent extends AbstractMessage implements ServerInternalMe
     public AnotherDayEvent(String lobbyId, String username) {
         this.lobbyId = lobbyId;
         this.username = username;
+        this.amountOfActions = 2;
     }
-
 
     @Override
     public boolean equals(Object object) {
         if (this == object) {
             return true;
         }
-        if (object == null || getClass() != object.getClass()) {
+        if (!(object instanceof AnotherDayEvent that)) {
             return false;
         }
         if (!super.equals(object)) {
             return false;
         }
-        AnotherDayEvent that = (AnotherDayEvent) object;
-        return Objects.equals(lobbyId, that.lobbyId) && Objects.equals(username, that.username);
+        return amountOfActions == that.amountOfActions &&
+                Objects.equals(lobbyId, that.lobbyId) &&
+                Objects.equals(username, that.username);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), lobbyId, username);
+        return Objects.hash(super.hashCode(), lobbyId, username, amountOfActions);
     }
 }

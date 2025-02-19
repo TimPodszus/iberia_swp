@@ -172,7 +172,10 @@ public class Game implements IGame {
         gameStartShuffle(difficulty + 3);
     }
 
-    public void createInfectionCards() {
+    /**
+     * Creates the infection cards for the game.
+     */
+    private void createInfectionCards() {
         cardRepository.getCards()
                       .values()
                       .stream()
@@ -181,7 +184,10 @@ public class Game implements IGame {
                       .forEach(infectionCardDrawPile::add);
     }
 
-    public void createPlayerCards() {
+    /**
+     * Creates the player cards for the game.
+     */
+    private void createPlayerCards() {
         cardRepository.getCards()
                       .values()
                       .stream()

@@ -282,7 +282,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
     public void onAnotherDayEvent(AnotherDayEvent event) {
         LOG.debug("[Lobby: {}] Got AnotherDayEvent for current player {}", event.getLobbyId(), event.getUsername());
         IGame game = gameManagement.getGame(event.getLobbyId());
-        gameManagement.increaseCurrentPlayerActions(game, 2);
+        gameManagement.increaseCurrentPlayerActions(game, event.getAmountOfActions());
         game.setState(game.getPreviousState());
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());

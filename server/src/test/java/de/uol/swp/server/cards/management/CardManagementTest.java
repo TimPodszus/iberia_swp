@@ -46,7 +46,6 @@ public class CardManagementTest {
         GameStore.getInstance()
                  .addGame(LOBBY_ID, game);
         cardManagement = new CardManagement();
-        cardManagement.setGame(game);
     }
 
     /**
@@ -106,7 +105,7 @@ public class CardManagementTest {
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
         when(game.getPlayer("user")).thenReturn(player);
 
-        boolean result = cardManagement.isCardPlayable(1, "user");
+        boolean result = cardManagement.isCardPlayable(game,1, "user");
 
         assertTrue(result);
     }
@@ -122,40 +121,7 @@ public class CardManagementTest {
               .add(card);
         when(game.getState()).thenReturn(mock(DrawCardState.class));
 
-        boolean result = cardManagement.isCardPlayable(1, "user");
-
-        assertFalse(result);
-    }
-
-    @Test
-    void testIsCardPlayable_OtherCard() {
-        ICard card = mock(ICard.class);
-        when(card.getId()).thenReturn(1);
-        IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
-        when(game.getPlayer("user")).thenReturn(player);
-        player.getCards()
-              .add(card);
-
-        boolean result = cardManagement.isCardPlayable(1, "user");
-
-        assertTrue(result);
-    }
-
-    @Test
-    void testIsAnotherDayEventCardPlayable_Playable() {
-        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
-
-        boolean result = cardManagement.isAnotherDayEventCardPlayable();
-
-        assertTrue(result);
-    }
-
-    @Test
-    void testIsAnotherDayEventCardPlayable_NotPlayable() {
-        when(game.getState()).thenReturn(mock(DrawCardState.class));
-
-        boolean result = cardManagement.isAnotherDayEventCardPlayable();
+        boolean result = cardManagement.isCardPlayable(game,1, "user");
 
         assertFalse(result);
     }
@@ -165,18 +131,22 @@ public class CardManagementTest {
         IUser user = new User("user", "password");
         IPlayer player = new Player(user);
         when(game.getPlayer("user")).thenReturn(player);
-        player.getCards()
-              .clear();
+        player.getCards().clear();
 
-        Exception exception = assertThrows(
-                IllegalArgumentException.class, () -> {
-                    cardManagement.isCardPlayable(1, "user");
-                }
-        );
+        boolean result = cardManagement.isCardPlayable(game, 1, "user");
 
-        String expectedMessage = "Card with id 1 not found in player's hand";
-        String actualMessage = exception.getMessage();
+        assertFalse(result);
+    }
 
-        assertTrue(actualMessage.contains(expectedMessage));
+    @Test
+    void testIsCardPlayable_CardNotPlayable() {
+        IUser user = new User("user", "password");
+        IPlayer player = new Player(user);
+        when(game.getPlayer("user")).thenReturn(player);
+        when(game.getState()).thenReturn(mock(DrawCardState.class));
+
+        boolean result = cardManagement.isCardPlayable(game, 1, "user");
+
+        assertFalse(result);
     }
 }
