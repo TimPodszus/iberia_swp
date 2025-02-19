@@ -25,6 +25,10 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class ConnectionService extends AbstractService {
@@ -156,6 +160,8 @@ public class ConnectionService extends AbstractService {
                 event.getLobbyId()
         );
         IGame game = connectionManagement.getGame(event.getLobbyId());
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.schedule(() -> {
         for (IPlayer player : game.getPlayers()) {
             Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
                     event.getLobbyId(),
@@ -167,12 +173,22 @@ public class ConnectionService extends AbstractService {
                     availableDestinations
             );
             Session session = authenticationService.getSession(user)
-                                                   .orElseThrow(() -> {
-                                                       LOG.error(USER_NOT_LOGGED_IN);
-                                                       return new GameException(USER_NOT_LOGGED_IN);
-                                                   });
+                                                   .orElse(null);
+
+            if (session == null) {
+                LOG.error(
+                        "[LobbyID: {}] Session not found for user {}",
+                        game.getGameId(),
+                        player.getUser()
+                              .getUsername()
+                );
+                break;
+            }
+
             response.setSession(session);
             post(response);
         }
+        }, 500, TimeUnit.MILLISECONDS);
+        scheduler.shutdown();
     }
 }
