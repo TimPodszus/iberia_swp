@@ -160,35 +160,40 @@ public class ConnectionService extends AbstractService {
                 event.getLobbyId()
         );
         IGame game = connectionManagement.getGame(event.getLobbyId());
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.schedule(() -> {
-        for (IPlayer player : game.getPlayers()) {
-            Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
-                    event.getLobbyId(),
-                    player.getCurrentPosition()
-                          .getId()
-            ));
-            IUser user = player.getUser();
-            AvailableDestinationsResponse response = new AvailableDestinationsResponse(game.getGameId(),
-                    availableDestinations
-            );
-            Session session = authenticationService.getSession(user)
-                                                   .orElse(null);
+        ScheduledExecutorService scheduler = null;
+        try {
+            scheduler = Executors.newScheduledThreadPool(1);
+            scheduler.schedule(() -> {
+                for (IPlayer player : game.getPlayers()) {
+                    Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
+                            event.getLobbyId(),
+                            player.getCurrentPosition()
+                                  .getId()
+                    ));
+                    IUser user = player.getUser();
+                    AvailableDestinationsResponse response = new AvailableDestinationsResponse(game.getGameId(),
+                            availableDestinations
+                    );
+                    Session session = authenticationService.getSession(user)
+                                                           .orElse(null);
 
-            if (session == null) {
-                LOG.error(
-                        "[LobbyID: {}] Session not found for user {}",
-                        game.getGameId(),
-                        player.getUser()
-                              .getUsername()
-                );
-                break;
+                    if (session == null) {
+                        LOG.error("[LobbyID: {}] Session not found for user {}",
+                                game.getGameId(),
+                                player.getUser()
+                                      .getUsername()
+                        );
+                        break;
+                    }
+
+                    response.setSession(session);
+                    post(response);
+                }
+            }, 500, TimeUnit.MILLISECONDS);
+        } finally {
+            if (scheduler != null) {
+                scheduler.shutdown();
             }
-
-            response.setSession(session);
-            post(response);
         }
-        }, 500, TimeUnit.MILLISECONDS);
-        scheduler.shutdown();
     }
 }

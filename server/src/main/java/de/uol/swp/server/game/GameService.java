@@ -219,48 +219,55 @@ public class GameService extends AbstractService implements GameStateChangeListe
      * @param remainingPlayers the remaining players, who have not moved yet
      */
     private void sendAvailableDestinationsToRemainingPlayers(String lobbyId, List<IPlayer> remainingPlayers) {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        LOG.debug(
-                "[LobbyID: {}] State mobilization is ongoing. Sending available destinations for remaining players to move",
-                lobbyId
-        );
-        scheduler.schedule(() -> {
-            for (IPlayer player : remainingPlayers) {
-                LOG.trace("[LobbyID: {}] {} has not moved yet. Sending available destinations for him", lobbyId,
-                        player.getUser()
-                              .getUsername()
-                );
-                Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
-                        lobbyId,
-                        player.getCurrentPosition()
-                              .getId()
-                ));
-                AvailableDestinationsResponse response = new AvailableDestinationsResponse(
-                        lobbyId,
-                        availableDestinations
-                );
-                Session session = authenticationService.getSession(player.getUser())
-                                                       .orElse(null);
-
-                if (session == null) {
-                    LOG.error("[LobbyID: {}] Session not found for user {}",
+        ScheduledExecutorService scheduler = null;
+        try {
+            scheduler = Executors.newScheduledThreadPool(1);
+            LOG.debug(
+                    "[LobbyID: {}] State mobilization is ongoing. Sending available destinations for remaining players to move",
+                    lobbyId
+            );
+            scheduler.schedule(() -> {
+                for (IPlayer player : remainingPlayers) {
+                    LOG.trace("[LobbyID: {}] {} has not moved yet. Sending available destinations for him",
                             lobbyId,
                             player.getUser()
                                   .getUsername()
                     );
-                    break;
-                }
+                    Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
+                            lobbyId,
+                            player.getCurrentPosition()
+                                  .getId()
+                    ));
+                    AvailableDestinationsResponse response = new AvailableDestinationsResponse(lobbyId,
+                            availableDestinations
+                    );
+                    Session session = authenticationService.getSession(player.getUser())
+                                                           .orElse(null);
 
-                response.setSession(session);
-                post(response);
-                LOG.trace("[LobbyID: {}] Sent {} available destinations for {}", lobbyId,
-                        availableDestinations.size(),
-                        player.getUser()
-                              .getUsername()
-                );
+                    if (session == null) {
+                        LOG.error("[LobbyID: {}] Session not found for user {}",
+                                lobbyId,
+                                player.getUser()
+                                      .getUsername()
+                        );
+                        break;
+                    }
+
+                    response.setSession(session);
+                    post(response);
+                    LOG.trace("[LobbyID: {}] Sent {} available destinations for {}",
+                            lobbyId,
+                            availableDestinations.size(),
+                            player.getUser()
+                                  .getUsername()
+                    );
+                }
+            }, 500, TimeUnit.MILLISECONDS);
+        } finally {
+            if (scheduler != null) {
+                scheduler.shutdown();
             }
-        }, 500, TimeUnit.MILLISECONDS);
-        scheduler.shutdown();
+        }
         LOG.info("[LobbyID: {}] Sent available destinations for remaining players to move", lobbyId);
     }
 
