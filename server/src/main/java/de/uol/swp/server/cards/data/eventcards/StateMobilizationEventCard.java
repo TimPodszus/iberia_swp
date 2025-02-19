@@ -25,4 +25,11 @@ public class StateMobilizationEventCard extends EventCard{
         StateMobilizationEvent event = new StateMobilizationEvent(lobbyId);
         bus.post(event);
     }
+
+    /**
+     * Reduces the number of players who are left to move.
+     */
+    public void reducePlayersToMove() {
+        playersToMove--;
+    }
 }

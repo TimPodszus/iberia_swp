@@ -12,6 +12,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
@@ -672,19 +673,53 @@ class GameManagementTest {
         when(connectionManagement.getAllDestinations(LOBBY_CODE)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
-        IUser user = new User("user1", "test");
-        createTestPlayers(user);
+        IUser testUser = new User("user1", "test");
+        createTestPlayers(testUser);
         IPlayer player = game.getPlayers()
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
         when(game.getPlayer("user1")).thenReturn(player);
         when(game.getState()).thenReturn(new EventState(new OnTheMoveDayAndNightEventCard(1)));
 
-        gameManagement.movePlayer(user, "lobbyCode", destinationCity, null);
+        gameManagement.movePlayer(testUser, "lobbyCode", destinationCity, null);
 
         assertEquals(destinationCity,
                 player.getCurrentPosition(),
                 "Expected player to have moved to Palma de Mallorca"
         );
+    }
+
+    @Test
+    void testMovePlayer_StateMobilizationEvent() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
+                List.of(),
+                cityRepository.getCityByName(CityName.BARCELONA),
+                List.of()
+        );
+        when(connectionManagement.getAvailableDestinations(anyString(), anyInt())).thenReturn(availableDestinations);
+        ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
+        ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
+        IUser testUser = new User("user1", "test");
+        createTestPlayers(testUser);
+        IPlayer player = game.getPlayers()
+                             .get(0);
+        setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
+        when(game.getPlayer("user1")).thenReturn(player);
+        StateMobilizationEventCard stateMobilizationEventCard = new StateMobilizationEventCard(1);
+        stateMobilizationEventCard.setPlayersToMove(2);
+        when(game.getState()).thenReturn(new EventState(stateMobilizationEventCard));
+
+        gameManagement.movePlayer(testUser, "lobbyCode", destinationCity, null);
+
+        assertEquals(destinationCity,
+                player.getCurrentPosition(),
+                "Expected player to have moved to Palma de Mallorca"
+        );
+        assertEquals(1, stateMobilizationEventCard.getPlayersToMove(), "Expected playersToMove to be decreased by 1");
+
+        gameManagement.movePlayer(testUser, "lobbyCode", startCity, null);
+
+        assertEquals(startCity, player.getCurrentPosition(), "Expected player to have moved back to Barcelona");
+        assertEquals(0, stateMobilizationEventCard.getPlayersToMove(), "Expected playersToMove to be decreased by 1");
     }
 }
