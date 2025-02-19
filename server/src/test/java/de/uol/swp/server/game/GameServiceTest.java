@@ -377,6 +377,7 @@ public class GameServiceTest extends EventBusBasedTest {
         when(gameManagement.getGame("lobbycode")).thenReturn(game);
         ILobby lobby = new Lobby("lobbycode", "Test", List.of(user), user, 4);
         when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
+        game.setState(new PlayerTurnState());
 
         gameService.onAnotherDayEvent(anotherDayEvent);
 

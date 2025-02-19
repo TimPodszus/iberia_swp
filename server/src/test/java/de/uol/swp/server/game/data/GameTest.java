@@ -45,7 +45,7 @@ class GameTest {
     @Test
     void testCreatePlayerCards() {
         assertEquals(
-                48 + game.getDifficulty() + 3,
+                50 + game.getDifficulty() + 3,
                 game.getPlayerCardDrawPile()
                     .size()
         );
@@ -57,7 +57,7 @@ class GameTest {
     @Test
     void testGameStartShuffle() {
         assertEquals(
-                48 + game.getDifficulty() + 3,
+                50 + game.getDifficulty() + 3,
                 game.getPlayerCardDrawPile()
                     .size()
         );
