@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.*;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
@@ -60,7 +59,7 @@ class PlayerManagementTest {
         MockitoAnnotations.openMocks(this);
         GameStore.getInstance()
                  .addGame(game.getGameId(), game);
-        playerManagement = new PlayerManagement(gameManagement, cityManagement);
+        playerManagement = new PlayerManagement(cityManagement);
     }
 
     /**
@@ -228,5 +227,27 @@ class PlayerManagementTest {
         assertTrue(drawPile.contains(infectionCard2), "Expected draw pile to contain infectionCard2");
         assertTrue(drawPile.contains(infectionCard3), "Expected draw pile to contain infectionCard3");
         assertTrue(discardPile.isEmpty(), "Expected discard pile to be empty after shuffling");
+    }
+
+
+    @Test
+    void testDrawBottomInfectionCard() {
+        CityRepository cityRepository = new CityRepository();
+        InfectionCard infectionCard1 = new InfectionCard(1, "InfectionCard1", cityRepository.getCityByName(CityName.BARCELONA));
+        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard2", cityRepository.getCityByName(CityName.ALICANTE));
+        game.getInfectionCardDrawPile().add(infectionCard1);
+        game.getInfectionCardDrawPile().add(infectionCard2);
+
+        InfectionCard drawnCard = playerManagement.drawBottomInfectionCard(game);
+
+        assertEquals(infectionCard2, drawnCard, "Expected the last infection card to be drawn from the bottom of the draw pile");
+    }
+
+    @Test
+    void testDrawBottomInfectionCardWithEmptyDiscardPile() {
+        game.getInfectionCardDrawPile().clear();
+
+        assertThrows(IllegalStateException.class, () -> playerManagement.drawBottomInfectionCard(game), "Expected " +
+                "IllegalStateException when the discard pile is empty");
     }
 }

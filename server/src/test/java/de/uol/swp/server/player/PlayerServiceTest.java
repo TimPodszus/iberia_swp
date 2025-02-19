@@ -7,9 +7,8 @@ import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.management.CityManagementException;
-import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
@@ -37,9 +36,6 @@ public class PlayerServiceTest extends EventBusBasedTest {
     @Mock
     private IGameManagement gameManagement;
 
-    @Mock
-    private ICityManagement cityManagement;
-
     private final IGame game = new Game(1, "validGameId");
 
     @Mock
@@ -62,7 +58,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        playerService = new PlayerService(super.getBus(), playerManagement, gameManagement, cityManagement);
+        playerService = new PlayerService(super.getBus(), playerManagement, gameManagement);
         IUser user = new User("testUser", "testPassword");
 
         when(request.getLobbyId()).thenReturn("validGameId");
@@ -142,7 +138,6 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
         postAndWait(request);
 
-        verify(cityManagement, times(1)).infectCityWithOwnPlague(game, infectionCard, 1);
         verify(gameManagement, times(1)).getGame("validGameId");
         verify(gameManagement, times(1)).drawInfectionCard(game);
         assertInstanceOf(BoardUpdateEvent.class, super.event);

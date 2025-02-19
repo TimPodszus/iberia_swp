@@ -11,7 +11,6 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.StartState;
@@ -25,12 +24,10 @@ import java.util.Objects;
 
 
 public class PlayerManagement implements IPlayerManagement {
-    private final IGameManagement gameManagement;
     private final ICityManagement cityManagement;
 
     @Inject
-    public PlayerManagement(IGameManagement gameManagement, ICityManagement cityManagement) {
-        this.gameManagement = gameManagement;
+    public PlayerManagement(ICityManagement cityManagement) {
         this.cityManagement = cityManagement;
     }
 
@@ -50,8 +47,10 @@ public class PlayerManagement implements IPlayerManagement {
                                   .getGame(lobbyCode)
                                   .getPlayers()
                                   .stream()
-                                  .filter(p -> Objects.equals(p.getUser()
-                                                               .getUsername(), user.getUsername()))
+                                  .filter(p -> Objects.equals(
+                                          p.getUser()
+                                           .getUsername(), user.getUsername()
+                                  ))
                                   .findFirst()
                                   .orElseThrow(() -> new PlayerManagementException("Player not found for the given user"));
         return drawPlayerCard(lobbyCode, player);
@@ -70,16 +69,14 @@ public class PlayerManagement implements IPlayerManagement {
      * @return the drawn player card as a data transfer object (DTO)
      * @throws PlayerManagementException if there is an issue with drawing the card
      */
-    public ICardDTO drawPlayerCard(
-            String lobbyCode, IPlayer player
-    ) throws PlayerManagementException {
+    public ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws PlayerManagementException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyCode);
 
         ICard card = getCard(game, player);
 
         if (card instanceof EpidemicCard) {
-            InfectionCard infectionCard = gameManagement.drawBottomInfectionCard(game);
+            InfectionCard infectionCard = drawBottomInfectionCard(game);
             cityManagement.infectCityWithOwnPlague(game, infectionCard, 3);
 
             game.setInfectionCounter(game.getInfectionCounter() + 1);
@@ -131,11 +128,13 @@ public class PlayerManagement implements IPlayerManagement {
      *
      * @param lobbyCode the code of the lobby in which the game is happening
      * @param player    the player  to be moved
-     * @param cityName    the city to which the player will be moved
+     * @param cityName  the city to which the player will be moved
      * @throws PlayerManagementException if the player is not found for the given user
      */
     public void setStartingPosition(
-            String lobbyCode, CityName cityName, IPlayer player
+            String lobbyCode,
+            CityName cityName,
+            IPlayer player
     ) throws PlayerManagementException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyCode);
@@ -175,6 +174,7 @@ public class PlayerManagement implements IPlayerManagement {
         player.getCards()
               .add(card);
     }
+
     /**
      * Discards a single card from the player's hand.
      * <p>
@@ -260,9 +260,9 @@ public class PlayerManagement implements IPlayerManagement {
      * This method retrieves the game instance using the provided lobby ID, then finds the player by their name.
      * It then retrieves the city with the specified city ID and sets it as the player's current position.
      *
-     * @param lobbyId   the ID of the lobby in which the game is happening
+     * @param lobbyId    the ID of the lobby in which the game is happening
      * @param playerName the name of the player whose position is to be set
-     * @param cityId    the ID of the city to which the player will be moved
+     * @param cityId     the ID of the city to which the player will be moved
      * @throws PlayerManagementException if the player is not found
      */
     public void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException {
@@ -278,12 +278,27 @@ public class PlayerManagement implements IPlayerManagement {
      *
      * @param game The game from which the infection cards are to be shuffled
      */
-    public void shuffleInfectionCardsFromDrawPile(IGame game){
+    public void shuffleInfectionCardsFromDrawPile(IGame game) {
         List<InfectionCard> infectionCardsDrawPile = game.getInfectionCardDrawPile();
         List<InfectionCard> infectionCardsDiscardPile = game.getInfectionCardDiscardPile();
         Collections.shuffle(infectionCardsDiscardPile);
         infectionCardsDrawPile.addAll(0, infectionCardsDiscardPile);
         game.setInfectionCardDrawPile(infectionCardsDrawPile);
         infectionCardsDiscardPile.clear();
+    }
+
+    /**
+     * Draws an infection card from the bottom of the deck.
+     *
+     * @return The drawn infection card, or null if no card can be drawn
+     */
+    public InfectionCard drawBottomInfectionCard(IGame game) throws IllegalStateException {
+        List<InfectionCard> infectionCardDrawPile = game.getInfectionCardDrawPile();
+
+        if (infectionCardDrawPile.isEmpty()) {
+            throw new IllegalStateException("Infection card draw pile is empty");
+        }
+
+        return infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1);
     }
 }

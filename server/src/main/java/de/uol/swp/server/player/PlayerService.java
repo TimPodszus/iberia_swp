@@ -11,9 +11,7 @@ import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.cards.InfectionCard;
 import de.uol.swp.server.city.management.CityManagementException;
-import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
@@ -29,7 +27,6 @@ import org.greenrobot.eventbus.Subscribe;
 public class PlayerService extends AbstractService {
     private final IPlayerManagement playerManagement;
     private final IGameManagement gameManagement;
-    private final ICityManagement cityManagement;
 
     /**
      * Constructs a new PlayerService.
@@ -38,13 +35,10 @@ public class PlayerService extends AbstractService {
      * @param playerManagement the player management instance for player operations
      */
     @Inject
-    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement,
-                         ICityManagement cityManagement
-    ) {
+    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement) {
         super(bus);
         this.playerManagement = playerManagement;
         this.gameManagement = gameManagement;
-        this.cityManagement = cityManagement;
     }
 
     /**
@@ -75,16 +69,14 @@ public class PlayerService extends AbstractService {
      * @param request the request to draw an infection card
      */
     @Subscribe
-    public void onDrawInfectionCardRequest(DrawInfectionCardRequest request){
+    public void onDrawInfectionCardRequest(DrawInfectionCardRequest request) {
         AbstractResponseMessage response;
         Session session = request.getSession()
                                  .orElseThrow(() -> new IllegalStateException("Session not present"));
         IGame game = gameManagement.getGame(request.getLobbyId());
-
-        InfectionCard infectionCard = gameManagement.drawInfectionCard(game);
         try {
-            cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
-        }catch (CityManagementException e){
+            gameManagement.drawInfectionCard(game);
+        } catch (CityManagementException e) {
             response = new StatusResponse(request.getLobbyId(), true, e.getMessage());
             response.setSession(session);
             post(response);

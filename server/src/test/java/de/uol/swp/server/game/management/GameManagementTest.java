@@ -41,7 +41,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -687,23 +686,5 @@ class GameManagementTest {
                 player.getCurrentPosition(),
                 "Expected player to have moved to Palma de Mallorca"
         );
-    }
-
-    @Test
-    void testDrawBottomInfectionCard() {
-        InfectionCard infectionCard1 = new InfectionCard(1, "InfectionCard1", cityRepository.getCityByName(CityName.BARCELONA));
-        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard2", cityRepository.getCityByName(CityName.ALICANTE));
-        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard1, infectionCard2)));
-
-        InfectionCard drawnCard = gameManagement.drawBottomInfectionCard(game);
-
-        assertEquals(infectionCard2, drawnCard, "Expected the last infection card to be drawn from the bottom of the draw pile");
-    }
-
-    @Test
-    void testDrawBottomInfectionCardWithEmptyDiscardPile() {
-        when(game.getInfectionCardDiscardPile()).thenReturn(new ArrayList<>());
-
-        assertThrows(IllegalStateException.class, () -> gameManagement.drawBottomInfectionCard(game), "Expected IllegalStateException when the discard pile is empty");
     }
 }

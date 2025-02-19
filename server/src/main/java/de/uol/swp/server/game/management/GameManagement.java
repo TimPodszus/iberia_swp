@@ -24,7 +24,6 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.region.management.RegionManagement;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -49,9 +48,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private final IConnectionManagement connectionManagement;
 
     @Inject
-    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement,
-                          IConnectionManagement connectionManagement, IRegionManagement regionManagement
-                          ) {
+    public GameManagement(
+            IPlayerManagement playerManagement,
+            ICityManagement cityManagement,
+            IConnectionManagement connectionManagement,
+            IRegionManagement regionManagement
+    ) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;
         this.connectionManagement = connectionManagement;
@@ -212,7 +214,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             }
             try {
                 assert requestPlayer != null;
-                if(requestPlayer.getCurrentPosition() != null) {
+                if (requestPlayer.getCurrentPosition() != null) {
                     throw new GameManagementException("Player is already positioned");
                 }
                 playerManagement.setStartingPosition(
@@ -247,23 +249,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (infectionCardDrawPile.isEmpty()) {
             throw new IllegalStateException("Infection card draw pile is empty");
         }
-
-        return infectionCardDrawPile.remove(0);
-    }
-
-    /**
-     * Draws an infection card from the bottom of the deck.
-     *
-     * @return The drawn infection card, or null if no card can be drawn
-     */
-    public InfectionCard drawBottomInfectionCard(IGame game) {
-        List<InfectionCard> infectionCardDrawPile = game.getInfectionCardDrawPile();
-
-        if (infectionCardDrawPile.isEmpty()) {
-            throw new IllegalStateException("Infection card draw pile is empty");
+        if (game.getState() instanceof InfectionState) {
+            cityManagement.infectCityWithOwnPlague(game, infectionCardDrawPile.get(0), 1);
         }
-
-        return infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1);
+        return infectionCardDrawPile.remove(0);
     }
 
     /**
@@ -329,7 +318,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
         IGame game = getGame(lobbyCode);
         Set<IRegionDTO> availableRegions = new HashSet<>();
-        if(game.getWaterTreatmentsLeft() > 0) {
+        if (game.getWaterTreatmentsLeft() > 0) {
             availableRegions = regionManagement.getAvailableRegions(UserMapper.toDTO(user), lobbyCode);
         }
         return !availableRegions.isEmpty();
@@ -351,7 +340,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                                                                         .isEmpty();
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
-            LOG.error("[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
+            LOG.error(
+                    "[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
                     lobbyId,
                     player.getUser()
                           .getUsername(),
@@ -436,7 +426,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param city   the destination city
      */
     private void movePlayerByLand(IGame game, IPlayer player, ICity city) {
-        LOG.debug("[LobbyID: {}] Moving {} to city {}",
+        LOG.debug(
+                "[LobbyID: {}] Moving {} to city {}",
                 game.getGameId(),
                 player.getUser()
                       .getUsername(),
@@ -468,7 +459,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             playerManagement.discardCard(game.getGameId(), player, card);
         }
 
-        LOG.debug("[LobbyID: {}] {} sails to {}", game.getGameId(), player.getUser()
+        LOG.debug(
+                "[LobbyID: {}] {} sails to {}",
+                game.getGameId(),
+                player.getUser()
                       .getUsername(),
                 city.getName()
                     .getDisplayName()
@@ -559,8 +553,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Otherwise, it fetches the buildable train tracks based on the player's current position.
      *
      * @param lobbyId The ID of the lobby
-     * @param game The game instance
-     * @param player The current player
+     * @param game    The game instance
+     * @param player  The current player
      * @return A list of buildable train tracks
      */
     private List<IConnection> getBuildableTrainTracks(String lobbyId, IGame game, IPlayer player) {

@@ -35,11 +35,6 @@ public interface IGameManagement {
     InfectionCard drawInfectionCard(IGame game);
 
     /**
-     * Draws a player card from the DiscardPile. The specific behavior of this method should be defined.
-     */
-    InfectionCard drawBottomInfectionCard(IGame game);
-
-    /**
      * Adds an infection card to the infection card discard pile.
      */
     void discardInfectionCard(IGame game, InfectionCard infectionCard);
@@ -75,9 +70,9 @@ public interface IGameManagement {
     /**
      * Builds a train track between two cities in the game.
      *
-     * @param user        the user representing the player building the train track
-     * @param lobbyId     the id of the lobby in which the game is happening
-     * @param connection  the connection representing the train track to be built
+     * @param user       the user representing the player building the train track
+     * @param lobbyId    the id of the lobby in which the game is happening
+     * @param connection the connection representing the train track to be built
      * @throws GameManagementException if building the train track fails
      */
     void buildTrainTrack(IUser user, String lobbyId, IConnection connection) throws GameManagementException;
