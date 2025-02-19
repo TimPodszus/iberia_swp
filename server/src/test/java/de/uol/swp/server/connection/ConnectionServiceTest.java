@@ -8,12 +8,17 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
+import de.uol.swp.server.cards.events.StateMobilizationEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -29,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 // disabled sonar lint rule java:S5786, because public class modifier is required for EventBusBasedTest
 public class ConnectionServiceTest extends EventBusBasedTest {
@@ -96,12 +101,17 @@ public class ConnectionServiceTest extends EventBusBasedTest {
         );
     }
 
+    /**
+     * Tests the handling of a MovePlayerAnywhereEvent.
+     * <p>
+     * This test verifies that an AvailableDestinationsResponse is received
+     * when a MovePlayerAnywhereEvent is posted.
+     *
+     * @throws InterruptedException if the thread is interrupted while waiting for the event
+     */
     @Test
     void testOnMovePlayerAnywhereEvent() throws InterruptedException {
-        IUser user = new User("testuser", "1234");
-        Session session = UUIDSession.create(user);
-        when(userManagement.getUser("testuser")).thenReturn(user);
-        when(authenticationService.getSession(user)).thenReturn(java.util.Optional.of(session));
+        createUserAndSession("testuser");
         when(connectionManagement.getAllDestinations("")).thenReturn(Map.of(cityRepository.getCity(1), List.of()));
         MovePlayerAnywhereEvent movePlayerAnywhereEvent = new MovePlayerAnywhereEvent("", "testuser");
 
@@ -110,16 +120,9 @@ public class ConnectionServiceTest extends EventBusBasedTest {
         assertInstanceOf(AvailableDestinationsResponse.class, event, "Expected an AvailableDestinationsResponse");
     }
 
-    /**
-     * Tests the handling of a MovePlayerAnywhereEvent when the user is not logged in.
-     * <p>
-     * This test verifies that a GameException is thrown when a MovePlayerAnywhereEvent
-     * is received for a user who is not logged in.
-     */
     @Test
     void testOnMovePlayerAnywhereEventWithUserNotLoggedIn() {
-        IUser user = new User("testuser", "1234");
-        when(userManagement.getUser("testuser")).thenReturn(user);
+        IUser user = createUserAndSession("testuser");
         when(authenticationService.getSession(user)).thenReturn(java.util.Optional.empty());
         MovePlayerAnywhereEvent movePlayerAnywhereEvent = new MovePlayerAnywhereEvent("", "testuser");
 
@@ -129,6 +132,14 @@ public class ConnectionServiceTest extends EventBusBasedTest {
         );
     }
 
+    /**
+     * Tests the handling of a BuildableTrainTracksRequest.
+     * <p>
+     * This test verifies that a BuildableTrainTracksResponse is received
+     * when a BuildableTrainTracksRequest is posted.
+     *
+     * @throws InterruptedException if the thread is interrupted while waiting for the event
+     */
     @Test
     void testOnBuildableTrainTracksRequest() throws InterruptedException {
         BuildableTrainTracksRequest request = new BuildableTrainTracksRequest("", 1);
@@ -150,10 +161,106 @@ public class ConnectionServiceTest extends EventBusBasedTest {
                 ((BuildableTrainTracksResponse) event).getConnections().get(0).getCityNames(),
                 "Expected connection between Albacete and Alicante"
         );
-        assertEquals(
-                true,
-                ((BuildableTrainTracksResponse) event).getConnections().get(0).isTrainTrackBuildable(),
-                "Expected a train track"
+        assertTrue(((BuildableTrainTracksResponse) event).getConnections()
+                                                         .get(0)
+                                                         .isTrainTrackBuildable(), "Expected a train track");
+    }
+
+    /**
+     * Tests the handling of a StateMobilizationEvent.
+     * <p>
+     * This test verifies that an AvailableDestinationsResponse is received
+     * when a StateMobilizationEvent is posted.
+     *
+     * @throws InterruptedException if the thread is interrupted while waiting for the event
+     */
+    @Test
+    void testOnStateMobilizationEvent() throws InterruptedException {
+        IUser testuser1 = createUserAndSession("testuser1");
+        IPlayer player1 = createMockPlayer(testuser1, 1);
+
+        IUser testuser2 = createUserAndSession("testuser2");
+        IPlayer player2 = createMockPlayer(testuser2, 1);
+
+        IGame game = createMockGame(List.of(player1, player2));
+        when(connectionManagement.getGame("1234")).thenReturn(game);
+        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(cityRepository.getCity(1),
+                List.of()
+        ));
+
+        StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
+
+        postAndWait(stateMobilizationEvent);
+
+        assertInstanceOf(AvailableDestinationsResponse.class, event, "Expected an AvailableDestinationsResponse");
+        verify(connectionManagement, times(2)).getAvailableDestinations("1234", 1);
+    }
+
+    /**
+     * Tests the handling of a StateMobilizationEvent when a user is logged out.
+     * <p>
+     * This test verifies that a GameException is thrown when a StateMobilizationEvent
+     * is received for a user who is logged out.
+     */
+    @Test
+    void testOnStateMobilizationEventWithLoggedOutUser() {
+        IUser testuser1 = createUserAndSession("testuser1");
+        IPlayer player1 = createMockPlayer(testuser1, 1);
+
+        IUser testuser2 = new User("testuser2", "1234");
+        IPlayer player2 = createMockPlayer(testuser2, 1);
+
+        IGame game = createMockGame(List.of(player1, player2));
+        when(connectionManagement.getGame("1234")).thenReturn(game);
+        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(cityRepository.getCity(1),
+                List.of()
+        ));
+
+        StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
+
+        assertThrows(GameException.class,
+                () -> connectionService.onStateMobilizationEvent(stateMobilizationEvent),
+                "Expected a GameException"
         );
+    }
+
+    /**
+     * Creates a user and session for the given username.
+     *
+     * @param username the username of the user
+     * @return the created IUser instance
+     */
+    private IUser createUserAndSession(String username) {
+        IUser user = new User(username, "1234");
+        Session session = UUIDSession.create(user);
+        when(userManagement.getUser(username)).thenReturn(user);
+        when(authenticationService.getSession(user)).thenReturn(java.util.Optional.of(session));
+        return user;
+    }
+
+    /**
+     * Creates a mock player for the given user and city ID.
+     *
+     * @param user   the user associated with the player
+     * @param cityId the ID of the city where the player is located
+     * @return the created IPlayer instance
+     */
+    private IPlayer createMockPlayer(IUser user, int cityId) {
+        IPlayer player = mock(Player.class);
+        when(player.getUser()).thenReturn(user);
+        when(player.getCurrentPosition()).thenReturn(cityRepository.getCity(cityId));
+        return player;
+    }
+
+    /**
+     * Creates a mock game with the given list of players.
+     *
+     * @param players the list of players in the game
+     * @return the created IGame instance
+     */
+    private IGame createMockGame(List<IPlayer> players) {
+        IGame game = mock(Game.class);
+        when(game.getPlayers()).thenReturn(players);
+        return game;
     }
 }

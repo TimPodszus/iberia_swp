@@ -3,6 +3,7 @@ package de.uol.swp.server.connection.management;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.game.data.IGame;
 
 import java.util.List;
 import java.util.Map;
@@ -47,4 +48,12 @@ public interface IConnectionManagement {
      * @return the connection
      */
     IConnection getConnection(String lobbyId, int connectionId);
+
+    /**
+     * Retrieves a game by its lobby ID.
+     *
+     * @param lobbyId the ID of the lobby
+     * @return the game, or null if the lobby does not exist
+     */
+    IGame getGame(String lobbyId);
 }

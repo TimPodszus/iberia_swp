@@ -12,10 +12,14 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
+import de.uol.swp.server.cards.events.StateMobilizationEvent;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.management.ServerUserService;
 import org.apache.logging.log4j.LogManager;
@@ -30,6 +34,8 @@ import java.util.Map;
 @Singleton
 public class ConnectionService extends AbstractService {
     private static final Logger LOG = LogManager.getLogger(ConnectionService.class);
+
+    private static final String USER_NOT_LOGGED_IN = "User not logged in";
 
     IConnectionManagement connectionManagement;
 
@@ -93,8 +99,8 @@ public class ConnectionService extends AbstractService {
         IUser user = userManagement.getUser(event.getUsername());
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error("User not logged in");
-                                                   return new GameException("User not logged in");
+                                                   LOG.error(USER_NOT_LOGGED_IN);
+                                                   return new GameException(USER_NOT_LOGGED_IN);
                                                });
 
         Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAllDestinations(
@@ -157,5 +163,34 @@ public class ConnectionService extends AbstractService {
                .ifPresent(response::setSession);
 
         post(response);
+    }
+
+    /**
+     * Handles the StateMobilizationEvent. Gets the available destinations for all players in the lobby and sends
+     * them to the clients.
+     *
+     * @param event the event containing the lobby ID
+     * @throws GameException if a user is not logged in
+     */
+    @Subscribe
+    public void onStateMobilizationEvent(StateMobilizationEvent event) throws GameException {
+        LOG.debug("[Lobby: {}] Got StateMobilizationEvent", event.getLobbyId());
+        IGame game = connectionManagement.getGame(event.getLobbyId());
+        for (IPlayer player : game.getPlayers()) {
+            Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
+                    event.getLobbyId(),
+                    player.getCurrentPosition()
+                          .getId()
+            ));
+            IUser user = player.getUser();
+            AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+            Session session = authenticationService.getSession(user)
+                                                   .orElseThrow(() -> {
+                                                       LOG.error(USER_NOT_LOGGED_IN);
+                                                       return new GameException(USER_NOT_LOGGED_IN);
+                                                   });
+            response.setSession(session);
+            post(response);
+        }
     }
 }
