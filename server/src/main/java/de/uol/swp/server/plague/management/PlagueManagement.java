@@ -3,9 +3,8 @@ package de.uol.swp.server.plague.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.AbstractManagement;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
@@ -15,11 +14,11 @@ import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
+
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.role.CountryDoctor;
 
 import java.util.ArrayList;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
