@@ -9,6 +9,8 @@ import de.uol.swp.server.game.states.EventState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
+
 public class CardManagement extends AbstractManagement implements ICardManagement {
     private static final Logger LOG = LogManager.getLogger(CardManagement.class);
 
@@ -34,7 +36,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
         setGameInEventCardState(game, eventCard);
 
         if (eventCard instanceof StateMobilizationEventCard stateMobilizationEventCard) {
-            stateMobilizationEventCard.setPlayersToMove(game.getPlayers());
+            stateMobilizationEventCard.setPlayersToMove(new ArrayList<>(game.getPlayers()));
         }
 
         eventCard.execute(game.getGameId(), username);

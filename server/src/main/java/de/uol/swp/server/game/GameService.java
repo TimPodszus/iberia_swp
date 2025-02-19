@@ -220,7 +220,10 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         player.getCurrentPosition()
                               .getId()
                 ));
-                AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+                AvailableDestinationsResponse response = new AvailableDestinationsResponse(
+                        request.getLobbyId(),
+                        availableDestinations
+                );
                 Session session = authenticationService.getSession(player.getUser())
                                                        .orElseThrow(() -> {
                                                            LOG.error(USER_NOT_LOGGED_IN);

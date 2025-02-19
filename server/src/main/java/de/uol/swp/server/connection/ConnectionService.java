@@ -69,7 +69,9 @@ public class ConnectionService extends AbstractService {
                 request.getCityId()
         ));
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(request.getLobbyId(),
+                availableDestinations
+        );
         request.getMessageContext()
                .ifPresent(response::setMessageContext);
         request.getSession()
@@ -100,7 +102,10 @@ public class ConnectionService extends AbstractService {
         Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAllDestinations(
                 event.getLobbyId()));
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(
+                event.getLobbyId(),
+                availableDestinations
+        );
         response.setSession(session);
         post(response);
         LOG.debug("[Lobby: {}] Sent AvailableDestinationsResponse for player {}",
@@ -147,7 +152,9 @@ public class ConnectionService extends AbstractService {
      */
     @Subscribe
     public void onStateMobilizationEvent(StateMobilizationEvent event) throws GameException {
-        LOG.debug("[Lobby: {}] Got StateMobilizationEvent", event.getLobbyId());
+        LOG.debug("[Lobby: {}] Got StateMobilizationEvent. Sending available destinations to every user",
+                event.getLobbyId()
+        );
         IGame game = connectionManagement.getGame(event.getLobbyId());
         for (IPlayer player : game.getPlayers()) {
             Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
@@ -156,7 +163,9 @@ public class ConnectionService extends AbstractService {
                           .getId()
             ));
             IUser user = player.getUser();
-            AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+            AvailableDestinationsResponse response = new AvailableDestinationsResponse(game.getGameId(),
+                    availableDestinations
+            );
             Session session = authenticationService.getSession(user)
                                                    .orElseThrow(() -> {
                                                        LOG.error(USER_NOT_LOGGED_IN);

@@ -7,6 +7,7 @@ import de.uol.swp.server.cards.data.EpidemicCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.city.CityRepository;
 import lombok.Getter;
 
@@ -139,7 +140,6 @@ public class CardRepository {
         cards.put(205, new EpidemicCard(205, EPIDEMIC_CARD_TITLE, ""));
         cards.put(206, new EpidemicCard(206, EPIDEMIC_CARD_TITLE, ""));
         cards.put(207, new OnTheMoveDayAndNightEventCard(207));
-        cards.put(208, new OnTheMoveDayAndNightEventCard(208));
     }
 
 
