@@ -1,5 +1,6 @@
 package de.uol.swp.server.city;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.city.request.BuildHospitalRequest;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
@@ -16,16 +17,19 @@ import org.greenrobot.eventbus.Subscribe;
 
 public class CityService extends AbstractService {
     private static final Logger LOG = LogManager.getLogger(CityService.class);
-    private final ICityManagement cityManagement;
-    private final IGameManagement gameManagement;
+    ICityManagement cityManagement;
+    IGameManagement gameManagement;
     protected ILobbyManagement lobbyManagement;
 
     /**
      * Constructor
      *
-     * @param bus            the EvenBus used throughout the server
-     * @param cityManagement the city management instance for city operations
+     * @param bus             the EventBus used throughout the server
+     * @param cityManagement  the city management instance for city operations
+     * @param gameManagement  the game management instance for game operations
+     * @param lobbyManagement the lobby management instance for lobby operations
      */
+    @Inject
     public CityService(
             EventBus bus,
             ICityManagement cityManagement,
@@ -38,6 +42,11 @@ public class CityService extends AbstractService {
         this.lobbyManagement = lobbyManagement;
     }
 
+    /**
+     * Handles the BuildHospitalRequest event.
+     *
+     * @param request the BuildHospitalRequest containing the details for building a hospital
+     */
     @Subscribe
     public void onBuildHospitalRequest(BuildHospitalRequest request) {
         LOG.debug("Got BuildHospitalRequest for lobby {}", request.getLobbyId());
