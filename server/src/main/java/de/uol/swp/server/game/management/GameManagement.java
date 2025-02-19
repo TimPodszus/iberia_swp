@@ -250,9 +250,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             throw new IllegalStateException("Infection card draw pile is empty");
         }
         if (game.getState() instanceof InfectionState) {
-            cityManagement.infectCityWithOwnPlague(game, infectionCardDrawPile.get(0), 1);
+            cityManagement.infectCityWithOwnPlague(game, infectionCardDrawPile.remove(0), 1);
+            return null;
+        } else if (game.getState() instanceof StartState) {
+            return infectionCardDrawPile.remove(0);
+        } else {
+            LOG.error(
+                    "[LobbyID: {}] Failed to draw infection card. Game is not in a state that allows drawing infection cards",
+                    game.getGameId()
+            );
+            return null;
         }
-        return infectionCardDrawPile.remove(0);
     }
 
     /**

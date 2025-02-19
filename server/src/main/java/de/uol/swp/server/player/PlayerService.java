@@ -11,7 +11,6 @@ import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
@@ -74,13 +73,15 @@ public class PlayerService extends AbstractService {
         Session session = request.getSession()
                                  .orElseThrow(() -> new IllegalStateException("Session not present"));
         IGame game = gameManagement.getGame(request.getLobbyId());
-        try {
-            gameManagement.drawInfectionCard(game);
-        } catch (CityManagementException e) {
-            response = new StatusResponse(request.getLobbyId(), true, e.getMessage());
+        if (!game.getCurrentPlayer()
+                 .getUser()
+                 .equals(UserMapper.toUser(session.getUser()))) {
+            response = new StatusResponse(request.getLobbyId(), false, "It is not your turn");
             response.setSession(session);
             post(response);
+            return;
         }
+        gameManagement.drawInfectionCard(game);
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
