@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.server.cards.ICard;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.GameStateChangeListener;
@@ -206,6 +206,14 @@ public interface IGame {
      * @param listener the new GameStateChangeListener
      */
     void setGameStateChangeListener(GameStateChangeListener listener);
+
+    /**
+     * Gets the player by username.
+     *
+     * @param username the username of the player
+     * @return the player with the specified username
+     */
+    IPlayer getPlayer(String username);
 
     /**
      * Sets the infection card draw pile.

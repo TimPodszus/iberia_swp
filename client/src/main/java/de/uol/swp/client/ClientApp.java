@@ -2,8 +2,8 @@ package de.uol.swp.client;
 
 
 import java.net.ConnectException;
+
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.lobby.message.response.LobbyCreatedResponse;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import com.google.inject.Guice;
@@ -19,6 +19,7 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.util.List;
 
 /**
@@ -49,7 +50,7 @@ public class ClientApp extends Application implements ConnectionListener {
 
     private SceneManager sceneManager;
 
-    private UserStore userStore = UserStore.getInstance();
+    private final UserStore userStore = UserStore.getInstance();
 
     // -----------------------------------------------------
     // Java FX Methods
@@ -193,20 +194,6 @@ public class ClientApp extends Application implements ConnectionListener {
     public void onRegistrationSuccessfulMessage(RegistrationSuccessfulResponse message) {
         LOG.info("Registration successful.");
         sceneManager.showLoginScreen();
-    }
-
-    /**
-     * Handles the event when a lobby is created.
-     * <p>
-     * If a LobbyCreatedResponse is detected on the EventBus, this method gets
-     * called. It tells the SceneManager to show the lobby screen.
-     *
-     * @param lobbyCreatedResponse The LobbyCreatedResponse detected on the EventBus
-     * @see de.uol.swp.client.SceneManager
-     */
-    @Subscribe
-    public void onLobbyCreatedResponse(LobbyCreatedResponse lobbyCreatedResponse) {
-        sceneManager.showLobbyScreen();
     }
 
     @Override

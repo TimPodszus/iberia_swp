@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.data;
 
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.cards.EpidemicCard;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.EpidemicCard;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForConfirmationState;
 import de.uol.swp.server.player.data.Player;

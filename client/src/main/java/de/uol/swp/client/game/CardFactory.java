@@ -1,7 +1,7 @@
 package de.uol.swp.client.game;
 
 import de.uol.swp.client.game.objects.cards.*;
-import de.uol.swp.common.cards.*;
+import de.uol.swp.common.cards.data.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

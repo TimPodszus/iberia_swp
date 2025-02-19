@@ -2,11 +2,12 @@ package de.uol.swp.server.city;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.StateType;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.city.management.ICityManagement;
+import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagement;
@@ -16,12 +17,15 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.management.RegionManagement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,12 +45,18 @@ public class CityManagementTest {
 
     @Mock
     private IPlayerManagement playerManagement;
-    private final RegionManagement regionManagement = new RegionManagement();
-    private final GameManagement gameManagement = new GameManagement(playerManagement, cityManagement);
+    @Mock
+    private RegionManagement regionManagement;
+    @Mock
+    private ConnectionManagement connectionManagement;
+    @InjectMocks
+    private final GameManagement gameManagement = new GameManagement(
+            playerManagement,
+            cityManagement,
+            connectionManagement,
+            regionManagement
+    );
     private final InfectionManagement infectionManagement = new InfectionManagement();
-
-
-
 
     /**
      * Sets up the test environment before each test.
@@ -55,6 +65,7 @@ public class CityManagementTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         cityManagement = new CityManagement(regionManagement, gameManagement, infectionManagement);
+        when(regionManagement.reduceWaterTreatments(any(IGame.class), any(ICity.class), anyInt())).thenReturn(1);
     }
 
     /**
@@ -87,17 +98,18 @@ public class CityManagementTest {
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
 
         List<CityName> cityNames = game.getConnectionRepository()
-                     .getCityNamesOfConnectedCitiesByCityName(CityName.BARCELONA);
+                                       .getCityNamesOfConnectedCitiesByCityName(CityName.BARCELONA);
 
-        List<ICity> connectedCitys = game.getCityRepository().getCitiesByNames(cityNames);
+        List<ICity> connectedCitys = game.getCityRepository()
+                                         .getCitiesByNames(cityNames);
 
         for (ICity connectedCity : connectedCitys) {
             assertTrue(connectedCity.getInfections()
-                           .stream()
-                           .filter(infection -> infection.getPlagueName() == this.city.getPlagueName())
-                           .findFirst()
-                           .map(infection -> infection.getSeverity() == 1)
-                           .orElse(false));
+                                    .stream()
+                                    .filter(infection -> infection.getPlagueName() == this.city.getPlagueName())
+                                    .findFirst()
+                                    .map(infection -> infection.getSeverity() == 1)
+                                    .orElse(false));
         }
 
         assertEquals(1, game.getEscalationStage());
@@ -136,7 +148,9 @@ public class CityManagementTest {
     @Test
     void testInfectCityWithOwnPlagueWithInvalidParameters() {
         assertThrows(
-            CityManagementException.class, () -> cityManagement.infectCityWithOwnPlague(game, infectionCard, -1));
+                CityManagementException.class,
+                () -> cityManagement.infectCityWithOwnPlague(game, infectionCard, -1)
+        );
     }
 
     /**
@@ -144,7 +158,10 @@ public class CityManagementTest {
      */
     @Test
     void testInfectCityWithOwnPlagueWithEnoughWaterTreatments() {
-        game.getRegionRepository().getRegionsByCityName(CityName.BARCELONA).get(0).increaseWaterTreatments(3);
+        game.getRegionRepository()
+            .getRegionsByCityName(CityName.BARCELONA)
+            .get(0)
+            .increaseWaterTreatments(3);
 
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 3);
 
@@ -160,10 +177,12 @@ public class CityManagementTest {
      */
     @Test
     void testInfectCityWithOwnPlagueNoCubesLeft() {
-        game.getPlagueRepository().getPlagues()
+        game.getPlagueRepository()
+            .getPlagues()
             .stream()
             .filter(plague -> plague.getName() == city.getPlagueName())
-            .findFirst().ifPresent(plague -> plague.setCubesRemaining(0));
+            .findFirst()
+            .ifPresent(plague -> plague.setCubesRemaining(0));
 
         cityManagement.infectCityWithOwnPlague(game, infectionCard, 1);
 
@@ -181,7 +200,8 @@ public class CityManagementTest {
     void testGetCity() {
         IGame mockGame = mock(IGame.class);
         when(mockGame.getGameId()).thenReturn("lobbyCode");
-        GameStore.getInstance().addGame(mockGame.getGameId(), mockGame);
+        GameStore.getInstance()
+                 .addGame(mockGame.getGameId(), mockGame);
 
         when(mockGame.getCityRepository()).thenReturn(new CityRepository());
 

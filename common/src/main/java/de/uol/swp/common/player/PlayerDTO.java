@@ -1,6 +1,6 @@
 package de.uol.swp.common.player;
 
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.role.IRoleDTO;
 import lombok.AllArgsConstructor;
