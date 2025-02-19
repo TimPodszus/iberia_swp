@@ -119,7 +119,7 @@ public class PlagueService extends AbstractService {
         LOG.debug("Received TreatPlagueRequest for lobbyId: {}, cityId: {}, plagueName: {}",
                 request.getLobbyId(), request.getCityId(), request.getPlagueName());
         IGame game = plagueManagement.getGame(request.getLobbyId());
-        ICity city = game.getCurrentPlayer().getCurrentPosition();
+        ICity city = game.getCityRepository().getCity(request.getCityId());
 
         LOG.debug("Removing one plague cube of type {} from city {}", request.getPlagueName(), city.getName());
         boolean isCountryDoctor = request.isCountryDoctor();

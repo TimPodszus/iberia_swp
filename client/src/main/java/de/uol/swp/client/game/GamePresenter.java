@@ -433,9 +433,10 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param response The response containing the list of available plagues.
      */
+    private int count = 0;
     @Subscribe
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
-        System.out.println("AvailablePlaguesResponse empfangen! Anzahl Seuchen: " + response.getAvailablePlagues().size());
+        LOG.debug("AvailablePlaguesResponse empfangen! Anzahl Seuchen: {}", response.getAvailablePlagues().size());
 
         Platform.runLater(() -> {
             TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
@@ -444,13 +445,9 @@ public class GamePresenter extends AbstractPresenter {
             LOG.debug("Dialog wurde geschlossen.");
 
             result.ifPresent(selectedPlague -> {
-                int count = 0;
-                boolean isCountryDoctor;
-                if (count == 1) {
-                    isCountryDoctor = true;
-                } else {
-                    isCountryDoctor = false;
-                }
+                boolean isCountryDoctor = (count > 0);
+                LOG.info("Count: {}", count);
+
                 LOG.info("Ausgewählte Seuche: {}", selectedPlague);
                 gameService.sendTreatPlagueRequest(
                         lobbyId,
@@ -459,16 +456,18 @@ public class GamePresenter extends AbstractPresenter {
                         isCountryDoctor
                 );
 
-
                 treatInfectionButton.setSelected(false);
                 count++;
+                LOG.info("Count nach Behandlung: {}", count);
 
-                if (response.getRole().equals(RoleEnum.COUNTRY_DOCTOR)) {
-                    gameService.sendAvailableCitiesToTreatRequest(
-                            lobbyId,
-                            gameDTO.getCurrentPlayer().getCurrentPosition().getId()
-                    );
-                }
+//                LOG.info("Role: {}", response.getRole());
+
+//                if (response.getRole().equals(RoleEnum.COUNTRY_DOCTOR) && count == 1) {
+//                    gameService.sendAvailableCitiesToTreatRequest(
+//                            lobbyId,
+//                            gameDTO.getCurrentPlayer().getCurrentPosition().getId()
+//                    );
+//                }
             });
 
         });
@@ -485,10 +484,13 @@ public class GamePresenter extends AbstractPresenter {
         LOG.info("TreatPlagueResponse erhalten: Stadt ID {}, Seuche {}", response.getCityID(), response.getPlagueName());
         Platform.runLater(() -> updateBoard(gameDTO));
 
-        if (RoleEnum.COUNTRY_DOCTOR == gameDTO.getCurrentPlayer().getRole().getName()) {
+        LOG.info("Role: {}", gameDTO.getCurrentPlayer().getRole().getName());
+        if (RoleEnum.COUNTRY_DOCTOR == gameDTO.getCurrentPlayer().getRole().getName() && count == 1) {
             LOG.debug("Spieler ist COUNTRY_DOCTOR - Anfrage für behandelbare Städte senden.");
-            gameService.sendAvailableCitiesToTreatRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
+            gameService.sendAvailableCitiesToTreatRequest(lobbyId, response.getCityID());
         }
+        count = 0;
+        LOG.debug("Count zurückgesetzt auf 0.");
     }
 
     /**
@@ -500,9 +502,11 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onAvailableCitiesToTreatResponse(AvailableCitiesToTreatResponse response) {
         LOG.info("AvailableCitiesToTreatResponse empfangen! Anzahl Städte: {}", response.getAvailableCities().size());
+
         Platform.runLater(() -> {
             SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(response.getAvailableCities());
             Optional<ICityDTO> selectedCity = dialog.showAndWait();
+            LOG.info("die ausgewählte Stadt ist: {}", selectedCity.get().getName());
 
             selectedCity.ifPresent(city -> {
                         LOG.info("Spieler hat Stadt {} ausgewählt, sende AvailablePlaguesRequest", city.getName());
