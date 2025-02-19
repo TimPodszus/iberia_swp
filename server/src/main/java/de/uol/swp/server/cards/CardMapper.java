@@ -1,14 +1,12 @@
 package de.uol.swp.server.cards;
 
-import de.uol.swp.common.cards.data.CityCardDTO;
-import de.uol.swp.common.cards.data.EpidemicCardDTO;
-import de.uol.swp.common.cards.data.ICardDTO;
-import de.uol.swp.common.cards.data.InfectionCardDTO;
+import de.uol.swp.common.cards.data.*;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.EventCard;
 import de.uol.swp.server.infection.InfectionMapper;
 import lombok.AllArgsConstructor;
 
@@ -47,9 +45,21 @@ public class CardMapper {
             return toEpidemicCardDTO(epidemicCard);
         } else if (card instanceof InfectionCard infectionCard) {
             return toInfectionCardDTO(infectionCard);
+        } else if (card instanceof EventCard eventCard) {
+            return toEventCardDTO(eventCard);
         } else {
             return null;
         }
+    }
+
+    /**
+     * Converts an EventCard object into an EventCardDTO object.
+     *
+     * @param eventCard the EventCard to convert
+     * @return an EventCardDTO object containing data from the provided EventCard
+     */
+    private static EventCardDTO toEventCardDTO(EventCard eventCard) {
+        return new EventCardDTO(eventCard.getId(), eventCard.getTitle(), eventCard.getDescription());
     }
 
     /**
