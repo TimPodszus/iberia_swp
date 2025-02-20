@@ -1,9 +1,6 @@
 package de.uol.swp.server.player.data;
 
-import de.uol.swp.server.cards.Card;
-import de.uol.swp.server.cards.ICard;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.usermanagement.IUser;
@@ -61,10 +58,10 @@ public interface IPlayer {
     IUser getUser();
 
     /**
-     * Gets the city card of the player. Returns null if the player does not have the city card.
+     * Plays the card with the specified ID from the players hand.
      *
-     * @param city the city to get the card for
-     * @return the city card or null, if the player does not have the card
+     * @param cardId the ID of the card which should be played
+     * @return the played card or null if the card is not in the player's hand
      */
-    CityCard getCityCard(ICity city);
+    ICard playCard(int cardId);
 }

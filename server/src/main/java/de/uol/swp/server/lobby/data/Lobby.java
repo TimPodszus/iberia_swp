@@ -10,16 +10,11 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class Lobby implements ILobby {
-    private final String lobbyCode;
+    private final String lobbyId;
     private final String name;
     private final List<IUser> users;
     private IUser owner;
     private int difficulty;
-
-
-    public void addUser(IUser user) {
-        users.add(user);
-    }
 
 
     @Override
@@ -28,13 +23,22 @@ public class Lobby implements ILobby {
     }
 
     @Override
-    public void joinUser(IUser user) {
+    public void addUser(IUser user) {
         users.add(user);
     }
 
     @Override
-    public void leaveUser(IUser user) {
-        // TODO document why this method is empty
+    public void removeUser(IUser user) {
+        users.remove(user);
+    }
+
+    @Override
+    public IUser getUser(String username) {
+        return users.stream()
+                    .filter(user -> user.getUsername()
+                                        .equals(username))
+                    .findFirst()
+                    .orElse(null);
     }
 
     @Override
@@ -43,13 +47,13 @@ public class Lobby implements ILobby {
             return true;
         }
         if (o instanceof ILobby lobby) {
-            return lobbyCode.equals(lobby.getLobbyCode());
+            return lobbyId.equals(lobby.getLobbyId());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return lobbyCode.hashCode();
+        return lobbyId.hashCode();
     }
 }

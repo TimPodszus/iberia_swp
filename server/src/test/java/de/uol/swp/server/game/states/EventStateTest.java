@@ -1,6 +1,7 @@
 package de.uol.swp.server.game.states;
 
 import de.uol.swp.common.game.StateType;
+import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +12,12 @@ class EventStateTest {
 
     @BeforeEach
     void setUp() {
-        state = new EventState();
+        state = new EventState(new OnTheMoveDayAndNightEventCard(1));
+    }
+
+    @Test
+    void testGetEventCard() {
+        assertEquals(new OnTheMoveDayAndNightEventCard(1), state.getEventCard());
     }
 
     @Test

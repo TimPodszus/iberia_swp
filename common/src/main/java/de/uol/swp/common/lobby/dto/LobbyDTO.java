@@ -25,7 +25,7 @@ import java.util.Objects;
 public class LobbyDTO implements ILobbyDTO, Serializable {
 
 
-    private final String lobbyCode;
+    private final String lobbyId;
     private final String name;
     private final List<IUserDTO> users;
     private IUserDTO owner;
@@ -37,17 +37,14 @@ public class LobbyDTO implements ILobbyDTO, Serializable {
             return false;
         }
         LobbyDTO lobbyDTO = (LobbyDTO) o;
-        return difficulty == lobbyDTO.difficulty && Objects.equals(
-                lobbyCode,
-                lobbyDTO.lobbyCode
-        ) && Objects.equals(name, lobbyDTO.name) && Objects.equals(users, lobbyDTO.users) && Objects.equals(
-                owner,
-                lobbyDTO.owner
-        );
+        return difficulty == lobbyDTO.difficulty && Objects.equals(lobbyId, lobbyDTO.lobbyId) && Objects.equals(
+                name,
+                lobbyDTO.name
+        ) && Objects.equals(users, lobbyDTO.users) && Objects.equals(owner, lobbyDTO.owner);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(lobbyCode, name, users, owner, difficulty);
+        return Objects.hash(lobbyId, name, users, owner, difficulty);
     }
 }
