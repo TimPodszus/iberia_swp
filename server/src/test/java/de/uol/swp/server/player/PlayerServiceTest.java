@@ -3,16 +3,23 @@ package de.uol.swp.server.player;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.game.message.response.StatusResponse;
+import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.usermanagement.UserMapper;
@@ -48,6 +55,11 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Subscribe
     public void onBoardUpdateEvent(BoardUpdateEvent event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onStatusResponse(StatusResponse event) {
         super.handleEvent(event);
     }
 
@@ -119,5 +131,49 @@ public class PlayerServiceTest extends EventBusBasedTest {
         assertInstanceOf(BoardUpdateEvent.class, super.event);
         verify(playerManagement, never()).setPlayerLocation(eq("validGameId"), eq("testUser"), anyInt());
         verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("validGameId");
+    }
+
+    @Test
+    void onDrawInfectionCardRequest_Success() throws CityManagementException, InterruptedException {
+        DrawInfectionCardRequest request = mock(DrawInfectionCardRequest.class);
+        Session session = mock(Session.class);
+        InfectionCard infectionCard = mock(InfectionCard.class);
+        IUser user = new User("testUser", "testPassword");
+        IPlayer player = new Player(user);
+        when(request.getLobbyId()).thenReturn("validGameId");
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(UserMapper.toDTO(user));
+        game.getPlayers()
+            .add(player);
+        player.setRole(new Sailor());
+        when(gameManagement.getGame("validGameId")).thenReturn(game);
+        when(gameManagement.drawInfectionCard(game)).thenReturn(infectionCard);
+
+        postAndWait(request);
+
+        verify(gameManagement, times(1)).getGame("validGameId");
+        verify(gameManagement, times(1)).drawInfectionCard(game);
+        assertInstanceOf(BoardUpdateEvent.class, super.event);
+    }
+
+    @Test
+    void onDrawInfectionCardRequest_NotCurrentPlayer() throws InterruptedException {
+        DrawInfectionCardRequest request = mock(DrawInfectionCardRequest.class);
+        Session session = mock(Session.class);
+        IUser user = new User("testUser", "testPassword");
+        IUser user1 = new User("testUser1", "testPassword1");
+        IPlayer player = new Player(user);
+        game.getPlayers()
+            .add(player);
+        player.setRole(new Sailor());
+        when(request.getLobbyId()).thenReturn("validGameId");
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(UserMapper.toDTO(user1));
+        when(gameManagement.getGame("validGameId")).thenReturn(game);
+
+        postAndWait(request);
+
+        verify(gameManagement, times(1)).getGame("validGameId");
+        assertInstanceOf(StatusResponse.class, super.event);
     }
 }

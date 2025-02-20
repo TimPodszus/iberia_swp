@@ -88,6 +88,7 @@ public class Game implements IGame {
     /**
      * Draw pile for infection cards.
      */
+    @Setter
     private List<InfectionCard> infectionCardDrawPile;
 
     /**
@@ -169,7 +170,6 @@ public class Game implements IGame {
         createPlayerCards();
         Collections.shuffle(infectionCardDrawPile);
         Collections.shuffle(playerCardDrawPile);
-        gameStartShuffle(difficulty + 3);
     }
 
     /**
@@ -215,7 +215,8 @@ public class Game implements IGame {
         }
     }
 
-    private List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks) {
+    @Override
+    public List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks) {
         List<List<ICard>> subDecks = new ArrayList<>();
         int subDeckSize = deck.size() / numSubDecks;
         int leftover = deck.size() % numSubDecks;

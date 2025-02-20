@@ -3,6 +3,8 @@ package de.uol.swp.server.player.management;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -89,4 +91,14 @@ public interface IPlayerManagement {
      * @param cityId     the id of the city where the player is to be located
      */
     void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException;
+
+    /**
+     * Shuffles the infection cards in the discard pile and adds them to the draw pile.
+     */
+    void shuffleInfectionCardsFromDrawPile(IGame game);
+
+    /**
+     * Draws a player card from the DiscardPile. The specific behavior of this method should be defined.
+     */
+    InfectionCard drawBottomInfectionCard(IGame game) throws IllegalStateException;
 }
