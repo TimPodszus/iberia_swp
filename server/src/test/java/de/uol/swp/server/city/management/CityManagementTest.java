@@ -1,12 +1,10 @@
-package de.uol.swp.server.city;
+package de.uol.swp.server.city.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.city.management.CityManagement;
-import de.uol.swp.server.city.management.CityManagementException;
-import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
