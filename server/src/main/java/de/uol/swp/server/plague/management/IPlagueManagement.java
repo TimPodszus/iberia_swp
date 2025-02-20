@@ -25,4 +25,6 @@ public interface IPlagueManagement {
     List<IInfection> getInfectionsInCity(IGame game);
 
     List<ICity> getCitiesNearBy(IGame game, ICity currentCity);
+
+    void allPlaguesResearched(Game game);
 }

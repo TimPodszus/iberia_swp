@@ -12,11 +12,13 @@ public class AvailablePlaguesResponse extends AbstractGameResponse {
 
     private final List<IInfectionDTO> availablePlagues;
     private final RoleEnum role;
+    private final int cityId;
 
-    public AvailablePlaguesResponse(String lobbyId, boolean success, List<IInfectionDTO> availablePlagues, RoleEnum role) {
+    public AvailablePlaguesResponse(String lobbyId, boolean success, List<IInfectionDTO> availablePlagues, RoleEnum role, int cityId) {
         super(lobbyId, success);
         this.availablePlagues = availablePlagues;
         this.role = role;
+        this.cityId = cityId;
     }
 }
 

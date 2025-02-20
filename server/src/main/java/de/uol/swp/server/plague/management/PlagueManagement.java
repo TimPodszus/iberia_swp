@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
-import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
@@ -14,9 +13,7 @@ import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
-
 import de.uol.swp.server.region.data.IRegion;
-import de.uol.swp.server.role.CountryDoctor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +100,7 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
      *
      * @param game the current game instance
      */
+    @Override
     public void allPlaguesResearched(Game game) {
         boolean allResearched = game.getPlagueRepository()
                 .getPlagues()
@@ -128,8 +126,8 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     @Override
     public void treatPlague(PlagueName plagueToTreat, ICity city, IGame game, boolean isCountryDoctor) throws PlagueManagementException {
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
-            if (plagueToTreat == null || city == null || game == null) {
-                throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");
+            if (plagueToTreat == null || city == null) {
+                throw new IllegalArgumentException("Invalid input: plague or city cannot be null.");
             }
 
             if (!city.hasPlague(plagueToTreat)) {
@@ -155,63 +153,6 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         return city.getInfections();
     }
 
-    /**
-     * Treats a specified plague in the current city of the player, and optionally in a second city if the player
-     * is a Country Doctor. The method removes plague cubes from the cities and validates the action according to
-     * the game's rules.
-     *
-     * @param plagueToTreat             the plague to be treated in the player's current city.
-     * @param secondCity                the second city where a plague should also be treated (used only if the player is a Country Doctor).
-     * @param plagueToTreatInSecondCity the plague to be treated in the second city.
-     * @param game                      the current game instance.
-     * @throws IllegalArgumentException  if any of the input parameters (plague, city, or game) are {@code null}.
-     * @throws PlagueManagementException if:
-     *                                   - The player is a Country Doctor but the second city is not in an adjacent region.
-     *                                   - The specified plague is not present in the current city or the second city.
-     *                                   - There are no plague cubes to remove for the specified plague.
-     */
-    public void treatPlague(PlagueName plagueToTreat, City secondCity, PlagueName plagueToTreatInSecondCity, Game game) throws PlagueManagementException {
-        if (plagueToTreat == null || secondCity == null || plagueToTreatInSecondCity == null || game == null) {
-            throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");
-        }
-
-        IPlayer currentPlayer = game.getCurrentPlayer();
-        ICity currentCity = currentPlayer.getCurrentPosition();
-        boolean isCountryDoctor = currentPlayer.getRole() instanceof CountryDoctor;
-        boolean canTreatInAdjacentRegion;
-
-        if (isCountryDoctor) {
-            List<ICity> citiesNearBy = getCitiesNearBy(game, currentCity);
-
-            canTreatInAdjacentRegion = citiesNearBy.contains(secondCity);
-            if (!canTreatInAdjacentRegion) {
-                throw new PlagueManagementException("Country doctor can only treat plague in current or adjacent cities.");
-            }
-        }
-
-        if (!currentCity.hasPlague(plagueToTreat)) {
-            throw new PlagueManagementException("The selected plague is not present in the current city.");
-        }
-
-        int plagueCubes = currentCity.getPlagueCubes(plagueToTreat);
-        if (plagueCubes == 0) {
-            throw new PlagueManagementException("No plague cubes to remove for the selected plague.");
-        }
-
-        if (isCountryDoctor) {
-            int plagueCubesSecondCity = secondCity.getPlagueCubes(plagueToTreatInSecondCity);
-            if (plagueCubesSecondCity == 0) {
-                throw new PlagueManagementException("No plague cubes to remove for the second selected plague.");
-            }
-        }
-
-        currentCity.removePlagueCubes(plagueToTreat, 1);
-        if (isCountryDoctor) {
-            secondCity.removePlagueCubes(plagueToTreatInSecondCity, 1);
-        }
-
-    }
-
     @Override
     public List<ICity> getCitiesNearBy(IGame game, ICity currentCity) {
         List<IRegion> allRegions = game.getRegionRepository().getRegions();
@@ -228,13 +169,6 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         }
         return citiesNearBy;
     }
-
-    public boolean isCubeCountNegative(IGame game, PlagueName plagueName) {
-        return game.getPlagueRepository()
-                .getPlagueByName(plagueName)
-                .getCubesRemaining() > 0;
-    }
-
 
 }
 

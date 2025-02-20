@@ -93,7 +93,8 @@ public class PlagueService extends AbstractService {
                 request.getLobbyId(),
                 true,
                 infectionsInCity,
-                game.getCurrentPlayer().getRole().getName()
+                game.getCurrentPlayer().getRole().getName(),
+                request.getCityID()
         );
         request.getSession()
                 .ifPresent(availablePlaguesResponse::setSession);
