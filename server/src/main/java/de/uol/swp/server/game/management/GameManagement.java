@@ -116,12 +116,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             };
             for (int i = 0; i < cardsToDraw; i++) {
                 playerManagement.drawPlayerCard(game.getGameId(), player);
-                player.getCards()
-                      .add(game.getPlayerCardDrawPile()
-                               .stream()
-                               .filter(AnotherDayEventCard.class::isInstance)
-                               .findFirst()
-                               .orElseThrow());
             }
             int currentPlayerIndex = game.getCurrentPlayerIndex();
             int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;

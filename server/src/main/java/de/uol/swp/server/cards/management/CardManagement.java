@@ -27,6 +27,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
             }
         } else {
             LOG.warn("[LobbyId: {}] Card with id {} is not playable", game.getGameId(), cardId);
+            //Todo: #202 - Was passiert mit serverseitigen Exceptions?
         }
     }
 
