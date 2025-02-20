@@ -294,6 +294,7 @@ public class GamePresenter extends AbstractPresenter {
             LOG.trace("Player wants to build a hospital in city {}", cityId);
             gameService.sendBuildHospitalRequest(lobbyId, cityId);
             LOG.info("Hospital has been built");
+            buildHospitalButton.setSelected(false);
             return;
         }
 
