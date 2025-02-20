@@ -15,6 +15,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -37,6 +38,9 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     @Inject
     private LobbyService lobbyService;
 
+    @Setter
+    private String lobbyId;
+
     private ILobbyDTO lobbyDTO;
 
     @FXML
@@ -46,7 +50,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     public Button changeLobbyName;
 
     @FXML
-    public Label lobbyId;
+    public Label lobbyIdLabel;
 
     @FXML
     public Label playerCount;
@@ -96,6 +100,11 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage message) {
+        if (!message.getLobbyId()
+                    .equals(lobbyId)) {
+            return;
+        }
+
         lobbyService.getLobby(message.getLobbyId());
     }
 
@@ -106,6 +115,12 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onGetLobbyResponse(GetLobbyResponse response) {
+        if (!response.getLobbyDTO()
+                     .getLobbyId()
+                     .equals(lobbyId)) {
+            return;
+        }
+
         lobbyDTO = response.getLobbyDTO();
         initializeScreen();
     }
@@ -120,6 +135,11 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onLobbyCreatedResponse(LobbyCreatedResponse response) {
+        if (!response.getLobbyDTO()
+                     .getLobbyId()
+                     .equals(lobbyId)) {
+            return;
+        }
         lobbyDTO = response.getLobbyDTO();
         initializeScreen();
     }
@@ -131,6 +151,12 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onLobbyUpdatedEvent(LobbyUpdatedEvent event) {
+        if (!event.getLobbyDTO()
+                  .getLobbyId()
+                  .equals(lobbyId)) {
+            return;
+        }
+
         lobbyDTO = event.getLobbyDTO();
         initializeScreen();
     }
@@ -154,7 +180,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
         lobbyName.textProperty()
                  .addListener((observable, oldValue, newValue) -> changeLobbyName.setDisable(newValue.equals(lobbyDTO.getName())));
 
-        lobbyId.setText(lobbyDTO.getLobbyId());
+        lobbyIdLabel.setText(lobbyDTO.getLobbyId());
         playerCount.setText(lobbyDTO.getUsers()
                                     .size() + MAX_PLAYERS);
 

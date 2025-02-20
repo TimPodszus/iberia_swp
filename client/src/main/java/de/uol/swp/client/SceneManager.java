@@ -6,10 +6,9 @@ import com.google.inject.assistedinject.Assisted;
 import de.uol.swp.client.auth.LoginPresenter;
 import de.uol.swp.client.auth.events.ShowLoginViewEvent;
 import de.uol.swp.client.game.GamePresenter;
-import de.uol.swp.client.lobby.CurrentGamesPresenter;
+import de.uol.swp.client.lobby.data.LobbySceneData;
 import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
 import de.uol.swp.client.lobby.detail.LobbyDetailPresenter;
-import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.main.MainMenuPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
@@ -65,15 +64,11 @@ public class SceneManager {
     private String lastTitle;
     private Scene registrationScene;
     private Scene lobbyOverviewScene;
-    private Scene lobbyScene;
-    private Scene currentGamesScene;
     private Scene mainScene;
     private Scene optionsScene;
     private Scene lastScene = null;
     private Scene currentScene = null;
-
-    private final Map<String, Stage> gameStages = new HashMap<>();
-    private final Map<String, Scene> gameScenes = new HashMap<>();
+    private final Map<String, LobbySceneData> lobbyScenes = new HashMap<>();
 
     private final Provider<FXMLLoader> loaderProvider;
 
@@ -99,8 +94,6 @@ public class SceneManager {
         initMainView();
         initRegistrationView();
         initLobbyOverviewView();
-        initLobbyScreen();
-        initCurrentGamesView();
         initOptionsView();
     }
 
@@ -206,44 +199,6 @@ public class SceneManager {
     }
 
     /**
-     * Initializes the lobby screen.
-     * <p>
-     * If the lobbyScene is null, it gets set to a new scene containing
-     * a pane showing the lobby screen as specified by the LobbyScreenPresenter
-     * FXML file.
-     *
-     * @throws IOException if the FXML file cannot be loaded
-     * @see LobbyDetailPresenter
-     */
-    private void initLobbyScreen() throws IOException {
-        if (lobbyScene == null) {
-            Parent rootPane = initPresenter(LobbyDetailPresenter.FXML);
-            lobbyScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-            lobbyScene.getStylesheets()
-                      .add(STYLE_SHEET);
-        }
-    }
-
-    /**
-     * Initializes the current games view.
-     * <p>
-     * If the currentGamesScene is null, it gets set to a new scene containing
-     * a pane showing the current games view as specified by the CurrentGamesPresenter
-     * FXML file.
-     *
-     * @throws IOException if the FXML file cannot be loaded
-     * @see de.uol.swp.client.lobby.CurrentGamesPresenter
-     */
-    private void initCurrentGamesView() throws IOException {
-        if (currentGamesScene == null) {
-            Parent rootPane = initPresenter(CurrentGamesPresenter.FXML);
-            currentGamesScene = new Scene(rootPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-            currentGamesScene.getStylesheets()
-                             .add(STYLE_SHEET);
-        }
-    }
-
-    /**
      * Initializes the options view
      * <p>
      * If the options scene is null it gets set to a new scene containing the
@@ -343,21 +298,6 @@ public class SceneManager {
         showLobbyOverviewScreen();
     }
 
-
-    /**
-     * Handles ShowCurrentGamesViewEvent detected on the EventBus.
-     * <p>
-     * If a ShowCurrentGamesViewEvent is detected on the EventBus, this method gets
-     * called. It calls a method to switch the current screen to the current games screen.
-     *
-     * @param event The ShowCurrentGamesViewEvent detected on the EventBus
-     * @see de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent
-     */
-    @Subscribe
-    public void onShowCurrentGamesViewEvent(ShowCurrentGamesViewEvent event) {
-        showCurrentGamesScreen();
-    }
-
     /**
      * Handles ShowGameScreenEvent detected on the EventBus.
      * <p>
@@ -428,7 +368,7 @@ public class SceneManager {
      */
     @Subscribe
     public void onUserJoinedLobbyEvent(UserJoinedLobbyMessage userJoinedLobbyMessage) {
-        if (gameStages.containsKey(userJoinedLobbyMessage.getLobbyId())) {
+        if (lobbyScenes.containsKey(userJoinedLobbyMessage.getLobbyId())) {
             return;
         }
         showLobbyScreen(userJoinedLobbyMessage.getLobbyId());
@@ -511,12 +451,11 @@ public class SceneManager {
      * @param lobbyId The ID of the lobby whose stage is to be closed.
      */
     private void closeStage(String lobbyId) {
-        LOG.debug("[LobbyId: {}] Closing stage", lobbyId);
-        Stage stage = gameStages.get(lobbyId);
-        if (stage != null) {
-            stage.close();
-            gameStages.remove(lobbyId);
-            gameScenes.remove(lobbyId);
+        if (lobbyScenes.containsKey(lobbyId)) {
+            LOG.debug("[LobbyId: {}] Closing stage", lobbyId);
+            lobbyScenes.get(lobbyId)
+                       .close();
+            lobbyScenes.remove(lobbyId);
         }
     }
 
@@ -670,37 +609,56 @@ public class SceneManager {
      */
     public void showLobbyScreen(String lobbyId) {
         Platform.runLater(() -> {
+            Scene lobbyScene = initLobbyDetailScene(lobbyId);
+            Scene gameScene = initGameScene(lobbyId);
+
+            if (lobbyScene == null || gameScene == null) {
+                return;
+            }
+
             Stage stage = new Stage();
             stage.setTitle("Lobby");
             stage.setScene(lobbyScene);
             stage.show();
-            gameStages.put(lobbyId, stage);
 
-            try {
-                FXMLLoader gameLoader = loaderProvider.get();
-                URL url = getClass().getResource(GamePresenter.FXML);
-                gameLoader.setLocation(url);
-                Parent gameRoot = gameLoader.load();
-                GamePresenter gamePresenter = gameLoader.getController();
-                gamePresenter.setLobbyId(lobbyId);
-                Scene gameScene = new Scene(gameRoot, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-                gameScene.getStylesheets()
-                         .add(STYLE_SHEET);
-                gameScenes.put(lobbyId, gameScene);
-            } catch (IOException e) {
-                LOG.error("Error while initializing game screen", e);
-            }
+            lobbyScenes.put(lobbyId, new LobbySceneData(lobbyId, stage, lobbyScene, gameScene));
         });
     }
 
-    /**
-     * Shows the current games screen.
-     * <p>
-     * Switches the current Scene to the currentGamesScene and sets the title of
-     * the window to "Aktuelle Spiele".
-     */
-    public void showCurrentGamesScreen() {
-        showScene(currentGamesScene, "Aktuelle Spiele");
+    private Scene initLobbyDetailScene(String lobbyId) {
+        Scene lobbyScene = null;
+        try {
+            FXMLLoader loader = loaderProvider.get();
+            URL url = getClass().getResource(LobbyDetailPresenter.FXML);
+            loader.setLocation(url);
+            Parent root = loader.load();
+            LobbyDetailPresenter lobbyDetailPresenter = loader.getController();
+            lobbyDetailPresenter.setLobbyId(lobbyId);
+            lobbyScene = new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+            lobbyScene.getStylesheets()
+                      .add(STYLE_SHEET);
+        } catch (IOException e) {
+            LOG.error("Error while initializing lobby screen", e);
+        }
+        return lobbyScene;
+    }
+
+    private Scene initGameScene(String lobbyId) {
+        Scene gameScene = null;
+        try {
+            FXMLLoader loader = loaderProvider.get();
+            URL url = getClass().getResource(GamePresenter.FXML);
+            loader.setLocation(url);
+            Parent root = loader.load();
+            GamePresenter gamePresenter = loader.getController();
+            gamePresenter.setLobbyId(lobbyId);
+            gameScene = new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+            gameScene.getStylesheets()
+                     .add(STYLE_SHEET);
+        } catch (IOException e) {
+            LOG.error("Error while initializing game screen", e);
+        }
+        return gameScene;
     }
 
     /**
@@ -723,9 +681,11 @@ public class SceneManager {
      */
     public void showGameScreen(String lobbyId) {
         Platform.runLater(() -> {
-            Stage stage = gameStages.get(lobbyId);
+            Stage stage = lobbyScenes.get(lobbyId)
+                                     .getLobbyStage();
             stage.setTitle("Iberia");
-            stage.setScene(gameScenes.get(lobbyId));
+            stage.setScene(lobbyScenes.get(lobbyId)
+                                      .getGameScene());
             stage.show();
             Rectangle2D visualBounds = Screen.getPrimary()
                                              .getVisualBounds();
