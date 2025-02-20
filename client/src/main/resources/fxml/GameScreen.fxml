@@ -3,6 +3,7 @@
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -16,9 +17,8 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
-<?import javafx.scene.control.ToggleButton?>
 
-<AnchorPane fx:id="gameScreen" onMouseDragged="#onMouseDraggedEvent" onMousePressed="#onMousePressedEvent" onScroll="#onScrollEvent" stylesheets="@../css/gameScreen.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.game.GamePresenter">
+<AnchorPane fx:id="gameScreen" onMouseDragged="#onMouseDraggedEvent" onMousePressed="#onMousePressedEvent" onScroll="#onScrollEvent" stylesheets="@../css/gameScreen.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.game.GamePresenter">
     <StackPane fx:id="mapPane" minWidth="1400.0" prefWidth="1400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1050.0" prefWidth="1300.0" style="-fx-background-color: #c6ecff;" />
         <AnchorPane id="zoomPane" fx:id="zoomPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" StackPane.alignment="TOP_CENTER">
@@ -1887,5 +1887,5 @@
             </HBox>
         </children>
     </VBox>
-    <fx:include fx:id="chatPane" source="GameChatScreen.fxml" />
+    <fx:include fx:id="chatPane" maxWidth="300.0" source="ChatScreen.fxml" AnchorPane.bottomAnchor="200.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="400.0" />
 </AnchorPane>

@@ -108,12 +108,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage message) {
-        if (lobbyDTO != null && message.getLobbyId().equals(lobbyDTO.getLobbyId())) {
-            String chatMessage = "Spieler " + message.getUser().getUsername() + " hat die Lobby betreten.";
-            chatController.appendToChat(chatMessage);
-
             lobbyService.getLobby(message.getLobbyId());
-        }
     }
 
     /**
