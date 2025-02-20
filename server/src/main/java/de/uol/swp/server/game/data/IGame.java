@@ -221,4 +221,17 @@ public interface IGame {
      * @param infectionCardDrawPile the new infection card draw pile
      */
     void setInfectionCardDrawPile(List<InfectionCard> infectionCardDrawPile);
+
+    /**
+     * Shuffles the playerCardDrawPile and adds the Epidemic cards.
+     */
+    void gameStartShuffle(int numSubDecks);
+
+    /**
+     * Splits the deck into subdecks.
+     *
+     * @param deck        the deck to split
+     * @param numSubDecks the number of subdecks
+     */
+    List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks);
 }

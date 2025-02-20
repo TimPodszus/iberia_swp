@@ -26,7 +26,11 @@ class InfectionStateTest {
 
     @Test
     void testInitialStateType() {
-        assertEquals(StateType.INFECTION_STATE, state.getStateType(), "The initial state type should be INFECTION_STATE");
+        assertEquals(
+                StateType.INFECTION_STATE,
+                state.getStateType(),
+                "The initial state type should be INFECTION_STATE"
+        );
     }
 
     @Test
@@ -58,6 +62,26 @@ class InfectionStateTest {
             state.increaseInfectedCities(mockGame);
         }
         verify(mockGame).setCurrentPlayerIndex(0);
+    }
+
+    @Test
+    void testIncreaseInfectedCitiesWithDefaultInfectionCounter() {
+        when(mockGame.getInfectionCounter()).thenReturn(2);
+        for (int i = 0; i < 2; i++) {
+            state.increaseInfectedCities(mockGame);
+        }
+        assertEquals(2, state.getInfectedCities(), "Two cities should have been infected.");
+        verify(mockGame).setState(any(PlayerTurnState.class));
+    }
+
+    @Test
+    void testIncreaseInfectedCitiesWithDifferentInfectionCounters() {
+        when(mockGame.getInfectionCounter()).thenReturn(6);
+        for (int i = 0; i < 4; i++) {
+            state.increaseInfectedCities(mockGame);
+        }
+        assertEquals(4, state.getInfectedCities(), "Four cities should have been infected.");
+        verify(mockGame).setState(any(PlayerTurnState.class));
     }
 }
 

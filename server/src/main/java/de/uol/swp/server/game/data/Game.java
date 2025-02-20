@@ -163,7 +163,6 @@ public class Game implements IGame {
         createPlayerCards(cityRepository.getCities());
         Collections.shuffle(infectionCardDrawPile);
         Collections.shuffle(playerCardDrawPile);
-        gameStartShuffle(difficulty + 3);
     }
 
     public void createInfectionCards(List<ICity> cities) {
@@ -214,7 +213,8 @@ public class Game implements IGame {
         }
     }
 
-    private List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks) {
+    @Override
+    public List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks) {
         List<List<ICard>> subDecks = new ArrayList<>();
         int subDeckSize = deck.size() / numSubDecks;
         int leftover = deck.size() % numSubDecks;

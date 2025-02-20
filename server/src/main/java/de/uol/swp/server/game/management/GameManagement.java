@@ -89,6 +89,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
         initiateInfections(game);
         createPlayers(users, game);
+        game.gameStartShuffle(game.getDifficulty() + 3);
         assignRoles(game);
         setStartingPlayer(game);
         game.setState(new WaitForPositioning());
@@ -101,7 +102,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
      */
-    private void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
+    void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
         for (IUser user : users) {
             Player player = new Player(user);
 
@@ -129,7 +130,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param game The game instance where the starting player will be set
      */
 
-    private void setStartingPlayer(IGame game) {
+    void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
         IPlayer startingPlayer = null;
         for (IPlayer player : game.getPlayers()) {
@@ -323,7 +324,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return true;
     }
 
-    private boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
+    boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
         IGame game = getGame(lobbyCode);
         Set<IRegionDTO> availableRegions = new HashSet<>();
         if (game.getWaterTreatmentsLeft() > 0) {
