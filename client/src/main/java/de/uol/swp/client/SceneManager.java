@@ -67,13 +67,13 @@ public class SceneManager {
     private Scene lobbyOverviewScene;
     private Scene lobbyScene;
     private Scene currentGamesScene;
-    private Scene gameScreenScene;
     private Scene mainScene;
     private Scene optionsScene;
     private Scene lastScene = null;
     private Scene currentScene = null;
 
     private final Map<String, Stage> gameStages = new HashMap<>();
+    private final Map<String, Scene> gameScenes = new HashMap<>();
 
     private final Provider<FXMLLoader> loaderProvider;
 
@@ -102,7 +102,6 @@ public class SceneManager {
         initLobbyScreen();
         initCurrentGamesView();
         initOptionsView();
-        initGameScreenView();
     }
 
     /**
@@ -291,13 +290,12 @@ public class SceneManager {
      * @throws IOException if the FXML file cannot be loaded
      * @see GamePresenter
      */
-    private void initGameScreenView() throws IOException {
-        if (gameScreenScene == null) {
-            Parent rootPane = initPresenter(GamePresenter.FXML);
-            gameScreenScene = new Scene(rootPane, 1280, 720);
-            gameScreenScene.getStylesheets()
-                           .add(STYLE_SHEET);
-        }
+    private Scene createGameScreenScene() throws IOException {
+        Parent rootPane = initPresenter(GamePresenter.FXML);
+        Scene gameScreenScene = new Scene(rootPane, 1280, 720);
+        gameScreenScene.getStylesheets()
+                       .add(STYLE_SHEET);
+        return gameScreenScene;
     }
 
     /**
@@ -368,9 +366,10 @@ public class SceneManager {
      *
      * @param event The ShowGameScreenEvent detected on the EventBus
      * @see de.uol.swp.client.game.event.ShowGameScreenEvent
+     * @throws IOException when the game screen cannot be created
      */
     @Subscribe
-    public void onStartGameEvent(StartGameEvent event) {
+    public void onStartGameEvent(StartGameEvent event) throws IOException {
         showGameScreen(event.getLobbyId());
     }
 
@@ -458,9 +457,10 @@ public class SceneManager {
      *
      * @param response the CreateGameResponse containing the game data
      * @see CreateGameResponse
+     * @throws IOException if the game screen cannot be created
      */
     @Subscribe
-    public void onCreateGameResponseEvent(CreateGameResponse response) {
+    public void onCreateGameResponseEvent(CreateGameResponse response) throws IOException {
         showGameScreen(response.getLobbyId());
     }
 
@@ -516,6 +516,7 @@ public class SceneManager {
         if (stage != null) {
             stage.close();
             gameStages.remove(lobbyId);
+            gameScenes.remove(lobbyId);
         }
     }
 
@@ -674,6 +675,21 @@ public class SceneManager {
             stage.setScene(lobbyScene);
             stage.show();
             gameStages.put(lobbyId, stage);
+
+            try {
+                FXMLLoader gameLoader = loaderProvider.get();
+                URL url = getClass().getResource(GamePresenter.FXML);
+                gameLoader.setLocation(url);
+                Parent gameRoot = gameLoader.load();
+                GamePresenter gamePresenter = gameLoader.getController();
+                gamePresenter.setLobbyId(lobbyId);
+                Scene gameScene = new Scene(gameRoot, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+                gameScene.getStylesheets()
+                         .add(STYLE_SHEET);
+                gameScenes.put(lobbyId, gameScene);
+            } catch (IOException e) {
+                LOG.error("Error while initializing game screen", e);
+            }
         });
     }
 
@@ -709,7 +725,7 @@ public class SceneManager {
         Platform.runLater(() -> {
             Stage stage = gameStages.get(lobbyId);
             stage.setTitle("Iberia");
-            stage.setScene(gameScreenScene);
+            stage.setScene(gameScenes.get(lobbyId));
             stage.show();
             Rectangle2D visualBounds = Screen.getPrimary()
                                              .getVisualBounds();
