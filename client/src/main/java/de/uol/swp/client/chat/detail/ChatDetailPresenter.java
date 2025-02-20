@@ -49,7 +49,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
             return;
         }
 
-        PlayerChatMessage playerChatMessage = new PlayerChatMessage(lobbyDTO.getLobbyCode(), message);
+        PlayerChatMessage playerChatMessage = new PlayerChatMessage(lobbyDTO.getLobbyId(), message);
 
         eventBus.post(playerChatMessage);
         chatInput.clear();

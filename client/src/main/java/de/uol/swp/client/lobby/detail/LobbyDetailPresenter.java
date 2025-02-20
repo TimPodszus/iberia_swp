@@ -14,9 +14,13 @@ import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -104,11 +108,11 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage message) {
-        if (lobbyDTO != null && message.getLobbyCode().equals(lobbyDTO.getLobbyCode())) {
+        if (lobbyDTO != null && message.getLobbyId().equals(lobbyDTO.getLobbyId())) {
             String chatMessage = "Spieler " + message.getUser().getUsername() + " hat die Lobby betreten.";
             chatController.appendToChat(chatMessage);
 
-            lobbyService.getLobby(message.getLobbyCode(), UserStore.getInstance().getUser());
+            lobbyService.getLobby(message.getLobbyId());
         }
     }
 

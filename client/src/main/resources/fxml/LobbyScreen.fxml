@@ -66,9 +66,8 @@
                        <!-- Einbinden des Chats -->
                        <fx:include fx:id="chat" source="ChatScreen.fxml" />
                     </children>
-                </VBox>
+                </AnchorPane>
             </children>
-        </AnchorPane>
-        <Button layoutX="34.0" layoutY="40.0" mnemonicParsing="false" onAction="#onBackButtonPressed" prefHeight="48.0" prefWidth="48.0" styleClass="back-button" text="&lt;-" AnchorPane.leftAnchor="16.0" AnchorPane.topAnchor="20.0" />
-    </children>
+    <Button layoutX="34.0" layoutY="40.0" mnemonicParsing="false" onAction="#onBackButtonPressed" prefHeight="48.0" prefWidth="48.0" styleClass="back-button" text="&lt;-" AnchorPane.leftAnchor="16.0" AnchorPane.topAnchor="20.0" />
 </AnchorPane>
+
