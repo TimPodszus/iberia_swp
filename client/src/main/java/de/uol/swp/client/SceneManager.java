@@ -625,6 +625,16 @@ public class SceneManager {
         });
     }
 
+    /**
+     * Initializes the lobby detail scene.
+     * <p>
+     * This method creates a new scene for the lobby detail view using the provided lobby ID.
+     * It loads the FXML file for the lobby detail view, sets the lobby ID in the presenter,
+     * and applies the default stylesheet.
+     *
+     * @param lobbyId The ID of the lobby for which the detail scene is to be initialized.
+     * @return The initialized lobby detail scene.
+     */
     private Scene initLobbyDetailScene(String lobbyId) {
         Scene lobbyScene = null;
         try {
@@ -643,6 +653,16 @@ public class SceneManager {
         return lobbyScene;
     }
 
+    /**
+     * Initializes the game scene.
+     * <p>
+     * This method creates a new scene for the game view using the provided lobby ID.
+     * It loads the FXML file for the game view, sets the lobby ID in the presenter,
+     * and applies the default stylesheet.
+     *
+     * @param lobbyId The ID of the lobby for which the game scene is to be initialized.
+     * @return The initialized game scene.
+     */
     private Scene initGameScene(String lobbyId) {
         Scene gameScene = null;
         try {
