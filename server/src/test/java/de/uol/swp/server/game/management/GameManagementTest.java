@@ -5,6 +5,7 @@ import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
@@ -28,6 +29,7 @@ import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.region.management.IRegionManagement;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.role.Nurse;
 import de.uol.swp.server.role.RailwayWorker;
@@ -43,6 +45,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.uol.swp.common.city.CityName.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,6 +76,9 @@ class GameManagementTest {
     private CityRepository cityRepository;
 
     @Mock
+    private IRegionManagement regionManagement;
+
+    @Mock
     private IGame game;
 
     @Mock
@@ -97,7 +103,8 @@ class GameManagementTest {
 
         IGame createdGame = gameManagement.createAndInitializeGame(request);
 
-        assertEquals(createdGame,
+        assertEquals(
+                createdGame,
                 GameStore.getInstance()
                          .getGame("lobby123")
         );
@@ -116,7 +123,8 @@ class GameManagementTest {
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
 
-        assertThrows(GameManagementException.class,
+        assertThrows(
+                GameManagementException.class,
                 () -> gameManagement.setPositioning(request),
                 "Expected GameManagementException"
         );
@@ -147,7 +155,8 @@ class GameManagementTest {
         when(game.getPlayers()).thenReturn(List.of(player));
 
         ICity albacete = cityRepository.getCityByName(ALBACETE);
-        CityCard cityCard = new CityCard(albacete.getId(),
+        CityCard cityCard = new CityCard(
+                albacete.getId(),
                 albacete.getName()
                         .toString(),
                 albacete
@@ -195,22 +204,83 @@ class GameManagementTest {
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
 
-        GameManagementException exception = assertThrows(GameManagementException.class, () -> gameManagement.setPositioning(request));
+        GameManagementException exception = assertThrows(
+                GameManagementException.class,
+                () -> gameManagement.setPositioning(request)
+        );
         assertEquals("Player is already positioned", exception.getMessage());
     }
 
     @Test
-    void testDrawInfectionCard() {
-        InfectionCard infectionCard1 = new InfectionCard(1,
+    void testSetPositioning_PlayerManagementException() throws PlayerManagementException {
+        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
+        IUser testUser = new User("test", "test");
+        Session session = UUIDSession.create(testUser);
+        request.setSession(session);
+
+        IPlayer player = new Player(testUser);
+        when(game.getCityRepository()).thenReturn(cityRepository);
+        when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getState()).thenReturn(mock(WaitForPositioning.class));
+        doThrow(PlayerManagementException.class).when(playerManagement)
+                                                .setStartingPosition(
+                                                        anyString(),
+                                                        any(CityName.class),
+                                                        any(Player.class)
+                                                );
+
+        GameManagementException exception = assertThrows(
+                GameManagementException.class,
+                () -> gameManagement.setPositioning(request)
+        );
+
+        assertEquals("Failed to set Position", exception.getMessage());
+    }
+
+    @Test
+    void testDrawInfectionCard_InfectionState() {
+        InfectionCard infectionCard = new InfectionCard(
+                1,
+                "InfectionCard",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard)));
+        when(game.getState()).thenReturn(new InfectionState());
+
+        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
+
+        assertNull(drawnCard, "Expected no card to be returned in InfectionState");
+        verify(cityManagement, times(1)).infectCityWithOwnPlague(game, infectionCard, 1);
+    }
+
+    @Test
+    void testDrawInfectionCard_StartState() {
+        InfectionCard infectionCard1 = new InfectionCard(
+                1,
                 "InfectionCard",
                 cityRepository.getCityByName(CityName.BARCELONA)
         );
         InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard", cityRepository.getCityByName(ALICANTE));
         when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard1, infectionCard2)));
-
+        when(game.getState()).thenReturn(new StartState());
         InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
 
         assertEquals(infectionCard1, drawnCard, "Expected Barcelona infection card to be drawn");
+    }
+
+    @Test
+    void testDrawInfectionCard_InvalidState() {
+        InfectionCard infectionCard = new InfectionCard(
+                1,
+                "InfectionCard",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard)));
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
+
+        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
+
+        assertNull(drawnCard, "Expected no card to be returned in an invalid state");
     }
 
     @Test
@@ -222,9 +292,11 @@ class GameManagementTest {
 
     @Test
     void testGameManagementException() {
-        GameManagementException exception = assertThrows(GameManagementException.class, () -> {
-            throw new GameManagementException("Test Exception");
-        });
+        GameManagementException exception = assertThrows(
+                GameManagementException.class, () -> {
+                    throw new GameManagementException("Test Exception");
+                }
+        );
 
         assertEquals("Test Exception", exception.getMessage());
     }
@@ -239,7 +311,8 @@ class GameManagementTest {
                               .get(0);
         when(game.getCurrentPlayer()).thenReturn(player1);
 
-        assertThrows(GameManagementException.class,
+        assertThrows(
+                GameManagementException.class,
                 () -> gameManagement.movePlayer(user2, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
@@ -255,7 +328,8 @@ class GameManagementTest {
         when(game.getCurrentPlayer()).thenReturn(player);
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
 
-        assertThrows(GameManagementException.class,
+        assertThrows(
+                GameManagementException.class,
                 () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
@@ -278,11 +352,13 @@ class GameManagementTest {
 
         gameManagement.movePlayer(user, "lobbyCode", destinationCity, null);
 
-        assertEquals(destinationCity,
+        assertEquals(
+                destinationCity,
                 player.getCurrentPosition(),
                 "Expected player to have moved to Palma de Mallorca"
         );
-        assertEquals(3,
+        assertEquals(
+                3,
                 ((PlayerTurnState) game.getState()).getActionsRemaining(),
                 "Expected player to have 3 actions left"
         );
@@ -298,7 +374,8 @@ class GameManagementTest {
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
 
-        assertThrows(GameManagementException.class,
+        assertThrows(
+                GameManagementException.class,
                 () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
@@ -308,7 +385,8 @@ class GameManagementTest {
     void testMoveBySea() throws GameManagementException {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
-        ICard destinationCityCard = new CityCard(destinationCity.getId(),
+        ICard destinationCityCard = new CityCard(
+                destinationCity.getId(),
                 destinationCity.getName()
                                .toString(),
                 destinationCity
@@ -326,8 +404,10 @@ class GameManagementTest {
                              .get(0);
         setupPlayerForMove(startCity, player, new Nurse(), new ArrayList<>(List.of(destinationCityCard)));
 
-        assertTrue(player.getCards()
-                         .contains(destinationCityCard), "Expected player to have the destination city card");
+        assertTrue(
+                player.getCards()
+                      .contains(destinationCityCard), "Expected player to have the destination city card"
+        );
 
         gameManagement.movePlayer(user, "lobbyCode", destinationCity, destinationCityCard);
 
@@ -344,7 +424,8 @@ class GameManagementTest {
                              .get(0);
         setupPlayerForMove(startCity, player, new Nurse(), new ArrayList<>());
 
-        assertThrows(GameManagementException.class,
+        assertThrows(
+                GameManagementException.class,
                 () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
@@ -374,7 +455,8 @@ class GameManagementTest {
     void testMoveSailorBySeaWithCityCard() throws GameManagementException {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
-        ICard destinationCityCard = new CityCard(destinationCity.getId(),
+        ICard destinationCityCard = new CityCard(
+                destinationCity.getId(),
                 destinationCity.getName()
                                .toString(),
                 destinationCity
@@ -392,8 +474,10 @@ class GameManagementTest {
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>(List.of(destinationCityCard)));
 
-        assertTrue(player.getCards()
-                         .contains(destinationCityCard), "Expected player to have the destination city card");
+        assertTrue(
+                player.getCards()
+                      .contains(destinationCityCard), "Expected player to have the destination city card"
+        );
 
         gameManagement.movePlayer(user, "lobbyCode", destinationCity, destinationCityCard);
 
@@ -438,9 +522,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(state);
     }
 
-    private void setupPlayerForMove(
-            ICity startCity, IPlayer player, IRole role, List<ICard> cards
-    ) {
+    private void setupPlayerForMove(ICity startCity, IPlayer player, IRole role, List<ICard> cards) {
         player.setCurrentPosition(startCity);
         player.setRole(role);
         player.setCards(cards);
@@ -488,9 +570,7 @@ class GameManagementTest {
         when(player.getUser()).thenReturn(user);
         when(player.getCurrentPosition()).thenReturn(city);
         when(city.getId()).thenReturn(1);
-        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(
-                List.of(connection)
-        );
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(List.of(connection));
 
         gameManagement.buildTrainTrack(user, LOBBY_CODE, connection);
 
@@ -546,19 +626,23 @@ class GameManagementTest {
         when(player.getUser()).thenReturn(user);
         when(player.getCurrentPosition()).thenReturn(city);
         when(city.getId()).thenReturn(1);
-        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(
-                List.of(new Connection(2, List.of(BARCELONA, TERUEL), false))
-        );
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(List.of(new Connection(
+                2,
+                List.of(BARCELONA, TERUEL),
+                false
+        )));
 
         GameManagementException exception = assertThrows(
                 GameManagementException.class,
                 () -> gameManagement.buildTrainTrack(user, LOBBY_CODE, connection)
         );
 
-        assertEquals("Connection between " + connection.getCityNames()
-                                                       .get(0) + " and " + connection.getCityNames()
-                                                                                     .get(1) + " is not buildable"
-                , exception.getMessage());
+        assertEquals(
+                "Connection between " + connection.getCityNames()
+                                                  .get(0) + " and " + connection.getCityNames()
+                                                                                .get(1) + " is not buildable",
+                exception.getMessage()
+        );
     }
 
     @Test
@@ -577,9 +661,7 @@ class GameManagementTest {
         when(player.getCurrentPosition()).thenReturn(city);
         when(city.getId()).thenReturn(1);
         when(city.getName()).thenReturn(ALICANTE);
-        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(
-                List.of(connection)
-        );
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(List.of(connection));
 
         gameManagement.buildTrainTrack(user, LOBBY_CODE, connection);
 
@@ -606,9 +688,7 @@ class GameManagementTest {
         when(player.getCurrentPosition()).thenReturn(city);
         when(city.getId()).thenReturn(1);
         when(city.getName()).thenReturn(ALICANTE);
-        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(
-                List.of(connection)
-        );
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(List.of(connection));
 
         gameManagement.buildTrainTrack(user, LOBBY_CODE, connection);
 
@@ -632,7 +712,8 @@ class GameManagementTest {
 
         gameManagement.lockGameInWaitForConfirmation("testLobby");
 
-        assertEquals(StateType.WAIT_FOR_CONFIRMATION_STATE,
+        assertEquals(
+                StateType.WAIT_FOR_CONFIRMATION_STATE,
                 testGame.getState()
                         .getStateType()
         );
@@ -652,7 +733,8 @@ class GameManagementTest {
 
         gameManagement.unlockGameInWaitForConfirmation("testLobby");
 
-        assertEquals(StateType.PLAYER_TURN_STATE,
+        assertEquals(
+                StateType.PLAYER_TURN_STATE,
                 testGame.getState()
                         .getStateType()
         );
@@ -666,7 +748,8 @@ class GameManagementTest {
      */
     @Test
     void testMovePlayer_OnTheMoveDayAndNightEvent() throws GameManagementException {
-        Map<ICity, List<ICard>> availableDestinations = Map.of(cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
                 List.of()
         );
         when(connectionManagement.getAllDestinations(LOBBY_CODE)).thenReturn(availableDestinations);
@@ -682,9 +765,149 @@ class GameManagementTest {
 
         gameManagement.movePlayer(user, "lobbyCode", destinationCity, null);
 
-        assertEquals(destinationCity,
+        assertEquals(
+                destinationCity,
                 player.getCurrentPosition(),
                 "Expected player to have moved to Palma de Mallorca"
         );
+    }
+
+    @Test
+    void testCreatePlayersWithDifferentUserCounts() throws PlayerManagementException {
+        List<IUser> twoUsers = List.of(new User("user1", "pass1"), new User("user2", "pass2"));
+        List<IUser> threeUsers = List.of(
+                new User("user1", "pass1"),
+                new User("user2", "pass2"),
+                new User("user3", "pass3")
+        );
+        List<IUser> fourUsers = List.of(
+                new User("user1", "pass1"),
+                new User("user2", "pass2"),
+                new User("user3", "pass3"),
+                new User("user4", "pass4")
+        );
+
+        doAnswer(invocation -> {
+            Player player = invocation.getArgument(1);
+            player.getCards()
+                  .add(mock(ICard.class));
+            return null;
+        }).when(playerManagement)
+          .drawPlayerCard(anyString(), any(Player.class));
+        when(game.getPlayers()).thenReturn(new ArrayList<>());
+
+        gameManagement.createPlayers(twoUsers, game);
+        assertEquals(
+                4,
+                game.getPlayers()
+                    .get(0)
+                    .getCards()
+                    .size()
+        );
+
+        game.getPlayers()
+            .clear();
+        gameManagement.createPlayers(threeUsers, game);
+        assertEquals(
+                3,
+                game.getPlayers()
+                    .get(0)
+                    .getCards()
+                    .size()
+        );
+
+        game.getPlayers()
+            .clear();
+        gameManagement.createPlayers(fourUsers, game);
+        assertEquals(
+                2,
+                game.getPlayers()
+                    .get(0)
+                    .getCards()
+                    .size()
+        );
+    }
+
+    @Test
+    void testSetStartingPlayer() {
+        IGame game = new Game(1, "testLobby");
+        ICity city1 = mock(ICity.class);
+        ICity city2 = mock(ICity.class);
+        IPlayer player1 = new Player(new User("user1", "pass1"));
+        IPlayer player2 = new Player(new User("user2", "pass2"));
+        player1.getCards()
+               .add(new CityCard(1, "City1", city1));
+        player2.getCards()
+               .add(new CityCard(2, "City2", city2));
+        game.getPlayers()
+            .add(player1);
+        game.getPlayers()
+            .add(player2);
+
+        gameManagement.setStartingPlayer(game);
+
+        assertEquals(
+                player1,
+                game.getPlayers()
+                    .get(0)
+        );
+    }
+
+    @Test
+    void testIsWaterTreatmentPlaceable() {
+        IUser user = new User("testUser", "testPassword");
+        when(game.getWaterTreatmentsLeft()).thenReturn(1);
+        when(regionManagement.getAvailableRegions(any(), anyString())).thenReturn(Set.of(mock(IRegionDTO.class)));
+
+        boolean result = gameManagement.isWaterTreatmentPlaceable(LOBBY_CODE, user);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void testDiscardInfectionCard() {
+        IGame game = mock(IGame.class);
+        InfectionCard infectionCard = new InfectionCard(1, "InfectionCard", mock(ICity.class));
+        List<InfectionCard> discardPile = new ArrayList<>();
+
+        when(game.getInfectionCardDiscardPile()).thenReturn(discardPile);
+
+        gameManagement.discardInfectionCard(game, infectionCard);
+
+        assertTrue(discardPile.contains(infectionCard), "The infection card should be in the discard pile");
+    }
+
+    @Test
+    void testIncreaseCurrentPlayerActions_CurrentState() {
+        PlayerTurnState playerTurnState = mock(PlayerTurnState.class);
+        when(game.getState()).thenReturn(playerTurnState);
+        when(playerTurnState.getActionsRemaining()).thenReturn(5);
+
+        gameManagement.increaseCurrentPlayerActions(game, 3);
+
+        verify(playerTurnState).setActionsRemaining(8);
+    }
+
+    @Test
+    void testIncreaseCurrentPlayerActions_PreviousState() {
+        PlayerTurnState playerTurnState = mock(PlayerTurnState.class);
+        when(game.getState()).thenReturn(mock(IGameState.class));
+        when(game.getPreviousState()).thenReturn(playerTurnState);
+        when(playerTurnState.getActionsRemaining()).thenReturn(5);
+
+        gameManagement.increaseCurrentPlayerActions(game, 3);
+
+        verify(playerTurnState).setActionsRemaining(8);
+    }
+
+    @Test
+    void testIncreaseCurrentPlayerActions_NoPlayerTurnState() {
+        PlayerTurnState playerTurnState = mock(PlayerTurnState.class);
+        when(game.getState()).thenReturn(mock(IGameState.class));
+        when(game.getPreviousState()).thenReturn(mock(IGameState.class));
+
+        gameManagement.increaseCurrentPlayerActions(game, 3);
+
+        verify(playerTurnState, never()).setActionsRemaining(anyInt());
     }
 }

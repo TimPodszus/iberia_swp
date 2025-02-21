@@ -134,7 +134,13 @@ public class GamePresenter extends AbstractPresenter {
     private Pane playerCardDiscardPile;
 
     @FXML
+    private Pane playerCardDrawPile;
+
+    @FXML
     private Text playerCardDrawPileCounter;
+
+    @FXML
+    private Pane infectionCardDrawPile;
 
     @FXML
     private Pane infectionCardDiscardPile;
@@ -436,6 +442,17 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onPlayerCardPileClickedEvent(MouseEvent event) {
         gameService.drawPlayerCard(lobbyId);
+    }
+
+    /**
+     * Handles the event when the infection card pile is clicked.
+     * This method is triggered by a mouse click event on the infection card pile.
+     *
+     * @param event the mouse event that triggered this handler
+     */
+    @FXML
+    private void onInfectionCardDrawPileClickedEvent(MouseEvent event){
+        gameService.drawInfectionCard(lobbyId);
     }
 
     /**

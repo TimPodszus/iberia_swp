@@ -34,5 +34,20 @@ public class Player implements IPlayer {
         }
         return null;
     }
+
+    /**
+     * Gets the card with the given id.
+     *
+     * @param cardId the id of the card
+     * @return the card with the given id
+     */
+    public ICard getCard(int cardId) {
+        for (ICard card : cards) {
+            if (card.getId() == cardId) {
+                return card;
+            }
+        }
+        return null;
+    }
 }
 

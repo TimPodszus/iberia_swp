@@ -70,9 +70,9 @@ public interface IGameManagement {
     /**
      * Builds a train track between two cities in the game.
      *
-     * @param user        the user representing the player building the train track
-     * @param lobbyId     the id of the lobby in which the game is happening
-     * @param connection  the connection representing the train track to be built
+     * @param user       the user representing the player building the train track
+     * @param lobbyId    the id of the lobby in which the game is happening
+     * @param connection the connection representing the train track to be built
      * @throws GameManagementException if building the train track fails
      */
     void buildTrainTrack(IUser user, String lobbyId, IConnection connection) throws GameManagementException;
@@ -90,5 +90,13 @@ public interface IGameManagement {
      * @param lobbyId the ID of the lobby in which the game is happening
      */
     void unlockGameInWaitForConfirmation(String lobbyId);
+
+    /**
+     * Increases the number of actions the current player has in the game.
+     *
+     * @param game  the game in which the current player's actions are to be increased
+     * @param amount the amount by which to increase the current player's actions
+     */
+    void increaseCurrentPlayerActions(IGame game, int amount);
 }
 

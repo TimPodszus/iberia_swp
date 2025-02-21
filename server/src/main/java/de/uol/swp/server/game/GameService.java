@@ -18,6 +18,7 @@ import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -48,7 +49,7 @@ import java.util.List;
  * It handles requests to create a game, initializing and validating the game setup,
  * and communicates the result back to the client through status responses.
  */
-public class GameService extends AbstractService implements GameStateChangeListener{
+public class GameService extends AbstractService implements GameStateChangeListener {
     private static final Logger LOG = LogManager.getLogger(GameService.class);
     IGameManagement gameManagement;
     protected ILobbyManagement lobbyManagement;
@@ -136,7 +137,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         IGame game = gameManagement.getGame(request.getLobbyId());
         if (game.getState() instanceof BuildExtraTrainTrackState state) {
-            List <IConnection> connections = state.getConnections();
+            List<IConnection> connections = state.getConnections();
             BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(
                     request.getLobbyId(),
                     true,
@@ -175,7 +176,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         ICity destination = cityManagement.getCity(request.getLobbyId(), request.getCityId());
 
-        gameManagement.movePlayer(UserMapper.toUser(user),
+        gameManagement.movePlayer(
+                UserMapper.toUser(user),
                 request.getLobbyId(),
                 destination,
                 playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId())
@@ -208,7 +210,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         IUser user = UserMapper.toUser(session.getUser());
         List<GameActions> actions = gameManagement.getAvailableActions(request.getLobbyId(), user);
-        AvailableActionsResponse response = new AvailableActionsResponse(request.getLobbyId(),
+        AvailableActionsResponse response = new AvailableActionsResponse(
+                request.getLobbyId(),
                 true,
                 "Retrieving all available actions was successful",
                 actions
@@ -226,9 +229,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
      * @param destination the destination city for the player
      * @throws GameException if the user or session is not found
      */
-    private void sendShareRideEvent(
-            MovePlayerRequest request, ICity destination
-    ) throws GameException {
+    private void sendShareRideEvent(MovePlayerRequest request, ICity destination) throws GameException {
         LOG.debug("[LobbyID: {}] Sending pickup event for player {}", request.getLobbyId(), request.getUsername());
         ShareRideEvent event = new ShareRideEvent(request.getLobbyId(), CityMapper.toDTO(destination));
         IUser user = lobbyManagement.getLobby(request.getLobbyId())
@@ -238,7 +239,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                   .equals(request.getUsername()))
                                     .findFirst()
                                     .orElseThrow(() -> {
-                                        LOG.error("[LobbyID: {}] User could not be found in lobby",
+                                        LOG.error(
+                                                "[LobbyID: {}] User could not be found in lobby",
                                                 request.getLobbyId()
                                         );
                                         return new GameException("User not found");
@@ -265,9 +267,25 @@ public class GameService extends AbstractService implements GameStateChangeListe
             sendToAllInLobby(lobby, new EndGameEvent(game.getGameId(), endGameState.isVictory()));
         }
         if (game.getState() instanceof DrawCardState && game.getPlayerCardDrawPile()
-                    .isEmpty()){
-                game.setState(new EndGameState(false));
-                LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
-            }
+                                                            .isEmpty()) {
+            game.setState(new EndGameState(false));
+            LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
+        }
+    }
+
+    /**
+     * Handles the AnotherDayEvent.
+     *
+     * @param event the event containing the lobby ID and the username of the player to increase the actions
+     */
+    @Subscribe
+    public void onAnotherDayEvent(AnotherDayEvent event) {
+        LOG.debug("[Lobby: {}] Got AnotherDayEvent for current player {}", event.getLobbyId(), event.getUsername());
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        gameManagement.increaseCurrentPlayerActions(game, event.getAmountOfActions());
+        game.setState(game.getPreviousState());
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
 }
