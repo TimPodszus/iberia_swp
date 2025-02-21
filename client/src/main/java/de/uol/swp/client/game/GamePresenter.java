@@ -23,10 +23,7 @@ import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
-import de.uol.swp.common.game.GameActions;
-import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.game.StateType;
+import de.uol.swp.common.game.*;
 import de.uol.swp.common.game.dto.DestinationInfo;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
@@ -296,33 +293,52 @@ public class GamePresenter extends AbstractPresenter {
             LOG.trace("Player wants to move to city {}", cityId);
             if (cardDiscardNeeded(cityId)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
-                CardDialog cardDialog = new CardDialog(true, true, availableDestinations.get(cityId).getCardsUsableForMove());
+                CardDialog cardDialog = new CardDialog(
+                        true,
+                        true,
+                        availableDestinations.get(cityId)
+                                             .getCardsUsableForMove()
+                );
                 Optional<ICardDTO> result = cardDialog.showAndWait();
-                result.ifPresentOrElse(card -> {
-                    LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
-                    gameService.movePlayerToCity(lobbyId, cityId, card.getId());
-                    LOG.info("Player has been moved with discarding a card");
-                }, () -> LOG.info("Player has not selected a card to discard. Aborting move."));
+                result.ifPresentOrElse(
+                        card -> {
+                            LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
+                            gameService.movePlayerToCity(lobbyId, cityId, card.getId());
+                            LOG.info("Player has been moved with discarding a card");
+                        }, () -> LOG.info("Player has not selected a card to discard. Aborting move.")
+                );
                 return;
             }
 
-            if (movingByBoat(cityId) && gameDTO.getCurrentPlayer()
-                                               .getRole()
-                                               .getName() == RoleEnum.SAILOR && !this.getPlayersInCity()
-                                                                                     .isEmpty()) {
-                LOG.debug("Player is a sailor and take a player with him to the harbour city {}", cityId);
-                PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
-                Optional<String> result = dialog.showAndWait();
-                result.ifPresentOrElse(username -> {
-                    LOG.debug("Player {} is taken with to the harbour city {}", username, cityId);
-                    gameService.movePlayerToCity(lobbyId, cityId, username);
-                    LOG.info("Player has been moved and has taken another player with him");
-                }, () -> {
-                    gameService.movePlayerToCity(lobbyId, cityId);
-                    LOG.info("Player has not selected a player to take with him. Moving alone.");
-                });
-                return;
+            if (!this.getPlayersInCity()
+                     .isEmpty()) {
+                RoleEnum role = gameDTO.getCurrentPlayer()
+                                       .getRole()
+                                       .getName();
+
+                if ((checkPlayersTransportMode(
+                        cityId,
+                        TransportMode.SHIP
+                ) && role == RoleEnum.SAILOR) || (checkPlayersTransportMode(
+                        cityId,
+                        TransportMode.TRAIN
+                ) && role == RoleEnum.RAILWAY_PERSON)) {
+                    LOG.debug("Player is a {} and takes a player with him to the city {}", role, cityId);
+                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
+                    Optional<String> result = dialog.showAndWait();
+                    result.ifPresentOrElse(
+                            username -> {
+                                LOG.debug("Player {} is taken with to the city {}", username, cityId);
+                                gameService.movePlayerToCity(lobbyId, cityId, username);
+                                LOG.info("Player has been moved and has taken another player with him");
+                            }, () -> {
+                                gameService.movePlayerToCity(lobbyId, cityId);
+                                LOG.info("Player has not selected a player to take with him. Moving alone.");
+                            }
+                    );
+                }
             }
+
             gameService.movePlayerToCity(this.lobbyId, cityId);
             LOG.info("Player has been moved");
         }
@@ -343,21 +359,19 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Checks if the player is moving by boat.
+     * Checks if the player is moving to the specified city using the given transport mode.
+     * This method verifies if the available destinations for the specified city include the given transport mode.
      *
-     * @param cityId the ID of the city to check
-     * @return true if the player is moving by boat, false otherwise
+     * @param cityId        the ID of the city to check
+     * @param transportMode the transport mode to check
+     * @return true if the player is moving by the specified transport mode to the city, false otherwise
      */
-    private boolean movingByBoat(int cityId) {
-        LOG.debug("Checking if player is moving by boat to city {}", cityId);
-        ICityDTO currentCity = gameDTO.getCurrentPlayer()
-                                      .getCurrentPosition();
-        ICityDTO destinationCity = gameDTO.getCities()
-                                          .stream()
-                                          .filter(city -> city.getId() == cityId)
-                                          .findFirst()
-                                          .orElseThrow();
-        return currentCity.isHarbourCity() && destinationCity.isHarbourCity();
+    private boolean checkPlayersTransportMode(int cityId, TransportMode transportMode) {
+        LOG.debug("Checking if player is moving by {} to city {}", transportMode, cityId);
+
+        return this.availableDestinations.get(cityId)
+                                         .getTransportModes()
+                                         .contains(transportMode);
     }
 
     /**
@@ -368,9 +382,11 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
-        int connectionId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+        int connectionId = Integer.parseInt(source.getId()
+                                                  .replaceAll("\\D+", ""));
 
-        if (!source.getStyleClass().contains(CONNECTION_HIGHLIGHTED_CLASS)) {
+        if (!source.getStyleClass()
+                   .contains(CONNECTION_HIGHLIGHTED_CLASS)) {
             return;
         }
 
@@ -382,8 +398,7 @@ public class GamePresenter extends AbstractPresenter {
         }
 
         StateType currentState = gameDTO.getState();
-        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) ||
-                currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
+        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) || currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
 
         if (isValidState) {
             gameService.buildTrainTrack(lobbyId, connectionId);
@@ -401,9 +416,10 @@ public class GamePresenter extends AbstractPresenter {
     private void onRegionClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
         if (gameDTO.getState()
-                   .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
+                   .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
+                                                                 .contains(REGION_HIGHLIGHTED_CLASS)) {
             regionId = Integer.parseInt(source.getId()
-                                                  .replaceAll("\\D+", ""));
+                                              .replaceAll("\\D+", ""));
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
         }
     }
@@ -817,8 +833,10 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
 
         playerCardsHBox.getChildren()
-                       .add(playerCardsHBox.getChildren()
-                                           .size() - 1, cardSlot);
+                       .add(
+                               playerCardsHBox.getChildren()
+                                              .size() - 1, cardSlot
+                       );
     }
 
     /**
@@ -829,7 +847,8 @@ public class GamePresenter extends AbstractPresenter {
     public void removePlayerHandCards() {
         playerCardsHBox.getChildren()
                        .removeIf(node -> node instanceof Pane && node.getStyleClass()
-                                                                     .contains("pile") && !Objects.equals(node.getId(),
+                                                                     .contains("pile") && !Objects.equals(
+                               node.getId(),
                                "roleCard"
                        ));
     }
@@ -938,7 +957,8 @@ public class GamePresenter extends AbstractPresenter {
                    .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
                                                                   .getUsername()
                                                                   .equals(user.getUsername())) {
-            gameService.requestAvailableDestination(this.lobbyId,
+            gameService.requestAvailableDestination(
+                    this.lobbyId,
                     gameDTO.getCurrentPlayer()
                            .getCurrentPosition()
                            .getId()
@@ -950,7 +970,6 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
-     *
      */
     private void updatePlayerHandCards() {
         removePlayerHandCards();
@@ -1076,7 +1095,8 @@ public class GamePresenter extends AbstractPresenter {
         playerButtons.getChildren()
                      .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(player.getUsername(),
+            if (!Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -1101,7 +1121,8 @@ public class GamePresenter extends AbstractPresenter {
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
+                cityId,
                 playersInCity
         )));
     }
@@ -1113,7 +1134,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
+            if (Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -1340,7 +1362,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailableDestinationsResponse(AvailableDestinationsResponse response) {
-        LOG.debug("Received {} available destinations",
+        LOG.debug(
+                "Received {} available destinations",
                 response.getCities()
                         .size()
         );
@@ -1414,7 +1437,8 @@ public class GamePresenter extends AbstractPresenter {
                                                                                               .getName()
                                                                                               .getDisplayName() + " mitgenommen werden?");
             if (result) {
-                gameService.sendShareRideRequest(lobbyId,
+                gameService.sendShareRideRequest(
+                        lobbyId,
                         event.getCity()
                              .getId()
                 );
@@ -1445,7 +1469,7 @@ public class GamePresenter extends AbstractPresenter {
      * This method iterates through the list of regions and removes the highlight style class
      * from each region's corresponding StackPane node on the map.
      */
-    private void resetRegionStyle () {
+    private void resetRegionStyle() {
         List<IRegionDTO> regions = gameDTO.getRegions();
         for (IRegionDTO region : regions) {
             Node stackPane = mapPane.lookup(REGION_ID + region.getId());

@@ -335,10 +335,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IPlayer player = getPlayerForMove(game, user);
 
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
-        boolean citiesConnectedByLand = availableDestinations.containsKey(city) && availableDestinations.get(city)
-                                                                                                        .isEmpty();
-        boolean citiesConnectedBySea = availableDestinations.containsKey(city) && !availableDestinations.get(city)
-                                                                                                        .isEmpty();
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId()) && availableDestinations.get(city.getId())
+                                                                                                                .getCardsUsableForMove()
+                                                                                                                .isEmpty();
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId()) && !availableDestinations.get(city.getId())
+                                                                                                                .getCardsUsableForMove()
+                                                                                                                .isEmpty();
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error("[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",

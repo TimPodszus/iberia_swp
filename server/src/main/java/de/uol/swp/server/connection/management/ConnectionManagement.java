@@ -1,5 +1,6 @@
 package de.uol.swp.server.connection.management;
 
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.TransportMode;
@@ -53,17 +54,25 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         Map<Integer, DestinationInfo> availableDestinations = getByLandConnectedCities(lobbyId, startCity);
 
         if (startCity.isHarbourCity()) {
-            LOG.debug("[Lobby: {}] City {} is a harbour city, continuing to retrieve available harbour cities",
+            LOG.debug(
+                    "[Lobby: {}] City {} is a harbour city, continuing to retrieve available harbour cities",
                     lobbyId,
                     startCity.getName()
             );
             Map<Integer, DestinationInfo> seaConnections = getBySeaConnectedCities(lobbyId, cityId);
             for (Map.Entry<Integer, DestinationInfo> entry : seaConnections.entrySet()) {
-                availableDestinations.putIfAbsent(entry.getKey(), entry.getValue());
+                addDestination(
+                        availableDestinations,
+                        entry.getKey(),
+                        entry.getValue()
+                             .getCardsUsableForMove(),
+                        TransportMode.SHIP
+                );
             }
         }
 
-        LOG.debug("[Lobby: {}] Successfully retrieved {} available destinations for city {}",
+        LOG.debug(
+                "[Lobby: {}] Successfully retrieved {} available destinations for city {}",
                 lobbyId,
                 availableDestinations.size(),
                 startCity.getName()
@@ -115,21 +124,22 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                                      .get(0);
 
                     if (connection.isTrainTrack()) {
-                        availableDestinations = getAdditionalTrainConnectionsForCity(lobbyId,
+                        addDestination(availableDestinations, city.getId(), new ArrayList<>(), TransportMode.TRAIN);
+
+                        availableDestinations = getAdditionalTrainConnectionsForCity(
+                                lobbyId,
                                 startCity,
                                 city,
                                 availableDestinations
                         );
                     }
-                    availableDestinations.putIfAbsent(
-                            city.getId(),
-                            new DestinationInfo(new ArrayList<>(), TransportMode.CARRIAGE)
-                    );
+                    addDestination(availableDestinations, city.getId(), new ArrayList<>(), TransportMode.CARRIAGE);
                 }
             }
         }
 
-        LOG.debug("[Lobby: {}] Successfully retrieved {} available land connections for city {}",
+        LOG.debug(
+                "[Lobby: {}] Successfully retrieved {} available land connections for city {}",
                 lobbyId,
                 availableDestinations.size(),
                 startCity.getName()
@@ -165,9 +175,9 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                         if (city.equals(previousCity)) {
                             continue;
                         }
-                        availableDestinations.putIfAbsent(city.getId(), new DestinationInfo(new ArrayList<>(),
-                                TransportMode.TRAIN));
-                        availableDestinations = getAdditionalTrainConnectionsForCity(lobbyId,
+                        addDestination(availableDestinations, city.getId(), new ArrayList<>(), TransportMode.TRAIN);
+                        availableDestinations = getAdditionalTrainConnectionsForCity(
+                                lobbyId,
                                 currentCity,
                                 city,
                                 availableDestinations
@@ -203,14 +213,17 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         for (ICity city : harbourCities) {
             List<ICard> cards = isSailor ? new ArrayList<>() : getCardsWithSameColor(lobbyId, city);
             if (city.getId() != cityId && (!cards.isEmpty() || isSailor)) {
-                availableConnections.put(
+                addDestination(
+                        availableConnections,
                         city.getId(),
-                        new DestinationInfo(CardMapper.toMixedCardDTOList(cards), TransportMode.SHIP)
+                        CardMapper.toMixedCardDTOList(cards),
+                        TransportMode.SHIP
                 );
             }
         }
 
-        LOG.debug("[Lobby: {}] Successfully retrieved {} available sea connections for the current player",
+        LOG.debug(
+                "[Lobby: {}] Successfully retrieved {} available sea connections for the current player",
                 lobbyId,
                 availableConnections.size()
         );
@@ -244,8 +257,25 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         Map<Integer, DestinationInfo> allDestinations = new HashMap<>();
         for (ICity city : game.getCityRepository()
                               .getCities()) {
-            allDestinations.put(city.getId(), new DestinationInfo(new ArrayList<>(), TransportMode.NONE));
+            allDestinations.put(city.getId(), new DestinationInfo(new ArrayList<>(), new ArrayList<>()));
         }
         return allDestinations;
+    }
+
+    private void addDestination(
+            Map<Integer, DestinationInfo> availableDestinations,
+            Integer cityId,
+            List<ICardDTO> cardsUsableForMove,
+            TransportMode transportMode
+    ) {
+        DestinationInfo existingDestinationInfo = availableDestinations.get(cityId);
+
+        if (existingDestinationInfo == null) {
+            availableDestinations.put(cityId, new DestinationInfo(cardsUsableForMove, new ArrayList<>(List.of(transportMode))));
+        } else {
+            existingDestinationInfo.addTransportMode(transportMode);
+            existingDestinationInfo.setCardsUsableForMove(cardsUsableForMove);
+            availableDestinations.put(cityId, existingDestinationInfo);
+        }
     }
 }
