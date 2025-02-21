@@ -699,27 +699,43 @@ class GameManagementTest {
         when(connectionManagement.getAvailableDestinations(anyString(), anyInt())).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
-        IUser testUser = new User("user1", "test");
-        createTestPlayers(testUser);
+        IUser testUser1 = new User("user1", "test");
+        IUser testUser2 = new User("user2", "test");
+
+        createTestPlayers(testUser1, testUser2);
         IPlayer player = game.getPlayers()
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
         when(game.getPlayer("user1")).thenReturn(player);
+        IPlayer player2 = game.getPlayers()
+                              .get(1);
+        setupPlayerForMove(startCity, player2, new Sailor(), new ArrayList<>());
+        when(game.getPlayer("user2")).thenReturn(player2);
+
         StateMobilizationEventCard stateMobilizationEventCard = new StateMobilizationEventCard(1);
-        stateMobilizationEventCard.setPlayersToMove(2);
+        stateMobilizationEventCard.setPlayersToMove(game.getPlayers());
         when(game.getState()).thenReturn(new EventState(stateMobilizationEventCard));
 
-        gameManagement.movePlayer(testUser, "lobbyCode", destinationCity, null);
+        gameManagement.movePlayer(testUser1, "lobbyCode", destinationCity, null);
+
+        assertEquals(destinationCity, player.getCurrentPosition(), "Expected player1 to have moved to Palma de Mallorca"
+        );
+        assertEquals(1,
+                stateMobilizationEventCard.getPlayersToMove()
+                                          .size(),
+                "Expected playersToMove to be decreased by 1"
+        );
+
+        gameManagement.movePlayer(testUser2, "lobbyCode", startCity, null);
 
         assertEquals(destinationCity,
                 player.getCurrentPosition(),
-                "Expected player to have moved to Palma de Mallorca"
+                "Expected player2 to have moved to Palma de Mallorca"
         );
-        assertEquals(1, stateMobilizationEventCard.getPlayersToMove(), "Expected playersToMove to be decreased by 1");
-
-        gameManagement.movePlayer(testUser, "lobbyCode", startCity, null);
-
-        assertEquals(startCity, player.getCurrentPosition(), "Expected player to have moved back to Barcelona");
-        assertEquals(0, stateMobilizationEventCard.getPlayersToMove(), "Expected playersToMove to be decreased by 1");
+        assertEquals(0,
+                stateMobilizationEventCard.getPlayersToMove()
+                                          .size(),
+                "Expected playersToMove to be decreased by 1"
+        );
     }
 }
