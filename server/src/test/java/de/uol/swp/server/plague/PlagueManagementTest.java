@@ -24,7 +24,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for PlagueManagement.
@@ -76,7 +80,7 @@ class PlagueManagementTest {
     @Test
     void researchPlagueIsNullThrowsPlagueManagementException() {
         PlagueManagementException exception = assertThrows(PlagueManagementException.class,
-                () -> plagueManagement.researchPlague(null, game)
+                () -> plagueManagement.researchPlague(game)
         );
         assertEquals("The plague to be researched was not specified", exception.getMessage());
     }
@@ -90,7 +94,7 @@ class PlagueManagementTest {
         when(plague.isResearched()).thenReturn(true);
 
         PlagueManagementException exception = assertThrows(PlagueManagementException.class,
-                () -> plagueManagement.researchPlague(PlagueName.CHOLERA, game)
+                () -> plagueManagement.researchPlague(game)
         );
 
         assertEquals("The plague is already researched", exception.getMessage());
@@ -105,7 +109,7 @@ class PlagueManagementTest {
         when(currentPlayer.getCards()).thenReturn(new ArrayList<>());
 
         PlagueManagementException exception = assertThrows(PlagueManagementException.class,
-                () -> plagueManagement.researchPlague(PlagueName.CHOLERA, game)
+                () -> plagueManagement.researchPlague(game)
         );
 
         assertEquals("Player has not enough cards to research the plague", exception.getMessage());
@@ -122,7 +126,7 @@ class PlagueManagementTest {
         when(currentCity.getPlagueName()).thenReturn(PlagueName.CHOLERA);
 
         PlagueManagementException exception = assertThrows(PlagueManagementException.class,
-                () -> plagueManagement.researchPlague(PlagueName.CHOLERA, game)
+                () -> plagueManagement.researchPlague(game)
         );
 
         assertEquals("No suitable hospital in the current city to research the plague", exception.getMessage());
@@ -141,7 +145,7 @@ class PlagueManagementTest {
         when(currentCity.isHospitalBuilt()).thenReturn(true);
         when(currentCity.getPlagueName()).thenReturn(PlagueName.CHOLERA);
 
-        plagueManagement.researchPlague(PlagueName.CHOLERA, game);
+        plagueManagement.researchPlague(game);
 
         verify(plague).setResearched(true);
     }

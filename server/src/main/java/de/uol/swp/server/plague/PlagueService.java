@@ -40,7 +40,7 @@ public class PlagueService extends AbstractService {
      * If a ResearchPlagueRequest is detected, it triggers the plague research process.
      *
      * @param researchPlagueRequest The ResearchPlagueRequest found on the EventBus
-     * @see PlagueManagement#researchPlague(PlagueName, IGame)
+     * @see PlagueManagement#researchPlague(IGame)
      * @since 2024-10-04
      */
     @Subscribe
@@ -51,7 +51,7 @@ public class PlagueService extends AbstractService {
         IGame game = plagueManagement.getGame(researchPlagueRequest.getLobbyId());
         PlagueName name = researchPlagueRequest.getName();
 
-        plagueManagement.researchPlague(name, game);
+        plagueManagement.researchPlague(game);
 
         sendToAll(new PlagueResearchedMessage(name));
     }
@@ -61,9 +61,8 @@ public class PlagueService extends AbstractService {
             CanResearchPlagueRequest canResearchPlagueRequest
     ) {
         IGame game = plagueManagement.getGame(canResearchPlagueRequest.getLobbyId());
-        PlagueName name = canResearchPlagueRequest.getName();
-        boolean success = plagueManagement.canResearchPlague(name, game);
-        sendToAll(new CanResearchPlagueMessage(name, success));
+        boolean success = plagueManagement.canResearchPlague(game);
+        sendToAll(new CanResearchPlagueMessage(success));
     }
 
 }

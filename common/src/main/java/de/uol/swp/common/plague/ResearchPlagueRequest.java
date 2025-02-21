@@ -1,6 +1,5 @@
 package de.uol.swp.common.plague;
 
-import de.uol.swp.common.game.PlagueName;
 import lombok.Getter;
 
 /**
@@ -13,8 +12,8 @@ public class ResearchPlagueRequest extends AbstractPlagueMessage {
 
     @Getter
     private final String lobbyId;
-    public ResearchPlagueRequest(PlagueName name, String lobbyId) {
-        super(name);
+
+    public ResearchPlagueRequest(String lobbyId) {
         this.lobbyId = lobbyId;
     }
 

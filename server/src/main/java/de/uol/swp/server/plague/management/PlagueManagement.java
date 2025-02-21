@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
@@ -12,6 +11,7 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -36,35 +36,35 @@ public class PlagueManagement implements IPlagueManagement {
      * if they are in a city with a hospital built, and if the hospital is in a city affected by the plague to be researched.
      * Once the plague is researched, it is marked as such and the appropriate game state transitions occur.
      *
-     * @param plagueToResearch the plague to be researched. Must not be null.
-     * @param game             the current game instance where the plague research is being performed.
+     * @param game the current game instance where the plague research is being performed.
      * @throws PlagueManagementException if the plague to be researched is not specified, if the player does not have enough cards,
      *                                   if the plague has already been researched, or if the city does not have a suitable hospital.
      */
     @Override
-    public void researchPlague(PlagueName plagueToResearch, IGame game) throws PlagueManagementException {
+    public void researchPlague(IGame game) throws PlagueManagementException {
+        PlagueName plagueToResearch = getPlagueToResearch(game);
         if (plagueToResearch == null) {
             throw new PlagueManagementException("The plague to be researched was not specified");
         }
 
         IPlague plague = game.getPlagueRepository()
-                             .getPlagues()
-                             .stream()
-                             .filter(p -> p.getName()
-                                           .equals(plagueToResearch))
-                             .findFirst()
-                             .orElseThrow(() -> new PlagueManagementException("Plague not found"));
+                .getPlagues()
+                .stream()
+                .filter(p -> p.getName()
+                        .equals(plagueToResearch))
+                .findFirst()
+                .orElseThrow(() -> new PlagueManagementException("Plague not found"));
 
         if (plague.isResearched()) {
             throw new PlagueManagementException("The plague is already researched");
         }
         Map<PlagueName, List<CityCard>> cardsByPlague = game.getCurrentPlayer()
-                                                            .getCards()
-                                                            .stream()
-                                                            .filter(CityCard.class::isInstance)
-                                                            .map(CityCard.class::cast)
-                                                            .collect(Collectors.groupingBy(cityCard -> cityCard.getCity()
-                                                                                                               .getPlagueName()));
+                .getCards()
+                .stream()
+                .filter(CityCard.class::isInstance)
+                .map(CityCard.class::cast)
+                .collect(Collectors.groupingBy(cityCard -> cityCard.getCity()
+                        .getPlagueName()));
 
         List<CityCard> plagueCards = cardsByPlague.get(plagueToResearch);
 
@@ -73,10 +73,10 @@ public class PlagueManagement implements IPlagueManagement {
         }
 
         ICity currentCity = game.getCurrentPlayer()
-                                .getCurrentPosition();
+                .getCurrentPosition();
 
         if (!currentCity.isHospitalBuilt() || !currentCity.getPlagueName()
-                                                          .equals(plagueToResearch)) {
+                .equals(plagueToResearch)) {
             throw new PlagueManagementException("No suitable hospital in the current city to research the plague");
         }
 
@@ -88,24 +88,7 @@ public class PlagueManagement implements IPlagueManagement {
         allPlaguesResearched(game);
     }
 
-    /**
-     * Checks if all plagues have been researched in the current game.
-     * If all plagues have been researched, the game state is transitioned to the end game state.
-     *
-     * @param game the current game instance
-     */
-    public void allPlaguesResearched(IGame game) {
-        boolean allResearched = game.getPlagueRepository()
-                                    .getPlagues()
-                                    .stream()
-                                    .allMatch(IPlague::isResearched);
-        if (allResearched) {
-            game.setState(new EndGameState(true));
-        }
-    }
-
-    @Override
-    public boolean canResearchPlague(PlagueName plagueName, IGame game) {
+    private PlagueName getPlagueToResearch(IGame game) {
         Map<PlagueName, List<CityCard>> cardsByPlague = game.getCurrentPlayer()
                 .getCards()
                 .stream()
@@ -114,20 +97,36 @@ public class PlagueManagement implements IPlagueManagement {
                 .collect(Collectors.groupingBy(cityCard -> cityCard.getCity()
                         .getPlagueName()));
 
-        List<CityCard> plagueCards = cardsByPlague.get(plagueName);
-
-        if (plagueCards == null || plagueCards.size() < 5) {
-            return false;
-        }
-
-        ICity currentCity = game.getCurrentPlayer().getCurrentPosition();
-        if (!currentCity.isHospitalBuilt() || !currentCity.getPlagueName().equals(plagueName)) {
-            return false;
-        }
-
-        return true;
+        Optional<PlagueName> plagueToResearch = cardsByPlague.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().size() >= 5)
+                .map(Map.Entry::getKey)
+                .findFirst();
+        return plagueToResearch.orElse(null);
     }
 
+    /**
+     * Checks if all plagues have been researched in the current game.
+     * If all plagues have been researched, the game state is transitioned to the end game state.
+     *
+     * @param game the current game instance
+     */
+    public void allPlaguesResearched(IGame game) {
+        boolean allResearched = game.getPlagueRepository()
+                .getPlagues()
+                .stream()
+                .allMatch(IPlague::isResearched);
+        if (allResearched) {
+            game.setState(new EndGameState(true));
+        }
+    }
+
+    @Override
+    public boolean canResearchPlague(IGame game) {
+        PlagueName selectedPlague = getPlagueToResearch(game);
+        ICity currentCity = game.getCurrentPlayer().getCurrentPosition();
+        return currentCity.isHospitalBuilt() && currentCity.getPlagueName().equals(selectedPlague);
+    }
 
 }
 

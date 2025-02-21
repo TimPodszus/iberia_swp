@@ -4,16 +4,16 @@ import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
-import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
+import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.plague.CanResearchPlagueRequest;
+import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.common.player.request.DrawInfectionCardRequest;
-import de.uol.swp.common.player.request.MovePlayerRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
+import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
@@ -192,7 +192,11 @@ public class GameService {
     }
 
 
-    public void sendResearchPlagueRequest(PlagueName currentPlague, String lobbyId) {
-        eventBus.post(new CanResearchPlagueRequest(currentPlague, lobbyId));
+    public void sendCanResearchPlagueRequest(String lobbyId) {
+        eventBus.post(new CanResearchPlagueRequest(lobbyId));
+    }
+
+    public void sendResearchPlagueRequest(String lobbyId) {
+        eventBus.post(new ResearchPlagueRequest(lobbyId));
     }
 }

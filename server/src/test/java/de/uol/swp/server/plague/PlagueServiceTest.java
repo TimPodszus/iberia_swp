@@ -1,6 +1,5 @@
 package de.uol.swp.server.plague;
 
-import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.server.game.data.Game;
@@ -11,7 +10,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class PlagueServiceTest {
 
@@ -30,23 +35,23 @@ class PlagueServiceTest {
 
     @Test
     void testOnResearchPlagueRequest_Success() throws PlagueManagementException {
-        ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA, game.getGameId());
-        doNothing().when(plagueManagement).researchPlague(PlagueName.CHOLERA, game);
+        ResearchPlagueRequest request = new ResearchPlagueRequest(game.getGameId());
+        doNothing().when(plagueManagement).researchPlague(game);
 
         plagueService.onResearchPlagueRequest(request);
 
-        verify(plagueManagement, times(1)).researchPlague(PlagueName.CHOLERA, game);
+        verify(plagueManagement, times(1)).researchPlague(game);
         verify(eventBus, times(1)).post(any(PlagueResearchedMessage.class));
     }
 
     @Test
     void testOnResearchPlagueRequest_Exception() throws PlagueManagementException {
-        ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA, game.getGameId());
-        doThrow(new PlagueManagementException("Error")).when(plagueManagement).researchPlague(PlagueName.CHOLERA, game);
+        ResearchPlagueRequest request = new ResearchPlagueRequest(game.getGameId());
+        doThrow(new PlagueManagementException("Error")).when(plagueManagement).researchPlague(game);
 
         assertThrows(PlagueManagementException.class, () -> plagueService.onResearchPlagueRequest(request));
 
-        verify(plagueManagement, times(1)).researchPlague(PlagueName.CHOLERA, game);
+        verify(plagueManagement, times(1)).researchPlague(game);
         verify(eventBus, never()).post(any(PlagueResearchedMessage.class));
     }
 }
