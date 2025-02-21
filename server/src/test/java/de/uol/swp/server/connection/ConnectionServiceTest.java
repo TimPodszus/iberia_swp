@@ -193,7 +193,8 @@ public class ConnectionServiceTest extends EventBusBasedTest {
         postAndWait(stateMobilizationEvent);
 
         assertInstanceOf(AvailableDestinationsResponse.class, event, "Expected an AvailableDestinationsResponse");
-        verify(connectionManagement, times(2)).getAvailableDestinations("1234", 1);
+        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser1");
+        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser2");
     }
 
     /**
