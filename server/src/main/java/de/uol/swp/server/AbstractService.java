@@ -86,5 +86,6 @@ public class AbstractService {
         List<Session> sessions = authenticationService.getSessions(new HashSet<>(lobby.getUsers()));
         message.setReceiver(sessions);
         post(message);
+
     }
 }

@@ -18,10 +18,10 @@ public class ChatManagement {
         this.eventBus.register(this);
     }
 
-    @Subscribe
-    public void handleChatRequest(PlayerChatMessage playerChatMessage) throws LobbyManagementException {
-        chatService.onChatRequest(playerChatMessage);
-    }
+//    @Subscribe
+//    public void handleChatRequest(PlayerChatMessage playerChatMessage) throws LobbyManagementException {
+//        chatService.onChatRequest(playerChatMessage);
+//    }
 
     public void shutdown() {
         eventBus.unregister(this);

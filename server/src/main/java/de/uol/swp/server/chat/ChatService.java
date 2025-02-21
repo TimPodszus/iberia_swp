@@ -23,10 +23,10 @@ public class ChatService extends AbstractService {
 
     @Subscribe
     public void onChatRequest(PlayerChatMessage playerChatMessage) throws LobbyManagementException {
-        ILobby lobby = lobbyManagement.getLobby(playerChatMessage.getLobbyCode());
+        ILobby lobby = lobbyManagement.getLobby(playerChatMessage.getLobbyId());
 
-        if (playerChatMessage.getLobbyCode().isEmpty()) {
-            throw new LobbyManagementException("Lobby not found for code: " + playerChatMessage.getLobbyCode());
+        if (playerChatMessage.getLobbyId().isEmpty()) {
+            throw new LobbyManagementException("Lobby not found for code: " + playerChatMessage.getLobbyId());
         }
 
         chat.addMessage(playerChatMessage);

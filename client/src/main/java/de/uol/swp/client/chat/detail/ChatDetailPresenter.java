@@ -3,11 +3,10 @@ package de.uol.swp.client.chat.detail;
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
+import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.chat.AbstractChatMessage;
 import de.uol.swp.common.chat.PlayerChatMessage;
-import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -38,7 +37,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
     private LobbyService lobbyService;
 
     @Setter
-    private ILobbyDTO lobbyDTO;
+    private String lobbyId;
 
     private boolean isChatVisible = false;
 
@@ -49,7 +48,8 @@ public class ChatDetailPresenter extends AbstractPresenter {
             return;
         }
 
-        PlayerChatMessage playerChatMessage = new PlayerChatMessage(lobbyDTO.getLobbyId(), message);
+        PlayerChatMessage playerChatMessage = new PlayerChatMessage(lobbyId, message, UserStore.getInstance().getUser().getUsername());
+
 
         eventBus.post(playerChatMessage);
         chatInput.clear();
@@ -57,13 +57,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
 
     @Subscribe
     public void onChatMessageReceived(AbstractChatMessage chatMessage) {
-        Platform.runLater(() -> {
-            if (chatMessage.getSession().isPresent()) {
-                chatArea.appendText(chatMessage.getSession().get().getUser() + ": " + chatMessage.getMessage() + "\n");
-            } else {
-                chatArea.appendText("[Unbekannt]: " + chatMessage.getMessage() + "\n");
-            }
-        });
+        Platform.runLater(() -> chatArea.appendText(chatMessage.getSender() + ": " + chatMessage.getMessage() + "\n"));
     }
 
     public void appendToChat(String message) {
