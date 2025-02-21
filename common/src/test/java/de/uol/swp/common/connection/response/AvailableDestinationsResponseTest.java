@@ -38,7 +38,10 @@ public class AvailableDestinationsResponseTest {
                 CityName.PALMA_DE_MALLORCA.getDisplayName(),
                 city
         )));
-        Map<Integer, DestinationInfo> destinations = Map.of(1, new DestinationInfo(cards, TransportMode.CARRIAGE));
+        Map<Integer, DestinationInfo> destinations = Map.of(1, new DestinationInfo(
+                cards,
+                new ArrayList<>(List.of(TransportMode.CARRIAGE)))
+        );
         AvailableDestinationsResponse availableDestinationsResponse = new AvailableDestinationsResponse(destinations);
 
         assertEquals(destinations, availableDestinationsResponse.getCities());

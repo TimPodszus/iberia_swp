@@ -27,6 +27,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +79,7 @@ public class ConnectionServiceTest extends EventBusBasedTest {
     void testOnAvailableDestinationsRequest() throws InterruptedException {
         AvailableDestinationsRequest request = new AvailableDestinationsRequest("", 1);
         when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(1,
-                new DestinationInfo(List.of(), TransportMode.NONE)
+                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
         ));
 
         postAndWait(request);
@@ -104,7 +105,10 @@ public class ConnectionServiceTest extends EventBusBasedTest {
         Session session = UUIDSession.create(user);
         when(userManagement.getUser("testuser")).thenReturn(user);
         when(authenticationService.getSession(user)).thenReturn(java.util.Optional.of(session));
-        when(connectionManagement.getAllDestinations("")).thenReturn(Map.of(1, new DestinationInfo(List.of(), TransportMode.NONE)));
+        when(connectionManagement.getAllDestinations("")).thenReturn(Map.of(1, new DestinationInfo(
+                List.of(),
+                new ArrayList<>(List.of(TransportMode.NONE))
+        )));
         MovePlayerAnywhereEvent movePlayerAnywhereEvent = new MovePlayerAnywhereEvent("", "testuser");
 
         postAndWait(movePlayerAnywhereEvent);
