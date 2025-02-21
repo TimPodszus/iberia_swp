@@ -10,6 +10,7 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
@@ -24,7 +25,6 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.region.management.RegionManagement;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -49,9 +49,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private final IConnectionManagement connectionManagement;
 
     @Inject
-    public GameManagement(IPlayerManagement playerManagement, ICityManagement cityManagement,
-                          IConnectionManagement connectionManagement, IRegionManagement regionManagement
-                          ) {
+    public GameManagement(
+            IPlayerManagement playerManagement,
+            ICityManagement cityManagement,
+            IConnectionManagement connectionManagement,
+            IRegionManagement regionManagement
+    ) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;
         this.connectionManagement = connectionManagement;
@@ -87,6 +90,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
         initiateInfections(game);
         createPlayers(users, game);
+        game.gameStartShuffle(game.getDifficulty() + 3);
         assignRoles(game);
         setStartingPlayer(game);
         game.setState(new WaitForPositioning());
@@ -99,7 +103,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
      */
-    private void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
+    void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
         for (IUser user : users) {
             Player player = new Player(user);
 
@@ -127,7 +131,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param game The game instance where the starting player will be set
      */
 
-    private void setStartingPlayer(IGame game) {
+    void setStartingPlayer(IGame game) {
         int foundingDate = Integer.MAX_VALUE;
         IPlayer startingPlayer = null;
         for (IPlayer player : game.getPlayers()) {
@@ -212,7 +216,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             }
             try {
                 assert requestPlayer != null;
-                if(requestPlayer.getCurrentPosition() != null) {
+                if (requestPlayer.getCurrentPosition() != null) {
                     throw new GameManagementException("Player is already positioned");
                 }
                 playerManagement.setStartingPosition(
@@ -247,10 +251,19 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (infectionCardDrawPile.isEmpty()) {
             throw new IllegalStateException("Infection card draw pile is empty");
         }
-
-        return infectionCardDrawPile.remove(0);
+        if (game.getState() instanceof InfectionState) {
+            cityManagement.infectCityWithOwnPlague(game, infectionCardDrawPile.remove(0), 1);
+            return null;
+        } else if (game.getState() instanceof StartState) {
+            return infectionCardDrawPile.remove(0);
+        } else {
+            LOG.error(
+                    "[LobbyID: {}] Failed to draw infection card. Game is not in a state that allows drawing infection cards",
+                    game.getGameId()
+            );
+            return null;
+        }
     }
-
 
     /**
      * Discards an infection card by adding it to the infection card discard pile of the specified game.
@@ -312,10 +325,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return true;
     }
 
-    private boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
+    boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
         IGame game = getGame(lobbyCode);
         Set<IRegionDTO> availableRegions = new HashSet<>();
-        if(game.getWaterTreatmentsLeft() > 0) {
+        if (game.getWaterTreatmentsLeft() > 0) {
             availableRegions = regionManagement.getAvailableRegions(UserMapper.toDTO(user), lobbyCode);
         }
         return !availableRegions.isEmpty();
@@ -337,7 +350,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                                                                         .isEmpty();
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
-            LOG.error("[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
+            LOG.error(
+                    "[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
                     lobbyId,
                     player.getUser()
                           .getUsername(),
@@ -422,7 +436,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param city   the destination city
      */
     private void movePlayerByLand(IGame game, IPlayer player, ICity city) {
-        LOG.debug("[LobbyID: {}] Moving {} to city {}",
+        LOG.debug(
+                "[LobbyID: {}] Moving {} to city {}",
                 game.getGameId(),
                 player.getUser()
                       .getUsername(),
@@ -454,7 +469,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             playerManagement.discardCard(game.getGameId(), player, card);
         }
 
-        LOG.debug("[LobbyID: {}] {} sails to {}", game.getGameId(), player.getUser()
+        LOG.debug(
+                "[LobbyID: {}] {} sails to {}",
+                game.getGameId(),
+                player.getUser()
                       .getUsername(),
                 city.getName()
                     .getDisplayName()
@@ -545,8 +563,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Otherwise, it fetches the buildable train tracks based on the player's current position.
      *
      * @param lobbyId The ID of the lobby
-     * @param game The game instance
-     * @param player The current player
+     * @param game    The game instance
+     * @param player  The current player
      * @return A list of buildable train tracks
      */
     private List<IConnection> getBuildableTrainTracks(String lobbyId, IGame game, IPlayer player) {
@@ -574,4 +592,25 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         game.setState(game.getPreviousState());
     }
 
+    /**
+     * Increases the number of actions remaining for the current player in the game.
+     * <p>
+     * This method checks if the current state or the previous state of the game is an instance of
+     * {@link PlayerTurnState}. If so, it increases the actions remaining for the player by the specified amount.
+     *
+     * @param game   the game instance where the player's actions are to be increased
+     * @param amount the amount by which to increase the actions remaining
+     */
+    public void increaseCurrentPlayerActions(IGame game, int amount) {
+        PlayerTurnState playerTurnState = null;
+        if (game.getState() instanceof PlayerTurnState state) {
+            playerTurnState = state;
+        } else if (game.getPreviousState() instanceof PlayerTurnState state) {
+            playerTurnState = state;
+        }
+        if (playerTurnState != null) {
+            LOG.debug("Current player´s actions increased by {}", amount);
+            playerTurnState.setActionsRemaining(playerTurnState.getActionsRemaining() + amount);
+        }
+    }
 }

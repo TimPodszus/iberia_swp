@@ -121,6 +121,11 @@ public interface IGameDTO {
      */
     int getCurrentPlayerIndex();
 
+    /**
+     * Gets the current state of the game.
+     *
+     * @return the state of the game
+     */
     StateType getState();
 
     /**

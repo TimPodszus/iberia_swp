@@ -1,11 +1,12 @@
 package de.uol.swp.server.game.data;
 
+import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.EventCard;
 import de.uol.swp.server.city.CityRepository;
-import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.states.IGameState;
@@ -56,6 +57,11 @@ public class Game implements IGame {
     private PlagueRepository plagueRepository;
 
     /**
+     * Repository for card-related data.
+     */
+    private CardRepository cardRepository;
+
+    /**
      * Counter for the number of infections.
      */
     @Setter
@@ -82,6 +88,7 @@ public class Game implements IGame {
     /**
      * Draw pile for infection cards.
      */
+    @Setter
     private List<InfectionCard> infectionCardDrawPile;
 
     /**
@@ -142,6 +149,7 @@ public class Game implements IGame {
         this.regionRepository = new RegionRepository(this.cityRepository);
         this.connectionRepository = new ConnectionRepository();
         this.plagueRepository = new PlagueRepository();
+        this.cardRepository = new CardRepository(cityRepository);
         this.infectionCounter = 1;
         this.escalationStage = 0;
         this.waterTreatmentsLeft = 14;
@@ -158,39 +166,33 @@ public class Game implements IGame {
     }
 
     public void initializeGame(int difficulty) {
-        createInfectionCards(cityRepository.getCities());
-        createPlayerCards(cityRepository.getCities());
+        createInfectionCards();
+        createPlayerCards();
         Collections.shuffle(infectionCardDrawPile);
         Collections.shuffle(playerCardDrawPile);
-        gameStartShuffle(difficulty + 3);
     }
 
-    public void createInfectionCards(List<ICity> cities) {
-        int i = 0;
-        for (ICity city : cities) {
-            InfectionCard infectionCard = new InfectionCard(
-                    i,
-                    city.getName()
-                        .toString(),
-                    city
-            );
-            infectionCardDrawPile.add(infectionCard);
-            i++;
-        }
+    /**
+     * Creates the infection cards for the game.
+     */
+    private void createInfectionCards() {
+        cardRepository.getCards()
+                      .values()
+                      .stream()
+                      .filter(InfectionCard.class::isInstance)
+                      .map(InfectionCard.class::cast)
+                      .forEach(infectionCardDrawPile::add);
     }
 
-    public void createPlayerCards(List<ICity> cities) {
-        int i = 1;
-        for (ICity city : cities) {
-            CityCard citycard = new CityCard(
-                    i,
-                    city.getName()
-                        .toString(),
-                    city
-            );
-            playerCardDrawPile.add(citycard);
-            i++;
-        }
+    /**
+     * Creates the player cards for the game.
+     */
+    private void createPlayerCards() {
+        cardRepository.getCards()
+                      .values()
+                      .stream()
+                      .filter(card -> card instanceof CityCard || card instanceof EventCard)
+                      .forEach(playerCardDrawPile::add);
     }
 
     public EpidemicCard createEpidemicCard(int id) {
@@ -213,7 +215,8 @@ public class Game implements IGame {
         }
     }
 
-    private List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks) {
+    @Override
+    public List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks) {
         List<List<ICard>> subDecks = new ArrayList<>();
         int subDeckSize = deck.size() / numSubDecks;
         int leftover = deck.size() % numSubDecks;

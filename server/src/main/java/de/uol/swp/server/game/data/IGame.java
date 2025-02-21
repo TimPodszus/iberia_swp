@@ -144,6 +144,11 @@ public interface IGame {
      */
     List<IPlayer> getPlayers();
 
+    /**
+     * Gets the current state of the game.
+     *
+     * @return the current state of the game
+     */
     IGameState getState();
 
     /**
@@ -153,6 +158,11 @@ public interface IGame {
      */
     void setState(IGameState state);
 
+    /**
+     * Gets the previous state of the game.
+     *
+     * @return the previous state of the game
+     */
     IGameState getPreviousState();
 
     /**
@@ -183,8 +193,18 @@ public interface IGame {
      */
     int getDifficulty();
 
+    /**
+     * Gets the current player.
+     *
+     * @return the current player
+     */
     IPlayer getCurrentPlayer();
 
+    /**
+     * Sets the GameStateChangeListener.
+     *
+     * @param listener the new GameStateChangeListener
+     */
     void setGameStateChangeListener(GameStateChangeListener listener);
 
     /**
@@ -194,4 +214,24 @@ public interface IGame {
      * @return the player with the specified username
      */
     IPlayer getPlayer(String username);
+
+    /**
+     * Sets the infection card draw pile.
+     *
+     * @param infectionCardDrawPile the new infection card draw pile
+     */
+    void setInfectionCardDrawPile(List<InfectionCard> infectionCardDrawPile);
+
+    /**
+     * Shuffles the playerCardDrawPile and adds the Epidemic cards.
+     */
+    void gameStartShuffle(int numSubDecks);
+
+    /**
+     * Splits the deck into subdecks.
+     *
+     * @param deck        the deck to split
+     * @param numSubDecks the number of subdecks
+     */
+    List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks);
 }
