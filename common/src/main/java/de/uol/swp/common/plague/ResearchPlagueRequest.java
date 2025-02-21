@@ -1,6 +1,7 @@
 package de.uol.swp.common.plague;
 
 import de.uol.swp.common.game.PlagueName;
+import lombok.Getter;
 
 /**
  * A request message sent to research a specific plague.
@@ -10,11 +11,11 @@ import de.uol.swp.common.game.PlagueName;
  */
 public class ResearchPlagueRequest extends AbstractPlagueMessage {
 
-    public ResearchPlagueRequest() {
-
-    }
-    public ResearchPlagueRequest(PlagueName name) {
+    @Getter
+    private final String lobbyId;
+    public ResearchPlagueRequest(PlagueName name, String lobbyId) {
         super(name);
+        this.lobbyId = lobbyId;
     }
 
 }

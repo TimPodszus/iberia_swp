@@ -36,7 +36,11 @@ import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
+import de.uol.swp.common.plague.CanResearchPlagueMessage;
+import de.uol.swp.common.plague.CanResearchPlagueRequest;
 import de.uol.swp.common.plague.IPlagueDTO;
+import de.uol.swp.common.plague.PlagueResearchedMessage;
+import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
@@ -507,12 +511,40 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onResearchPlague(ActionEvent event) {
+        onResearchPlagueRequest();
         if (researchPlagueButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
-        } else {
-
+            ResearchPlagueRequest request = new ResearchPlagueRequest();
+            eventBus.post(request);
         }
     }
+
+
+    private void onResearchPlagueRequest() {
+        // Plague herausfinden durch Handkarten
+//        PlagueName currentPlague = gameDTO.getCurrentPlayer().getCurrentPosition().getPlagueName();
+        gameService.sendResearchPlagueRequest(currentPlague, gameDTO.getGameId());
+    }
+
+    @Subscribe
+    private void updateResearchPlagueButton(CanResearchPlagueMessage message) {
+        researchPlagueButton.setVisible(message.isSuccess());
+    }
+
+    @Subscribe
+    private void onPlagueResearchedMessage(PlagueResearchedMessage message) {
+        PlagueName researchedPlague = message.getName();
+        if (researchedPlague == PlagueName.CHOLERA) {
+            plagueMarkerBlueImage.setVisible(true);
+        } else if (researchedPlague == PlagueName.YELLOW_FEVER) {
+            plagueMarkerYellowImage.setVisible(true);
+        } else if (researchedPlague == PlagueName.MALARIA) {
+            plagueMarkerBlackImage.setVisible(true);
+        } else if (researchedPlague == PlagueName.TYPHUS) {
+            plagueMarkerRedImage.setVisible(true);
+        }
+    }
+
+
 
     /**
      * Handles place water treatment action.
@@ -947,6 +979,7 @@ public class GamePresenter extends AbstractPresenter {
         updateEscalationStage(gameDTO.getEscalationStage());
         updateHospitals(gameDTO.getCities());
         updateResearchedPlagues(gameDTO.getPlagues());
+
 
         disableActionButtons();
         if (gameDTO.getState()

@@ -5,6 +5,7 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -41,7 +42,7 @@ public class PlagueManagement implements IPlagueManagement {
      *                                   if the plague has already been researched, or if the city does not have a suitable hospital.
      */
     @Override
-    public void researchPlague(PlagueName plagueToResearch, Game game) throws PlagueManagementException {
+    public void researchPlague(PlagueName plagueToResearch, IGame game) throws PlagueManagementException {
         if (plagueToResearch == null) {
             throw new PlagueManagementException("The plague to be researched was not specified");
         }
@@ -93,7 +94,7 @@ public class PlagueManagement implements IPlagueManagement {
      *
      * @param game the current game instance
      */
-    public void allPlaguesResearched(Game game) {
+    public void allPlaguesResearched(IGame game) {
         boolean allResearched = game.getPlagueRepository()
                                     .getPlagues()
                                     .stream()
@@ -102,5 +103,31 @@ public class PlagueManagement implements IPlagueManagement {
             game.setState(new EndGameState(true));
         }
     }
+
+    @Override
+    public boolean canResearchPlague(PlagueName plagueName, IGame game) {
+        Map<PlagueName, List<CityCard>> cardsByPlague = game.getCurrentPlayer()
+                .getCards()
+                .stream()
+                .filter(CityCard.class::isInstance)
+                .map(CityCard.class::cast)
+                .collect(Collectors.groupingBy(cityCard -> cityCard.getCity()
+                        .getPlagueName()));
+
+        List<CityCard> plagueCards = cardsByPlague.get(plagueName);
+
+        if (plagueCards == null || plagueCards.size() < 5) {
+            return false;
+        }
+
+        ICity currentCity = game.getCurrentPlayer().getCurrentPosition();
+        if (!currentCity.isHospitalBuilt() || !currentCity.getPlagueName().equals(plagueName)) {
+            return false;
+        }
+
+        return true;
+    }
+
+
 }
 

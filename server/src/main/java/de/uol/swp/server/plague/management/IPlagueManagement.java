@@ -12,5 +12,6 @@ public interface IPlagueManagement {
      * @param game             the current game instance
      * @throws PlagueManagementException if the plague cannot be researched due to game conditions
      */
-    void researchPlague(PlagueName plagueToResearch, Game game) throws PlagueManagementException;
+    void researchPlague(PlagueName plagueToResearch, IGame game) throws PlagueManagementException;
+    boolean canResearchPlague(PlagueName plagueName, IGame game);
 }

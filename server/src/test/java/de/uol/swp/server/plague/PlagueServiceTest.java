@@ -30,10 +30,10 @@ class PlagueServiceTest {
 
     @Test
     void testOnResearchPlagueRequest_Success() throws PlagueManagementException {
-        ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA);
+        ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA, game.getGameId());
         doNothing().when(plagueManagement).researchPlague(PlagueName.CHOLERA, game);
 
-        plagueService.onResearchPlagueRequest(request, game);
+        plagueService.onResearchPlagueRequest(request);
 
         verify(plagueManagement, times(1)).researchPlague(PlagueName.CHOLERA, game);
         verify(eventBus, times(1)).post(any(PlagueResearchedMessage.class));
@@ -41,10 +41,10 @@ class PlagueServiceTest {
 
     @Test
     void testOnResearchPlagueRequest_Exception() throws PlagueManagementException {
-        ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA);
+        ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA, game.getGameId());
         doThrow(new PlagueManagementException("Error")).when(plagueManagement).researchPlague(PlagueName.CHOLERA, game);
 
-        assertThrows(PlagueManagementException.class, () -> plagueService.onResearchPlagueRequest(request, game));
+        assertThrows(PlagueManagementException.class, () -> plagueService.onResearchPlagueRequest(request));
 
         verify(plagueManagement, times(1)).researchPlague(PlagueName.CHOLERA, game);
         verify(eventBus, never()).post(any(PlagueResearchedMessage.class));

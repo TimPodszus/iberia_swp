@@ -4,9 +4,11 @@ import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.plague.CanResearchPlagueRequest;
 import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
@@ -187,5 +189,10 @@ public class GameService {
      */
     public void sendPlayCardRequest(String lobbyId, int cardId) {
         eventBus.post(new PlayCardRequest(lobbyId, cardId));
+    }
+
+
+    public void sendResearchPlagueRequest(PlagueName currentPlague, String lobbyId) {
+        eventBus.post(new CanResearchPlagueRequest(currentPlague, lobbyId));
     }
 }
