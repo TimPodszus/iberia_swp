@@ -15,7 +15,6 @@ import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.plague.response.AvailableCitiesToTreatResponse;
 import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import de.uol.swp.common.plague.response.TreatPlagueResponse;
-import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
@@ -152,7 +151,6 @@ class PlagueServiceTest {
         IInfectionDTO iInfectionDTO = new InfectionDTO(2, PlagueName.CHOLERA);
 
         ICityDTO cityDTO1 = new CityDTO(1, PlagueName.CHOLERA, CityName.A_CORUNA, 122, false, false, List.of(iInfectionDTO));
-        when(CityMapper.toDTOList(nearbyCities)).thenReturn(List.of(cityDTO1));
 
         plagueService.onAvailableCitiesToTreatRequest(request);
 
@@ -161,9 +159,9 @@ class PlagueServiceTest {
 
         verify(eventBus).post(any(AvailableCitiesToTreatResponse.class));
 
-        AvailableCitiesToTreatResponse response = new AvailableCitiesToTreatResponse("lobby123", true, List.of(cityDTO1));  // Argument-Captor Methode
+        AvailableCitiesToTreatResponse response = new AvailableCitiesToTreatResponse("lobby123", true, List.of(cityDTO1));
         assertNotNull(response);
-        assertEquals(2, response.getAvailableCities().size());
+        assertEquals(1, response.getAvailableCities().size());
     }
 
 }
