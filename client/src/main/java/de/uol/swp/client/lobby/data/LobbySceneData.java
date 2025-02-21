@@ -30,9 +30,9 @@ public class LobbySceneData {
     }
 
     /**
-         * Closes the lobby stage.
-         */
-        public void close() {
-            lobbyStage.close();
-        }
+     * Closes the lobby stage.
+     */
+    public void close() {
+        lobbyStage.close();
+    }
 }
