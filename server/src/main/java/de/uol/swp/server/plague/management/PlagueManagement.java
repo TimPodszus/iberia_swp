@@ -146,6 +146,12 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         }
     }
 
+    /**
+     * Retrieves the list of infections in the current city where the player is located.
+     *
+     * @param game The current game instance.
+     * @return A list of infections present in the city where the current player is located.
+     */
     @Override
     public List<IInfection> getInfectionsInCity(IGame game) {
         IPlayer player = game.getCurrentPlayer();
@@ -153,6 +159,15 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         return city.getInfections();
     }
 
+    /**
+     * Retrieves the list of cities that are near the specified city, considering regions surrounding the current city.
+     * This method checks all the regions to find which ones contain the specified city in their list of surrounding cities.
+     * It then collects cities from the adjacent regions of those regions.
+     *
+     * @param game The current game instance.
+     * @param currentCity The city from which proximity is being calculated.
+     * @return A list of cities that are located near the specified city.
+     */
     @Override
     public List<ICity> getCitiesNearBy(IGame game, ICity currentCity) {
         List<IRegion> allRegions = game.getRegionRepository().getRegions();

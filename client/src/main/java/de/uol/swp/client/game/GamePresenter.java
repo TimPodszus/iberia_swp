@@ -484,37 +484,35 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onTreatPlague(ActionEvent event) {
         if (treatInfectionButton.isSelected()) {
-            LOG.debug("Seuche behandeln Button ist ausgewählt, sende Request...");
+            LOG.debug("Treat Plague Button is selected, sending Request...");
             gameService.sendAvailablePlaguesRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
         } else {
-            LOG.debug("Button ist nicht ausgewählt!");
+            LOG.debug("Button is not selected!");
         }
     }
 
     /**
      * Handles the response containing available plagues in the player's city.
      * Opens a dialog for the player to select a plague to treat.
-     *
-     * @param response The response containing the list of available plagues.
      */
     private int count = 0;
 
     @Subscribe
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
-        LOG.debug("AvailablePlaguesResponse empfangen! Anzahl Seuchen: {}", response.getAvailablePlagues().size());
+        LOG.debug("AvailablePlaguesResponse received! Number of plagues: {}", response.getAvailablePlagues().size());
 
         int selectedCityId = response.getCityId();
         Platform.runLater(() -> {
             TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
-            LOG.debug("Dialog wird geöffnet...");
+            LOG.debug("Dialog is opened...");
             Optional<PlagueName> result = dialog.showAndWait();
-            LOG.debug("Dialog wurde geschlossen.");
+            LOG.debug("Dialog has been closed.");
 
             result.ifPresent(selectedPlague -> {
                 boolean isCountryDoctor = (count > 0);
                 LOG.info("Count: {}", count);
 
-                LOG.info("Ausgewählte Seuche: {}", selectedPlague);
+                LOG.info("Selected Plague: {}", selectedPlague);
                 gameService.sendTreatPlagueRequest(
                         lobbyId,
                         selectedCityId,
@@ -524,7 +522,7 @@ public class GamePresenter extends AbstractPresenter {
 
                 treatInfectionButton.setSelected(false);
                 count++;
-                LOG.info("Count nach Behandlung: {}", count);
+                LOG.info("Count after Treatment: {}", count);
 
             });
 
@@ -539,12 +537,12 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onTreatPlagueResponse(TreatPlagueResponse response) {
-        LOG.info("TreatPlagueResponse erhalten: Stadt ID {}, Seuche {}", response.getCityID(), response.getPlagueName());
+        LOG.info("TreatPlagueResponse received: City ID {}, Plague {}", response.getCityID(), response.getPlagueName());
         Platform.runLater(() -> updateBoard(gameDTO));
         LOG.info("Role: {}", gameDTO.getCurrentPlayer().getRole().getName());
 
         if (RoleEnum.COUNTRY_DOCTOR == gameDTO.getCurrentPlayer().getRole().getName() && count == 1) {
-            LOG.debug("Spieler ist COUNTRY_DOCTOR - Anfrage für behandelbare Städte senden.");
+            LOG.debug("Player is COUNTRY_DOCTOR - Send request for treatable cities.");
             gameService.sendAvailableCitiesToTreatRequest(lobbyId, response.getCityID());
         }
     }
@@ -552,17 +550,15 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Handles the response containing cities where the player can treat plagues.
      * Opens a dialog for the player to select a city.
-     *
-     * @param response The response containing a list of available cities.
      */
     private boolean showSelectCityToTreatDialog = true;
     @Subscribe
     public void onAvailableCitiesToTreatResponse(AvailableCitiesToTreatResponse response) {
-        LOG.info("AvailableCitiesToTreatResponse empfangen! Anzahl Städte: {}", response.getAvailableCities().size());
-        LOG.info("Aktueller count: {}", count);
+        LOG.info("AvailableCitiesToTreatResponse received! Number of cities: {}", response.getAvailableCities().size());
+        LOG.info("Current count: {}", count);
 
         if (count != 1) {
-            LOG.warn("Unexpected call to onAvailableCitiesToTreatResponse. Ignoring response.");
+            LOG.warn("Unexpected call to onAvailableCitiesToTreatResponse.");
             return;
         }
 
@@ -572,10 +568,9 @@ public class GamePresenter extends AbstractPresenter {
 
                     SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(response.getAvailableCities());
                     Optional<ICityDTO> selectedCity = dialog.showAndWait();
-                    LOG.info("die ausgewählte Stadt ist: {}", selectedCity.get().getName());
 
                     selectedCity.ifPresent(city -> {
-                                LOG.info("Spieler hat Stadt {} ausgewählt, sende AvailablePlaguesRequest", city.getName());
+                                LOG.info("Player selected City {} sending AvailablePlaguesRequest", city.getName());
                                 gameService.sendAvailablePlaguesRequest(lobbyId, city.getId());
                                 showSelectCityToTreatDialog = false;
                             }
@@ -583,7 +578,7 @@ public class GamePresenter extends AbstractPresenter {
                 }
 
                 count = 0;
-                LOG.debug("Count zurückgesetzt auf 0.");
+                LOG.debug("Count reset to 0");
             });
         }
     }

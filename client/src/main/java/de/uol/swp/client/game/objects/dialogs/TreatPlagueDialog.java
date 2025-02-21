@@ -2,28 +2,32 @@ package de.uol.swp.client.game.objects.dialogs;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.infection.IInfectionDTO;
-import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import lombok.Getter;
 
 import java.util.List;
 
+/**
+ * Dialog that allows a player to choose a plague to treat.
+ * This dialog presents a list of available plagues and enables the player to select one to treat.
+ */
 public class TreatPlagueDialog extends Dialog<PlagueName> {
 
-    private static final String HEADER = "Plage behandeln";
+    private static final String HEADER = "Treat Plague";
     private final boolean dismissible;
     private final List<IInfectionDTO> plagues;
     private PlagueName selectedPlague;
 
+    /**
+     * Constructs a new TreatPlagueDialog.
+     *
+     * @param dismissible Indicates whether the dialog can be dismissed by the player.
+     * @param plagues The list of available plagues to choose from.
+     */
     public TreatPlagueDialog(boolean dismissible, List<IInfectionDTO> plagues) {
         this.dismissible = dismissible;
         this.plagues = plagues;
@@ -41,7 +45,7 @@ public class TreatPlagueDialog extends Dialog<PlagueName> {
     }
 
     /**
-     * Setzt den Inhalt des Dialogs, einschließlich der Plagen zur Auswahl.
+     * Sets up the content of the dialog, which includes buttons for each available plague.
      */
     private void setContent() {
         HBox plagueBox = new HBox();
@@ -59,19 +63,16 @@ public class TreatPlagueDialog extends Dialog<PlagueName> {
     }
 
     /**
-     * Behandelt das Ereignis, wenn eine Plage ausgewählt wird.
+     * Updates the selected plague when a plague button is clicked.
      *
-     * @param plagueName der Name der ausgewählten Plage
+     * @param plagueName The name of the selected plague.
      */
     private void onPlagueSelected(PlagueName plagueName) {
-        if (this.selectedPlague != null) {
-            // Optional: Visuelle Darstellung der Auswahl zurücksetzen
-        }
-        this.selectedPlague = plagueName;  // Setzt die ausgewählte Plage
+        this.selectedPlague = plagueName;
     }
 
     /**
-     * Setzt die Buttons für den Dialog.
+     * Sets up the buttons in the dialog (OK and optionally Cancel button).
      */
     private void setButtons() {
         super.getDialogPane().getButtonTypes().add(ButtonType.OK);

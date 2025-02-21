@@ -109,7 +109,7 @@ class PlagueServiceTest {
         verify(plagueManagement).getGame("lobby123");
         verify(plagueManagement).getInfectionsInCity(game);
 
-        verify(eventBus).post(any(AvailablePlaguesResponse.class));  // Verifizieren, dass post auf dem eventBus aufgerufen wurde
+        verify(eventBus).post(any(AvailablePlaguesResponse.class));
     }
 
     @Test
