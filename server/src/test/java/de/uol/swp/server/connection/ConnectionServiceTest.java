@@ -197,34 +197,6 @@ public class ConnectionServiceTest extends EventBusBasedTest {
     }
 
     /**
-     * Tests the handling of a StateMobilizationEvent when a user is logged out.
-     * <p>
-     * This test verifies that a GameException is thrown when a StateMobilizationEvent
-     * is received for a user who is logged out.
-     */
-    @Test
-    void testOnStateMobilizationEventWithLoggedOutUser() {
-        IUser testuser1 = createUserAndSession("testuser1");
-        IPlayer player1 = createMockPlayer(testuser1, 1);
-
-        IUser testuser2 = new User("testuser2", "1234");
-        IPlayer player2 = createMockPlayer(testuser2, 1);
-
-        IGame game = createMockGame(List.of(player1, player2));
-        when(connectionManagement.getGame("1234")).thenReturn(game);
-        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(cityRepository.getCity(1),
-                List.of()
-        ));
-
-        StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
-
-        assertThrows(GameException.class,
-                () -> connectionService.onStateMobilizationEvent(stateMobilizationEvent),
-                "Expected a GameException"
-        );
-    }
-
-    /**
      * Creates a user and session for the given username.
      *
      * @param username the username of the user

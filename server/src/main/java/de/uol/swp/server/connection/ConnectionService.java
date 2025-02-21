@@ -155,7 +155,7 @@ public class ConnectionService extends AbstractService {
      * @throws GameException if a user is not logged in
      */
     @Subscribe
-    public void onStateMobilizationEvent(StateMobilizationEvent event) throws GameException {
+    public void onStateMobilizationEvent(StateMobilizationEvent event) {
         LOG.debug("[Lobby: {}] Got StateMobilizationEvent. Sending available destinations to every user",
                 event.getLobbyId()
         );
