@@ -26,6 +26,8 @@ import java.util.*;
 public class AbstractService {
 
     protected static final String USER_NOT_LOGGED_IN = "User not logged in";
+
+    protected static final int DEFAULT_MESSAGE_DELAY_MILLIS = 200;
     /**
      * The EventBus instance used for posting and handling events.
      * This is a protected final field, ensuring it is initialized once and cannot be changed.

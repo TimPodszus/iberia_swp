@@ -263,7 +263,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                   .getUsername()
                     );
                 }
-            }, 200, TimeUnit.MILLISECONDS);
+            }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
         } finally {
             if (scheduler != null) {
                 scheduler.shutdown();

@@ -189,7 +189,7 @@ public class ConnectionService extends AbstractService {
                     response.setSession(session);
                     post(response);
                 }
-            }, 200, TimeUnit.MILLISECONDS);
+            }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
         } finally {
             if (scheduler != null) {
                 scheduler.shutdown();
