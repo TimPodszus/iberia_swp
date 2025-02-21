@@ -14,7 +14,9 @@ import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
-import de.uol.swp.common.player.request.MovePlayerRequest;
+import de.uol.swp.common.game.message.response.StatusResponse;
+import de.uol.swp.common.player.message.request.MovePlayerRequest;
+import de.uol.swp.common.player.message.response.MovePlayerResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
@@ -25,7 +27,9 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.ConnectionMapper;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
@@ -37,6 +41,7 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
@@ -108,7 +113,15 @@ public class GameService extends AbstractService implements GameStateChangeListe
      */
     @Subscribe
     public void onPositionRequest(PositioningRequest request) throws GameManagementException {
-        IGame game = gameManagement.setPositioning(request);
+        IGame game = null;
+
+        try {
+            game = gameManagement.setPositioning(request);
+        } catch (IllegalGameStateException e) {
+            LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
+            post(new StatusResponse(request.getLobbyId(), false, e.getMessage()));
+        }
+        
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null && lobby != null) {
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
@@ -176,12 +189,21 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         ICity destination = cityManagement.getCity(request.getLobbyId(), request.getCityId());
 
-        gameManagement.movePlayer(
-                UserMapper.toUser(user),
-                request.getLobbyId(),
-                destination,
-                playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId())
-        );
+        try {
+            gameManagement.movePlayer(
+                    UserMapper.toUser(user),
+                    request.getLobbyId(),
+                    destination,
+                    playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId())
+            );
+        } catch (IllegalGameStateException e) {
+            MovePlayerResponse response = new MovePlayerResponse(request.getLobbyId(), false, e.getMessage());
+            request.getSession()
+                   .ifPresent(response::setSession);
+            request.getMessageContext()
+                   .ifPresent(response::setMessageContext);
+            post(response);
+        }
 
         if (!request.getUsername()
                     .isEmpty()) {
@@ -203,9 +225,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
      * @throws GameException if the session is invalid or any error occurs while retrieving available actions
      */
     @Subscribe
-    public void onAvailableActionsRequest(AvailableActionsRequest request) throws GameException {
+    public void onAvailableActionsRequest(AvailableActionsRequest request) throws SessionNotFoundException {
         Session session = request.getSession()
-                                 .orElseThrow(() -> new GameException(
+                                 .orElseThrow(() -> new SessionNotFoundException(
                                          "Session is required to retrieve available actions"));
 
         IUser user = UserMapper.toUser(session.getUser());

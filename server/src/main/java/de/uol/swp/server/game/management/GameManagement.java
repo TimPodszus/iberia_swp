@@ -10,12 +10,13 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
-import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.city.management.ICityManagement;
+import de.uol.swp.server.game.exceptions.GameNotFoundException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.*;
@@ -121,7 +122,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;
             game.setCurrentPlayerIndex(nextPlayerIndex);
         }
-
     }
 
     /**
@@ -193,49 +193,48 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param request The request with where the position is to be set
      */
-    public IGame setPositioning(PositioningRequest request) throws GameManagementException {
+    public IGame setPositioning(PositioningRequest request) throws GameManagementException, IllegalGameStateException {
         IGame game = getGame(request.getLobbyId());
+        IGameState gameState = game.getState();
 
-        if (game == null) {
-            throw new GameManagementException("Game not found");
+        if (!(gameState instanceof WaitForPositioning)) {
+            LOG.error("[LobbyID: {}] Game is not in a state that allows setting positioning", game.getGameId());
+            throw new IllegalGameStateException("Game is not in a state that allows setting positioning");
         }
 
-        if (game.getState() instanceof WaitForPositioning waitForPositioning) {
-            List<IPlayer> players = game.getPlayers();
-            IPlayer requestPlayer = null;
-            for (IPlayer player : players) {
-                if (player.getUser()
-                          .getUsername()
-                          .equals(request.getSession()
-                                         .orElseThrow(() -> new GameManagementException("Session not found"))
-                                         .getUser()
-                                         .getUsername())) {
-                    requestPlayer = player;
-                    break;
-                }
+        List<IPlayer> players = game.getPlayers();
+        IPlayer requestPlayer = null;
+        for (IPlayer player : players) {
+            if (player.getUser()
+                      .getUsername()
+                      .equals(request.getSession()
+                                     .orElseThrow(() -> new GameManagementException("Session not found"))
+                                     .getUser()
+                                     .getUsername())) {
+                requestPlayer = player;
+                break;
             }
-            try {
-                assert requestPlayer != null;
-                if (requestPlayer.getCurrentPosition() != null) {
-                    throw new GameManagementException("Player is already positioned");
-                }
-                playerManagement.setStartingPosition(
-                        game.getGameId(),
-                        game.getCityRepository()
-                            .getCityNameById(request.getCityId()),
-                        requestPlayer
-                );
-                waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
-            } catch (PlayerManagementException e) {
-                throw new GameManagementException("Failed to set Position");
+        }
+
+        try {
+            assert requestPlayer != null;
+            if (requestPlayer.getCurrentPosition() != null) {
+                throw new GameManagementException("Player is already positioned");
             }
-            if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
-                                                                      .size()) {
-                game.setState(new PlayerTurnState());
-                game.setCurrentPlayerIndex(0);
-            }
-        } else {
-            throw new GameManagementException("Game is not in a state that allows setting positioning");
+            playerManagement.setStartingPosition(
+                    game.getGameId(),
+                    game.getCityRepository()
+                        .getCityNameById(request.getCityId()),
+                    requestPlayer
+            );
+            ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
+        } catch (PlayerManagementException e) {
+            throw new GameManagementException("Failed to set Position");
+        }
+        if (((WaitForPositioning) gameState).getPositionedPlayersCount() == game.getPlayers()
+                                                                                .size()) {
+            game.setState(new PlayerTurnState());
+            game.setCurrentPlayerIndex(0);
         }
         return game;
     }
@@ -335,7 +334,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException {
+    public void movePlayer(
+            IUser user, String lobbyId, ICity city, ICard card
+    ) throws GameManagementException, IllegalGameStateException {
         IGame game = super.getGame(lobbyId);
 
         IGameState gameState = game.getState();
@@ -379,12 +380,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param lobbyId   the ID of the lobby
      * @param gameState the current game state
-     * @throws GameManagementException when the game state does not allow moving players
+     * @throws IllegalGameStateException when the game state does not allow moving players
      */
-    private void validateGameStateForMove(String lobbyId, IGameState gameState) throws GameManagementException {
+    private void validateGameStateForMove(String lobbyId, IGameState gameState) throws IllegalGameStateException {
         if (!(gameState instanceof PlayerTurnState) && !(gameState instanceof EventState)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows moving players", lobbyId);
-            throw new GameManagementException("Game is not in a state that allows moving players");
+            throw new IllegalGameStateException("Game is not in a state that allows moving players");
         }
     }
 

@@ -7,6 +7,8 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.game.exceptions.GameNotFoundException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -26,8 +28,10 @@ public interface IGameManagement {
      * Sets the initial positioning of a player in the game based on the provided city.
      *
      * @param request The request with where the position is to be set
+     * @throws GameManagementException if setting the positioning fails
+     * @throws IllegalGameStateException if the game is in a state that does not allow positioning
      */
-    IGame setPositioning(PositioningRequest request) throws GameManagementException;
+    IGame setPositioning(PositioningRequest request) throws GameManagementException, IllegalGameStateException;
 
     /**
      * Draws a player card. The specific behavior of this method should be defined.
@@ -56,8 +60,11 @@ public interface IGameManagement {
      * @param card    the card used to move the player
      *                <p>
      * @throws GameManagementException if moving the player fails
+     * @throws IllegalGameStateException if the game is in an illegal state
      */
-    void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException;
+    void movePlayer(
+            IUser user, String lobbyId, ICity city, ICard card
+    ) throws GameManagementException, IllegalGameStateException;
 
     /**
      * Retrieves the game with the specified lobby code.
