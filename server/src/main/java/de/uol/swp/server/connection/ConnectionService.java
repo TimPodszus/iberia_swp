@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Singleton
@@ -162,6 +161,7 @@ public class ConnectionService extends AbstractService {
         IGame game = connectionManagement.getGame(event.getLobbyId());
         ScheduledExecutorService scheduler = null;
         try {
+            // Warning is wrong, scheduler is shutdown in finally block. A close method does not exist.
             scheduler = Executors.newScheduledThreadPool(1);
             scheduler.schedule(() -> {
                 for (IPlayer player : game.getPlayers()) {
@@ -189,7 +189,7 @@ public class ConnectionService extends AbstractService {
                     response.setSession(session);
                     post(response);
                 }
-            }, 500, TimeUnit.MILLISECONDS);
+            }, 200, TimeUnit.MILLISECONDS);
         } finally {
             if (scheduler != null) {
                 scheduler.shutdown();

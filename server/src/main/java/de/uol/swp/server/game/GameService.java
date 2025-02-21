@@ -221,6 +221,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
     private void sendAvailableDestinationsToRemainingPlayers(String lobbyId, List<IPlayer> remainingPlayers) {
         ScheduledExecutorService scheduler = null;
         try {
+            // Warning is wrong, scheduler is shutdown in finally block. A close method does not exist.
             scheduler = Executors.newScheduledThreadPool(1);
             LOG.debug(
                     "[LobbyID: {}] State mobilization is ongoing. Sending available destinations for remaining players to move",
@@ -262,7 +263,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                   .getUsername()
                     );
                 }
-            }, 500, TimeUnit.MILLISECONDS);
+            }, 200, TimeUnit.MILLISECONDS);
         } finally {
             if (scheduler != null) {
                 scheduler.shutdown();
