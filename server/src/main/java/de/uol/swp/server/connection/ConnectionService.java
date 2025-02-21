@@ -151,7 +151,6 @@ public class ConnectionService extends AbstractService {
      * them to the clients.
      *
      * @param event the event containing the lobby ID
-     * @throws GameException if a user is not logged in
      */
     @Subscribe
     public void onStateMobilizationEvent(StateMobilizationEvent event) {
@@ -167,8 +166,8 @@ public class ConnectionService extends AbstractService {
                 for (IPlayer player : game.getPlayers()) {
                     Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
                             event.getLobbyId(),
-                            player.getCurrentPosition()
-                                  .getId()
+                            player.getUser()
+                                  .getUsername()
                     ));
                     IUser user = player.getUser();
                     AvailableDestinationsResponse response = new AvailableDestinationsResponse(game.getGameId(),

@@ -236,8 +236,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
                     );
                     Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
                             lobbyId,
-                            player.getCurrentPosition()
-                                  .getId()
+                            player.getUser()
+                                  .getUsername()
                     ));
                     AvailableDestinationsResponse response = new AvailableDestinationsResponse(lobbyId,
                             availableDestinations
