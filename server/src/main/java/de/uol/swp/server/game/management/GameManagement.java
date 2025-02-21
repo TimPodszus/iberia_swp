@@ -411,8 +411,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
         return connectionManagement.getAvailableDestinations(
                 game.getGameId(),
-                player.getCurrentPosition()
-                      .getId()
+                player.getUser()
+                      .getUsername()
         );
     }
 

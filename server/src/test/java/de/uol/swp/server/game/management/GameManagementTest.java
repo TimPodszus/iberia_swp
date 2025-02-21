@@ -76,9 +76,6 @@ class GameManagementTest {
     @Mock
     private IGame game;
 
-    @Mock
-    private IUser user;
-
     /**
      * Initializes mocks before each test.
      */
@@ -268,10 +265,10 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
@@ -319,7 +316,7 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of(destinationCityCard)
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
         IUser user = new User("user1", "");
         createTestPlayers(user);
@@ -357,10 +354,10 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
@@ -385,13 +382,14 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of(destinationCityCard)
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>(List.of(destinationCityCard)));
+        when(game.getPlayer("user1")).thenReturn(player);
 
         assertTrue(player.getCards()
                          .contains(destinationCityCard), "Expected player to have the destination city card");
@@ -412,11 +410,11 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.VALLADOLID),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 5)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
         ICity startCity = cityRepository.getCityByName(CityName.EVORA);
         ICity destinationCity = cityRepository.getCityByName(CityName.VALLADOLID);
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
@@ -696,7 +694,7 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.BARCELONA),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(anyString(), anyInt())).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(anyString(), anyString())).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
         IUser testUser1 = new User("user1", "test");
