@@ -159,7 +159,7 @@ public class GameService {
         if (gameDTO.getCurrentPlayer()
                    .getCards()
                    .stream()
-                   .anyMatch(card -> card.getId() != gameDTO.getCurrentPlayer()
+                   .allMatch(card -> card.getId() != gameDTO.getCurrentPlayer()
                                                             .getCurrentPosition()
                                                             .getId())) {
             LOG.debug("Current player has cards that are not from the current position");
