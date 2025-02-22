@@ -12,7 +12,6 @@ import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @Getter
 public class CardRepository {
@@ -140,18 +139,5 @@ public class CardRepository {
         cards.put(205, new EpidemicCard(205, EPIDEMIC_CARD_TITLE, ""));
         cards.put(206, new EpidemicCard(206, EPIDEMIC_CARD_TITLE, ""));
         cards.put(207, new OnTheMoveDayAndNightEventCard(207));
-    }
-
-    public CityCard getCityCardByCityName(CityName cityName) {
-        return this.getCards()
-                   .values()
-                   .stream()
-                   .filter(CityCard.class::isInstance)
-                   .map(CityCard.class::cast)
-                   .filter(cityCard -> cityCard.getCity()
-                                               .getName()
-                                               .equals(cityName))
-                   .findFirst()
-                   .orElseThrow(() -> new NoSuchElementException("CityCard not found for city: " + cityName));
     }
 }

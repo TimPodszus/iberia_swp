@@ -2,7 +2,6 @@ package de.uol.swp.server.city.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.StateType;
-import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
@@ -219,7 +218,7 @@ public class CityManagementTest {
     }
 
     @Test
-    void testbuildHospitalSucceeds() {
+    void testBuildHospitalSucceeds() {
         IUser user = new User("username", "password");
         IPlayer player = new Player(user);
         player.setCurrentPosition(game.getCityRepository()
@@ -250,7 +249,7 @@ public class CityManagementTest {
     }
 
     @Test
-    void testbuildHospitalWithEventCardWithWrongColor() {
+    void testBuildHospitalWithEventCardWithWrongColor() {
         IUser user = new User("username", "password");
         IPlayer player = new Player(user);
         player.setCurrentPosition(game.getCityRepository()
@@ -259,13 +258,13 @@ public class CityManagementTest {
             .add(player);
         game.setCurrentPlayerIndex(0);
 
+        int cityId = game.getCityRepository()
+                         .getCityByName(CityName.MADRID)
+                         .getId();
+
         assertThrows(
-                CityManagementException.class, () -> cityManagement.buildHospitalWithEventCard(
-                        LOBBY_CODE,
-                        game.getCityRepository()
-                            .getCityByName(CityName.MADRID)
-                            .getId()
-                )
+                CityManagementException.class,
+                () -> cityManagement.buildHospitalWithEventCard(LOBBY_CODE, cityId)
         );
     }
 }
