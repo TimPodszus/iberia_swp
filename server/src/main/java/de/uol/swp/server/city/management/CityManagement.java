@@ -9,7 +9,6 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -101,7 +100,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             return;
         }
 
-        IInfection infection = infectionManagement.findInfection(city, plagueName);
+        IInfection infection = infectionManagement.findInfection(game.getGameId(), city.getName(), plagueName);
         IPlague plague = game.getPlagueRepository()
                              .getPlagueByName(plagueName);
 
@@ -270,7 +269,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                                                                                                                       .equals(city))
                                          .findFirst();
 
-        if (!isHospitalBuildable(game, player, city, cityCard)) {
+        if (!isHospitalBuildable(lobbyId, userName)) {
             return;
         }
 
@@ -328,10 +327,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                                          .filter(card -> card instanceof CityCard cityCardInstance && cityCardInstance.getCity()
                                                                                                                       .equals(city))
                                          .findFirst();
-        return isHospitalBuildable(game, player, city, cityCard);
-    }
-
-    private boolean isHospitalBuildable(IGame game, IPlayer player, ICity city, Optional<ICard> cityCard) {
         return player.equals(game.getCurrentPlayer()) && !city.isHospitalBuilt() && cityCard.isPresent();
+
     }
 }

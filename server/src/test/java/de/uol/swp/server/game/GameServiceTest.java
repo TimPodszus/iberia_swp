@@ -87,7 +87,8 @@ public class GameServiceTest extends EventBusBasedTest {
 
     @Spy
     @InjectMocks
-    GameService gameService = new GameService(getBus(),
+    GameService gameService = new GameService(
+            getBus(),
             lobbyManagement,
             gameManagement,
             cityManagement,
@@ -321,6 +322,7 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
     }
+
     @Test
     void testOnGameStateChange_DrawCardState() {
         ILobby lobby = mock(ILobby.class);
@@ -357,5 +359,6 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
-        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));}
+        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));
+    }
 }
