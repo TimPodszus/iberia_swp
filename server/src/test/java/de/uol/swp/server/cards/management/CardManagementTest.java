@@ -3,6 +3,7 @@ package de.uol.swp.server.cards.management;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.store.GameStore;
@@ -31,7 +32,7 @@ public class CardManagementTest {
     @Mock
     IGame game;
 
-    private CardManagement cardManagement;
+    private ICardManagement cardManagement;
 
     /**
      * Sets up the test environment before each test.
@@ -88,6 +89,29 @@ public class CardManagementTest {
                       .size()
         );
         verify(card).execute("1", "user");
+        verify(game).setState(any(EventState.class));
+    }
+
+    @Test
+    void testPlayEventCardWithStateMobilization() {
+        IUser user = new User("user", "password");
+        IPlayer player = new Player(user);
+        when(game.getPlayer("user")).thenReturn(player);
+        when(game.getPlayers()).thenReturn(List.of(player));
+
+        StateMobilizationEventCard card = mock(StateMobilizationEventCard.class);
+        when(card.getId()).thenReturn(1);
+        player.setCards(new ArrayList<>(List.of(card)));
+
+        cardManagement.playCard("1", "user", 1);
+
+        assertEquals(
+                0,
+                player.getCards()
+                      .size()
+        );
+        verify(card, times(1)).setPlayersToMove(any());
+        verify(card, times(1)).execute("1", "user");
         verify(game).setState(any(EventState.class));
     }
 }
