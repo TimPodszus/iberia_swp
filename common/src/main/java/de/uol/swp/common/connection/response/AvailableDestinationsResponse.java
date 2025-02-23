@@ -13,6 +13,14 @@ import lombok.Getter;
  */
 @Getter
 public class AvailableDestinationsResponse extends AbstractGameResponse {
+    
+    /**
+     * Map of cities and if they are only accessible when the player discards a city card.
+     * <p>
+     * Key is the city id.
+     * Value is a list of cards, that can be discarded to access the city. If the list is empty, the city is accessible without discarding a card.
+     */
+    private final Map<Integer, List<ICardDTO>> cities;
 
     /**
      * Constructs a new AvailableDestinationsResponse.
@@ -24,12 +32,4 @@ public class AvailableDestinationsResponse extends AbstractGameResponse {
         super(lobbyId, true, "");
         this.cities = cities;
     }
-
-    /**
-     * Map of cities and if they are only accessible when the player discards a city card.
-     * <p>
-     * Key is the city id.
-     * Value is a list of cards, that can be discarded to access the city. If the list is empty, the city is accessible without discarding a card.
-     */
-    private final Map<Integer, List<ICardDTO>> cities;
 }
