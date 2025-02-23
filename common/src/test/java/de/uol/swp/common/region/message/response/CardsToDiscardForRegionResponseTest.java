@@ -19,9 +19,9 @@ class CardsToDiscardForRegionResponseTest {
         List<CityCardDTO> cardsList2 = List.of(card1, card2);
         List<CityCardDTO> cardsList3 = List.of(card1);
 
-        CardsToDiscardForRegionResponse response1 = new CardsToDiscardForRegionResponse(cardsList1);
-        CardsToDiscardForRegionResponse response2 = new CardsToDiscardForRegionResponse(cardsList2);
-        CardsToDiscardForRegionResponse response3 = new CardsToDiscardForRegionResponse(cardsList3);
+        CardsToDiscardForRegionResponse response1 = new CardsToDiscardForRegionResponse("lobbyId", cardsList1);
+        CardsToDiscardForRegionResponse response2 = new CardsToDiscardForRegionResponse("lobbyId", cardsList2);
+        CardsToDiscardForRegionResponse response3 = new CardsToDiscardForRegionResponse("lobbyId", cardsList3);
 
         assertEquals(response1, response2);
         assertNotEquals(response1, response3);
@@ -36,9 +36,9 @@ class CardsToDiscardForRegionResponseTest {
         List<CityCardDTO> cardsList2 = List.of(card1, card2);
         List<CityCardDTO> cardsList3 = List.of(card1);
 
-        CardsToDiscardForRegionResponse response1 = new CardsToDiscardForRegionResponse(cardsList1);
-        CardsToDiscardForRegionResponse response2 = new CardsToDiscardForRegionResponse(cardsList2);
-        CardsToDiscardForRegionResponse response3 = new CardsToDiscardForRegionResponse(cardsList3);
+        CardsToDiscardForRegionResponse response1 = new CardsToDiscardForRegionResponse("lobbyId", cardsList1);
+        CardsToDiscardForRegionResponse response2 = new CardsToDiscardForRegionResponse("lobbyId", cardsList2);
+        CardsToDiscardForRegionResponse response3 = new CardsToDiscardForRegionResponse("lobbyId", cardsList3);
 
         assertEquals(response1.hashCode(), response2.hashCode());
         assertNotEquals(response1.hashCode(), response3.hashCode());

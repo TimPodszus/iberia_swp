@@ -65,6 +65,7 @@ import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Pair;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -93,6 +94,8 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CITY_CLASS = "city";
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
+
+    @Setter
     private String lobbyId;
 
     private IUserDTO user;
@@ -965,6 +968,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onBoardUpdateEvent(BoardUpdateEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         this.gameDTO = event.getGameDTO();
 
         Platform.runLater(() -> updateBoard(gameDTO));
@@ -980,8 +988,12 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         this.gameDTO = event.getGameDTO();
-        this.lobbyId = event.getLobbyId();
         this.user = UserStore.getInstance()
                              .getUser();
 
@@ -1357,12 +1369,22 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onCardSelectionResponse(CardSelectionResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         CardDialog dialog = new CardDialog(true, response.isDismissible(), response.getCards());
         Optional<ICardDTO> result = dialog.showAndWait();
     }
 
     @Subscribe
     public void onCardExchangeResponse(CardExchangeResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
         Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
@@ -1377,6 +1399,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailableRegionsResponse(AvailableRegionsResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         setAvailableRegions(response.getRegions());
     }
 
@@ -1391,6 +1418,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onCardsToDiscardForRegionResponse(CardsToDiscardForRegionResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         Platform.runLater(() -> {
             CardSelectionWaterTreatmentDialog cardSelectionDialog = new CardSelectionWaterTreatmentDialog(
                     true,
@@ -1435,8 +1467,12 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailableDestinationsResponse(AvailableDestinationsResponse response) {
-        LOG.debug(
-                "Received {} available destinations",
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
+        LOG.debug("Received {} available destinations",
                 response.getCities()
                         .size()
         );
@@ -1447,6 +1483,11 @@ public class GamePresenter extends AbstractPresenter {
 
     @Subscribe
     public void onBuildableTrainTracksResponse(BuildableTrainTracksResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         this.buildableTrainTracks = response.getConnections();
         highlightBuildableTrainTrackHighlight(true);
     }
@@ -1505,6 +1546,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onShareRideEvent(ShareRideEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         Platform.runLater(() -> {
             boolean result = ConfirmationDialog.showConfirmationDialog("Willst du zu " + event.getCity()
                                                                                               .getName()
@@ -1554,6 +1600,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onEndGameEvent(EndGameEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
         Platform.runLater(dialog::showEndGameDialog);
     }

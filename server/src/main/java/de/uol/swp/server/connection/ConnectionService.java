@@ -69,7 +69,10 @@ public class ConnectionService extends AbstractService {
                 request.getCityId()
         ));
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(
+                request.getLobbyId(),
+                availableDestinations
+        );
         request.getMessageContext()
                .ifPresent(response::setMessageContext);
         request.getSession()
@@ -100,7 +103,9 @@ public class ConnectionService extends AbstractService {
         Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAllDestinations(
                 event.getLobbyId()));
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(event.getLobbyId(),
+                availableDestinations
+        );
         response.setSession(session);
         post(response);
         LOG.debug("[Lobby: {}] Sent AvailableDestinationsResponse for player {}",
