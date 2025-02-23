@@ -18,11 +18,12 @@ import java.util.Map;
 public class CardRepository {
     private static final String EPIDEMIC_CARD_TITLE = "Epidemiekarte";
 
-    @Inject
     CityRepository cityRepository;
     private Map<Integer, ICard> cards;
 
-    public CardRepository() {
+    @Inject
+    public CardRepository(CityRepository cityRepository) {
+        this.cityRepository = cityRepository;
         createAllCards();
 
     }
