@@ -6,7 +6,6 @@ import lombok.Getter;
 
 
 @Getter
-
 public class InfectionCard extends Card {
     private final ICity city;
 

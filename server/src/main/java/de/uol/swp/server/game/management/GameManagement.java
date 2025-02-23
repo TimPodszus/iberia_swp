@@ -13,12 +13,10 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
-import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.city.management.ICityManagement;
-import de.uol.swp.server.connection.management.ConnectionManagement;
+import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.GameService;
@@ -39,13 +37,7 @@ import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.google.inject.Inject;
-
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Manages game related operations such as creating games,
@@ -654,15 +646,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 event.getLobbyId(),
                 targetPlayer.getUser()
                             .getUsername(),
-                event.getTargetPlayerCard()
-                     .getId()
+                event.getTargetPlayerCard().getId()
         );
         ICard currentPlayerCard = playerManagement.getCard(
                 event.getLobbyId(),
                 currentPlayer.getUser()
                              .getUsername(),
-                event.getCurrentPlayerCard()
-                     .getId()
+               event.getCurrentPlayerCard().getId()
         );
         currentPlayer.getCards()
                      .remove(currentPlayerCard);
@@ -686,6 +676,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         LOG.trace("ReducedActionsRemaining");
         postShareKnowledgeResponse(event, lobbyManagement, gameService, true);
     }
+
     /**
      * Increases the number of actions remaining for the current player in the game.
      * <p>
@@ -707,7 +698,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             playerTurnState.setActionsRemaining(playerTurnState.getActionsRemaining() + amount);
         }
     }
-}
+
 
     /**
      * Posts a response to the share knowledge event.

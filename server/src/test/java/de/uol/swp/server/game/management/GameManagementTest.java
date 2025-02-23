@@ -11,9 +11,7 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.cards.CardMapper;
-import de.uol.swp.server.cards.CityCard;
-import de.uol.swp.server.cards.ICard;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
@@ -23,11 +21,11 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.connection.ConnectionRepository;
-import de.uol.swp.server.game.GameService;
-import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
+import de.uol.swp.server.game.GameService;
+import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.*;
@@ -40,11 +38,7 @@ import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.role.IRole;
-import de.uol.swp.server.role.Nurse;
-import de.uol.swp.server.role.RoleRepository;
-import de.uol.swp.server.role.RailwayWorker;
-import de.uol.swp.server.role.Sailor;
+import de.uol.swp.server.role.*;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -217,6 +211,7 @@ class GameManagementTest {
 
         assertEquals(infectionCard1, drawnCard, "Expected Barcelona infection card to be drawn");
     }
+
     @Test
     void testSetPositioning_PlayerAlreadyPositioned() {
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
@@ -292,6 +287,7 @@ class GameManagementTest {
 
         assertEquals(infectionCard1, drawnCard, "Expected Barcelona infection card to be drawn");
     }
+
     @Test
     void testDrawInfectionCard_InvalidState() {
         InfectionCard infectionCard = new InfectionCard(
@@ -971,6 +967,7 @@ class GameManagementTest {
                 mock(RegionRepository.class),
                 mock(ConnectionRepository.class),
                 mock(PlagueRepository.class),
+                mock(CardRepository.class),
                 1,
                 0,
                 14,

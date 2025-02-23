@@ -2,29 +2,24 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
-import de.uol.swp.common.cards.ICardDTO;
 import de.uol.swp.common.cards.data.CityCardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
+import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
-import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
-import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.player.request.DrawInfectionCardRequest;
-import de.uol.swp.common.player.request.MovePlayerRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.MovePlayerRequest;
-import javafx.application.Platform;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
+import javafx.application.Platform;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -304,7 +299,6 @@ public class GameService {
             LOG.trace("Card Exchange Request sent");
         }
     }
-
 
 
     /**

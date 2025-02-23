@@ -1,6 +1,6 @@
 package de.uol.swp.common.game.message.request;
 
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.AbstractGameRequest;
 import lombok.Getter;
 
