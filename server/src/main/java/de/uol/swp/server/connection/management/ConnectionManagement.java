@@ -262,6 +262,17 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         return allDestinations;
     }
 
+    /**
+     * Adds a destination to the available destinations map.
+     * <p>
+     * If the destination already exists, it updates the transport mode and usable cards.
+     * Otherwise, it creates a new destination entry.
+     *
+     * @param availableDestinations the map of available destinations
+     * @param cityId                the ID of the city to add
+     * @param cardsUsableForMove    the list of cards usable for the move
+     * @param transportMode         the transport mode to add
+     */
     private void addDestination(
             Map<Integer, DestinationInfo> availableDestinations,
             Integer cityId,
@@ -271,7 +282,10 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         DestinationInfo existingDestinationInfo = availableDestinations.get(cityId);
 
         if (existingDestinationInfo == null) {
-            availableDestinations.put(cityId, new DestinationInfo(cardsUsableForMove, new ArrayList<>(List.of(transportMode))));
+            availableDestinations.put(
+                    cityId,
+                    new DestinationInfo(cardsUsableForMove, new ArrayList<>(List.of(transportMode)))
+            );
         } else {
             existingDestinationInfo.addTransportMode(transportMode);
             existingDestinationInfo.setCardsUsableForMove(cardsUsableForMove);
