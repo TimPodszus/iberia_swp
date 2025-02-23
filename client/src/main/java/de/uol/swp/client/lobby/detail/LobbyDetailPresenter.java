@@ -7,7 +7,6 @@ import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
-import de.uol.swp.common.lobby.message.response.LobbyCreatedResponse;
 import de.uol.swp.common.lobby.message.response.LobbyUpdatedEvent;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.application.Platform;
@@ -37,6 +36,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     @Inject
     private LobbyService lobbyService;
 
+    private String lobbyId;
+
     private ILobbyDTO lobbyDTO;
 
     @FXML
@@ -46,7 +47,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     public Button changeLobbyName;
 
     @FXML
-    public Label lobbyId;
+    public Label lobbyIdLabel;
 
     @FXML
     public Label playerCount;
@@ -96,6 +97,11 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onUserJoinedLobbyMessage(UserJoinedLobbyMessage message) {
+        if (!message.getLobbyId()
+                    .equals(lobbyId)) {
+            return;
+        }
+
         lobbyService.getLobby(message.getLobbyId());
     }
 
@@ -106,20 +112,12 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onGetLobbyResponse(GetLobbyResponse response) {
-        lobbyDTO = response.getLobbyDTO();
-        initializeScreen();
-    }
+        if (!response.getLobbyDTO()
+                     .getLobbyId()
+                     .equals(lobbyId)) {
+            return;
+        }
 
-    /**
-     * Handles the response when a lobby is created.
-     * <p>
-     * This method is called when a LobbyCreatedResponse is received. It updates the lobbyDTO
-     * with the data from the response and initializes the screen with the updated lobby data.
-     *
-     * @param response the response containing the lobby data
-     */
-    @Subscribe
-    public void onLobbyCreatedResponse(LobbyCreatedResponse response) {
         lobbyDTO = response.getLobbyDTO();
         initializeScreen();
     }
@@ -131,6 +129,12 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onLobbyUpdatedEvent(LobbyUpdatedEvent event) {
+        if (!event.getLobbyDTO()
+                  .getLobbyId()
+                  .equals(lobbyId)) {
+            return;
+        }
+
         lobbyDTO = event.getLobbyDTO();
         initializeScreen();
     }
@@ -154,7 +158,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
         lobbyName.textProperty()
                  .addListener((observable, oldValue, newValue) -> changeLobbyName.setDisable(newValue.equals(lobbyDTO.getName())));
 
-        lobbyId.setText(lobbyDTO.getLobbyId());
+        lobbyIdLabel.setText(lobbyDTO.getLobbyId());
         playerCount.setText(lobbyDTO.getUsers()
                                     .size() + MAX_PLAYERS);
 
@@ -272,5 +276,15 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     private void leaveLobby() {
         lobbyService.leaveLobby(lobbyDTO.getLobbyId());
+    }
+
+    /**
+     * Sets the lobby ID and gets the lobby data from the server.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    public void setLobbyId(String lobbyId) {
+        this.lobbyId = lobbyId;
+        lobbyService.getLobby(lobbyId);
     }
 }
