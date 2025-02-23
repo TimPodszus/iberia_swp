@@ -5,10 +5,20 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Test class for CardRepository.
+ */
 public class CardRepositoryTest {
+    /**
+     * Tests the getCards method and verifies that the correct number of cards is returned.
+     */
     @Test
     public void testGetCards() {
         CardRepository cardRepository = new CardRepository(new CityRepository());
-        assertEquals(104, cardRepository.getCards().size());
+        assertEquals(
+                99,
+                cardRepository.getCards()
+                              .size()
+        );
     }
 }

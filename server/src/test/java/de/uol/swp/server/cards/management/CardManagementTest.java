@@ -94,6 +94,9 @@ public class CardManagementTest {
         verify(game).setState(any(EventState.class));
     }
 
+    /**
+     * Tests the playCard method for a card that is not in the player's hand.
+     */
     @Test
     void testPlayEventCardWithWrongId() {
         IUser user = new User("user", "password");
@@ -106,6 +109,9 @@ public class CardManagementTest {
         verify(game, never()).setState(any());
     }
 
+    /**
+     * Tests the playCard method for a card that is not an event card.
+     */
     @Test
     void testPlayEventCardWithStateMobilization() {
         IUser user = new User("user", "password");
@@ -129,6 +135,9 @@ public class CardManagementTest {
         verify(game).setState(any(EventState.class));
     }
 
+    /**
+     * Tests the playCard method for a card that is not an event card.
+     */
     @Test
     void testPlayEventCardWithAnotherDay() {
         IUser user = new User("user", "password");
@@ -152,6 +161,9 @@ public class CardManagementTest {
         verify(game).setState(any(EventState.class));
     }
 
+    /**
+     * Tests the playCard method for a card that is not an event card.
+     */
     @Test
     void testPlayEventCardWithAnotherDayNotInPlayerTurnState() {
         IUser user = new User("user", "password");

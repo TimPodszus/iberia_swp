@@ -197,6 +197,14 @@ public class ConnectionServiceTest extends EventBusBasedTest {
         verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser2");
     }
 
+    /**
+     * Tests the handling of a StateMobilizationEvent with an unlogged user.
+     * <p>
+     * This test verifies that an AvailableDestinationsResponse is received
+     * when a StateMobilizationEvent is posted with an unlogged user.
+     *
+     * @throws InterruptedException if the thread is interrupted while waiting for the event
+     */
     @Test
     void testOnStateMobilizationEventWithUnloggedUser() throws InterruptedException {
         IUser testuser1 = createUserAndSession("testuser1");
