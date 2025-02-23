@@ -1,17 +1,11 @@
 package de.uol.swp.server.game;
 
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
-import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
@@ -19,12 +13,12 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
-import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
@@ -33,23 +27,17 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
-import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
-import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.EndGameState;
-import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
-import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
-import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -148,7 +136,9 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     @Subscribe
-    public void onAnotherDayEvent(AnotherDayEvent event) { super.handleEvent(event); }
+    public void onAnotherDayEvent(AnotherDayEvent event) {
+        super.handleEvent(event);
+    }
 
     /**
      * Sets up the test environment.
@@ -433,6 +423,7 @@ public class GameServiceTest extends EventBusBasedTest {
                 mock(RegionRepository.class),
                 mock(ConnectionRepository.class),
                 mock(PlagueRepository.class),
+                mock(CardRepository.class),
                 1,
                 0,
                 14,
@@ -460,8 +451,9 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement).lockGameInWaitForConfirmation(lobbyId);
     }
+
     @Test
-    void testOnBuildTrainTrackRequest_UserIsNull() throws GameManagementException, GameException {
+    void testOnBuildTrainTrackRequest_UserIsNull() {
         BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
         request.setSession(null);
 
@@ -490,6 +482,7 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
     }
+
     @Test
     void testOnGameStateChange_DrawCardState() {
         ILobby lobby = mock(ILobby.class);
@@ -526,7 +519,8 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
-        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));}
+        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));
+    }
 
     @Test
     void testOnAnotherDayEvent() {

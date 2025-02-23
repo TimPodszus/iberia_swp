@@ -1,7 +1,7 @@
 package de.uol.swp.common.game.message.request;
 
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
-import de.uol.swp.common.cards.ICardDTO;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

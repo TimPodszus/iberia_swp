@@ -1,6 +1,6 @@
 package de.uol.swp.common.game.message.request;
 
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
