@@ -3,6 +3,8 @@ package de.uol.swp.server.connection.management;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.player.data.IPlayer;
 
 import java.util.List;
 import java.util.Map;
@@ -13,14 +15,24 @@ import java.util.Map;
 public interface IConnectionManagement {
 
     /**
-     * Retrieves a list of available destinations from the given city.
+     * Retrieves a list of available destinations from the given city for the current player.
      *
      * @param lobbyId the ID of the lobby
-     * @param cityId  the city from which to get available destinations
+     * @param cityId  the ID of the city from which to get available destinations
      * @return a map of available destinations, and a list of cards that can be discarded to access them, if the list is
      * empty, the city is accessible without discarding a card
      */
     Map<ICity, List<ICard>> getAvailableDestinations(String lobbyId, int cityId);
+
+    /**
+     * Retrieves a list of available destinations for the given player.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param username  the username of the player for whom to get available destinations
+     * @return a map of available destinations, and a list of cards that can be discarded to access them, if the list is
+     * empty, the city is accessible without discarding a card
+     */
+    Map<ICity, List<ICard>> getAvailableDestinations(String lobbyId, String username);
 
     /**
      * Retrieves a map of all destinations from the given lobby.
@@ -47,4 +59,12 @@ public interface IConnectionManagement {
      * @return the connection
      */
     IConnection getConnection(String lobbyId, int connectionId);
+
+    /**
+     * Retrieves a game by its lobby ID.
+     *
+     * @param lobbyId the ID of the lobby
+     * @return the game, or null if the lobby does not exist
+     */
+    IGame getGame(String lobbyId);
 }
