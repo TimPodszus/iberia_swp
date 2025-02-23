@@ -677,7 +677,7 @@ class GameManagementTest {
     void testMovePlayer_OnTheMoveDayAndNightEvent() throws GameManagementException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
-                new DestinationInfo(List.of(), List.of())
+                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
         );
         when(connectionManagement.getAllDestinations(LOBBY_CODE)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);

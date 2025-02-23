@@ -257,7 +257,9 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         Map<Integer, DestinationInfo> allDestinations = new HashMap<>();
         for (ICity city : game.getCityRepository()
                               .getCities()) {
-            allDestinations.put(city.getId(), new DestinationInfo(new ArrayList<>(), new ArrayList<>()));
+            allDestinations.put(city.getId(), new DestinationInfo(
+                    new ArrayList<>(),
+                    new ArrayList<>(List.of(TransportMode.NONE))));
         }
         return allDestinations;
     }

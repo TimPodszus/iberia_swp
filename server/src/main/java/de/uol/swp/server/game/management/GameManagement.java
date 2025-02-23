@@ -319,7 +319,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
         IGame game = getGame(lobbyCode);
         Set<IRegionDTO> availableRegions = new HashSet<>();
-        if(game.getWaterTreatmentsLeft() > 0) {
+        if (game.getWaterTreatmentsLeft() > 0) {
             availableRegions = regionManagement.getAvailableRegions(UserMapper.toDTO(user), lobbyCode);
         }
         return !availableRegions.isEmpty();
@@ -335,15 +335,24 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IPlayer player = getPlayerForMove(game, user);
 
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
-        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId()) && availableDestinations.get(city.getId())
-                                                                                                                .getTransportModes()
-                                                                                                                .contains(TransportMode.CARRIAGE);
-        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId()) && !availableDestinations.get(city.getId())
-                                                                                                                .getTransportModes()
-                                                                                                                .contains(TransportMode.SHIP);
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
+                && (availableDestinations.get(city.getId())
+                                         .getTransportModes()
+                                         .contains(TransportMode.CARRIAGE) ||
+                    availableDestinations.get(city.getId())
+                                         .getTransportModes()
+                                         .contains(TransportMode.TRAIN) ||
+                    availableDestinations.get(city.getId())
+                                         .getTransportModes()
+                                         .contains(TransportMode.NONE));
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
+                && availableDestinations.get(city.getId())
+                                        .getTransportModes()
+                                        .contains(TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
-            LOG.error("[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
+            LOG.error(
+                    "[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
                     lobbyId,
                     player.getUser()
                           .getUsername(),
@@ -428,7 +437,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param city   the destination city
      */
     private void movePlayerByLand(IGame game, IPlayer player, ICity city) {
-        LOG.debug("[LobbyID: {}] Moving {} to city {}",
+        LOG.debug(
+                "[LobbyID: {}] Moving {} to city {}",
                 game.getGameId(),
                 player.getUser()
                       .getUsername(),
@@ -460,7 +470,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             playerManagement.discardCard(game.getGameId(), player, card);
         }
 
-        LOG.debug("[LobbyID: {}] {} sails to {}", game.getGameId(), player.getUser()
+        LOG.debug(
+                "[LobbyID: {}] {} sails to {}",
+                game.getGameId(),
+                player.getUser()
                       .getUsername(),
                 city.getName()
                     .getDisplayName()
