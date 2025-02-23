@@ -59,9 +59,9 @@ class ConnectionMapperTest {
                              .size()
         );
         assertTrue(connectionDTO.getCityNames()
-                                .contains(CityName.BARCELONA.getDisplayName()));
+                                .contains(CityName.BARCELONA));
         assertTrue(connectionDTO.getCityNames()
-                                .contains(CityName.ALICANTE.getDisplayName()));
+                                .contains(CityName.ALICANTE));
         assertTrue(connectionDTO.isTrainTrack());
         assertTrue(connectionDTO.isTrainTrackBuildable());
     }
@@ -80,15 +80,15 @@ class ConnectionMapperTest {
         IConnectionDTO dto1 = connectionDTOS.get(0);
         assertEquals(1, dto1.getId());
         assertTrue(dto1.getCityNames()
-                       .contains(CityName.BARCELONA.getDisplayName()));
+                       .contains(CityName.BARCELONA));
         assertTrue(dto1.getCityNames()
-                       .contains(CityName.ALICANTE.getDisplayName()));
+                       .contains(CityName.ALICANTE));
 
         IConnectionDTO dto2 = connectionDTOS.get(1);
         assertEquals(2, dto2.getId());
         assertTrue(dto2.getCityNames()
-                       .contains(CityName.ZARAGOZA.getDisplayName()));
+                       .contains(CityName.ZARAGOZA));
         assertTrue(dto2.getCityNames()
-                       .contains(CityName.GIRONA.getDisplayName()));
+                       .contains(CityName.GIRONA));
     }
 }

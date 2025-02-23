@@ -1,8 +1,14 @@
 package de.uol.swp.server.cards;
 
-import de.uol.swp.common.cards.*;
+import de.uol.swp.common.cards.data.*;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.cards.data.Card;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.EpidemicCard;
+import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.common.city.CityName;
 import org.junit.jupiter.api.BeforeEach;
@@ -150,5 +156,18 @@ class CardMapperTest {
         assertEquals(2, infectionCardDTOs.size());
         assertNotNull(infectionCardDTOs.get(0));
         assertNotNull(infectionCardDTOs.get(1));
+    }
+
+    /**
+     * Tests the mapping of an event card to an event card DTO.
+     */
+    @Test
+    void testEventCardMapping() {
+        EventCard eventCard = new OnTheMoveDayAndNightEventCard(207);
+        ICardDTO cardDTO = CardMapper.toDTO(eventCard);
+        assertInstanceOf(EventCardDTO.class, cardDTO);
+        assertEquals(207, cardDTO.getId());
+        assertEquals(eventCard.getTitle(), cardDTO.getTitle());
+        assertEquals(eventCard.getDescription(), ((EventCardDTO) cardDTO).getAction());
     }
 }

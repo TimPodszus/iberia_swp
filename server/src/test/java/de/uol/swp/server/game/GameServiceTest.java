@@ -1,9 +1,17 @@
 package de.uol.swp.server.game;
 
 import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
+import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
+import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
+import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
@@ -11,15 +19,22 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.connection.data.Connection;
+import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.IGameState;
@@ -29,10 +44,12 @@ import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
+import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -43,6 +60,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 
 import java.util.*;
 
@@ -71,13 +89,21 @@ public class GameServiceTest extends EventBusBasedTest {
     @Mock
     private IPlayerManagement playerManagement;
 
+    @Mock
+    private IConnectionManagement connectionManagement;
+
+    @Mock
+    IGame game;
+
+    @Spy
     @InjectMocks
     GameService gameService = new GameService(
             getBus(),
             lobbyManagement,
             gameManagement,
             cityManagement,
-            playerManagement
+            playerManagement,
+            connectionManagement
     );
 
     /**
@@ -120,6 +146,9 @@ public class GameServiceTest extends EventBusBasedTest {
     public void onShareRideEvent(ShareRideRequest event) {
         super.handleEvent(event);
     }
+
+    @Subscribe
+    public void onAnotherDayEvent(AnotherDayEvent event) { super.handleEvent(event); }
 
     /**
      * Sets up the test environment.
@@ -431,7 +460,36 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement).lockGameInWaitForConfirmation(lobbyId);
     }
+    @Test
+    void testOnBuildTrainTrackRequest_UserIsNull() throws GameManagementException, GameException {
+        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
+        request.setSession(null);
 
+        assertThrows(GameException.class, () -> gameService.onBuildTrainTrackRequest(request));
+    }
+
+    @Test
+    void testOnBuildTrainTrackRequest_WithoutExtraTrackState() throws GameManagementException, GameException {
+        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+        IConnection connection = new Connection(1, List.of(CityName.ALICANTE, CityName.ALBACETE), true);
+        when(connectionManagement.getConnection("lobbyId", 1)).thenReturn(connection);
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+        when(game.getRegionRepository()).thenReturn(new RegionRepository(new CityRepository()));
+        when(game.getPlagueRepository()).thenReturn(new PlagueRepository());
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby("lobbyId", "Test", List.of(user), user, 4));
+
+        gameService.onBuildTrainTrackRequest(request);
+
+        verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
+        assertInstanceOf(BoardUpdateEvent.class, event);
+    }
     @Test
     void testOnGameStateChange_DrawCardState() {
         ILobby lobby = mock(ILobby.class);
@@ -445,5 +503,51 @@ public class GameServiceTest extends EventBusBasedTest {
         gameService.onGameStateChange(game);
 
         verify(game).setState(any(EndGameState.class));
+    }
+
+    @Test
+    void testOnBuildTrainTrackRequest_WithExtraTrackState() throws GameManagementException, GameException {
+        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+        IConnection connection = new Connection(1, List.of(CityName.ALICANTE, CityName.ALBACETE), true);
+        when(connectionManagement.getConnection("lobbyId", 1)).thenReturn(connection);
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection)));
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+        when(game.getRegionRepository()).thenReturn(new RegionRepository(new CityRepository()));
+        when(game.getPlagueRepository()).thenReturn(new PlagueRepository());
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby("lobbyId", "Test", List.of(user), user, 4));
+
+        gameService.onBuildTrainTrackRequest(request);
+
+        verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
+        assertInstanceOf(BoardUpdateEvent.class, event);
+        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));}
+
+    @Test
+    void testOnAnotherDayEvent() {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        AnotherDayEvent anotherDayEvent = new AnotherDayEvent("lobbycode", "testuser");
+        anotherDayEvent.setSession(session);
+
+        IGame game = new Game(2, "lobbycode");
+        when(gameManagement.getGame("lobbycode")).thenReturn(game);
+        ILobby lobby = new Lobby("lobbycode", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
+        game.setState(new PlayerTurnState());
+
+        gameService.onAnotherDayEvent(anotherDayEvent);
+
+        verify(gameManagement, times(1)).increaseCurrentPlayerActions(game, 2);
+        verify(gameManagement, times(2)).getGame("lobbycode");
+        verify(lobbyManagement, times(1)).getLobby("lobbycode");
+        verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 }

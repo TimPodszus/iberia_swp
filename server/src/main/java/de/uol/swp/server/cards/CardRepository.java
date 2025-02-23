@@ -1,7 +1,11 @@
 package de.uol.swp.server.cards;
 
-import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
+import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.city.CityRepository;
 import lombok.Getter;
 
@@ -10,14 +14,12 @@ import java.util.Map;
 
 @Getter
 public class CardRepository {
-
-    @Inject
     CityRepository cityRepository;
     private Map<Integer, ICard> cards;
 
-    public CardRepository() {
+    public CardRepository(CityRepository cityRepository) {
+        this.cityRepository = cityRepository;
         createAllCards();
-
     }
 
     private void createAllCards() {
@@ -126,14 +128,8 @@ public class CardRepository {
         cards.put(146, new InfectionCard(146, CityName.CADIZ.getDisplayName(), cityRepository.getCity(46)));
         cards.put(147, new InfectionCard(147, CityName.SEVILLA.getDisplayName(), cityRepository.getCity(47)));
         cards.put(148, new InfectionCard(148, CityName.HUELVA.getDisplayName(), cityRepository.getCity(48)));
-        cards.put(201, new EpidemicCard(201, "Epidemiekarte", ""));
-        cards.put(202, new EpidemicCard(202, "Epidemiekarte", ""));
-        cards.put(203, new EpidemicCard(203, "Epidemiekarte", ""));
-        cards.put(204, new EpidemicCard(204, "Epidemiekarte", ""));
-        cards.put(205, new EpidemicCard(205, "Epidemiekarte", ""));
-        cards.put(206, new EpidemicCard(206, "Epidemiekarte", ""));
-
-
+        cards.put(207, new OnTheMoveDayAndNightEventCard(207));
+        cards.put(208, new AnotherDayEventCard(208));
     }
 
 

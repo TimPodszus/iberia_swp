@@ -4,10 +4,11 @@ import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.server.cards.ICard;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameService;
+import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
@@ -71,6 +72,16 @@ public interface IGameManagement {
     IGame getGame(String lobbyId);
 
     /**
+     * Builds a train track between two cities in the game.
+     *
+     * @param user       the user representing the player building the train track
+     * @param lobbyId    the id of the lobby in which the game is happening
+     * @param connection the connection representing the train track to be built
+     * @throws GameManagementException if building the train track fails
+     */
+    void buildTrainTrack(IUser user, String lobbyId, IConnection connection) throws GameManagementException;
+
+    /**
      * Locks the game in a wait-for-confirmation state.
      *
      * @param lobbyId the ID of the lobby in which the game is happening
@@ -118,5 +129,13 @@ public interface IGameManagement {
             GameService gameService,
             boolean success
     );
+
+    /**
+     * Increases the number of actions the current player has in the game.
+     *
+     * @param game  the game in which the current player's actions are to be increased
+     * @param amount the amount by which to increase the current player's actions
+     */
+    void increaseCurrentPlayerActions(IGame game, int amount);
 }
 

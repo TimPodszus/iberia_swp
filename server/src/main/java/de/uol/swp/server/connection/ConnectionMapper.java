@@ -23,10 +23,7 @@ public class ConnectionMapper {
     public static IConnectionDTO toDTO(IConnection connection) {
         return new ConnectionDTO(
                 connection.getId(),
-                connection.getCityNames()
-                          .stream()
-                          .map(CityName::getDisplayName)
-                          .toList(),
+                connection.getCityNames(),
                 connection.isTrainTrack(),
                 connection.isTrainTrackBuildable()
         );
@@ -43,10 +40,7 @@ public class ConnectionMapper {
         for (IConnection connection : connections) {
             ConnectionDTO connectionDTO = new ConnectionDTO(
                     connection.getId(),
-                    connection.getCityNames()
-                              .stream()
-                              .map(CityName::getDisplayName)
-                              .toList(),
+                    connection.getCityNames(),
                     connection.isTrainTrack(),
                     connection.isTrainTrackBuildable()
             );

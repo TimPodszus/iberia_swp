@@ -1,9 +1,9 @@
 package de.uol.swp.client.game;
 
 import de.uol.swp.client.game.objects.cards.*;
-import de.uol.swp.common.cards.CityCardDTO;
-import de.uol.swp.common.cards.EpidemicCardDTO;
-import de.uol.swp.common.cards.EventCardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
+import de.uol.swp.common.cards.data.EpidemicCardDTO;
+import de.uol.swp.common.cards.data.EventCardDTO;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.city.ICityDTO;

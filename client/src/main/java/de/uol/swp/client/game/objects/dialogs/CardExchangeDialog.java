@@ -2,7 +2,7 @@ package de.uol.swp.client.game.objects.dialogs;
 
 import de.uol.swp.client.game.CardFactory;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.*;

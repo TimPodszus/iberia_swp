@@ -2,6 +2,8 @@ package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
+import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.*;
@@ -12,12 +14,17 @@ import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
+import de.uol.swp.server.connection.ConnectionMapper;
+import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.lobby.data.ILobby;
@@ -46,6 +53,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
     protected ILobbyManagement lobbyManagement;
     ICityManagement cityManagement;
     IPlayerManagement playerManagement;
+    IConnectionManagement connectionManagement;
 
     /**
      * Constructs a new GameService and registers it with the specified EventBus.
@@ -58,13 +66,15 @@ public class GameService extends AbstractService implements GameStateChangeListe
             ILobbyManagement lobbyManagement,
             IGameManagement gameManagement,
             ICityManagement cityManagement,
-            IPlayerManagement playerManagement
+            IPlayerManagement playerManagement,
+            IConnectionManagement connectionManagement
     ) {
         super(bus);
         this.lobbyManagement = lobbyManagement;
         this.gameManagement = gameManagement;
         this.cityManagement = cityManagement;
         this.playerManagement = playerManagement;
+        this.connectionManagement = connectionManagement;
     }
 
     /**
@@ -101,6 +111,48 @@ public class GameService extends AbstractService implements GameStateChangeListe
         if (game != null && lobby != null) {
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
+    }
+
+    /**
+     * Handles incoming requests to build a train track. This method retrieves the user from the session,
+     * and then delegates the train track building to the GameManagement class.
+     *
+     * @param request the train track build request containing session, lobby code, and connection ID
+     */
+    @Subscribe
+    public void onBuildTrainTrackRequest(BuildTrainTrackRequest request) throws GameException, GameManagementException {
+        IUserDTO user = request.getSession()
+                               .map(Session::getUser)
+                               .orElse(null);
+        if (user == null) {
+            throw new GameException("User is unknown");
+        }
+        gameManagement.buildTrainTrack(
+                UserMapper.toUser(user),
+                request.getLobbyId(),
+                connectionManagement.getConnection(request.getLobbyId(), request.getConnectionId())
+        );
+
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        if (game.getState() instanceof BuildExtraTrainTrackState state) {
+            List<IConnection> connections = state.getConnections();
+            BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(
+                    request.getLobbyId(),
+                    true,
+                    ConnectionMapper.toDTOList(connections)
+            );
+
+            request.getMessageContext()
+                   .ifPresent(response::setMessageContext);
+            request.getSession()
+                   .ifPresent(response::setSession);
+
+            post(response);
+        }
+
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 
     /**
@@ -329,5 +381,21 @@ public class GameService extends AbstractService implements GameStateChangeListe
             game.setState(new EndGameState(false));
             LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
         }
+    }
+
+    /**
+     * Handles the AnotherDayEvent.
+     *
+     * @param event the event containing the lobby ID and the username of the player to increase the actions
+     */
+    @Subscribe
+    public void onAnotherDayEvent(AnotherDayEvent event) {
+        LOG.debug("[Lobby: {}] Got AnotherDayEvent for current player {}", event.getLobbyId(), event.getUsername());
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        gameManagement.increaseCurrentPlayerActions(game, event.getAmountOfActions());
+        game.setState(game.getPreviousState());
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
 }

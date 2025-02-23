@@ -1886,13 +1886,14 @@
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                 </HBox.margin>
                 <children>
-                    <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                    <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true"
+                               mouseTransparent="true">
                         <image>
                             <Image url="@../img/player-card-back.png"/>
                         </image>
                     </ImageView>
                     <Text fx:id="playerCardDrawPileCounter" layoutX="50.0" layoutY="15.0" strokeType="OUTSIDE"
-                          strokeWidth="0.0" text="48" textAlignment="RIGHT" wrappingWidth="50.0">
+                          strokeWidth="0.0" text="48" textAlignment="RIGHT" wrappingWidth="50.0" mouseTransparent="true">
                         <font>
                             <Font name="System Bold" size="18.0"/>
                         </font>
@@ -2090,9 +2091,9 @@
             </HBox>
         </children>
     </HBox>
-    <VBox layoutX="10.0" layoutY="10.0" mouseTransparent="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox layoutX="10.0" layoutY="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <children>
-            <HBox mouseTransparent="true">
+            <HBox>
                 <children>
                     <VBox>
                         <HBox.margin>
@@ -2230,19 +2231,20 @@
                     </VBox>
                     <HBox>
                         <children>
-                            <Pane fx:id="infectionCardDrawPile" prefHeight="100.0" prefWidth="150.0" styleClass="pile">
+                            <Pane fx:id="infectionCardDrawPile" onMouseClicked="#onInfectionCardDrawPileClickedEvent"
+                                  prefHeight="100.0" prefWidth="150.0" styleClass="pile">
                                 <HBox.margin>
                                     <Insets/>
                                 </HBox.margin>
                                 <children>
                                     <ImageView fitHeight="100.0" fitWidth="150.0" pickOnBounds="true"
-                                               preserveRatio="true">
+                                               preserveRatio="true" mouseTransparent="true">
                                         <image>
                                             <Image url="@../img/infection-card-back.png"/>
                                         </image>
                                     </ImageView>
                                     <Text fx:id="infectionCardDrawPileCounter" fill="WHITE" layoutY="15.0"
-                                          strokeType="OUTSIDE" strokeWidth="0.0" text="48" wrappingWidth="50.0">
+                                          strokeType="OUTSIDE" strokeWidth="0.0" text="48" wrappingWidth="50.0" mouseTransparent="true">
                                         <font>
                                             <Font name="System Bold" size="18.0"/>
                                         </font>

@@ -2,6 +2,7 @@ package de.uol.swp.server.player.data;
 
 import de.uol.swp.server.cards.CityCard;
 import de.uol.swp.server.cards.ICard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.usermanagement.IUser;
@@ -25,11 +26,27 @@ public class Player implements IPlayer {
     private List<ICard> cards = new ArrayList<>();
     private final IUser user;
 
-    public CityCard getCityCard(ICity city) {
+    @Override
+    public ICard playCard(int cardId) {
         for (ICard card : cards) {
-            if (card instanceof CityCard cityCard && cityCard.getCity()
-                                                             .equals(city)) {
-                return cityCard;
+            if (card.getId() == cardId) {
+                cards.remove(card);
+                return card;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the card with the given id.
+     *
+     * @param cardId the id of the card
+     * @return the card with the given id
+     */
+    public ICard getCard(int cardId) {
+        for (ICard card : cards) {
+            if (card.getId() == cardId) {
+                return card;
             }
         }
         return null;
