@@ -197,6 +197,29 @@ public class ConnectionServiceTest extends EventBusBasedTest {
         verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser2");
     }
 
+    @Test
+    void testOnStateMobilizationEventWithUnloggedUser() throws InterruptedException {
+        IUser testuser1 = createUserAndSession("testuser1");
+        IPlayer player1 = createMockPlayer(testuser1, 1);
+
+        IUser testuser2 = new User("testuser2", "1234");
+        IPlayer player2 = createMockPlayer(testuser2, 1);
+
+        IGame game = createMockGame(List.of(player1, player2));
+        when(connectionManagement.getGame("1234")).thenReturn(game);
+        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(cityRepository.getCity(1),
+                List.of()
+        ));
+
+        StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
+
+        postAndWait(stateMobilizationEvent);
+
+        assertInstanceOf(AvailableDestinationsResponse.class, event, "Expected an AvailableDestinationsResponse");
+        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser1");
+        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser2");
+    }
+
     /**
      * Creates a user and session for the given username.
      *
