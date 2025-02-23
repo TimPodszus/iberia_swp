@@ -1,8 +1,7 @@
-package de.uol.swp.server.player;
+package de.uol.swp.server.player.data;
 
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for the {@link Player} class.
@@ -57,5 +57,42 @@ class PlayerTest {
 
         player.setCards(mockCards);
         assertEquals(mockCards, player.getCards());
+    }
+
+    @Test
+    void testPlayCard_CardFound() {
+        ICard card = mock(ICard.class);
+        when(card.getId()).thenReturn(1);
+        player.getCards().add(card);
+        ICard result = player.playCard(1);
+
+        assertNotNull(result);
+        assertEquals(card, result);
+        assertFalse(player.getCards().contains(card));
+    }
+
+    @Test
+    void testPlayCard_CardNotFound() {
+        ICard result = player.playCard(1);
+
+        assertNull(result);
+    }
+
+    @Test
+    void testGetCard_CardFound() {
+        ICard card = mock(ICard.class);
+        when(card.getId()).thenReturn(1);
+        player.getCards().add(card);
+        ICard result = player.getCard(1);
+
+        assertNotNull(result);
+        assertEquals(card, result);
+    }
+
+    @Test
+    void testGetCard_CardNotFound() {
+        ICard result = player.getCard(1);
+
+        assertNull(result);
     }
 }

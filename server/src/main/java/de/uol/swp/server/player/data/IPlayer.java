@@ -64,4 +64,12 @@ public interface IPlayer {
      * @return the played card or null if the card is not in the player's hand
      */
     ICard playCard(int cardId);
+
+    /**
+     * Gets the card with the specified ID from the players hand.
+     *
+     * @param cardId the ID of the card to get
+     * @return the card or null if the card is not in the player's hand
+     */
+    ICard getCard(int cardId);
 }

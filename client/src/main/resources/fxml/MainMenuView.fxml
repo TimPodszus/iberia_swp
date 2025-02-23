@@ -14,8 +14,6 @@
           AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0"
           AnchorPane.topAnchor="100.0">
         <children>
-            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCurrentGamesButtonPressed"
-                    style="-fx-margin: 12px;" styleClass="menu-button" text="Aktuelle Spiele"/>
             <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onJoinLobbyButtonPressed"
                    styleClass="menu-button" stylesheets="@../css/myDialog.css" text="Lobby beitreten" />
          <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateLobbyButtonPressed"

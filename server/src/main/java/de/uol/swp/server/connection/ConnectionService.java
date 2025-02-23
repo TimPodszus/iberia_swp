@@ -72,7 +72,8 @@ public class ConnectionService extends AbstractService {
                 request.getCityId()
         ));
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(request.getLobbyId(),
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(
+                request.getLobbyId(),
                 availableDestinations
         );
         request.getMessageContext()

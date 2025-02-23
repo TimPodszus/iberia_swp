@@ -37,11 +37,11 @@ public class AvailableDestinationsResponseTest {
                 city
         )));
         Map<Integer, List<ICardDTO>> destinations = Map.of(1, cards);
-        AvailableDestinationsResponse availableDestinationsResponse = new AvailableDestinationsResponse("test",
+        AvailableDestinationsResponse availableDestinationsResponse = new AvailableDestinationsResponse("lobbyId",
                 destinations
         );
 
-        assertEquals("test", availableDestinationsResponse.getLobbyId());
+        assertEquals("lobbyId", availableDestinationsResponse.getLobbyId());
         assertEquals(destinations, availableDestinationsResponse.getCities());
     }
 }

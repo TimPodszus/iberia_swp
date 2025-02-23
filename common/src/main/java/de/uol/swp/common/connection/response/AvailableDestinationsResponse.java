@@ -13,7 +13,7 @@ import lombok.Getter;
  */
 @Getter
 public class AvailableDestinationsResponse extends AbstractGameResponse {
-    
+
     /**
      * Map of cities and if they are only accessible when the player discards a city card.
      * <p>
@@ -26,7 +26,7 @@ public class AvailableDestinationsResponse extends AbstractGameResponse {
      * Constructs a new AvailableDestinationsResponse.
      *
      * @param lobbyId the ID of the lobby
-     * @param cities  a map of city IDs to lists of cards that can be discarded to access the city
+     * @param cities  the map of cities and if they are only accessible when the player discards a city card
      */
     public AvailableDestinationsResponse(String lobbyId, Map<Integer, List<ICardDTO>> cities) {
         super(lobbyId, true, "");
