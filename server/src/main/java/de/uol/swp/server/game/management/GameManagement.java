@@ -4,6 +4,7 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.connection.dto.DestinationInfo;
+import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.region.IRegionDTO;
@@ -335,11 +336,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
         boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId()) && availableDestinations.get(city.getId())
-                                                                                                                .getCardsUsableForMove()
-                                                                                                                .isEmpty();
+                                                                                                                .getTransportModes()
+                                                                                                                .contains(TransportMode.CARRIAGE);
         boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId()) && !availableDestinations.get(city.getId())
-                                                                                                                .getCardsUsableForMove()
-                                                                                                                .isEmpty();
+                                                                                                                .getTransportModes()
+                                                                                                                .contains(TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error("[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
