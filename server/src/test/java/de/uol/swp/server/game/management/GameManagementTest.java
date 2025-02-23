@@ -4,7 +4,7 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.TransportMode;
-import de.uol.swp.common.game.dto.DestinationInfo;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.user.IUserDTO;

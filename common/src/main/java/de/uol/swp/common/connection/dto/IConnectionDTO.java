@@ -1,4 +1,4 @@
-package de.uol.swp.common.connection;
+package de.uol.swp.common.connection.dto;
 
 import de.uol.swp.common.city.CityName;
 

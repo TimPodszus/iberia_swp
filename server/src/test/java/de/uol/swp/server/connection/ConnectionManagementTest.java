@@ -2,7 +2,7 @@ package de.uol.swp.server.connection;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.dto.DestinationInfo;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.City;

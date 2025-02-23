@@ -4,7 +4,7 @@ import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.TransportMode;
-import de.uol.swp.common.game.dto.DestinationInfo;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.AbstractManagement;

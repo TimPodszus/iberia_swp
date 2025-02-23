@@ -6,7 +6,7 @@ import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
-import de.uol.swp.common.game.dto.DestinationInfo;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;

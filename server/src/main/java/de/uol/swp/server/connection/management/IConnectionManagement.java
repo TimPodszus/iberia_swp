@@ -1,6 +1,6 @@
 package de.uol.swp.server.connection.management;
 
-import de.uol.swp.common.game.dto.DestinationInfo;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.server.connection.data.IConnection;
 
 import java.util.List;

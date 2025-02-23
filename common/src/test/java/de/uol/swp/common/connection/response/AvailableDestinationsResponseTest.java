@@ -7,7 +7,7 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.TransportMode;
-import de.uol.swp.common.game.dto.DestinationInfo;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

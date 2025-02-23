@@ -1,4 +1,4 @@
-package de.uol.swp.common.game.dto;
+package de.uol.swp.common.connection.dto;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.TransportMode;

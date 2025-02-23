@@ -2,7 +2,7 @@ package de.uol.swp.common.connection.response;
 
 import java.util.Map;
 
-import de.uol.swp.common.game.dto.DestinationInfo;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
