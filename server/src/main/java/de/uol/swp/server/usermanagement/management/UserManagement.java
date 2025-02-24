@@ -1,11 +1,9 @@
 package de.uol.swp.server.usermanagement.management;
 
-import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.store.UserStore;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -34,6 +32,14 @@ public class UserManagement extends AbstractUserManagement {
         this.userStore = userStore;
     }
 
+    /**
+     * Logs in a user with the given username and password.
+     *
+     * @param username the username of the user
+     * @param password the password of the user
+     * @return the logged-in user
+     * @throws SecurityException if the user cannot be authenticated
+     */
     @Override
     public IUser login(String username, String password) {
         Optional<IUser> user = userStore.findUser(username, password);
@@ -45,11 +51,24 @@ public class UserManagement extends AbstractUserManagement {
         }
     }
 
+    /**
+     * Checks if a user is logged in.
+     *
+     * @param username the user to check
+     * @return true if the user is logged in, false otherwise
+     */
     @Override
     public boolean isLoggedIn(IUser username) {
         return loggedInUsers.containsKey(username.getUsername());
     }
 
+    /**
+     * Creates a new user.
+     *
+     * @param userToCreate the user to create
+     * @return the created user
+     * @throws UserManagementException if the username is already used
+     */
     @Override
     public IUser createUser(IUser userToCreate) {
         Optional<IUser> user = userStore.findUser(userToCreate.getUsername());
@@ -59,62 +78,36 @@ public class UserManagement extends AbstractUserManagement {
         return userStore.createUser(userToCreate);
     }
 
-    @Override
-    public IUser updateUser(IUser userToUpdate) {
-        Optional<IUser> user = userStore.findUser(userToUpdate.getUsername());
-        if (user.isEmpty()) {
-            throw new UserManagementException("Username unknown!");
-        }
-        // Only update if there are new values
-        String newPassword = firstNotNull(
-                userToUpdate.getPassword(),
-                user.get()
-                    .getPassword()
-        );
-        return userStore.updateUser(userToUpdate.getUsername(), newPassword);
-
-    }
-
-    @Override
-    public void dropUser(IUser userToDrop) {
-        Optional<IUser> user = userStore.findUser(userToDrop.getUsername());
-        if (user.isEmpty()) {
-            throw new UserManagementException("Username unknown!");
-        }
-        userStore.removeUser(userToDrop.getUsername());
-
-    }
 
     /**
-     * Sub-function of update user
-     * This method is used to set the new user values to the old ones if the values
-     * in the update request were empty.
+     * Logs out the specified user.
      *
-     * @param firstValue  value to update to, empty String or null
-     * @param secondValue the old value
-     * @return byte[] containing the value to be used in the update command
-     * @since 2019-08-05
+     * @param user the user to log out
      */
-    private String firstNotNull(String firstValue, String secondValue) {
-        return Strings.isNullOrEmpty(firstValue) ? secondValue : firstValue;
-    }
-
     @Override
     public void logout(IUser user) {
         loggedInUsers.remove(user.getUsername());
     }
 
-    @Override
-    public List<IUser> retrieveAllUsers() {
-        return userStore.getAllUsers();
-    }
-
+    /**
+     * Retrieves a user by their username.
+     *
+     * @param username the username of the user to retrieve
+     * @return the user associated with the specified username
+     * @throws UserManagementException if the username is unknown
+     */
     @Override
     public IUser getUser(String username) {
         return userStore.findUser(username)
                         .orElseThrow(() -> new UserManagementException("Username unknown!"));
     }
 
+    /**
+     * Changes the password of a user.
+     *
+     * @param username    the username of the user whose password is to be changed
+     * @param newPassword the new password to set
+     */
     public void changePassword(String username, String newPassword) {
         userStore.updateUser(username, newPassword);
     }

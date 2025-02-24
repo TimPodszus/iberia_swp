@@ -42,37 +42,13 @@ public interface ClientUserService {
      */
     void createUser(IUserDTO user);
 
-    /**
-     * Removes a user from the sore
-     * Remove the User specified by the User object.
-     *
-     * @param user The user to remove
-     * @implNote the User Object has to contain a unique identifier in order to
-     * remove the correct user
-     * @since 2019-10-10
-     */
-    void dropUser(IUserDTO user);
 
     /**
-     * Update a user
-     * Updates the User specified by the User object.
+     * Change the password of a user
      *
-     * @param user the user object containing all infos to
-     *             update, if some values are not set, (e.g. password is "")
-     *             these fields are not updated
-     * @implNote the User Object has to contain a unique identifier in order to
-     * update the correct user
+     * @param user        The user whose password is to be changed
+     * @param newPassword The new password to set
      * @since 2019-09-02
      */
-    void updateUser(IUserDTO user);
-
-    /**
-     * Retrieve the list of all current logged in users
-     *
-     * @since 2017-03-17
-     */
-    void retrieveAllUsers();
-
     void changePassword(IUserDTO user, String newPassword);
-
 }

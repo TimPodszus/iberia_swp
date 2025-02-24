@@ -72,6 +72,9 @@ public class OptionsPresenter extends AbstractPresenter {
                          .getUser(), PasswordHashing.hashPassword(newPasswordField.getText())
         );
 
+        newPasswordField.clear();
+        newPasswordRepeatField.clear();
+
     }
 
     private void validatePasswordFields() {

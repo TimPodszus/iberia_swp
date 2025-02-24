@@ -77,6 +77,16 @@ public class UserService extends AbstractService {
         post(returnMessage);
     }
 
+    /**
+     * Handles ChangePasswordRequest events found on the EventBus.
+     * If a ChangePasswordRequest is detected on the EventBus, this method is called.
+     * It tries to change the password of the user via the UserManagement.
+     *
+     * @param request The ChangePasswordRequest found on the EventBus
+     * @see UserManagement#changePassword(String, String)
+     * @see de.uol.swp.common.game.message.request.ChangePasswordRequest
+     * @since 2019-09-02
+     */
     @Subscribe
     public void onChangePasswordEvent(ChangePasswordRequest request) {
         LOG.debug("Got new change password message with {}", request.getUserDTO());

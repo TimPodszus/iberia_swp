@@ -4,7 +4,9 @@ import com.google.inject.Inject;
 import de.uol.swp.common.game.message.request.ChangePasswordRequest;
 import de.uol.swp.common.passwordHashing.PasswordHashing;
 import de.uol.swp.common.user.IUserDTO;
-import de.uol.swp.common.user.request.*;
+import de.uol.swp.common.user.request.LoginRequest;
+import de.uol.swp.common.user.request.LogoutRequest;
+import de.uol.swp.common.user.request.RegisterUserRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
@@ -49,47 +51,39 @@ public class UserService implements ClientUserService {
         bus.post(msg);
     }
 
-
+    /**
+     * Posts a logout request to the EventBus
+     *
+     * @param username the name of the user
+     * @since 2017-03-17
+     */
     @Override
     public void logout(IUserDTO username) {
         LogoutRequest msg = new LogoutRequest();
         bus.post(msg);
     }
 
+    /**
+     * Posts a create user request to the EventBus
+     *
+     * @param user the user data transfer object
+     * @since 2017-03-17
+     */
     @Override
     public void createUser(IUserDTO user) {
         RegisterUserRequest request = new RegisterUserRequest(user);
         bus.post(request);
-
     }
 
     /**
-     * Method to delete an users account
-     * This method should send a request to delete an users account, but being not
-     * implemented, it currently does nothing.
+     * Posts a change password request to the EventBus
      *
-     * @param user The user to remove
+     * @param user        the user data transfer object
+     * @param newPassword the new password for the user
+     * @since 2017-03-17
      */
-    public void dropUser(IUserDTO user) {
-        //TODO: Implement me
-    }
-
-    @Override
-    public void updateUser(IUserDTO user) {
-        UpdateUserRequest request = new UpdateUserRequest(user);
-        bus.post(request);
-    }
-
-
-    @Override
-    public void retrieveAllUsers() {
-        RetrieveAllOnlineUsersRequest cmd = new RetrieveAllOnlineUsersRequest();
-        bus.post(cmd);
-    }
-
     @Override
     public void changePassword(IUserDTO user, String newPassword) {
-
         ChangePasswordRequest request = new ChangePasswordRequest(user, newPassword);
         bus.post(request);
         LOG.debug(
