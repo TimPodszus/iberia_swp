@@ -1,12 +1,9 @@
-package de.uol.swp.server.city;
+package de.uol.swp.server.city.data;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.city.data.City;
-import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.infection.data.Infection;
-import de.uol.swp.server.plague.data.Plague;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +38,8 @@ class CityTest {
         assertTrue(city.isHarbourCity());
         assertFalse(city.isHospitalBuilt());
         assertNotNull(city.getInfections());
-        assertTrue(city.getInfections().isEmpty());
+        assertTrue(city.getInfections()
+                       .isEmpty());
     }
 
     /**
@@ -72,9 +70,16 @@ class CityTest {
     void testAddInfections() {
         IInfection infection = new Infection(1, PlagueName.MALARIA);
 
-        city.getInfections().add(infection);
+        city.getInfections()
+            .add(infection);
 
-        assertEquals(1, city.getInfections().size());
-        assertSame(infection, city.getInfections().get(0));
+        assertEquals(1,
+                city.getInfections()
+                    .size()
+        );
+        assertSame(infection,
+                city.getInfections()
+                    .get(0)
+        );
     }
 }

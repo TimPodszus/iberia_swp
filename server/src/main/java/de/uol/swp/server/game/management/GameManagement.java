@@ -288,7 +288,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (areTrainTracksBuildable(lobbyCode)) {
             actions.add(GameActions.BUILD_TRAIN_TRACKS);
         }
-        if (isHospitalBuildable()) {
+        if (cityManagement.isHospitalBuildable(lobbyCode, user.getUsername())) {
             actions.add(GameActions.BUILD_HOSPITAL);
         }
         if (isKnowledgeShareable(lobbyCode)) {
@@ -334,8 +334,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                            .getId() == currentCityId)
                    .anyMatch(player -> player.getCards()
                                              .stream()
-                                             .filter(card -> card instanceof CityCard)
-                                             .map(card -> (CityCard) card)
+                                             .filter(CityCard.class::isInstance)
+                                             .map(CityCard.class::cast)
                                              .anyMatch(card -> card.getCity()
                                                                    .getId() == currentCityId));
     }
@@ -693,13 +693,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 event.getLobbyId(),
                 targetPlayer.getUser()
                             .getUsername(),
-                event.getTargetPlayerCard().getId()
+                event.getTargetPlayerCard()
+                     .getId()
         );
         ICard currentPlayerCard = playerManagement.getCard(
                 event.getLobbyId(),
                 currentPlayer.getUser()
                              .getUsername(),
-               event.getCurrentPlayerCard().getId()
+                event.getCurrentPlayerCard()
+                     .getId()
         );
         currentPlayer.getCards()
                      .remove(currentPlayerCard);
@@ -775,5 +777,3 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     }
 }
-
-

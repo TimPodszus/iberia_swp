@@ -310,6 +310,14 @@ public class GamePresenter extends AbstractPresenter {
             LOG.info("Initial position set");
         }
 
+        if (buildHospitalButton.isSelected()) {
+            LOG.trace("Player wants to build a hospital in city {}", cityId);
+            gameService.sendBuildHospitalRequest(lobbyId, cityId);
+            LOG.info("Hospital has been built");
+            buildHospitalButton.setSelected(false);
+            return;
+        }
+
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
             LOG.trace("Player wants to move to city {}", cityId);
@@ -464,7 +472,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param event the mouse event that triggered this handler
      */
     @FXML
-    private void onInfectionCardDrawPileClickedEvent(MouseEvent event){
+    private void onInfectionCardDrawPileClickedEvent(MouseEvent event) {
         gameService.drawInfectionCard(lobbyId);
     }
 
@@ -500,9 +508,18 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildHospital(ActionEvent event) {
         if (buildHospitalButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
-        } else {
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE)) {
+                resetHighlightetCities();
 
+                Integer cityId = gameDTO.getCurrentPlayer()
+                                        .getCurrentPosition()
+                                        .getId();
+                highlightAvailableHospitalLocations(List.of(cityId));
+            }
+        } else {
+            resetHighlightetCities();
+            this.highlightAvailableDestinations();
         }
     }
 
@@ -1487,7 +1504,8 @@ public class GamePresenter extends AbstractPresenter {
             return;
         }
 
-        LOG.debug("Received {} available destinations",
+        LOG.debug(
+                "Received {} available destinations",
                 response.getCities()
                         .size()
         );
@@ -1514,8 +1532,32 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void highlightAvailableDestinations() {
         LOG.debug("Highlighting available destinations");
-        for (Map.Entry<Integer, DestinationInfo> entry : availableDestinations.entrySet()) {
-            int cityId = entry.getKey();
+        highlightCitys(availableDestinations.keySet()
+                                            .stream()
+                                            .toList());
+        LOG.info("Available destinations highlighted");
+    }
+
+    /**
+     * Highlights the available hospital locations on the game map.
+     * This method highlights the cities where hospitals can be built by updating their style classes.
+     *
+     * @param cityIds the list of city IDs where hospitals can be built
+     */
+    private void highlightAvailableHospitalLocations(List<Integer> cityIds) {
+        LOG.debug("Highlighting available hospital locations");
+        highlightCitys(cityIds);
+        LOG.info("Available hospital locations highlighted");
+    }
+
+    /**
+     * Highlights the specified cities on the game map.
+     * This method updates the style classes of the specified cities to indicate they are highlighted.
+     *
+     * @param cityIds the list of city IDs to highlight
+     */
+    private void highlightCitys(List<Integer> cityIds) {
+        for (Integer cityId : cityIds) {
             LOG.trace("Highlighting city {}", cityId);
             Node node = mapPane.lookup(CITY_ID + cityId);
             node.getStyleClass()
@@ -1525,7 +1567,6 @@ public class GamePresenter extends AbstractPresenter {
             node.getStyleClass()
                 .add(CITY_HIGHLIGHTED_CLASS);
         }
-        LOG.info("Available destinations highlighted");
     }
 
     /**
