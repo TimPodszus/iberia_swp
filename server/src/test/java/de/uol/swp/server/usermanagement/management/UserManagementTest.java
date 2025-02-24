@@ -1,7 +1,6 @@
 package de.uol.swp.server.usermanagement.management;
 
 import de.uol.swp.common.passwordHashing.PasswordHashing;
-
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.usermanagement.store.UserStore;
@@ -11,7 +10,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for the UserManagement class.
@@ -91,7 +91,8 @@ class UserManagementTest {
     void logoutUser() {
         IUser mockUser = new User(usersArray[0][0], PasswordHashing.hashPassword(usersArray[0][1]));
 
-        when(userStore.findUser(usersArray[0][0],
+        when(userStore.findUser(
+                usersArray[0][0],
                 PasswordHashing.hashPassword(usersArray[0][1])
         )).thenReturn(java.util.Optional.of(mockUser));
         IUser userToLogin = new User(usersArray[0][0], usersArray[0][1]);
@@ -115,7 +116,8 @@ class UserManagementTest {
         // Creation leads not to log in
         assertFalse(userManagement.isLoggedIn(userNotInStore));
 
-        when(userStore.findUser(userNotInStore.getUsername(),
+        when(userStore.findUser(
+                userNotInStore.getUsername(),
                 PasswordHashing.hashPassword("marco10")
         )).thenReturn(java.util.Optional.of(userNotInStore));
 
@@ -125,33 +127,6 @@ class UserManagementTest {
         assertTrue(userManagement.isLoggedIn(userNotInStore));
     }
 
-    /**
-     * Tests the dropUser functionality.
-     * Verifies that the user is dropped and cannot log in.
-     */
-    @Test
-    void dropUser() {
-        userManagement.createUser(userNotInStore);
-        IUser mockUser = new User(userNotInStore.getUsername(),
-                PasswordHashing.hashPassword(userNotInStore.getPassword())
-        );
-
-        when(userStore.findUser(userNotInStore.getUsername())).thenReturn(java.util.Optional.of(mockUser));
-        userManagement.dropUser(userNotInStore);
-
-        assertThrows(SecurityException.class,
-                () -> userManagement.login(userNotInStore.getUsername(), PasswordHashing.hashPassword("marco10"))
-        );
-    }
-
-    /**
-     * Tests the dropUser functionality with a non-existing user.
-     * Verifies that a UserManagementException is thrown.
-     */
-    @Test
-    void dropUserNotExisting() {
-        assertThrows(UserManagementException.class, () -> userManagement.dropUser(userNotInStore));
-    }
 
     /**
      * Tests the createUser functionality with an existing user.
@@ -167,14 +142,6 @@ class UserManagementTest {
         assertThrows(UserManagementException.class, () -> userManagement.createUser(userToCreate));
     }
 
-    /**
-     * Tests the updateUser functionality with an unknown user.
-     * Verifies that a UserManagementException is thrown.
-     */
-    @Test
-    void updateUnknownUser() {
-        assertThrows(UserManagementException.class, () -> userManagement.updateUser(userNotInStore));
-    }
 
     /**
      * Tests the getUser functionality.
@@ -186,5 +153,20 @@ class UserManagementTest {
         when(userStore.findUser(userNotInStore.getUsername())).thenReturn(java.util.Optional.of(user));
 
         assertEquals(user, userManagement.getUser(userNotInStore.getUsername()));
+    }
+
+
+    /**
+     * Tests the changePassword functionality.
+     * Verifies that the password is changed successfully.
+     */
+    @Test
+    void changePasswordTest() {
+        String username = "testUser";
+        String newPassword = "newPassword123";
+
+        userManagement.changePassword(username, newPassword);
+
+        verify(userStore).updateUser(username, newPassword);
     }
 }

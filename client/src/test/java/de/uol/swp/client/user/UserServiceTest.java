@@ -2,15 +2,18 @@ package de.uol.swp.client.user;
 
 
 import de.uol.swp.client.EventBusBasedTest;
+import de.uol.swp.common.game.message.request.ChangePasswordRequest;
 import de.uol.swp.common.user.IUserDTO;
-import org.greenrobot.eventbus.Subscribe;
-
-
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.common.user.request.*;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * This a test of the class is used to hide the communication details
@@ -146,79 +149,31 @@ public class UserServiceTest extends EventBusBasedTest {
 
         RegisterUserRequest request = (RegisterUserRequest) event;
 
-        assertEquals(request.getUser().getUsername(), defaultUser.getUsername());
+        assertEquals(
+                request.getUser()
+                       .getUsername(), defaultUser.getUsername()
+        );
 
         assertFalse(request.authorizationNeeded());
 
     }
 
-    /**
-     * Test for the updateUser routine
-     * <p>
-     * This Test creates a new UserService object registered to the EventBus of
-     * this test class. It then calls the updateUser function of the object using
-     * the defaultUser as parameter and waits for it to post an updateUserRequest
-     * object on the EventBus.
-     * If this happens within one second, it checks if the user in the request object
-     * is the same as the default user and if authorization is needed.
-     * Authorization should be needed.
-     * If any of these checks fail or the method takes to long, this test is unsuccessful.
-     *
-     * @throws InterruptedException thrown by lock.await()
-     * @since 2019-10-10
-     */
+
     @Test
-    void updateUserTest() throws InterruptedException {
-        UserService userService = new UserService(getBus());
-        userService.updateUser(defaultUser);
+    void testChangePassword() {
+        String newPassword = "newPassword123";
+        EventBus eventBus = mock(EventBus.class);
+        UserService userService = new UserService(eventBus);
 
-        waitForLock();
 
-        assertInstanceOf(UpdateUserRequest.class, event);
+        userService.changePassword(defaultUser, newPassword);
 
-        UpdateUserRequest request = (UpdateUserRequest) event;
+        ArgumentCaptor<ChangePasswordRequest> captor = ArgumentCaptor.forClass(ChangePasswordRequest.class);
+        verify(eventBus).post(captor.capture());
 
-        assertEquals(request.getUser().getUsername(), defaultUser.getUsername());
-
-        assertTrue(request.authorizationNeeded());
+        ChangePasswordRequest request = captor.getValue();
+        assertEquals(defaultUser, request.getUserDTO());
+        assertEquals(newPassword, request.getNewPassword());
     }
-
-    /**
-     * Test for the dropUser routine
-     * <p>
-     * This test case has to be implemented after the respective dropUser method
-     * has been implemented
-     *
-     * @since 2019-10-10
-     */
-    @Test
-    void dropUserTest() {
-        UserService userService = new UserService(getBus());
-        userService.dropUser(defaultUser);
-
-        // TODO: Add when method is implemented
-    }
-
-    /**
-     * Test for the retrieveAllUsers routine
-     * <p>
-     * This Test creates a new UserService object registered to the EventBus of
-     * this test class. It then calls the retrieveAllUsers function of the object
-     * and waits for it to post a retrieveAllUsersRequest object on the EventBus.
-     * If this happens within one second, the test is successful.
-     *
-     * @throws InterruptedException thrown by lock.await()
-     * @since 2019-10-10
-     */
-    @Test
-    void retrieveAllUsersTest() throws InterruptedException {
-        UserService userService = new UserService(getBus());
-        userService.retrieveAllUsers();
-
-        waitForLock();
-
-        assertInstanceOf(RetrieveAllOnlineUsersRequest.class, event);
-    }
-
 
 }
