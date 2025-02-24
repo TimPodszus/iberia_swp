@@ -3,15 +3,20 @@ package de.uol.swp.client.options;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
+import javafx.scene.control.*;
 
 public class OptionsPresenter extends AbstractPresenter {
 
     public static final String FXML = "/fxml/OptionsView.fxml";
 
     private final OptionsRepository optionsRepository = new OptionsRepository();
+
+    @FXML
+    private PasswordField newPasswordField;
+    @FXML
+    private PasswordField newPasswordRepeatField;
+    @FXML
+    private Button changePasswordButton;
 
     @FXML
     private Slider volumeSlider;
@@ -32,6 +37,14 @@ public class OptionsPresenter extends AbstractPresenter {
         volumeSlider.setValue(optionsRepository.getVolume());
         volumeLabel.setText(optionsRepository.getVolume() + " %");
         chatEnabledCheckbox.setSelected(optionsRepository.isChatEnabled());
+
+        newPasswordField.textProperty()
+                        .addListener((observable, oldValue, newValue) -> validatePasswordFields());
+        newPasswordRepeatField.textProperty()
+                              .addListener((observable, oldValue, newValue) -> validatePasswordFields());
+
+        validatePasswordFields();
+
     }
 
     /**
@@ -58,5 +71,24 @@ public class OptionsPresenter extends AbstractPresenter {
      */
     public void onBackButton() {
         eventBus.post(new ShowLastSceneEvent());
+    }
+
+    /**
+     * Handles the action when the change password button is pressed.
+     * Posts a ChangePasswordEvent to the event bus.
+     */
+    public void onChangePasswordButton() {
+        //  eventBus.post(new ChangePasswordEvent(newPasswordField.getText()));
+    }
+
+    /**
+     * Validates the password fields and updates the change password button's disabled property.
+     */
+    private void validatePasswordFields() {
+        boolean isValid = !newPasswordField.getText()
+                                           .isEmpty() && !newPasswordRepeatField.getText()
+                                                                                .isEmpty() && newPasswordField.getText()
+                                                                                                              .equals(newPasswordRepeatField.getText());
+        changePasswordButton.setDisable(!isValid);
     }
 }
