@@ -17,6 +17,7 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionMapper;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.usermanagement.IUser;
@@ -88,7 +89,7 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
             int amount,
             ICard card,
             IUser user
-    ) throws RegionManagementException, GameManagementException {
+    ) throws RegionManagementException, GameManagementException, PlayerManagementException {
         IGame game = getGame(lobbyCode);
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             IRegion region = game.getRegionRepository()
@@ -100,7 +101,7 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
                 throw new GameManagementException("Player is not the current player");
             }
             region.increaseWaterTreatments(amount);
-            playerManagement.discardCard(lobbyCode, player, card);
+            playerManagement.discardCard(lobbyCode, user.getUsername(), card.getId());
             playerTurnState.reduceActionsRemaining(game);
             LOG.debug(
                     "Increased water treatments in region {} by {} for player {}",

@@ -309,11 +309,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return game.getTracksLeft() >= 0;
     }
 
-    private boolean isHospitalBuildable() {
-        //TODO: Implement logic in #85
-        return true;
-    }
-
     /**
      * Checks if knowledge can be shared in the current game state.
      *
@@ -358,7 +353,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException {
+    public void movePlayer(
+            IUser user,
+            String lobbyId,
+            ICity city,
+            ICard card
+    ) throws GameManagementException, PlayerManagementException {
         IGame game = super.getGame(lobbyId);
 
         IGameState gameState = game.getState();
@@ -479,12 +479,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param city   the destination harbour city
      * @param card   the card used for the move
      */
-    private void movePlayerBySea(IGame game, IPlayer player, ICity city, ICard card) {
+    private void movePlayerBySea(IGame game, IPlayer player, ICity city, ICard card) throws PlayerManagementException {
         boolean playerIsSailor = player.getRole()
                                        .getName()
                                        .equals(RoleEnum.SAILOR);
         if (!playerIsSailor) {
-            playerManagement.discardCard(game.getGameId(), player, card);
+            playerManagement.discardCard(
+                    game.getGameId(),
+                    player.getUser()
+                          .getUsername(),
+                    card.getId()
+            );
         }
 
         LOG.debug(

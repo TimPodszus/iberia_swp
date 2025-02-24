@@ -6,6 +6,7 @@ import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import org.greenrobot.eventbus.EventBus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,9 +30,10 @@ class PlagueServiceTest {
     }
 
     @Test
-    void testOnResearchPlagueRequest_Success() throws PlagueManagementException {
+    void testOnResearchPlagueRequest_Success() throws PlagueManagementException, PlayerManagementException {
         ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA);
-        doNothing().when(plagueManagement).researchPlague(PlagueName.CHOLERA, game);
+        doNothing().when(plagueManagement)
+                   .researchPlague(PlagueName.CHOLERA, game);
 
         plagueService.onResearchPlagueRequest(request, game);
 
@@ -40,9 +42,10 @@ class PlagueServiceTest {
     }
 
     @Test
-    void testOnResearchPlagueRequest_Exception() throws PlagueManagementException {
+    void testOnResearchPlagueRequest_Exception() throws PlagueManagementException, PlayerManagementException {
         ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA);
-        doThrow(new PlagueManagementException("Error")).when(plagueManagement).researchPlague(PlagueName.CHOLERA, game);
+        doThrow(new PlagueManagementException("Error")).when(plagueManagement)
+                                                       .researchPlague(PlagueName.CHOLERA, game);
 
         assertThrows(PlagueManagementException.class, () -> plagueService.onResearchPlagueRequest(request, game));
 

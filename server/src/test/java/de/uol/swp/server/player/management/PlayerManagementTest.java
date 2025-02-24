@@ -139,23 +139,29 @@ class PlayerManagementTest {
      */
     @Test
     void addCard_AddsCardToPlayer() {
-        ICard card = mock(ICard.class);
-        List<ICard> mockCards = mock(List.class);
-        when(player.getCards()).thenReturn(mockCards);
+        ICard card = new CityCard(1, "test", mock(ICity.class));
+        List<ICard> cards = List.of(card);
+
+        when(player.getCards()).thenReturn(cards);
 
         playerManagement.addCard(player, card);
 
-        verify(mockCards, times(1)).add(card);
+        verify(cards, times(1)).add(card);
     }
 
     /**
      * Tests that discardCard discards a single card from the player's hand.
      */
     @Test
-    void discardCard_DiscardSingleCard() {
+    void discardCard_DiscardSingleCard() throws PlayerManagementException {
         ICard infectionCard = new InfectionCard(1, "test", mock(ICity.class));
 
-        playerManagement.discardCard(game.getGameId(), player, infectionCard);
+        playerManagement.discardCard(
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                infectionCard.getId()
+        );
 
         assertTrue(game.getPlayerCardDiscardPile()
                        .contains(infectionCard));
@@ -165,12 +171,19 @@ class PlayerManagementTest {
      * Tests that discardCards discards multiple cards from the player's hand.
      */
     @Test
-    void discardCards_DiscardMultipleCards() {
+    void discardCards_DiscardMultipleCards() throws PlayerManagementException {
         ICard card1 = new InfectionCard(1, "test", mock(ICity.class));
         ICard card2 = new CityCard(1, "test", mock(ICity.class));
         List<ICard> cards = List.of(card1, card2);
 
-        playerManagement.discardCards(game.getGameId(), player, cards);
+        playerManagement.discardCards(
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                cards.stream()
+                     .map(ICard::getId)
+                     .toList()
+        );
 
         assertTrue(game.getPlayerCardDiscardPile()
                        .contains(card1));
@@ -233,21 +246,39 @@ class PlayerManagementTest {
     @Test
     void testDrawBottomInfectionCard() {
         CityRepository cityRepository = new CityRepository();
-        InfectionCard infectionCard1 = new InfectionCard(1, "InfectionCard1", cityRepository.getCityByName(CityName.BARCELONA));
-        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard2", cityRepository.getCityByName(CityName.ALICANTE));
-        game.getInfectionCardDrawPile().add(infectionCard1);
-        game.getInfectionCardDrawPile().add(infectionCard2);
+        InfectionCard infectionCard1 = new InfectionCard(
+                1,
+                "InfectionCard1",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        InfectionCard infectionCard2 = new InfectionCard(
+                2,
+                "InfectionCard2",
+                cityRepository.getCityByName(CityName.ALICANTE)
+        );
+        game.getInfectionCardDrawPile()
+            .add(infectionCard1);
+        game.getInfectionCardDrawPile()
+            .add(infectionCard2);
 
         InfectionCard drawnCard = playerManagement.drawBottomInfectionCard(game);
 
-        assertEquals(infectionCard2, drawnCard, "Expected the last infection card to be drawn from the bottom of the draw pile");
+        assertEquals(
+                infectionCard2,
+                drawnCard,
+                "Expected the last infection card to be drawn from the bottom of the draw pile"
+        );
     }
 
     @Test
     void testDrawBottomInfectionCardWithEmptyDiscardPile() {
-        game.getInfectionCardDrawPile().clear();
+        game.getInfectionCardDrawPile()
+            .clear();
 
-        assertThrows(IllegalStateException.class, () -> playerManagement.drawBottomInfectionCard(game), "Expected " +
-                "IllegalStateException when the discard pile is empty");
+        assertThrows(
+                IllegalStateException.class,
+                () -> playerManagement.drawBottomInfectionCard(game),
+                "Expected " + "IllegalStateException when the discard pile is empty"
+        );
     }
 }

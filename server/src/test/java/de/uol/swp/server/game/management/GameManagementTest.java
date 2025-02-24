@@ -339,7 +339,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMoveByLand() throws GameManagementException {
+    void testMoveByLand() throws GameManagementException, PlayerManagementException {
         Map<ICity, List<ICard>> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
                 List.of()
@@ -385,7 +385,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMoveBySea() throws GameManagementException {
+    void testMoveBySea() throws GameManagementException, PlayerManagementException {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
         ICard destinationCityCard = new CityCard(
@@ -435,7 +435,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMoveSailorBySea() throws GameManagementException {
+    void testMoveSailorBySea() throws GameManagementException, PlayerManagementException {
         Map<ICity, List<ICard>> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of()
@@ -455,7 +455,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMoveSailorBySeaWithCityCard() throws GameManagementException {
+    void testMoveSailorBySeaWithCityCard() throws GameManagementException, PlayerManagementException {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
         ICard destinationCityCard = new CityCard(
@@ -494,7 +494,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testTrainRide() throws GameManagementException {
+    void testTrainRide() throws GameManagementException, PlayerManagementException {
         Map<ICity, List<ICard>> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.VALLADOLID),
                 List.of()
@@ -775,7 +775,7 @@ class GameManagementTest {
      * @throws GameManagementException if the movePlayer method throws an exception
      */
     @Test
-    void testMovePlayer_OnTheMoveDayAndNightEvent() throws GameManagementException {
+    void testMovePlayer_OnTheMoveDayAndNightEvent() throws GameManagementException, PlayerManagementException {
         Map<ICity, List<ICard>> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
                 List.of()
@@ -801,7 +801,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMovePlayer_StateMobilizationEvent() throws GameManagementException {
+    void testMovePlayer_StateMobilizationEvent() throws GameManagementException, PlayerManagementException {
         Map<ICity, List<ICard>> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
                 List.of(),

@@ -7,9 +7,11 @@ import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -38,14 +40,14 @@ public class PlagueService extends AbstractService {
      * If a ResearchPlagueRequest is detected, it triggers the plague research process.
      *
      * @param researchPlagueRequest The ResearchPlagueRequest found on the EventBus
-     * @see PlagueManagement#researchPlague(PlagueName, Game)
+     * @see PlagueManagement#researchPlague(PlagueName, IGame)
      * @since 2024-10-04
      */
     @Subscribe
     public void onResearchPlagueRequest(
             ResearchPlagueRequest researchPlagueRequest,
-            Game game
-    ) throws PlagueManagementException {
+            IGame game
+    ) throws PlagueManagementException, PlayerManagementException {
         PlagueName name = researchPlagueRequest.getName();
 
         plagueManagement.researchPlague(name, game);

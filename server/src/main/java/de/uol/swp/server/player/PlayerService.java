@@ -6,9 +6,7 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
-import de.uol.swp.common.player.request.DrawInfectionCardRequest;
-import de.uol.swp.common.player.request.DrawPlayerCardRequest;
-import de.uol.swp.common.player.request.DrawPlayerCardResponse;
+import de.uol.swp.common.player.request.*;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.GameMapper;
@@ -26,6 +24,8 @@ import org.greenrobot.eventbus.Subscribe;
 public class PlayerService extends AbstractService {
     private final IPlayerManagement playerManagement;
     private final IGameManagement gameManagement;
+
+    private static final String SESSION_NOT_PRESENT = "Session not present";
 
     /**
      * Constructs a new PlayerService.
@@ -49,7 +49,7 @@ public class PlayerService extends AbstractService {
     public void onDrawPlayerCardRequest(DrawPlayerCardRequest request) {
         AbstractResponseMessage response;
         Session session = request.getSession()
-                                 .orElseThrow(() -> new IllegalStateException("Session not present"));
+                                 .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
         try {
             ICardDTO card = playerManagement.drawPlayerCard(request.getLobbyId(), UserMapper.toUser(session.getUser()));
             response = new DrawPlayerCardResponse(request.getLobbyId(), true, "Card drawn successfully", card);
@@ -63,6 +63,38 @@ public class PlayerService extends AbstractService {
     }
 
     /**
+     * Handles the DrawPlayerCardRequest event.
+     *
+     * @param request the request to draw a player card
+     */
+    @Subscribe
+    public void onDiscardPlayerCardRequest(DiscardPlayerCardRequest request) throws PlayerManagementException {
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        Session session = request.getSession()
+                                 .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
+
+        try {
+            playerManagement.discardCard(
+                    request.getLobbyId(),
+                    session.getUser()
+                           .getUsername(),
+                    request.getCard()
+                           .getId()
+            );
+        } catch (Exception e) {
+            StatusResponse response = new StatusResponse(
+                    request.getLobbyId(),
+                    false,
+                    "Error discarding a player card: {}" + e.getMessage()
+            );
+            response.setSession(session);
+            post(response);
+        }
+
+        post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    /**
      * Handles the DrawInfectionCardRequest event.
      *
      * @param request the request to draw an infection card
@@ -71,7 +103,7 @@ public class PlayerService extends AbstractService {
     public void onDrawInfectionCardRequest(DrawInfectionCardRequest request) {
         AbstractResponseMessage response;
         Session session = request.getSession()
-                                 .orElseThrow(() -> new IllegalStateException("Session not present"));
+                                 .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
         IGame game = gameManagement.getGame(request.getLobbyId());
         if (!game.getCurrentPlayer()
                  .getUser()
@@ -95,7 +127,7 @@ public class PlayerService extends AbstractService {
     public void onShareRideRequest(ShareRideRequest request) throws PlayerManagementException {
         if (request.isConfirmed()) {
             Session session = request.getSession()
-                                     .orElseThrow(() -> new IllegalStateException("Session not present"));
+                                     .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
             playerManagement.setPlayerLocation(
                     request.getLobbyId(),
                     session.getUser()

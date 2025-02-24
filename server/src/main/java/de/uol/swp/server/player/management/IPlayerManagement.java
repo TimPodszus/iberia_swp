@@ -54,23 +54,24 @@ public interface IPlayerManagement {
     void addCard(IPlayer player, ICard card);
 
     /**
-     * Discards a single card from the player's hand.
+     * Discards a card for a player in a specified lobby.
      *
      * @param lobbyCode the code of the lobby
-     * @param player    the player discarding the card
-     * @param card      the card to be discarded
-     * @param <T>       the type of the card, extending ICard
+     * @param username  the username of the player
+     * @param cardId    the ID of the card to be discarded
+     * @throws PlayerManagementException if an error occurs while discarding the card
      */
-    <T extends ICard> void discardCard(String lobbyCode, IPlayer player, T card);
+    void discardCard(String lobbyCode, String username, Integer cardId) throws PlayerManagementException;
 
     /**
-     * Discards multiple cards from the player's hand.
+     * Discards multiple cards for a player in a specified lobby.
      *
      * @param lobbyCode the code of the lobby
-     * @param player    the player discarding the cards
-     * @param cards     the list of cards to be discarded
+     * @param username  the username of the player
+     * @param cardIds   the list of IDs of the cards to be discarded
+     * @throws PlayerManagementException if an error occurs while discarding the cards
      */
-    void discardCards(String lobbyCode, IPlayer player, List<? extends ICard> cards);
+    void discardCards(String lobbyCode, String username, List<Integer> cardIds) throws PlayerManagementException;
 
     /**
      * Retrieves a card for a player in a specified lobby.

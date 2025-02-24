@@ -155,7 +155,7 @@ public class GameServiceTest extends EventBusBasedTest {
      * @throws GameManagementException if there is an error in game management
      */
     @Test
-    void testOnMovePlayerRequest() throws InterruptedException, GameManagementException {
+    void testOnMovePlayerRequest() throws InterruptedException, GameManagementException, PlayerManagementException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
@@ -187,7 +187,7 @@ public class GameServiceTest extends EventBusBasedTest {
      * @throws GameManagementException if there is an error in game management
      */
     @Test
-    void testOnMovePlayerRequestWithUnknownPlayerToTakeWith() throws GameManagementException {
+    void testOnMovePlayerRequestWithUnknownPlayerToTakeWith() throws GameManagementException, PlayerManagementException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
@@ -215,7 +215,7 @@ public class GameServiceTest extends EventBusBasedTest {
      * @throws GameManagementException if there is an error in game management
      */
     @Test
-    void testOnMovePlayerRequestWithNotLoggedInPlayerToTakeWith() throws GameManagementException {
+    void testOnMovePlayerRequestWithNotLoggedInPlayerToTakeWith() throws GameManagementException, PlayerManagementException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));

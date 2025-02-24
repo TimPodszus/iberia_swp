@@ -20,6 +20,7 @@ import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -288,9 +289,13 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         }
     }
 
-    public void buildHospital(String lobbyId, String userName, Integer cityId) {
+    public void buildHospital(
+            String lobbyId,
+            String username,
+            Integer cityId
+    ) throws CityManagementException, PlayerManagementException {
         IGame game = getGame(lobbyId);
-        IPlayer player = game.getPlayer(userName);
+        IPlayer player = game.getPlayer(username);
 
         ICity city = getCity(lobbyId, cityId);
 
@@ -300,12 +305,17 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                                                                                                                       .equals(city))
                                          .findFirst();
 
-        if (!isHospitalBuildable(lobbyId, userName)) {
+        if (!isHospitalBuildable(lobbyId, username)) {
             throw new CityManagementException("Hospital cannot be built");
         }
 
         // 'Optional.get()' without 'isPresent()' check -> already checked in isHospitalBuildable()
-        new PlayerManagement(this).discardCard(lobbyId, player, cityCard.get());
+        new PlayerManagement(this).discardCard(
+                lobbyId,
+                username,
+                cityCard.get()
+                        .getId()
+        );
         buildHospitalWithEventCard(lobbyId, cityId);
 
         if (game.getState() instanceof PlayerTurnState playerTurnState) {

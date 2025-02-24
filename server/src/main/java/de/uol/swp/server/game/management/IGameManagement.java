@@ -61,7 +61,12 @@ public interface IGameManagement {
      *                <p>
      * @throws GameManagementException if moving the player fails
      */
-    void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException;
+    void movePlayer(
+            IUser user,
+            String lobbyId,
+            ICity city,
+            ICard card
+    ) throws GameManagementException, PlayerManagementException;
 
     /**
      * Retrieves the game with the specified lobby code.
@@ -133,7 +138,7 @@ public interface IGameManagement {
     /**
      * Increases the number of actions the current player has in the game.
      *
-     * @param game  the game in which the current player's actions are to be increased
+     * @param game   the game in which the current player's actions are to be increased
      * @param amount the amount by which to increase the current player's actions
      */
     void increaseCurrentPlayerActions(IGame game, int amount);

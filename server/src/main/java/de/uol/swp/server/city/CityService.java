@@ -10,6 +10,7 @@ import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
@@ -48,7 +49,7 @@ public class CityService extends AbstractService {
      * @param request the BuildHospitalRequest containing the details for building a hospital
      */
     @Subscribe
-    public void onBuildHospitalRequest(BuildHospitalRequest request) {
+    public void onBuildHospitalRequest(BuildHospitalRequest request) throws PlayerManagementException {
         LOG.debug("Got BuildHospitalRequest for lobby {}", request.getLobbyId());
 
         cityManagement.buildHospital(

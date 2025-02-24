@@ -176,37 +176,46 @@ public class PlayerManagement implements IPlayerManagement {
     }
 
     /**
-     * Discards a single card from the player's hand.
-     * <p>
-     * This method removes the specified card from the player's hand and adds it to the player card discard pile in the game.
+     * Discards a card for a player in a specified lobby.
      *
-     * @param lobbyCode the code of the lobby in which the game is happening
-     * @param player    the player from whose hand the card is to be discarded
-     * @param card      the card to be discarded
+     * @param lobbyCode the code of the lobby
+     * @param username  the username of the player
+     * @param cardId    the ID of the card to be discarded
+     * @throws PlayerManagementException if an error occurs while discarding the card
      */
-    public void discardCard(String lobbyCode, IPlayer player, ICard card) {
-        discardCards(lobbyCode, player, List.of(card));
+    public void discardCard(String lobbyCode, String username, Integer cardId) throws PlayerManagementException {
+        discardCards(lobbyCode, username, List.of(cardId));
     }
 
     /**
-     * Discards multiple cards from the player's hand.
-     * <p>
-     * This method removes the specified cards from the player's hand and adds them to the player card discard pile in the game.
+     * Discards multiple cards for a player in a specified lobby.
      *
-     * @param lobbyCode the code of the lobby in which the game is happening
-     * @param player    the player from whose hand the cards are to be discarded
-     * @param cards     the list of cards to be discarded
+     * @param lobbyCode the code of the lobby
+     * @param username  the username of the player
+     * @param cardIds   the list of IDs of the cards to be discarded
+     * @throws PlayerManagementException if an error occurs while discarding the cards
      */
-    public void discardCards(String lobbyCode, IPlayer player, List<? extends ICard> cards) {
+    public void discardCards(
+            String lobbyCode,
+            String username,
+            List<Integer> cardIds
+    ) throws PlayerManagementException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyCode);
+        IPlayer player = game.getPlayer(username);
 
-        for (ICard card : cards) {
+        for (Integer cardId : cardIds) {
+            ICard card = player.getCards()
+                               .stream()
+                               .filter(c -> Objects.equals(c.getId(), cardId))
+                               .findFirst()
+                               .orElseThrow(() -> new PlayerManagementException("Card not found"));
+
             player.getCards()
                   .remove(card);
+            game.getPlayerCardDiscardPile()
+                .add(card);
         }
-        game.getPlayerCardDiscardPile()
-            .addAll(cards);
     }
 
     /**

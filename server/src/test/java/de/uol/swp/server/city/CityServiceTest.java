@@ -12,6 +12,7 @@ import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +54,7 @@ public class CityServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnBuildHospitalRequest() {
+    void testOnBuildHospitalRequest() throws PlayerManagementException {
         IUser user = new User("testUser", "testPassword");
         Session session = UUIDSession.create(user);
 

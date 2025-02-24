@@ -2,12 +2,14 @@ package de.uol.swp.server.plague.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.management.IPlayerManagement;
+import de.uol.swp.server.player.management.PlayerManagementException;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
  * This includes researching plagues by fulfilling specific conditions such as having the required cards,
  * being in the correct city, and having a hospital built in that city.
  */
-public class PlagueManagement implements IPlagueManagement {
+public class PlagueManagement extends AbstractManagement implements IPlagueManagement {
     private final IPlayerManagement playerManagement;
 
     /**
@@ -41,7 +43,10 @@ public class PlagueManagement implements IPlagueManagement {
      *                                   if the plague has already been researched, or if the city does not have a suitable hospital.
      */
     @Override
-    public void researchPlague(PlagueName plagueToResearch, Game game) throws PlagueManagementException {
+    public void researchPlague(
+            PlagueName plagueToResearch,
+            IGame game
+    ) throws PlagueManagementException, PlayerManagementException {
         if (plagueToResearch == null) {
             throw new PlagueManagementException("The plague to be researched was not specified");
         }
@@ -81,7 +86,15 @@ public class PlagueManagement implements IPlagueManagement {
 
         List<CityCard> cardsToDiscard = plagueCards.subList(0, 5);
 
-        playerManagement.discardCards(game.getGameId(), game.getCurrentPlayer(), cardsToDiscard);
+        playerManagement.discardCards(
+                game.getGameId(),
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername(),
+                List.copyOf(cardsToDiscard.stream()
+                                          .map(CityCard::getId)
+                                          .toList())
+        );
 
         plague.setResearched(true);
         allPlaguesResearched(game);
@@ -93,7 +106,7 @@ public class PlagueManagement implements IPlagueManagement {
      *
      * @param game the current game instance
      */
-    public void allPlaguesResearched(Game game) {
+    public void allPlaguesResearched(IGame game) {
         boolean allResearched = game.getPlagueRepository()
                                     .getPlagues()
                                     .stream()
