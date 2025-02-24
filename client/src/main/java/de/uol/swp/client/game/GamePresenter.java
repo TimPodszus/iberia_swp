@@ -460,7 +460,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param event the mouse event that triggered this handler
      */
     @FXML
-    private void onInfectionCardDrawPileClickedEvent(MouseEvent event){
+    private void onInfectionCardDrawPileClickedEvent(MouseEvent event) {
         gameService.drawInfectionCard(lobbyId);
     }
 
@@ -1546,6 +1546,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void highlightCitys(List<Integer> cityIds) {
         for (Integer cityId : cityIds) {
+            LOG.trace("Highlighting city {}", cityId);
             Node node = mapPane.lookup(CITY_ID + cityId);
             node.getStyleClass()
                 .removeAll(CITY_CLASS);
