@@ -23,20 +23,16 @@ public class AvailablePlaguesResponse extends AbstractGameResponse {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AvailablePlaguesResponse that = (AvailablePlaguesResponse) obj;
-
-
-        return cityId == that.cityId &&
-                Objects.equals(availablePlagues, that.availablePlagues) &&
-                role == that.role;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AvailablePlaguesResponse that)) return false;
+        if (!super.equals(o)) return false;
+        return getCityId() == that.getCityId() && Objects.equals(getAvailablePlagues(), that.getAvailablePlagues()) && getRole() == that.getRole();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(availablePlagues, role, cityId);
+        return Objects.hash(super.hashCode(), getAvailablePlagues(), getRole(), getCityId());
     }
 }
 

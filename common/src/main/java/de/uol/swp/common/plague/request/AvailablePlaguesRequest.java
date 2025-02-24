@@ -3,23 +3,27 @@ package de.uol.swp.common.plague.request;
 import de.uol.swp.common.game.message.AbstractGameRequest;
 import lombok.Getter;
 
+import java.util.Objects;
+
 @Getter
 public class AvailablePlaguesRequest extends AbstractGameRequest {
 
-    private final int cityID;
+    private final int cityId;
 
-    public AvailablePlaguesRequest(String lobbyID, int cityID) {
-        super(lobbyID);
-        this.cityID = cityID;
+    public AvailablePlaguesRequest(String lobbyId, int cityId) {
+        super(lobbyId);
+        this.cityId = cityId;
     }
 
     @Override
     public boolean equals(Object o) {
-        return false;
+        if (this == o) return true;
+        if (!(o instanceof AvailablePlaguesRequest that)) return false;
+        return getCityId() == that.getCityId();
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return Objects.hash(getCityId());
     }
 }

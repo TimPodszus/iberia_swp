@@ -3,6 +3,10 @@ package de.uol.swp.server.plague;
 import com.google.inject.Inject;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.game.RoleEnum;
+import de.uol.swp.common.game.StateType;
+import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.request.AvailableCitiesToTreatRequest;
@@ -15,13 +19,18 @@ import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.WaitForConfirmationState;
 import de.uol.swp.server.infection.InfectionMapper;
 import de.uol.swp.server.infection.data.IInfection;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
+import de.uol.swp.server.role.CountryDoctor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
@@ -34,6 +43,7 @@ public class PlagueService extends AbstractService {
     private static final Logger LOG = LogManager.getLogger(PlagueService.class);
 
     private final IPlagueManagement plagueManagement;
+    private final ILobbyManagement lobbyManagement;
 
 
     /**
@@ -41,12 +51,14 @@ public class PlagueService extends AbstractService {
      *
      * @param plagueManagement The management class for researching plagues
      * @param eventBus         The server-wide EventBus
+     * @param lobbyManagement
      * @since 2024-10-04
      */
     @Inject
-    public PlagueService(IPlagueManagement plagueManagement, EventBus eventBus) {
+    public PlagueService(IPlagueManagement plagueManagement, EventBus eventBus, ILobbyManagement lobbyManagement) {
         super(eventBus);
         this.plagueManagement = plagueManagement;
+        this.lobbyManagement = lobbyManagement;
     }
 
     /**
@@ -94,7 +106,7 @@ public class PlagueService extends AbstractService {
                 true,
                 infectionsInCity,
                 game.getCurrentPlayer().getRole().getName(),
-                request.getCityID()
+                request.getCityId()
         );
         request.getSession()
                 .ifPresent(availablePlaguesResponse::setSession);
@@ -126,15 +138,26 @@ public class PlagueService extends AbstractService {
         boolean isCountryDoctor = request.isCountryDoctor();
         plagueManagement.treatPlague(request.getPlagueName(), city, game, isCountryDoctor);
 
-        TreatPlagueResponse treatPlagueResponse = new TreatPlagueResponse(request.getLobbyId(), true, request.getPlagueName(), city.getId());
-        request.getSession()
-                .ifPresent(treatPlagueResponse::setSession);
-        request.getMessageContext()
-                .ifPresent(treatPlagueResponse::setMessageContext);
+        if (game.getCurrentPlayer().getRole().getName().equals(RoleEnum.COUNTRY_DOCTOR) && !isCountryDoctor) {
+            TreatPlagueResponse treatPlagueResponse = new TreatPlagueResponse(request.getLobbyId(), true, request.getPlagueName(), city.getId());
+            request.getSession()
+                    .ifPresent(treatPlagueResponse::setSession);
+            request.getMessageContext()
+                    .ifPresent(treatPlagueResponse::setMessageContext);
+            game.setState(new WaitForConfirmationState());
+            post(treatPlagueResponse);
+            LOG.debug("Sending TreatPlagueResponse for lobbyId: {}, cityId: {}, plagueName: {}",
+                    request.getLobbyId(), city.getId(), request.getPlagueName());
+        }
 
-        LOG.debug("Sending TreatPlagueResponse for lobbyId: {}, cityId: {}, plagueName: {}",
-                request.getLobbyId(), city.getId(), request.getPlagueName());
-        post(treatPlagueResponse);
+        if (game.getState().getStateType().equals(StateType.WAIT_FOR_CONFIRMATION_STATE) && isCountryDoctor) {
+            game.setState(game.getPreviousState());
+            LOG.info("Game changed back to PlayerTurnState");
+        }
+        IGameDTO gameDTO = GameMapper.toDTO(game);
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+
 
     }
 

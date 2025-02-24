@@ -450,7 +450,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param event the mouse event that triggered this handler
      */
     @FXML
-    private void onInfectionCardDrawPileClickedEvent(MouseEvent event){
+    private void onInfectionCardDrawPileClickedEvent(MouseEvent event) {
         gameService.drawInfectionCard(lobbyId);
     }
 
@@ -501,8 +501,12 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onTreatPlague(ActionEvent event) {
         if (treatInfectionButton.isSelected()) {
-            LOG.debug("Treat Plague Button is selected, sending Request...");
-            gameService.sendAvailablePlaguesRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
+            if (gameDTO.getState()
+                    .equals(StateType.PLAYER_TURN_STATE)) {
+                resetHighlightetCities();
+                LOG.debug("Treat Plague Button is selected, sending Request...");
+                gameService.sendAvailablePlaguesRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
+            }
         } else {
             LOG.debug("Button is not selected!");
         }
@@ -518,21 +522,17 @@ public class GamePresenter extends AbstractPresenter {
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
         LOG.debug("AvailablePlaguesResponse received! Number of plagues: {}", response.getAvailablePlagues().size());
 
-        int selectedCityId = response.getCityId();
         Platform.runLater(() -> {
             TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
-            LOG.debug("Dialog is opened...");
             Optional<PlagueName> result = dialog.showAndWait();
-            LOG.debug("Dialog has been closed.");
 
             result.ifPresent(selectedPlague -> {
                 boolean isCountryDoctor = (count > 0);
                 LOG.info("Count: {}", count);
-
                 LOG.info("Selected Plague: {}", selectedPlague);
                 gameService.sendTreatPlagueRequest(
                         lobbyId,
-                        selectedCityId,
+                        response.getCityId(),
                         selectedPlague,
                         isCountryDoctor
                 );
@@ -555,7 +555,6 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onTreatPlagueResponse(TreatPlagueResponse response) {
         LOG.info("TreatPlagueResponse received: City ID {}, Plague {}", response.getCityID(), response.getPlagueName());
-        Platform.runLater(() -> updateBoard(gameDTO));
         LOG.info("Role: {}", gameDTO.getCurrentPlayer().getRole().getName());
 
         if (RoleEnum.COUNTRY_DOCTOR == gameDTO.getCurrentPlayer().getRole().getName() && count == 1) {
@@ -569,15 +568,11 @@ public class GamePresenter extends AbstractPresenter {
      * Opens a dialog for the player to select a city.
      */
     private boolean showSelectCityToTreatDialog = true;
+
     @Subscribe
     public void onAvailableCitiesToTreatResponse(AvailableCitiesToTreatResponse response) {
         LOG.info("AvailableCitiesToTreatResponse received! Number of cities: {}", response.getAvailableCities().size());
         LOG.info("Current count: {}", count);
-
-        if (count != 1) {
-            LOG.warn("Unexpected call to onAvailableCitiesToTreatResponse.");
-            return;
-        }
 
         if (showSelectCityToTreatDialog) {
             Platform.runLater(() -> {

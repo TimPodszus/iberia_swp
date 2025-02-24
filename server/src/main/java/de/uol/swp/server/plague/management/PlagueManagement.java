@@ -134,8 +134,7 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
                 throw new PlagueManagementException("The selected plague is not present in the city:" + plagueToTreat);
             }
 
-            int plagueCubes = city.getPlagueCubes(plagueToTreat);
-            if (plagueCubes == 0) {
+            if (city.getPlagueCubes(plagueToTreat) == 0) {
                 throw new PlagueManagementException("No plague cubes to remove for the selected plague.");
             }
 

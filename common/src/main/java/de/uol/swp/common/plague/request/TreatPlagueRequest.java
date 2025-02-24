@@ -4,6 +4,8 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.message.AbstractGameRequest;
 import lombok.Getter;
 
+import java.util.Objects;
+
 @Getter
 public class TreatPlagueRequest extends AbstractGameRequest {
 
@@ -20,11 +22,13 @@ public class TreatPlagueRequest extends AbstractGameRequest {
 
     @Override
     public boolean equals(Object o) {
-        return false;
+        if (this == o) return true;
+        if (!(o instanceof TreatPlagueRequest that)) return false;
+        return getCityId() == that.getCityId() && isCountryDoctor() == that.isCountryDoctor() && getPlagueName() == that.getPlagueName();
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return Objects.hash(getCityId(), getPlagueName(), isCountryDoctor());
     }
 }

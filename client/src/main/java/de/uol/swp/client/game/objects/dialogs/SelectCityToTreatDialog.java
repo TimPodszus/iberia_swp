@@ -18,9 +18,9 @@ import java.util.Map;
 public class SelectCityToTreatDialog extends Dialog<ICityDTO> {
 
     @FXML
-    private ListView<String> cityListView;
+    private final ListView<String> cityListView;
 
-    private Map<String, ICityDTO> cityMap = new HashMap<>();
+    private final Map<String, ICityDTO> cityMap = new HashMap<>();
 
     /**
      * Constructs a new SelectCityToTreatDialog.
