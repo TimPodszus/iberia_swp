@@ -1,18 +1,18 @@
 package de.uol.swp.server.usermanagement;
 
-import de.uol.swp.server.usermanagement.management.UserManagement;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import de.uol.swp.common.game.message.request.ChangePasswordRequest;
 import de.uol.swp.common.message.response.ResponseMessage;
 import de.uol.swp.common.user.exception.RegistrationExceptionMessage;
 import de.uol.swp.common.user.request.RegisterUserRequest;
 import de.uol.swp.common.user.response.RegistrationSuccessfulResponse;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.usermanagement.management.UserManagement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 /**
  * Mapping vom event bus calls to user management calls
@@ -42,6 +42,7 @@ public class UserService extends AbstractService {
     public UserService(EventBus eventBus, UserManagement userManagement) {
         super(eventBus);
         this.userManagement = userManagement;
+
     }
 
     /**
@@ -74,5 +75,14 @@ public class UserService extends AbstractService {
         msg.getMessageContext()
            .ifPresent(returnMessage::setMessageContext);
         post(returnMessage);
+    }
+
+    @Subscribe
+    public void onChangePasswordEvent(ChangePasswordRequest request) {
+        LOG.debug("Got new change password message with {}", request.getUserDTO());
+        userManagement.changePassword(
+                request.getUserDTO()
+                       .getUsername(), request.getNewPassword()
+        );
     }
 }

@@ -8,12 +8,12 @@ import de.uol.swp.server.usermanagement.management.UserManagementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 
 public class DatabaseBasedUserStore extends AbstractUserStore implements UserStore {
@@ -121,7 +121,23 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
 
     @Override
     public IUser updateUser(String username, String password) {
-        return null;
+        if (username.isEmpty() || password.isEmpty()) {
+            throw new UserManagementException("Password and username cannot be empty");
+        }
+        try (PreparedStatement ps = connection.prepareStatement("UPDATE User SET password = ? WHERE username = ?")) {
+            ps.setString(1, password);
+            ps.setString(2, username);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOG.error(e);
+        }
+        Optional<IUser> user = findUser(username);
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            throw new UserManagementException("Failed to retrieve the updated user");
+        }
+
     }
 
 

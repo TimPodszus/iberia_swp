@@ -5,7 +5,10 @@ import com.google.inject.Inject;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.store.UserStore;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Handles most user related issues e.g. login/logout
@@ -110,5 +113,9 @@ public class UserManagement extends AbstractUserManagement {
     public IUser getUser(String username) {
         return userStore.findUser(username)
                         .orElseThrow(() -> new UserManagementException("Username unknown!"));
+    }
+
+    public void changePassword(String username, String newPassword) {
+        userStore.updateUser(username, newPassword);
     }
 }

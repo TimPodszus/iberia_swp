@@ -1,11 +1,19 @@
 package de.uol.swp.client.options;
 
+import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.main.event.ShowLastSceneEvent;
+import de.uol.swp.client.user.UserService;
+import de.uol.swp.client.user.UserStore;
+import de.uol.swp.common.passwordHashing.PasswordHashing;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class OptionsPresenter extends AbstractPresenter {
+
+    public static final Logger LOG = LogManager.getLogger(OptionsPresenter.class);
 
     public static final String FXML = "/fxml/OptionsView.fxml";
 
@@ -27,11 +35,10 @@ public class OptionsPresenter extends AbstractPresenter {
     @FXML
     private CheckBox chatEnabledCheckbox;
 
-    /**
-     * Initializes the options presenter.
-     * Sets the initial values for the volume slider, volume label, and chat enabled checkbox
-     * based on the values stored in the options repository.
-     */
+
+    @Inject
+    UserService userService;
+
     @FXML
     public void initialize() {
         volumeSlider.setValue(optionsRepository.getVolume());
@@ -44,46 +51,29 @@ public class OptionsPresenter extends AbstractPresenter {
                               .addListener((observable, oldValue, newValue) -> validatePasswordFields());
 
         validatePasswordFields();
-
     }
 
-    /**
-     * Handles the action when the volume slider value is changed.
-     * Updates the volume in the options repository and the volume label.
-     */
     public void onVolumeChange() {
         optionsRepository.setVolume(volumeSlider.getValue());
         volumeLabel.setText(volumeSlider.getValue() + " %");
     }
 
-    /**
-     * Handles the action when the chat enabled checkbox is changed.
-     * Updates the chat enabled status in the options repository.
-     */
     public void onChatEnabledChange() {
         optionsRepository.setChatEnabled(chatEnabledCheckbox.isSelected());
     }
 
-
-    /**
-     * Handles the action when the back button is pressed.
-     * Posts a ShowLastSceneEvent to the event bus.
-     */
     public void onBackButton() {
         eventBus.post(new ShowLastSceneEvent());
     }
 
-    /**
-     * Handles the action when the change password button is pressed.
-     * Posts a ChangePasswordEvent to the event bus.
-     */
     public void onChangePasswordButton() {
-        //  eventBus.post(new ChangePasswordEvent(newPasswordField.getText()));
+        userService.changePassword(
+                UserStore.getInstance()
+                         .getUser(), PasswordHashing.hashPassword(newPasswordField.getText())
+        );
+
     }
 
-    /**
-     * Validates the password fields and updates the change password button's disabled property.
-     */
     private void validatePasswordFields() {
         boolean isValid = !newPasswordField.getText()
                                            .isEmpty() && !newPasswordRepeatField.getText()
@@ -91,4 +81,5 @@ public class OptionsPresenter extends AbstractPresenter {
                                                                                                               .equals(newPasswordRepeatField.getText());
         changePasswordButton.setDisable(!isValid);
     }
+
 }
