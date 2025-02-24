@@ -933,8 +933,8 @@ class GameManagementTest {
 
         assertEquals(
                 player1,
-                game.getPlayers()
-                    .get(0)
+                game1.getPlayers()
+                     .get(0)
         );
     }
 
