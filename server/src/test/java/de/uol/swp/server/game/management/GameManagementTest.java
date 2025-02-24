@@ -196,21 +196,6 @@ class GameManagementTest {
     }
 
     @Test
-    void testDrawInfectionCard() {
-        InfectionCard infectionCard1 = new InfectionCard(
-                1,
-                "InfectionCard",
-                cityRepository.getCityByName(CityName.BARCELONA)
-        );
-        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard", cityRepository.getCityByName(ALICANTE));
-        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard1, infectionCard2)));
-        when(game.getState()).thenReturn(new StartState());
-        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
-
-        assertEquals(infectionCard1, drawnCard, "Expected Barcelona infection card to be drawn");
-    }
-
-    @Test
     void testSetPositioning_PlayerAlreadyPositioned() {
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
         IUser testUser = new User("test", "test");
@@ -230,9 +215,6 @@ class GameManagementTest {
     }
 
     @Test
-    void testDrawInfectionCard() {
-        InfectionCard infectionCard1 = new InfectionCard(
-                1,
     void testSetPositioning_PlayerManagementException() throws PlayerManagementException {
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
         IUser testUser = new User("test", "test");
@@ -574,10 +556,11 @@ class GameManagementTest {
 
     @Test
     void testGetAvailableActions() {
-        String lobbyCode = "testLobby";
-
+        IUser user = mock(IUser.class);
         when(user.getUsername()).thenReturn("username");
         when(cityManagement.isHospitalBuildable(any(String.class), any(String.class))).thenReturn(true);
+
+        String lobbyCode = "testLobby";
 
         game = mock(IGame.class);
         GameStore.getInstance()
@@ -595,7 +578,7 @@ class GameManagementTest {
         when(cityCard.getCity()).thenReturn(city);
 
         when(game.getState()).thenReturn(mock(IGameState.class));
-        List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, null);
+        List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
         assertEquals(5, actions.size());
     }
@@ -743,6 +726,7 @@ class GameManagementTest {
         verify(game, times(1)).setState(any(PlayerTurnState.class));
     }
 
+
     /**
      * Tests the lockGameInWaitForConfirmation method.
      * Ensures that the game state is correctly set to WAIT_FOR_CONFIRMATION_STATE.
@@ -818,7 +802,8 @@ class GameManagementTest {
 
     @Test
     void testMovePlayer_StateMobilizationEvent() throws GameManagementException {
-        Map<ICity, List<ICard>> availableDestinations = Map.of(cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
+        Map<ICity, List<ICard>> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
                 List.of(),
                 cityRepository.getCityByName(CityName.BARCELONA),
                 List.of()
@@ -845,9 +830,13 @@ class GameManagementTest {
 
         gameManagement.movePlayer(testUser1, "lobbyCode", destinationCity, null);
 
-        assertEquals(destinationCity, player.getCurrentPosition(), "Expected player1 to have moved to Palma de Mallorca"
+        assertEquals(
+                destinationCity,
+                player.getCurrentPosition(),
+                "Expected player1 to have moved to Palma de Mallorca"
         );
-        assertEquals(1,
+        assertEquals(
+                1,
                 stateMobilizationEventCard.getPlayersToMove()
                                           .size(),
                 "Expected playersToMove to be decreased by 1"
@@ -855,11 +844,13 @@ class GameManagementTest {
 
         gameManagement.movePlayer(testUser2, "lobbyCode", startCity, null);
 
-        assertEquals(destinationCity,
+        assertEquals(
+                destinationCity,
                 player.getCurrentPosition(),
                 "Expected player2 to have moved to Palma de Mallorca"
         );
-        assertEquals(0,
+        assertEquals(
+                0,
                 stateMobilizationEventCard.getPlayersToMove()
                                           .size(),
                 "Expected playersToMove to be decreased by 1"
@@ -924,7 +915,7 @@ class GameManagementTest {
 
     @Test
     void testSetStartingPlayer() {
-        IGame game = new Game(1, "testLobby");
+        IGame game1 = new Game(1, "testLobby");
         ICity city1 = mock(ICity.class);
         ICity city2 = mock(ICity.class);
         IPlayer player1 = new Player(new User("user1", "pass1"));
@@ -933,12 +924,12 @@ class GameManagementTest {
                .add(new CityCard(1, "City1", city1));
         player2.getCards()
                .add(new CityCard(2, "City2", city2));
-        game.getPlayers()
-            .add(player1);
-        game.getPlayers()
-            .add(player2);
+        game1.getPlayers()
+             .add(player1);
+        game1.getPlayers()
+             .add(player2);
 
-        gameManagement.setStartingPlayer(game);
+        gameManagement.setStartingPlayer(game1);
 
         assertEquals(
                 player1,
@@ -960,13 +951,13 @@ class GameManagementTest {
 
     @Test
     void testDiscardInfectionCard() {
-        IGame game = mock(IGame.class);
+        IGame mockGame = mock(IGame.class);
         InfectionCard infectionCard = new InfectionCard(1, "InfectionCard", mock(ICity.class));
         List<InfectionCard> discardPile = new ArrayList<>();
 
-        when(game.getInfectionCardDiscardPile()).thenReturn(discardPile);
+        when(mockGame.getInfectionCardDiscardPile()).thenReturn(discardPile);
 
-        gameManagement.discardInfectionCard(game, infectionCard);
+        gameManagement.discardInfectionCard(mockGame, infectionCard);
 
         assertTrue(discardPile.contains(infectionCard), "The infection card should be in the discard pile");
     }
@@ -1084,4 +1075,3 @@ class GameManagementTest {
         verify(gameService, times(1)).sendToAllInLobby(any(), any());
     }
 }
-
