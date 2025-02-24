@@ -6,6 +6,7 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
+import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardResponse;
 import de.uol.swp.common.user.Session;
@@ -58,6 +59,29 @@ public class PlayerService extends AbstractService {
         response.setSession(session);
         post(response);
         IGame game = gameManagement.getGame(request.getLobbyId());
+        post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    /**
+     * Handles the DrawInfectionCardRequest event.
+     *
+     * @param request the request to draw an infection card
+     */
+    @Subscribe
+    public void onDrawInfectionCardRequest(DrawInfectionCardRequest request) {
+        AbstractResponseMessage response;
+        Session session = request.getSession()
+                                 .orElseThrow(() -> new IllegalStateException("Session not present"));
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        if (!game.getCurrentPlayer()
+                 .getUser()
+                 .equals(UserMapper.toUser(session.getUser()))) {
+            response = new StatusResponse(request.getLobbyId(), false, "It is not your turn");
+            response.setSession(session);
+            post(response);
+            return;
+        }
+        gameManagement.drawInfectionCard(game);
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 

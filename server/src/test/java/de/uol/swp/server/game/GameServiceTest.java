@@ -1,13 +1,11 @@
 package de.uol.swp.server.game;
 
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
+import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
@@ -15,6 +13,8 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.CardRepository;
+import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -27,17 +27,17 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
-import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
-import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.PlagueRepository;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -50,9 +50,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -87,7 +85,8 @@ public class GameServiceTest extends EventBusBasedTest {
 
     @Spy
     @InjectMocks
-    GameService gameService = new GameService(getBus(),
+    GameService gameService = new GameService(
+            getBus(),
             lobbyManagement,
             gameManagement,
             cityManagement,
@@ -116,13 +115,28 @@ public class GameServiceTest extends EventBusBasedTest {
         handleEvent(response);
     }
 
+    /**
+     * Handles AvailableActionsResponse events.
+     *
+     * @param event the AvailableActionsResponse
+     */
     @Subscribe
     public void onEvent(AvailableActionsResponse event) {
         super.handleEvent(event);
     }
 
+    /**
+     * Handles ShareRideRequest events.
+     *
+     * @param event the ShareRideRequest
+     */
     @Subscribe
     public void onShareRideEvent(ShareRideRequest event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onAnotherDayEvent(AnotherDayEvent event) {
         super.handleEvent(event);
     }
 
@@ -167,8 +181,13 @@ public class GameServiceTest extends EventBusBasedTest {
         assertInstanceOf(BoardUpdateEvent.class, event);
     }
 
+    /**
+     * Tests the onMovePlayerRequest method with an unknown player to take with.
+     *
+     * @throws GameManagementException if there is an error in game management
+     */
     @Test
-    void testOnMovePlayerRequestWithUnknownPlayerToTakeWith() throws InterruptedException, GameManagementException {
+    void testOnMovePlayerRequestWithUnknownPlayerToTakeWith() throws GameManagementException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
@@ -190,6 +209,11 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, atLeast(1)).movePlayer(user, "lobbycode", city, null);
     }
 
+    /**
+     * Tests the onMovePlayerRequest method with a not logged-in player to take with.
+     *
+     * @throws GameManagementException if there is an error in game management
+     */
     @Test
     void testOnMovePlayerRequestWithNotLoggedInPlayerToTakeWith() throws GameManagementException {
         IUser user = new User("testuser", "testpassword");
@@ -243,6 +267,8 @@ public class GameServiceTest extends EventBusBasedTest {
 
     /**
      * Tests setting player positioning when the lobby is not found.
+     *
+     * @throws GameManagementException if there is an error in game management
      */
     @Test
     void testOnPositionRequest_LobbyNotFound() throws GameManagementException {
@@ -260,6 +286,8 @@ public class GameServiceTest extends EventBusBasedTest {
 
     /**
      * Tests setting player positioning when the game is null.
+     *
+     * @throws GameManagementException if there is an error in game management
      */
     @Test
     void testOnPositionRequest_GameIsNull() throws GameManagementException {
@@ -275,7 +303,9 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     /**
-     * Tests create game  when the game is null.
+     * Tests create game when the game is null.
+     *
+     * @throws PlayerManagementException if there is an error in player management
      */
     @Test
     void testOnCreateGameRequest_GameIsNull() throws PlayerManagementException {
@@ -291,8 +321,139 @@ public class GameServiceTest extends EventBusBasedTest {
         assertNull(event, "No event should be posted when the game creation fails.");
     }
 
+    /**
+     * Tests the onShareKnowledgeRequest method when the request is accepted.
+     *
+     * @throws GameManagementException   if there is an error in game management
+     * @throws PlayerManagementException if there is an error in player management
+     */
     @Test
-    void testOnBuildTrainTrackRequest_UserIsNull() throws GameManagementException, GameException {
+    void testOnShareKnowledgeRequest_Accepted() throws GameManagementException, PlayerManagementException {
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                "lobbyId",
+                "currentPlayer",
+                "targetPlayer",
+                mock(ICardDTO.class),
+                mock(ICardDTO.class)
+        );
+        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", true, event);
+
+        IGame game = mock(IGame.class);
+        IPlayer currentPlayer = mock(IPlayer.class);
+        IPlayer targetPlayer = mock(IPlayer.class);
+        IUser currentUser = mock(IUser.class);
+        IUser targetUser = mock(IUser.class);
+
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
+        when(game.getPlayers()).thenReturn(List.of(currentPlayer, targetPlayer));
+        when(currentPlayer.getUser()).thenReturn(currentUser);
+        when(targetPlayer.getUser()).thenReturn(targetUser);
+        when(currentUser.getUsername()).thenReturn("currentPlayer");
+        when(targetUser.getUsername()).thenReturn("targetPlayer");
+
+        gameService.onShareKnowledgeRequest(request);
+
+        verify(gameManagement).unlockGameInWaitForConfirmation("lobbyId");
+        verify(gameManagement).shareKnowledgeRequestAccepted(
+                eq(currentPlayer),
+                eq(targetPlayer),
+                eq("lobbyId"),
+                eq(event),
+                eq(lobbyManagement),
+                eq(gameService)
+        );
+    }
+
+    /**
+     * Tests the onShareKnowledgeRequest method when the request is denied.
+     *
+     * @throws GameManagementException   if there is an error in game management
+     * @throws PlayerManagementException if there is an error in player management
+     */
+    @Test
+    void testOnShareKnowledgeRequest_Denied() throws GameManagementException, PlayerManagementException {
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                "lobbyId",
+                "currentPlayer",
+                "targetPlayer",
+                mock(ICardDTO.class),
+                mock(ICardDTO.class)
+        );
+        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", false, event);
+
+        IGame game = mock(IGame.class);
+        IPlayer currentPlayer = mock(IPlayer.class);
+        IPlayer targetPlayer = mock(IPlayer.class);
+        IUser currentUser = mock(IUser.class);
+        IUser targetUser = mock(IUser.class);
+
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
+        when(game.getPlayers()).thenReturn(List.of(currentPlayer, targetPlayer));
+        when(currentPlayer.getUser()).thenReturn(currentUser);
+        when(targetPlayer.getUser()).thenReturn(targetUser);
+        when(currentUser.getUsername()).thenReturn("currentPlayer");
+        when(targetUser.getUsername()).thenReturn("targetPlayer");
+
+        gameService.onShareKnowledgeRequest(request);
+
+        verify(gameManagement).unlockGameInWaitForConfirmation("lobbyId");
+        verify(gameManagement).postShareKnowledgeResponse(eq(event), eq(lobbyManagement), eq(gameService), eq(false));
+    }
+
+
+    @Test
+    void onCardsExchangeRequestTest() throws GameManagementException {
+        String lobbyId = "lobbyId";
+        IPlayer player1 = new Player(new User("player1", "password"));
+        IPlayer player2 = new Player(new User("player2", "password"));
+        ILobby lobby = new Lobby(lobbyId, "test", List.of(player1.getUser(), player2.getUser()), player1.getUser(), 4);
+        Session session = UUIDSession.create(player1.getUser());
+        Session session2 = UUIDSession.create(player2.getUser());
+        when(authenticationService.getSession(player1.getUser())).thenReturn(Optional.of(session));
+        when(authenticationService.getSession(player2.getUser())).thenReturn(Optional.of(session2));
+
+        ArrayList<IPlayer> players = new ArrayList<>();
+        players.add(player1);
+        IGame notMockedGame = new Game(
+                "testGame",
+                mock(RoleRepository.class),
+                mock(CityRepository.class),
+                mock(RegionRepository.class),
+                mock(ConnectionRepository.class),
+                mock(PlagueRepository.class),
+                mock(CardRepository.class),
+                1,
+                0,
+                14,
+                20,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                players,
+                0,
+                mock(IGameState.class),
+                mock(IGameState.class),
+                1,
+                mock(GameStateChangeListener.class)
+        );
+
+        when(gameManagement.getGame(any())).thenReturn(notMockedGame);
+        when(lobbyManagement.getLobby(any())).thenReturn(lobby);
+
+
+        Map<String, ICardDTO> cards = Map.of("player1", mock(ICardDTO.class), "player2", mock(ICardDTO.class));
+
+        CardsExchangeRequest request = new CardsExchangeRequest(cards, lobbyId);
+        gameService.onCardsExchangeRequest(request);
+
+        verify(gameManagement).lockGameInWaitForConfirmation(lobbyId);
+    }
+
+    @Test
+    void testOnBuildTrainTrackRequest_UserIsNull() {
         BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
         request.setSession(null);
 
@@ -321,6 +482,7 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
     }
+
     @Test
     void testOnGameStateChange_DrawCardState() {
         ILobby lobby = mock(ILobby.class);
@@ -357,5 +519,29 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
-        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));}
+        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));
+    }
+
+    @Test
+    void testOnAnotherDayEvent() {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        AnotherDayEvent anotherDayEvent = new AnotherDayEvent("lobbycode", "testuser");
+        anotherDayEvent.setSession(session);
+
+        IGame game = new Game(2, "lobbycode");
+        when(gameManagement.getGame("lobbycode")).thenReturn(game);
+        ILobby lobby = new Lobby("lobbycode", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
+        game.setState(new PlayerTurnState());
+
+        gameService.onAnotherDayEvent(anotherDayEvent);
+
+        verify(gameManagement, times(1)).increaseCurrentPlayerActions(game, 2);
+        verify(gameManagement, times(2)).getGame("lobbycode");
+        verify(lobbyManagement, times(1)).getLobby("lobbycode");
+        verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+    }
 }

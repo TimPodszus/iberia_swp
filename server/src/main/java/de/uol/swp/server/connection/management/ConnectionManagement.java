@@ -47,19 +47,35 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
 
     @Override
     public Map<Integer, DestinationInfo> getAvailableDestinations(String lobbyId, int cityId) {
-        CityRepository cityRepository = super.getGame(lobbyId)
-                                             .getCityRepository();
+        IPlayer currentPlayer = super.getGame(lobbyId)
+                                     .getCurrentPlayer();
+        return getAvailableDestinations(super.getGame(lobbyId), currentPlayer, cityId);
+    }
+
+    @Override
+    public Map<Integer, DestinationInfo> getAvailableDestinations(String lobbyId, String username) {
+        IPlayer player = super.getGame(lobbyId)
+                              .getPlayer(username);
+        return getAvailableDestinations(super.getGame(lobbyId),
+                player,
+                player.getCurrentPosition()
+                      .getId()
+        );
+    }
+
+    private Map<Integer, DestinationInfo> getAvailableDestinations(IGame game, IPlayer player, int cityId) {
+        CityRepository cityRepository = game.getCityRepository();
         ICity startCity = cityRepository.getCity(cityId);
 
-        Map<Integer, DestinationInfo> availableDestinations = getByLandConnectedCities(lobbyId, startCity);
+        Map<Integer, DestinationInfo> availableDestinations = getByLandConnectedCities(game, startCity);
 
         if (startCity.isHarbourCity()) {
             LOG.debug(
                     "[Lobby: {}] City {} is a harbour city, continuing to retrieve available harbour cities",
-                    lobbyId,
+                    game.getGameId(),
                     startCity.getName()
             );
-            Map<Integer, DestinationInfo> seaConnections = getBySeaConnectedCities(lobbyId, cityId);
+            Map<Integer, DestinationInfo> seaConnections = getBySeaConnectedCities(game, player, cityId);
             for (Map.Entry<Integer, DestinationInfo> entry : seaConnections.entrySet()) {
                 addDestination(
                         availableDestinations,
@@ -73,7 +89,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
 
         LOG.debug(
                 "[Lobby: {}] Successfully retrieved {} available destinations for city {}",
-                lobbyId,
+                game.getGameId(),
                 availableDestinations.size(),
                 startCity.getName()
         );
@@ -106,12 +122,11 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     /**
      * Retrieves the available land connections for a given city.
      *
-     * @param lobbyId   the ID of the lobby
+     * @param game   the game to get the connections from
      * @param startCity the starting city
      * @return a map of cities that can be reached via land connections
      */
-    private Map<Integer, DestinationInfo> getByLandConnectedCities(String lobbyId, ICity startCity) {
-        IGame game = super.getGame(lobbyId);
+    private Map<Integer, DestinationInfo> getByLandConnectedCities(IGame game, ICity startCity) {
         Map<Integer, DestinationInfo> availableDestinations = new HashMap<>();
         List<IConnection> connections = game.getConnectionRepository()
                                             .getConnectionsOfCity(startCity.getName());
@@ -127,7 +142,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                         addDestination(availableDestinations, city.getId(), new ArrayList<>(), TransportMode.TRAIN);
 
                         availableDestinations = getAdditionalTrainConnectionsForCity(
-                                lobbyId,
+                                game,
                                 startCity,
                                 city,
                                 availableDestinations
@@ -140,7 +155,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
 
         LOG.debug(
                 "[Lobby: {}] Successfully retrieved {} available land connections for city {}",
-                lobbyId,
+                game.getGameId(),
                 availableDestinations.size(),
                 startCity.getName()
         );
@@ -150,17 +165,18 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     /**
      * Retrieves the train connections for a given city.
      *
-     * @param lobbyId     the ID of the lobby
+     * @param game     the game to get the connections from
+     * @param previousCity the city that was previously checked, to prevent loops
      * @param currentCity the starting city
+     * @param availableDestinations the map of available destinations
      * @return a map of cities that can be reached via train connections
      */
     private Map<Integer, DestinationInfo> getAdditionalTrainConnectionsForCity(
-            String lobbyId,
+            IGame game,
             ICity previousCity,
             ICity currentCity,
             Map<Integer, DestinationInfo> availableDestinations
     ) {
-        IGame game = super.getGame(lobbyId);
         List<IConnection> connections = game.getConnectionRepository()
                                             .getConnectionsOfCity(currentCity.getName());
 
@@ -168,8 +184,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
             if (connection.isTrainTrack()) {
                 for (CityName connectedCity : connection.getCityNames()) {
                     if (!connectedCity.equals(currentCity.getName())) {
-                        ICity city = super.getGame(lobbyId)
-                                          .getCityRepository()
+                        ICity city = game.getCityRepository()
                                           .getCitiesByNames(connectedCity)
                                           .get(0);
                         if (city.equals(previousCity)) {
@@ -177,7 +192,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                         }
                         addDestination(availableDestinations, city.getId(), new ArrayList<>(), TransportMode.TRAIN);
                         availableDestinations = getAdditionalTrainConnectionsForCity(
-                                lobbyId,
+                                game,
                                 currentCity,
                                 city,
                                 availableDestinations
@@ -190,28 +205,27 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     }
 
     /**
-     * Retrieves the available sea connections for the currentPlayer.
+     * Retrieves the available sea connections for the player.
      *
-     * @param lobbyId the ID of the lobby
+     * @param game the game to get the connections from
+     * @param player the player to get the sea connections for
+     * @param cityId the ID of the city to get the sea connections from
      * @return a map of cities that can be reached via sea connections
      */
-    private Map<Integer, DestinationInfo> getBySeaConnectedCities(String lobbyId, int cityId) {
+    private Map<Integer, DestinationInfo> getBySeaConnectedCities(IGame game, IPlayer player, int cityId) {
         Map<Integer, DestinationInfo> availableConnections = new HashMap<>();
-        CityRepository cityRepository = super.getGame(lobbyId)
-                                             .getCityRepository();
+        CityRepository cityRepository = game.getCityRepository();
 
         List<ICity> harbourCities = cityRepository.getCities()
                                                   .stream()
                                                   .filter(ICity::isHarbourCity)
                                                   .toList();
-        IPlayer currentPlayer = super.getGame(lobbyId)
-                                     .getCurrentPlayer();
 
-        boolean isSailor = currentPlayer.getRole() != null && currentPlayer.getRole()
+        boolean isSailor = player.getRole() != null && player.getRole()
                                                                            .getName()
                                                                            .equals(RoleEnum.SAILOR);
         for (ICity city : harbourCities) {
-            List<ICard> cards = isSailor ? new ArrayList<>() : getCardsWithSameColor(lobbyId, city);
+            List<ICard> cards = isSailor ? new ArrayList<>() : getCardsWithSameColor(player, city);
             if (city.getId() != cityId && (!cards.isEmpty() || isSailor)) {
                 addDestination(
                         availableConnections,
@@ -224,24 +238,22 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
 
         LOG.debug(
                 "[Lobby: {}] Successfully retrieved {} available sea connections for the current player",
-                lobbyId,
+                game.getGameId(),
                 availableConnections.size()
         );
         return availableConnections;
     }
 
     /**
-     * Retrieves the cards of the current player that match the color of the given city.
+     * Retrieves the cards of the player that match the color of the given city.
      *
-     * @param lobbyId the ID of the lobby
+     * @param player the player to get the cards from
      * @param city    the city to match the card colors with
      * @return a list of cards that match the color of the given city
      */
-    private List<ICard> getCardsWithSameColor(String lobbyId, ICity city) {
+    private List<ICard> getCardsWithSameColor(IPlayer player, ICity city) {
         List<ICard> cards = new ArrayList<>();
-        IPlayer currentPlayer = super.getGame(lobbyId)
-                                     .getCurrentPlayer();
-        for (ICard card : currentPlayer.getCards()) {
+        for (ICard card : player.getCards()) {
             if (card instanceof CityCard cityCard && cityCard.getCity()
                                                              .getPlagueName()
                                                              .equals(city.getPlagueName())) {

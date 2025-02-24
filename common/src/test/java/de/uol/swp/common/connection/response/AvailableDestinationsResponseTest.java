@@ -5,9 +5,11 @@ import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.connection.dto.DestinationInfo;
+import de.uol.swp.common.game.TransportMode;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -42,8 +44,12 @@ public class AvailableDestinationsResponseTest {
                 cards,
                 new ArrayList<>(List.of(TransportMode.CARRIAGE)))
         );
-        AvailableDestinationsResponse availableDestinationsResponse = new AvailableDestinationsResponse(destinations);
+        AvailableDestinationsResponse availableDestinationsResponse = new AvailableDestinationsResponse(
+                "lobbyId",
+                destinations
+        );
 
+        assertEquals("lobbyId", availableDestinationsResponse.getLobbyId());
         assertEquals(destinations, availableDestinationsResponse.getCities());
     }
 }

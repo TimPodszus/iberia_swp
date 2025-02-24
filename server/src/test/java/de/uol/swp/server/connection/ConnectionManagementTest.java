@@ -33,7 +33,6 @@ class ConnectionManagementTest {
     Player player;
     ConnectionRepository connectionRepository;
     CityRepository cityRepository;
-    ICity city;
 
     @BeforeEach
     void setUp() {
@@ -41,7 +40,6 @@ class ConnectionManagementTest {
         player = mock(Player.class);
         connectionRepository = mock(ConnectionRepository.class);
         cityRepository = mock(CityRepository.class);
-        city = mock(City.class);
         GameStore.getInstance()
                  .addGame("lobbyCode", game);
 
@@ -65,7 +63,7 @@ class ConnectionManagementTest {
      * It verifies that the number of available destinations is as expected.
      */
     @Test
-    void testAvailableDestinations() {
+    void testAvailableDestinationsWithCityId() {
         when(game.getCityRepository()).thenReturn(new CityRepository());
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
         when(game.getCurrentPlayer()).thenReturn(player);
@@ -73,6 +71,20 @@ class ConnectionManagementTest {
 
         ICity city = new City(29, PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true);
         Map<Integer, DestinationInfo> cities = connectionManagement.getAvailableDestinations("lobbyCode", city.getId());
+
+        assertEquals(2, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
+    }
+
+    @Test
+    void testAvailableDestinationsWithUsername() {
+        when(game.getCityRepository()).thenReturn(new CityRepository());
+        when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
+        when(game.getPlayer("username")).thenReturn(player);
+        when(player.getCards()).thenReturn(new ArrayList<>());
+
+        ICity city = new City(29, PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true);
+        when(player.getCurrentPosition()).thenReturn(city);
+        Map<ICity, List<ICard>> cities = connectionManagement.getAvailableDestinations("lobbyCode", "username");
 
         assertEquals(2, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
     }

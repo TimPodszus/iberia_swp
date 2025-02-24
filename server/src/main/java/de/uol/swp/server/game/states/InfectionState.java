@@ -21,8 +21,8 @@ public class InfectionState implements IGameState {
     public void increaseInfectedCities(IGame game) {
         infectedCities++;
         int citiesToInfect = switch (game.getInfectionCounter()) {
-            case 3, 4 -> 3;
-            case 5, 6 -> 4;
+            case 4, 5 -> 3;
+            case 6, 7 -> 4;
             default -> 2;
         };
         if (citiesToInfect == infectedCities) {
