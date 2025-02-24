@@ -84,7 +84,7 @@ class ConnectionManagementTest {
 
         ICity city = new City(29, PlagueName.YELLOW_FEVER, CityName.PALMA_DE_MALLORCA, -123, true);
         when(player.getCurrentPosition()).thenReturn(city);
-        Map<ICity, List<ICard>> cities = connectionManagement.getAvailableDestinations("lobbyCode", "username");
+        Map<Integer, DestinationInfo> cities = connectionManagement.getAvailableDestinations("lobbyCode", "username");
 
         assertEquals(2, cities.size(), "Expected 2 available destinations for Palma de Mallorca");
     }

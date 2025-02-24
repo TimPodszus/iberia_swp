@@ -167,11 +167,11 @@ public class ConnectionService extends AbstractService {
             scheduler = Executors.newScheduledThreadPool(1);
             scheduler.schedule(() -> {
                 for (IPlayer player : game.getPlayers()) {
-                    Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
+                    Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
                             event.getLobbyId(),
                             player.getUser()
                                   .getUsername()
-                    ));
+                    );
                     IUser user = player.getUser();
                     AvailableDestinationsResponse response = new AvailableDestinationsResponse(game.getGameId(),
                             availableDestinations

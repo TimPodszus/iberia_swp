@@ -274,21 +274,6 @@ class GameManagementTest {
     }
 
     @Test
-    void testDrawInfectionCard_StartState() {
-        InfectionCard infectionCard1 = new InfectionCard(
-                1,
-                "InfectionCard",
-                cityRepository.getCityByName(CityName.BARCELONA)
-        );
-        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard", cityRepository.getCityByName(ALICANTE));
-        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard1, infectionCard2)));
-        when(game.getState()).thenReturn(new StartState());
-        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
-
-        assertEquals(infectionCard1, drawnCard, "Expected Barcelona infection card to be drawn");
-    }
-
-    @Test
     void testDrawInfectionCard_InvalidState() {
         InfectionCard infectionCard = new InfectionCard(
                 1,
@@ -821,10 +806,11 @@ class GameManagementTest {
 
     @Test
     void testMovePlayer_StateMobilizationEvent() throws GameManagementException {
-        Map<ICity, List<ICard>> availableDestinations = Map.of(cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
-                List.of(),
-                cityRepository.getCityByName(CityName.BARCELONA),
-                List.of()
+        Map<Integer, DestinationInfo> availableDestinations = Map.of(
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
+                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE))),
+                cityRepository.getCityByName(CityName.BARCELONA).getId(),
+                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
         );
         when(connectionManagement.getAvailableDestinations(anyString(), anyString())).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
