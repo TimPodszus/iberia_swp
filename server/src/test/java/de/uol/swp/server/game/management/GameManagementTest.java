@@ -16,6 +16,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
@@ -85,9 +86,6 @@ class GameManagementTest {
 
     @Mock
     private IGame game;
-
-    @Mock
-    private IUser user;
 
     /**
      * Initializes mocks before each test.
@@ -361,10 +359,10 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
@@ -416,7 +414,7 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of(destinationCityCard)
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
         IUser user = new User("user1", "");
         createTestPlayers(user);
@@ -457,10 +455,10 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
@@ -486,13 +484,14 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of(destinationCityCard)
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>(List.of(destinationCityCard)));
+        when(game.getPlayer("user1")).thenReturn(player);
 
         assertTrue(
                 player.getCards()
@@ -515,11 +514,11 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.VALLADOLID),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 5)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
         ICity startCity = cityRepository.getCityByName(CityName.EVORA);
         ICity destinationCity = cityRepository.getCityByName(CityName.VALLADOLID);
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
@@ -795,20 +794,70 @@ class GameManagementTest {
         when(connectionManagement.getAllDestinations(LOBBY_CODE)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
-        IUser user = new User("user1", "test");
-        createTestPlayers(user);
+        IUser testUser = new User("user1", "test");
+        createTestPlayers(testUser);
         IPlayer player = game.getPlayers()
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
         when(game.getPlayer("user1")).thenReturn(player);
         when(game.getState()).thenReturn(new EventState(new OnTheMoveDayAndNightEventCard(1)));
 
-        gameManagement.movePlayer(user, "lobbyCode", destinationCity, null);
+        gameManagement.movePlayer(testUser, "lobbyCode", destinationCity, null);
 
         assertEquals(
                 destinationCity,
                 player.getCurrentPosition(),
                 "Expected player to have moved to Palma de Mallorca"
+        );
+    }
+
+    @Test
+    void testMovePlayer_StateMobilizationEvent() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
+                List.of(),
+                cityRepository.getCityByName(CityName.BARCELONA),
+                List.of()
+        );
+        when(connectionManagement.getAvailableDestinations(anyString(), anyString())).thenReturn(availableDestinations);
+        ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
+        ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
+        IUser testUser1 = new User("user1", "test");
+        IUser testUser2 = new User("user2", "test");
+
+        createTestPlayers(testUser1, testUser2);
+        IPlayer player = game.getPlayers()
+                             .get(0);
+        setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
+        when(game.getPlayer("user1")).thenReturn(player);
+        IPlayer player2 = game.getPlayers()
+                              .get(1);
+        setupPlayerForMove(startCity, player2, new Sailor(), new ArrayList<>());
+        when(game.getPlayer("user2")).thenReturn(player2);
+
+        StateMobilizationEventCard stateMobilizationEventCard = new StateMobilizationEventCard(1);
+        stateMobilizationEventCard.setPlayersToMove(game.getPlayers());
+        when(game.getState()).thenReturn(new EventState(stateMobilizationEventCard));
+
+        gameManagement.movePlayer(testUser1, "lobbyCode", destinationCity, null);
+
+        assertEquals(destinationCity, player.getCurrentPosition(), "Expected player1 to have moved to Palma de Mallorca"
+        );
+        assertEquals(1,
+                stateMobilizationEventCard.getPlayersToMove()
+                                          .size(),
+                "Expected playersToMove to be decreased by 1"
+        );
+
+        gameManagement.movePlayer(testUser2, "lobbyCode", startCity, null);
+
+        assertEquals(destinationCity,
+                player.getCurrentPosition(),
+                "Expected player2 to have moved to Palma de Mallorca"
+        );
+        assertEquals(0,
+                stateMobilizationEventCard.getPlayersToMove()
+                                          .size(),
+                "Expected playersToMove to be decreased by 1"
         );
     }
 

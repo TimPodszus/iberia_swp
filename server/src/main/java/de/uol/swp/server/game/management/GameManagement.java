@@ -14,6 +14,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.data.IConnection;
@@ -445,8 +446,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
         return connectionManagement.getAvailableDestinations(
                 game.getGameId(),
-                player.getCurrentPosition()
-                      .getId()
+                player.getUser()
+                      .getUsername()
         );
     }
 
@@ -466,12 +467,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 city.getName()
                     .getDisplayName()
         );
-        player.setCurrentPosition(city);
-        if (game.getState() instanceof PlayerTurnState playerTurnState) {
-            playerTurnState.reduceActionsRemaining(game);
-        } else {
-            game.setState(game.getPreviousState());
-        }
+        this.setPlayerPosition(game, player, city);
     }
 
     /**
@@ -499,11 +495,50 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 city.getName()
                     .getDisplayName()
         );
+        this.setPlayerPosition(game, player, city);
+    }
+
+    /**
+     * Sets the player's position to the specified city.
+     * If the game is in the PlayerTurnState the player's actions remaining will be reduced.
+     * If the game is in the EventState and the event card is a StateMobilizationEventCard the players to move will be reduced.
+     * If the event has been resolved the game will be set to the previous state.
+     *
+     * @param game   the game instance
+     * @param player the player to move
+     * @param city   the destination city
+     */
+    private void setPlayerPosition(IGame game, IPlayer player, ICity city) {
+        LOG.debug(
+                "[LobbyId: {}] Setting {}'s position to {}",
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                city.getName()
+                    .getDisplayName()
+        );
         player.setCurrentPosition(city);
+        LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
+
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             playerTurnState.reduceActionsRemaining(game);
-        } else {
+            LOG.info("[LobbyId: {}] Decreased actions remaining", game.getGameId());
+        } else if (game.getState() instanceof EventState eventState) {
+            if (eventState.getEventCard() instanceof StateMobilizationEventCard stateMobilizationEventCard) {
+                LOG.info("[LobbyId: {}] Decreasing players to move.", game.getGameId());
+                stateMobilizationEventCard.playerMoved(player);
+                if (!stateMobilizationEventCard.getPlayersToMove()
+                                               .isEmpty()) {
+                    LOG.debug(
+                            "[LobbyId: {}] Decreased players to move. {} players left to move.",
+                            game.getGameId(),
+                            stateMobilizationEventCard.getPlayersToMove()
+                    );
+                    return;
+                }
+            }
             game.setState(game.getPreviousState());
+            LOG.info("[LobbyId: {}] Event has been resolved. Setting game to previous state", game.getGameId());
         }
     }
 
