@@ -270,7 +270,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                                          .findFirst();
 
         if (!isHospitalBuildable(lobbyId, userName)) {
-            return;
+            throw new CityManagementException("Hospital cannot be built");
         }
 
         // 'Optional.get()' without 'isPresent()' check -> already checked in isHospitalBuildable()

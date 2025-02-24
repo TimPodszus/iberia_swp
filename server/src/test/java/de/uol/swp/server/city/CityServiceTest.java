@@ -23,6 +23,8 @@ import org.mockito.Spy;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -73,5 +75,42 @@ public class CityServiceTest extends EventBusBasedTest {
         cityService.onBuildHospitalRequest(request);
 
         verify(cityManagement, atLeast(1)).buildHospital(any(String.class), any(String.class), any(Integer.class));
+    }
+
+    @Test
+    void testBuildHospitalRequestEquals() {
+        BuildHospitalRequest request1 = new BuildHospitalRequest(LOBBY_CODE, 1);
+        BuildHospitalRequest request2 = new BuildHospitalRequest(LOBBY_CODE, 1);
+        BuildHospitalRequest request3 = new BuildHospitalRequest(LOBBY_CODE, 2);
+        BuildHospitalRequest request4 = new BuildHospitalRequest("differentLobbyId", 1);
+
+        // Test for the same object
+        assertEquals(request1, request1);
+
+        // Test for null
+        assertNotEquals(request1, null);
+
+        // Test for different class
+        // Warning: Arguments to 'assertNotEquals()' in wrong order -> needed for full coverage
+        assertNotEquals(request1, new Object());
+
+        // Test for equal objects
+        assertEquals(request1, request2);
+
+        // Test for different cityId
+        assertNotEquals(request1, request3);
+
+        // Test for different lobbyId
+        assertNotEquals(request1, request4);
+    }
+
+    @Test
+    void testBuildHospitalRequestHashCode() {
+        BuildHospitalRequest request1 = new BuildHospitalRequest(LOBBY_CODE, 1);
+        BuildHospitalRequest request2 = new BuildHospitalRequest(LOBBY_CODE, 1);
+        BuildHospitalRequest request3 = new BuildHospitalRequest(LOBBY_CODE, 2);
+
+        assertEquals(request1.hashCode(), request2.hashCode());
+        assertNotEquals(request1.hashCode(), request3.hashCode());
     }
 }

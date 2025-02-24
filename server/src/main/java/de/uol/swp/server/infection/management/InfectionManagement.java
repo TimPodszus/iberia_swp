@@ -8,8 +8,20 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.infection.data.IInfection;
 
+/**
+ * Manages infections within the game.
+ */
 public class InfectionManagement extends AbstractManagement implements IInfectionManagement {
 
+    /**
+     * Finds an infection in a specific city and plague within a lobby.
+     *
+     * @param lobbyId    the ID of the lobby
+     * @param cityName   the name of the city
+     * @param plagueName the name of the plague
+     * @return the infection found
+     * @throws InfectionManagementException if the infection cannot be found
+     */
     public IInfection findInfection(
             String lobbyId,
             CityName cityName,

@@ -1390,24 +1390,32 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void highlightAvailableDestinations() {
         LOG.debug("Highlighting available destinations");
-        for (Map.Entry<Integer, List<ICardDTO>> entry : availableDestinations.entrySet()) {
-            int cityId = entry.getKey();
-            LOG.trace("Highlighting city {}", cityId);
-            Node node = mapPane.lookup(CITY_ID + cityId);
-            node.getStyleClass()
-                .removeAll(CITY_CLASS);
-            node.getStyleClass()
-                .removeAll(CITY_HIGHLIGHTED_CLASS);
-            node.getStyleClass()
-                .add(CITY_HIGHLIGHTED_CLASS);
-        }
+        highlightCitys(availableDestinations.keySet()
+                                            .stream()
+                                            .toList());
         LOG.info("Available destinations highlighted");
     }
 
+    /**
+     * Highlights the available hospital locations on the game map.
+     * This method highlights the cities where hospitals can be built by updating their style classes.
+     *
+     * @param cityIds the list of city IDs where hospitals can be built
+     */
     private void highlightAvailableHospitalLocations(List<Integer> cityIds) {
         LOG.debug("Highlighting available hospital locations");
+        highlightCitys(cityIds);
+        LOG.info("Available hospital locations highlighted");
+    }
+
+    /**
+     * Highlights the specified cities on the game map.
+     * This method updates the style classes of the specified cities to indicate they are highlighted.
+     *
+     * @param cityIds the list of city IDs to highlight
+     */
+    private void highlightCitys(List<Integer> cityIds) {
         for (Integer cityId : cityIds) {
-            LOG.trace("Highlighting city {}", cityId);
             Node node = mapPane.lookup(CITY_ID + cityId);
             node.getStyleClass()
                 .removeAll(CITY_CLASS);
@@ -1416,7 +1424,6 @@ public class GamePresenter extends AbstractPresenter {
             node.getStyleClass()
                 .add(CITY_HIGHLIGHTED_CLASS);
         }
-        LOG.info("Available hospital locations highlighted");
     }
 
     /**
