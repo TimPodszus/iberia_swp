@@ -61,7 +61,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
      * @param username the username of the player
      * @return true if the card is playable, false otherwise
      */
-    private boolean isCardPlayable(IGame game, int cardId, String username) {
+    public boolean isCardPlayable(IGame game, int cardId, String username) {
         IPlayer player = game.getPlayer(username);
         ICard playedCard = player.getCard(cardId);
         if (playedCard == null) {
@@ -106,7 +106,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
         }
     }
 
-    boolean isStateCorrect(IGame game) {
+    public boolean isStateCorrect(IGame game) {
         return game.getState() instanceof PlayerTurnState || game.getState() instanceof InfectionState || game.getState() instanceof DrawCardState;
     }
 

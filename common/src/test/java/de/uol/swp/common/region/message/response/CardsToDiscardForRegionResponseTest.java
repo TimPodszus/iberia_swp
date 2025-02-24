@@ -52,7 +52,7 @@ class CardsToDiscardForRegionResponseTest {
 
         List<CityCardDTO> cardsList = List.of(card1, card2);
 
-        CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse(cardsList);
+        CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse("lobbyId", cardsList);
 
         assertNotNull(response.getCityCards());
         assertEquals(2, response.getCityCards().size());
@@ -63,7 +63,7 @@ class CardsToDiscardForRegionResponseTest {
     @Test
     void testEqualsWithNullAndDifferentClass() {
         List<CityCardDTO> cardsList = List.of();
-        CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse(cardsList);
+        CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse("lobbyId", cardsList);
         assertNotEquals(null, response);
         assertNotEquals(new Object(), response);
     }
@@ -71,7 +71,7 @@ class CardsToDiscardForRegionResponseTest {
     @Test
     void testEqualsWithDifferentSubclass() {
         List<CityCardDTO> cardsList = List.of();
-        CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse(cardsList);
+        CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse("lobbyId", cardsList);
         AbstractResponseMessage differentSubclass = new AbstractResponseMessage() {};
         assertNotEquals(response, differentSubclass);
     }

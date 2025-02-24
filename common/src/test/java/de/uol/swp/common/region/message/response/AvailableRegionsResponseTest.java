@@ -54,7 +54,7 @@ class AvailableRegionsResponseTest {
         IRegionDTO region = mock(IRegionDTO.class);
         regions.add(region);
 
-        AvailableRegionsResponse response = new AvailableRegionsResponse(regions);
+        AvailableRegionsResponse response = new AvailableRegionsResponse("lobbyId", regions);
 
         assertNotNull(response.getRegions());
         assertEquals(1, response.getRegions().size());
@@ -64,7 +64,7 @@ class AvailableRegionsResponseTest {
     @Test
     void testEqualsWithNullAndDifferentClass() {
         Set<IRegionDTO> regions = new HashSet<>();
-        AvailableRegionsResponse response = new AvailableRegionsResponse(regions);
+        AvailableRegionsResponse response = new AvailableRegionsResponse("lobbyId", regions);
         assertNotEquals(null, response);
         assertNotEquals(new Object(), response);
     }
@@ -72,7 +72,7 @@ class AvailableRegionsResponseTest {
     @Test
     void testEqualsWithDifferentSubclass() {
         Set<IRegionDTO> regions = new HashSet<>();
-        AvailableRegionsResponse response = new AvailableRegionsResponse(regions);
+        AvailableRegionsResponse response = new AvailableRegionsResponse("lobbyId", regions);
         AbstractResponseMessage differentSubclass = new AbstractResponseMessage() {};
         assertNotEquals(response, differentSubclass);
     }

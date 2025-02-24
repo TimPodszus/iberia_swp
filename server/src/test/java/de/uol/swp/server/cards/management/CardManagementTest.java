@@ -7,6 +7,7 @@ import de.uol.swp.server.cards.data.eventcards.EventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -23,7 +24,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
