@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
+import de.uol.swp.common.connection.dto.DestinationInfo;
+import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
@@ -366,11 +368,21 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
         IPlayer player = getPlayerForMove(game, user);
 
-        Map<ICity, List<ICard>> availableDestinations = retrieveAvailableDestinations(game, player);
-        boolean citiesConnectedByLand = availableDestinations.containsKey(city) && availableDestinations.get(city)
-                                                                                                        .isEmpty();
-        boolean citiesConnectedBySea = availableDestinations.containsKey(city) && !availableDestinations.get(city)
-                                                                                                        .isEmpty();
+        Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
+                && (availableDestinations.get(city.getId())
+                                         .getTransportModes()
+                                         .contains(TransportMode.CARRIAGE) ||
+                    availableDestinations.get(city.getId())
+                                         .getTransportModes()
+                                         .contains(TransportMode.TRAIN) ||
+                    availableDestinations.get(city.getId())
+                                         .getTransportModes()
+                                         .contains(TransportMode.NONE));
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
+                && availableDestinations.get(city.getId())
+                                        .getTransportModes()
+                                        .contains(TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error(
@@ -440,7 +452,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param player the player requesting the move
      * @return a map of available destinations
      */
-    private Map<ICity, List<ICard>> retrieveAvailableDestinations(IGame game, IPlayer player) {
+    private Map<Integer, DestinationInfo> retrieveAvailableDestinations(IGame game, IPlayer player) {
         if (game.getState() instanceof EventState eventState && eventState.getEventCard() instanceof OnTheMoveDayAndNightEventCard) {
             return connectionManagement.getAllDestinations(game.getGameId());
         }

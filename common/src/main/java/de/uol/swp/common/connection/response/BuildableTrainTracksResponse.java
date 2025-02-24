@@ -1,9 +1,7 @@
 package de.uol.swp.common.connection.response;
 
-import de.uol.swp.common.connection.IConnectionDTO;
+import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
-import de.uol.swp.common.message.response.AbstractResponseMessage;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;

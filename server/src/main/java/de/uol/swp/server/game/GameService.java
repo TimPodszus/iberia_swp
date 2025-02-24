@@ -2,7 +2,7 @@ package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
-import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.GameActions;
@@ -231,11 +231,11 @@ public class GameService extends AbstractService implements GameStateChangeListe
                             player.getUser()
                                   .getUsername()
                     );
-                    Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
+                    Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
                             lobbyId,
                             player.getUser()
                                   .getUsername()
-                    ));
+                    );
                     AvailableDestinationsResponse response = new AvailableDestinationsResponse(lobbyId,
                             availableDestinations
                     );

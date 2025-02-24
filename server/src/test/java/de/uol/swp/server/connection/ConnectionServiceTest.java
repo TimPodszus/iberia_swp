@@ -4,6 +4,8 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
+import de.uol.swp.common.connection.dto.DestinationInfo;
+import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.server.EventBusBasedTest;
@@ -30,6 +32,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -80,8 +83,9 @@ public class ConnectionServiceTest extends EventBusBasedTest {
     @Test
     void testOnAvailableDestinationsRequest() throws InterruptedException {
         AvailableDestinationsRequest request = new AvailableDestinationsRequest("", 1);
-        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(cityRepository.getCity(1),
-                List.of()
+        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(
+                Map.of(1,
+                new DestinationInfo(List.of(), new ArrayList<>(List.of()))
         ));
 
         postAndWait(request);
@@ -112,7 +116,10 @@ public class ConnectionServiceTest extends EventBusBasedTest {
     @Test
     void testOnMovePlayerAnywhereEvent() throws InterruptedException {
         createUserAndSession("testuser");
-        when(connectionManagement.getAllDestinations("")).thenReturn(Map.of(cityRepository.getCity(1), List.of()));
+        when(connectionManagement.getAllDestinations("")).thenReturn(Map.of(1, new DestinationInfo(
+                List.of(),
+                new ArrayList<>(List.of())
+        )));
         MovePlayerAnywhereEvent movePlayerAnywhereEvent = new MovePlayerAnywhereEvent("", "testuser");
 
         postAndWait(movePlayerAnywhereEvent);
@@ -184,9 +191,10 @@ public class ConnectionServiceTest extends EventBusBasedTest {
 
         IGame game = createMockGame(List.of(player1, player2));
         when(connectionManagement.getGame("1234")).thenReturn(game);
-        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(cityRepository.getCity(1),
-                List.of()
-        ));
+        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(1, new DestinationInfo(
+                List.of(),
+                new ArrayList<>(List.of(TransportMode.NONE))
+        )));
 
         StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
 
@@ -215,9 +223,10 @@ public class ConnectionServiceTest extends EventBusBasedTest {
 
         IGame game = createMockGame(List.of(player1, player2));
         when(connectionManagement.getGame("1234")).thenReturn(game);
-        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(cityRepository.getCity(1),
-                List.of()
-        ));
+        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(1, new DestinationInfo(
+                List.of(),
+                new ArrayList<>(List.of(TransportMode.NONE))
+        )));
 
         StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
 
