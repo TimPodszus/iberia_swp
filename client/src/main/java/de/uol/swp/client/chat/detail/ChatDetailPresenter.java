@@ -6,13 +6,15 @@ import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.chat.AbstractChatMessage;
 import de.uol.swp.common.chat.PlayerChatMessage;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import lombok.Setter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 
@@ -41,28 +43,35 @@ public class ChatDetailPresenter extends AbstractPresenter {
 
     private boolean isChatVisible = false;
 
+    private static final Logger LOG = LogManager.getLogger(ChatDetailPresenter.class);
+
+    @Inject
+    public ChatDetailPresenter(EventBus eventBus) {
+        this.eventBus = eventBus;
+        this.eventBus.register(this);
+    }
+
     @FXML
     public void onSendChat() {
+        LOG.info("onSendChat Method");
         String message = chatInput.getText();
         if (message == null || message.trim().isEmpty()) {
             return;
         }
 
         PlayerChatMessage playerChatMessage = new PlayerChatMessage(lobbyId, message, UserStore.getInstance().getUser().getUsername());
-
+        LOG.info("PlayerChatMessage created: {}", playerChatMessage.getMessage());
 
         eventBus.post(playerChatMessage);
+        LOG.info("PlayerChatMessage on bus");
         chatInput.clear();
     }
 
     @Subscribe
-    public void onChatMessageReceived(AbstractChatMessage chatMessage) {
-        Platform.runLater(() -> chatArea.appendText(chatMessage.getSender() + ": " + chatMessage.getMessage() + "\n"));
+    public void onAbstractChatMessage(AbstractChatMessage chatMessage) {
+        chatArea.appendText(chatMessage.getSender() + ": " + chatMessage.getMessage() + "\n");
     }
 
-    public void appendToChat(String message) {
-        Platform.runLater(() -> chatArea.appendText("[System] " + message + "\n"));
-    }
 
     @FXML
     public void toggleChatVisibility() {
