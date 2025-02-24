@@ -1,17 +1,29 @@
 package de.uol.swp.common.region.message.response;
 
-import de.uol.swp.common.message.response.AbstractResponseMessage;
+import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.region.IRegionDTO;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * A response containing the available regions.
+ */
 @Getter
-@AllArgsConstructor
-public class AvailableRegionsResponse  extends AbstractResponseMessage {
-    private Set<IRegionDTO> regions;
+public class AvailableRegionsResponse extends AbstractGameResponse {
+    private final Set<IRegionDTO> regions;
+
+    /**
+     * Constructs a new AvailableRegionsResponse.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param regions the set of available regions
+     */
+    public AvailableRegionsResponse(String lobbyId, Set<IRegionDTO> regions) {
+        super(lobbyId, true, "");
+        this.regions = regions;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -1,14 +1,13 @@
-package de.uol.swp.server.infection;
+package de.uol.swp.server.infection.management;
 
-import de.uol.swp.server.infection.management.InfectionManagementException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
- class InfectionManagementExceptionTest {
+class InfectionManagementExceptionTest {
 
     @Test
-     void testExceptionMessage() {
+    void testExceptionMessage() {
         String errorMessage = "Test error message";
         InfectionManagementException exception = new InfectionManagementException(errorMessage);
 

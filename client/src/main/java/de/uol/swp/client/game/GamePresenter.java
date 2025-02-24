@@ -20,21 +20,21 @@ import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.connection.IConnectionDTO;
+import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
-import de.uol.swp.common.game.GameActions;
-import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.game.StateType;
+import de.uol.swp.common.game.*;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.EndGameEvent;
 import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
+import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -49,6 +49,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
@@ -63,6 +64,7 @@ import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Pair;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -91,6 +93,8 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CITY_CLASS = "city";
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
+
+    @Setter
     private String lobbyId;
 
     private IUserDTO user;
@@ -98,7 +102,7 @@ public class GamePresenter extends AbstractPresenter {
     @Inject
     private GameService gameService;
 
-    private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
+    private Map<Integer, DestinationInfo> availableDestinations = new HashMap<>();
 
     private List<IConnectionDTO> buildableTrainTracks = new ArrayList<>();
 
@@ -171,7 +175,17 @@ public class GamePresenter extends AbstractPresenter {
     private ToggleButton treatInfectionButton;
 
     @FXML
-    private ToggleButton shareKnowledgeButton;
+    private Button shareKnowledgeButton;
+
+    @FXML
+    private ToggleButton endTurnButton;
+
+    @FXML
+    private ToggleButton roleButtonOne;
+
+    @FXML
+    private ToggleButton roleButtonTwo;
+
 
     private double mouseX;
 
@@ -299,12 +313,25 @@ public class GamePresenter extends AbstractPresenter {
             LOG.info("Initial position set");
         }
 
+        if (buildHospitalButton.isSelected()) {
+            LOG.trace("Player wants to build a hospital in city {}", cityId);
+            gameService.sendBuildHospitalRequest(lobbyId, cityId);
+            LOG.info("Hospital has been built");
+            buildHospitalButton.setSelected(false);
+            return;
+        }
+
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
             LOG.trace("Player wants to move to city {}", cityId);
             if (cardDiscardNeeded(cityId)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
-                CardDialog cardDialog = new CardDialog(true, true, availableDestinations.get(cityId));
+                CardDialog cardDialog = new CardDialog(
+                        true,
+                        true,
+                        availableDestinations.get(cityId)
+                                             .getCardsUsableForMove()
+                );
                 Optional<ICardDTO> result = cardDialog.showAndWait();
                 result.ifPresentOrElse(
                         card -> {
@@ -316,25 +343,35 @@ public class GamePresenter extends AbstractPresenter {
                 return;
             }
 
-            if (movingByBoat(cityId) && gameDTO.getCurrentPlayer()
-                                               .getRole()
-                                               .getName() == RoleEnum.SAILOR && !this.getPlayersInCity()
-                                                                                     .isEmpty()) {
-                LOG.debug("Player is a sailor and take a player with him to the harbour city {}", cityId);
-                PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
-                Optional<String> result = dialog.showAndWait();
-                result.ifPresentOrElse(
-                        username -> {
-                            LOG.debug("Player {} is taken with to the harbour city {}", username, cityId);
-                            gameService.movePlayerToCity(lobbyId, cityId, username);
-                            LOG.info("Player has been moved and has taken another player with him");
-                        }, () -> {
-                            gameService.movePlayerToCity(lobbyId, cityId);
-                            LOG.info("Player has not selected a player to take with him. Moving alone.");
-                        }
-                );
-                return;
+            if (!this.getPlayersInCity()
+                     .isEmpty()) {
+                RoleEnum role = gameDTO.getCurrentPlayer()
+                                       .getRole()
+                                       .getName();
+
+                if ((checkPlayersTransportMode(
+                        cityId,
+                        TransportMode.SHIP
+                ) && role == RoleEnum.SAILOR) || (checkPlayersTransportMode(
+                        cityId,
+                        TransportMode.TRAIN
+                ) && role == RoleEnum.RAILWAY_PERSON)) {
+                    LOG.debug("Player is a {} and takes a player with him to the city {}", role, cityId);
+                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
+                    Optional<String> result = dialog.showAndWait();
+                    result.ifPresentOrElse(
+                            username -> {
+                                LOG.debug("Player {} is taken with to the city {}", username, cityId);
+                                gameService.movePlayerToCity(lobbyId, cityId, username);
+                                LOG.info("Player has been moved and has taken another player with him");
+                            }, () -> {
+                                gameService.movePlayerToCity(lobbyId, cityId);
+                                LOG.info("Player has not selected a player to take with him. Moving alone.");
+                            }
+                    );
+                }
             }
+
             gameService.movePlayerToCity(this.lobbyId, cityId);
             LOG.info("Player has been moved");
         }
@@ -350,25 +387,24 @@ public class GamePresenter extends AbstractPresenter {
     private boolean cardDiscardNeeded(int cityId) {
         LOG.debug("Checking if discarding a card is needed for moving to city {}", cityId);
         return !availableDestinations.get(cityId)
+                                     .getCardsUsableForMove()
                                      .isEmpty();
     }
 
     /**
-     * Checks if the player is moving by boat.
+     * Checks if the player is moving to the specified city using the given transport mode.
+     * This method verifies if the available destinations for the specified city include the given transport mode.
      *
-     * @param cityId the ID of the city to check
-     * @return true if the player is moving by boat, false otherwise
+     * @param cityId        the ID of the city to check
+     * @param transportMode the transport mode to check
+     * @return true if the player is moving by the specified transport mode to the city, false otherwise
      */
-    private boolean movingByBoat(int cityId) {
-        LOG.debug("Checking if player is moving by boat to city {}", cityId);
-        ICityDTO currentCity = gameDTO.getCurrentPlayer()
-                                      .getCurrentPosition();
-        ICityDTO destinationCity = gameDTO.getCities()
-                                          .stream()
-                                          .filter(city -> city.getId() == cityId)
-                                          .findFirst()
-                                          .orElseThrow();
-        return currentCity.isHarbourCity() && destinationCity.isHarbourCity();
+    private boolean checkPlayersTransportMode(int cityId, TransportMode transportMode) {
+        LOG.debug("Checking if player is moving by {} to city {}", transportMode, cityId);
+
+        return this.availableDestinations.get(cityId)
+                                         .getTransportModes()
+                                         .contains(transportMode);
     }
 
     /**
@@ -498,9 +534,18 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildHospital(ActionEvent event) {
         if (buildHospitalButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
-        } else {
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE)) {
+                resetHighlightetCities();
 
+                Integer cityId = gameDTO.getCurrentPlayer()
+                                        .getCurrentPosition()
+                                        .getId();
+                highlightAvailableHospitalLocations(List.of(cityId));
+            }
+        } else {
+            resetHighlightetCities();
+            this.highlightAvailableDestinations();
         }
     }
 
@@ -525,11 +570,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onShareKnowledge(ActionEvent event) {
-        if (shareKnowledgeButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
-        } else {
+        LOG.debug("Share knowledge action triggered");
+        gameService.sendShareKnowledgeRequest(this.gameDTO, this.lobbyId);
 
-        }
     }
 
     /**
@@ -545,6 +588,7 @@ public class GamePresenter extends AbstractPresenter {
 
         }
     }
+
 
     /**
      * Handles place water treatment action.
@@ -562,6 +606,65 @@ public class GamePresenter extends AbstractPresenter {
         } else {
             this.highlightAvailableDestinations();
             resetRegionStyle();
+        }
+    }
+
+    @FXML
+    private void onRoleButtonOne(ActionEvent event) {
+        if (roleButtonOne.isSelected()) {
+            LOG.debug("Role button one is selected");
+            if (gameDTO.getCurrentPlayer()
+                       .getRole()
+                       .getName()
+                       .equals(RoleEnum.POLITICIAN)) {
+                LOG.debug("Current player is a politician");
+                Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+                List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
+                                                              .getCards()
+                                                              .stream()
+                                                              .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                                     .getCurrentPosition()
+                                                                                                     .getId())
+                                                              .collect(Collectors.toList());
+                cardsToExchange.put(
+                        gameDTO.getCurrentPlayer()
+                               .getUsername(), currentPlayerCityCard
+                );
+                for (IPlayerDTO player : gameDTO.getPlayers()) {
+                    if (!player.getUsername()
+                               .equals(gameDTO.getCurrentPlayer()
+                                              .getUsername())) {
+                        cardsToExchange.put(player.getUsername(), player.getCards());
+                    }
+                }
+                LOG.debug("Cards to exchange: {}", cardsToExchange);
+                Platform.runLater(() -> {
+                    CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                            gameDTO.getCurrentPlayer()
+                                   .getUsername(), cardsToExchange
+                    );
+                    Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+                    result.ifPresent(map -> {
+                        LOG.debug("Card exchange result: {}", map);
+                        eventBus.post(new CardsExchangeRequest(map, lobbyId));
+                    });
+                });
+            }
+        }
+    }
+
+
+    @FXML
+    private void onRoleButtonTwo(ActionEvent event) {
+        if (roleButtonTwo.isSelected()) {
+            //TODO
+        }
+    }
+
+    @FXML
+    private void onEndTurn(ActionEvent event) {
+        if (endTurnButton.isSelected()) {
+            //TODO
         }
     }
 
@@ -629,7 +732,6 @@ public class GamePresenter extends AbstractPresenter {
         researchPlagueButton.setToggleGroup(toggleGroup);
         treatWaterButton.setToggleGroup(toggleGroup);
         treatInfectionButton.setToggleGroup(toggleGroup);
-        shareKnowledgeButton.setToggleGroup(toggleGroup);
 
         toggleGroup.selectedToggleProperty()
                    .addListener((observable, oldToggle, newToggle) -> {
@@ -925,6 +1027,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onBoardUpdateEvent(BoardUpdateEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         this.gameDTO = event.getGameDTO();
 
         Platform.runLater(() -> updateBoard(gameDTO));
@@ -940,8 +1047,12 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         this.gameDTO = event.getGameDTO();
-        this.lobbyId = event.getLobbyId();
         this.user = UserStore.getInstance()
                              .getUser();
 
@@ -964,6 +1075,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param gameDTO the game data transfer object containing the latest game state
      */
     private void updateBoard(IGameDTO gameDTO) {
+        LOG.trace("Updating game board with latest data");
         updateCities(gameDTO.getCities());
         updateConnections(gameDTO.getConnections());
         updateRegions(gameDTO.getRegions());
@@ -1317,12 +1429,22 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onCardSelectionResponse(CardSelectionResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         CardDialog dialog = new CardDialog(true, response.isDismissible(), response.getCards());
         Optional<ICardDTO> result = dialog.showAndWait();
     }
 
     @Subscribe
     public void onCardExchangeResponse(CardExchangeResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
         Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
@@ -1337,6 +1459,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailableRegionsResponse(AvailableRegionsResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         setAvailableRegions(response.getRegions());
     }
 
@@ -1351,6 +1478,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onCardsToDiscardForRegionResponse(CardsToDiscardForRegionResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         Platform.runLater(() -> {
             CardSelectionWaterTreatmentDialog cardSelectionDialog = new CardSelectionWaterTreatmentDialog(
                     true,
@@ -1395,6 +1527,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailableDestinationsResponse(AvailableDestinationsResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         LOG.debug(
                 "Received {} available destinations",
                 response.getCities()
@@ -1407,6 +1544,11 @@ public class GamePresenter extends AbstractPresenter {
 
     @Subscribe
     public void onBuildableTrainTracksResponse(BuildableTrainTracksResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         this.buildableTrainTracks = response.getConnections();
         highlightBuildableTrainTrackHighlight(true);
     }
@@ -1418,8 +1560,32 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void highlightAvailableDestinations() {
         LOG.debug("Highlighting available destinations");
-        for (Map.Entry<Integer, List<ICardDTO>> entry : availableDestinations.entrySet()) {
-            int cityId = entry.getKey();
+        highlightCitys(availableDestinations.keySet()
+                                            .stream()
+                                            .toList());
+        LOG.info("Available destinations highlighted");
+    }
+
+    /**
+     * Highlights the available hospital locations on the game map.
+     * This method highlights the cities where hospitals can be built by updating their style classes.
+     *
+     * @param cityIds the list of city IDs where hospitals can be built
+     */
+    private void highlightAvailableHospitalLocations(List<Integer> cityIds) {
+        LOG.debug("Highlighting available hospital locations");
+        highlightCitys(cityIds);
+        LOG.info("Available hospital locations highlighted");
+    }
+
+    /**
+     * Highlights the specified cities on the game map.
+     * This method updates the style classes of the specified cities to indicate they are highlighted.
+     *
+     * @param cityIds the list of city IDs to highlight
+     */
+    private void highlightCitys(List<Integer> cityIds) {
+        for (Integer cityId : cityIds) {
             LOG.trace("Highlighting city {}", cityId);
             Node node = mapPane.lookup(CITY_ID + cityId);
             node.getStyleClass()
@@ -1429,7 +1595,6 @@ public class GamePresenter extends AbstractPresenter {
             node.getStyleClass()
                 .add(CITY_HIGHLIGHTED_CLASS);
         }
-        LOG.info("Available destinations highlighted");
     }
 
     /**
@@ -1465,6 +1630,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onShareRideEvent(ShareRideEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         Platform.runLater(() -> {
             boolean result = ConfirmationDialog.showConfirmationDialog("Willst du zu " + event.getCity()
                                                                                               .getName()
@@ -1483,6 +1653,28 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
+     * Handles the KnowledgeSharedEvent.
+     * <p>
+     * This method is called when a KnowledgeSharedEvent is received. It updates the game board
+     * with the latest data from the event and logs the result of the knowledge sharing action.
+     *
+     * @param response the KnowledgeSharedEvent containing the game data
+     */
+    @Subscribe
+    public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
+        LOG.debug("Received ShareKnowledgeResponse");
+        if (response.wasSuccessful()) {
+            LOG.info("Knowledge shared");
+            LOG.trace("Updating board of Game {}", response.getGameDTO());
+            this.gameDTO = response.getGameDTO();
+            Platform.runLater(() -> updateBoard(response.getGameDTO()));
+        } else {
+            LOG.info("Knowledge not shared");
+        }
+
+    }
+
+    /**
      * Handles the EndGameEvent.
      * <p>
      * This method is called when an EndGameEvent is received. It creates an EndGameDialog
@@ -1492,6 +1684,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onEndGameEvent(EndGameEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
         Platform.runLater(dialog::showEndGameDialog);
     }

@@ -76,7 +76,7 @@ public class RegionService extends AbstractService {
             throw new GameException("User is unknown");
         }
         Set<IRegionDTO> regions = regionManagement.getAvailableRegions(user, request.getLobbyId());
-        response = new AvailableRegionsResponse(regions);
+        response = new AvailableRegionsResponse(request.getLobbyId(), regions);
         response.setSession(request.getSession()
                                    .orElseThrow(() -> new IllegalStateException("Session not present")));
         post(response);
@@ -96,7 +96,7 @@ public class RegionService extends AbstractService {
                 request.getRegionId(),
                 request.getLobbyId()
         );
-        response = new CardsToDiscardForRegionResponse(cityCards);
+        response = new CardsToDiscardForRegionResponse(request.getLobbyId(), cityCards);
         response.setSession(request.getSession()
                                    .orElseThrow(() -> new IllegalStateException("Session not present")));
         post(response);

@@ -4,6 +4,7 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.DrawCardState;
@@ -13,6 +14,8 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.player.data.IPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
 
 public class CardManagement extends AbstractManagement implements ICardManagement {
     private static final Logger LOG = LogManager.getLogger(CardManagement.class);
@@ -24,14 +27,30 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
             ICard card = game.getPlayer(username)
                              .playCard(cardId);
             if (card instanceof EventCard eventCard) {
-                LOG.debug("[LobbyId: {}] Card is Event Card and will be played directly", game.getGameId());
-                setGameInEventCardState(game, eventCard);
-                eventCard.execute(lobbyId, username);
-            }
+                playEventCard(game, username, eventCard);
+        }
+        }
+    }
+
+    /**
+     * Plays the event card.
+     *
+     * @param game      the game instance
+     * @param username  the username of the player, who plays the card
+     * @param eventCard the event card to play
+     */
+    private void playEventCard(IGame game, String username, EventCard eventCard) {
+        LOG.debug("[LobbyId: {}] Card is Event Card and will be played directly", game.getGameId());
+        setGameInEventCardState(game, eventCard);
+
+        if (eventCard instanceof StateMobilizationEventCard stateMobilizationEventCard) {
+            stateMobilizationEventCard.setPlayersToMove(new ArrayList<>(game.getPlayers()));
         } else {
-            LOG.warn("[LobbyId: {}] Card with id {} is not playable", game.getGameId(), cardId);
+            LOG.warn("[LobbyId: {}] Card with id {} is not playable", game.getGameId(), eventCard.getId());
             //Todo: #202 - Was passiert mit serverseitigen Exceptions?
         }
+
+        eventCard.execute(game.getGameId(), username);
     }
 
     /**
@@ -42,7 +61,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
      * @param username the username of the player
      * @return true if the card is playable, false otherwise
      */
-    boolean isCardPlayable(IGame game, int cardId, String username) {
+    private boolean isCardPlayable(IGame game, int cardId, String username) {
         IPlayer player = game.getPlayer(username);
         ICard playedCard = player.getCard(cardId);
         if (playedCard == null) {
@@ -66,7 +85,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
      *
      * @return true if the card is playable, false otherwise
      */
-    boolean isAnotherDayEventCardPlayable(IGame game) {
+    private boolean isAnotherDayEventCardPlayable(IGame game) {
         if (game.getState() instanceof PlayerTurnState) {
             return true;
         } else {
