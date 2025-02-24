@@ -4,8 +4,11 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EventState;
+import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.player.data.IPlayer;
 import org.apache.logging.log4j.LogManager;
@@ -48,8 +51,13 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
         }
         if (playedCard instanceof AnotherDayEventCard) {
             return isAnotherDayEventCardPlayable(game);
-        } else {
+        } else if (playedCard instanceof TreatWaterEventCard) {
+            return isTreatWaterEventCardPlayable(game);
+        } else if (isStateCorrect(game)) {
             return true;
+        } else {
+            LOG.warn("[LobbyId: {}] Card with id {} is not playable in the current state", game.getGameId(), cardId);
+            return false;
         }
     }
 
@@ -68,6 +76,19 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
             );
             return false;
         }
+    }
+
+    boolean isTreatWaterEventCardPlayable(IGame game) {
+        if (isStateCorrect(game) && game.getWaterTreatmentsLeft() > 0) {
+            return true;
+        } else {
+            LOG.warn("[LobbyId: {}] TreatWaterEventCard can not be played", game.getGameId());
+            return false;
+        }
+    }
+
+    boolean isStateCorrect(IGame game) {
+        return game.getState() instanceof PlayerTurnState || game.getState() instanceof InfectionState || game.getState() instanceof DrawCardState;
     }
 
     /**

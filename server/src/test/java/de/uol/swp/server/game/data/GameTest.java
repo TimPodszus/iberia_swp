@@ -3,6 +3,7 @@ package de.uol.swp.server.game.data;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
 import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.eventcards.EventCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.states.StartState;
@@ -52,19 +53,20 @@ class GameTest {
     @Test
     void testCreatePlayerCards() {
         assertEquals(
-                50,
+                48 + 3,
                 game.getPlayerCardDrawPile()
                     .size()
         );
         assertTrue(game.getPlayerCardDrawPile()
                        .get(0) instanceof CityCard || game.getPlayerCardDrawPile()
-                                                          .get(0) instanceof EpidemicCard);
+                                                          .get(0) instanceof EpidemicCard || game.getPlayerCardDrawPile()
+                                                                                                 .get(0) instanceof EventCard);
     }
 
     @Test
     void testGameStartShuffle() {
         assertEquals(
-                50,
+                48 + 3,
                 game.getPlayerCardDrawPile()
                     .size()
         );

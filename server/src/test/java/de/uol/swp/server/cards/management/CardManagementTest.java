@@ -4,9 +4,11 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EventState;
+import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
@@ -60,6 +62,7 @@ public class CardManagementTest {
         ICard card = mock(CityCard.class);
         when(card.getId()).thenReturn(1);
         player.setCards(new ArrayList<>(List.of(card)));
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
 
         cardManagement.playCard("1", "user", 1);
 
@@ -82,6 +85,7 @@ public class CardManagementTest {
         EventCard card = mock(EventCard.class);
         when(card.getId()).thenReturn(1);
         player.setCards(new ArrayList<>(List.of(card)));
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
 
         cardManagement.playCard("1", "user", 1);
 
@@ -148,5 +152,52 @@ public class CardManagementTest {
         boolean result = cardManagement.isCardPlayable(game, 1, "user");
 
         assertFalse(result);
+    }
+
+    @Test
+    void testIsCardPlayable_TreatWaterEventCard_Playable() {
+        TreatWaterEventCard card = mock(TreatWaterEventCard.class);
+        when(card.getId()).thenReturn(1);
+        IUser user = new User("user", "password");
+        IPlayer player = new Player(user);
+        player.getCards().add(card);
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
+        when(game.getPlayer("user")).thenReturn(player);
+        when(game.getWaterTreatmentsLeft()).thenReturn(1);
+
+        boolean result = cardManagement.isCardPlayable(game, 1, "user");
+
+        assertTrue(result);
+    }
+
+    @Test
+    void testIsCardPlayable_TreatWaterEventCard_NotPlayable() {
+        TreatWaterEventCard card = mock(TreatWaterEventCard.class);
+        when(card.getId()).thenReturn(1);
+        IUser user = new User("user", "password");
+        IPlayer player = new Player(user);
+        player.getCards().add(card);
+        when(game.getState()).thenReturn(mock(DrawCardState.class));
+        when(game.getPlayer("user")).thenReturn(player);
+        when(game.getWaterTreatmentsLeft()).thenReturn(0);
+
+        boolean result = cardManagement.isCardPlayable(game, 1, "user");
+
+        assertFalse(result);
+    }
+
+    @Test
+    void testIsStateCorrect() {
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
+        assertTrue(cardManagement.isStateCorrect(game));
+
+        when(game.getState()).thenReturn(mock(InfectionState.class));
+        assertTrue(cardManagement.isStateCorrect(game));
+
+        when(game.getState()).thenReturn(mock(DrawCardState.class));
+        assertTrue(cardManagement.isStateCorrect(game));
+
+        when(game.getState()).thenReturn(mock(EventState.class));
+        assertFalse(cardManagement.isStateCorrect(game));
     }
 }

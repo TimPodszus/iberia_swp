@@ -1,5 +1,6 @@
 package de.uol.swp.common.region.message.response;
 
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.region.IRegionDTO;
 import org.junit.jupiter.api.Test;
 
@@ -45,5 +46,34 @@ class AvailableRegionsResponseTest {
 
         assertEquals(response1.hashCode(), response2.hashCode());
         assertNotEquals(response1.hashCode(), response3.hashCode());
+    }
+
+    @Test
+    void testConstructorAndGetRegions() {
+        Set<IRegionDTO> regions = new HashSet<>();
+        IRegionDTO region = mock(IRegionDTO.class);
+        regions.add(region);
+
+        AvailableRegionsResponse response = new AvailableRegionsResponse(regions);
+
+        assertNotNull(response.getRegions());
+        assertEquals(1, response.getRegions().size());
+        assertTrue(response.getRegions().contains(region));
+    }
+
+    @Test
+    void testEqualsWithNullAndDifferentClass() {
+        Set<IRegionDTO> regions = new HashSet<>();
+        AvailableRegionsResponse response = new AvailableRegionsResponse(regions);
+        assertNotEquals(null, response);
+        assertNotEquals(new Object(), response);
+    }
+
+    @Test
+    void testEqualsWithDifferentSubclass() {
+        Set<IRegionDTO> regions = new HashSet<>();
+        AvailableRegionsResponse response = new AvailableRegionsResponse(regions);
+        AbstractResponseMessage differentSubclass = new AbstractResponseMessage() {};
+        assertNotEquals(response, differentSubclass);
     }
 }

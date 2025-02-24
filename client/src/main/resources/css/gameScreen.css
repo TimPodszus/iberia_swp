@@ -157,7 +157,7 @@
 }
 
 .region-highlight {
-    -fx-fill: rgb(119, 228, 76);
+    -fx-fill: rgb(119, 228, 76, 0.5);
     -fx-stroke: #77E44C;
     -fx-stroke-width: 3px;
 }
