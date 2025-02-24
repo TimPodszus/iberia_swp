@@ -1022,7 +1022,6 @@ public class GamePresenter extends AbstractPresenter {
             updateBoard(gameDTO);
             GameStartDialog.showStartDialog();
             updatePlayers(gameDTO.getPlayers());
-
         });
     }
 
@@ -1040,6 +1039,7 @@ public class GamePresenter extends AbstractPresenter {
         LOG.trace("Updating game board with latest data");
         updateCities(gameDTO.getCities());
         updateConnections(gameDTO.getConnections());
+        updateCurrentPlayer(gameDTO.getCurrentPlayer());
         updateRegions(gameDTO.getRegions());
         updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
         updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
@@ -1249,6 +1249,29 @@ public class GamePresenter extends AbstractPresenter {
                                                .getName()));
             }
         }
+    }
+
+    /**
+     * Updates the current player button's style.
+     * <p>
+     * This method iterates through the player buttons and adds the "current-player" style class
+     * to the button corresponding to the current player, while removing it from the others.
+     *
+     * @param currentPlayer the current player whose button style needs to be updated
+     */
+    private void updateCurrentPlayer(IPlayerDTO currentPlayer) {
+        playerButtons.getChildren()
+                     .forEach(node -> {
+                         PlayerButton playerButton = (PlayerButton) node;
+                         if (playerButton.getUsername()
+                                         .equals(currentPlayer.getUsername())) {
+                             playerButton.getStyleClass()
+                                         .add("current-player");
+                         } else {
+                             playerButton.getStyleClass()
+                                         .remove("current-player");
+                         }
+                     });
     }
 
     /**
