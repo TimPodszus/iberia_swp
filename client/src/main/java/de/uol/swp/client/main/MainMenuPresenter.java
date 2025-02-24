@@ -1,20 +1,17 @@
 package de.uol.swp.client.main;
 
-import de.uol.swp.client.lobby.event.ShowCurrentGamesViewEvent;
+import com.google.inject.Inject;
+import de.uol.swp.client.AbstractPresenter;
+import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.common.exception.UnsopportedMethodExeption;
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
-import org.greenrobot.eventbus.Subscribe;
-
-import com.google.inject.Inject;
-import de.uol.swp.client.AbstractPresenter;
-import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.common.user.IUserDTO;
-import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.common.user.response.LoginSuccessfulResponse;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.awt.*;
 import java.io.IOException;
@@ -35,7 +32,6 @@ public class MainMenuPresenter extends AbstractPresenter {
     private static final String URL = "https://www.brettspielversand" + ".de/mediafiles/spieleanleitungen/zman/114-0021_Pandemic_Iberia_Anleitung.pdf";
 
     private static final ShowLobbyOverviewViewEvent showLobbyOverviewViewMessage = new ShowLobbyOverviewViewEvent();
-    private static final ShowCurrentGamesViewEvent showCurrentGamesViewMessage = new ShowCurrentGamesViewEvent();
 
     private IUserDTO loggedInUser;
 
@@ -56,19 +52,6 @@ public class MainMenuPresenter extends AbstractPresenter {
     @Subscribe
     public void onLoginSuccessfulResponse(LoginSuccessfulResponse message) {
         this.loggedInUser = message.getUser();
-    }
-
-    /**
-     * Handles the event when the current games button is pressed.
-     * <p>
-     * Posts a ShowCurrentGamesViewEvent to the EventBus to switch the current screen
-     * to the current games view.
-     *
-     * @param event The ActionEvent created by pressing the current games button
-     */
-    @FXML
-    void onCurrentGamesButtonPressed(ActionEvent event) {
-        eventBus.post(showCurrentGamesViewMessage);
     }
 
     /**

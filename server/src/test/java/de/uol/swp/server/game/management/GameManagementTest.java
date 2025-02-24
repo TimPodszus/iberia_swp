@@ -3,15 +3,20 @@ package de.uol.swp.server.game.management;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.StateType;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
+import de.uol.swp.server.cards.CardMapper;
+import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
@@ -20,18 +25,21 @@ import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
+import de.uol.swp.server.game.GameService;
+import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
-import de.uol.swp.server.role.IRole;
-import de.uol.swp.server.role.Nurse;
-import de.uol.swp.server.role.RailwayWorker;
-import de.uol.swp.server.role.Sailor;
+import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.region.management.IRegionManagement;
+import de.uol.swp.server.role.*;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +51,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.uol.swp.common.city.CityName.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,10 +82,10 @@ class GameManagementTest {
     private CityRepository cityRepository;
 
     @Mock
-    private IGame game;
+    private IRegionManagement regionManagement;
 
     @Mock
-    private IUser user;
+    private IGame game;
 
     /**
      * Initializes mocks before each test.
@@ -187,6 +196,21 @@ class GameManagementTest {
     }
 
     @Test
+    void testDrawInfectionCard() {
+        InfectionCard infectionCard1 = new InfectionCard(
+                1,
+                "InfectionCard",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard", cityRepository.getCityByName(ALICANTE));
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard1, infectionCard2)));
+        when(game.getState()).thenReturn(new StartState());
+        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
+
+        assertEquals(infectionCard1, drawnCard, "Expected Barcelona infection card to be drawn");
+    }
+
+    @Test
     void testSetPositioning_PlayerAlreadyPositioned() {
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
         IUser testUser = new User("test", "test");
@@ -209,15 +233,75 @@ class GameManagementTest {
     void testDrawInfectionCard() {
         InfectionCard infectionCard1 = new InfectionCard(
                 1,
+    void testSetPositioning_PlayerManagementException() throws PlayerManagementException {
+        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
+        IUser testUser = new User("test", "test");
+        Session session = UUIDSession.create(testUser);
+        request.setSession(session);
+
+        IPlayer player = new Player(testUser);
+        when(game.getCityRepository()).thenReturn(cityRepository);
+        when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getState()).thenReturn(mock(WaitForPositioning.class));
+        doThrow(PlayerManagementException.class).when(playerManagement)
+                                                .setStartingPosition(
+                                                        anyString(),
+                                                        any(CityName.class),
+                                                        any(Player.class)
+                                                );
+
+        GameManagementException exception = assertThrows(
+                GameManagementException.class,
+                () -> gameManagement.setPositioning(request)
+        );
+
+        assertEquals("Failed to set Position", exception.getMessage());
+    }
+
+    @Test
+    void testDrawInfectionCard_InfectionState() {
+        InfectionCard infectionCard = new InfectionCard(
+                1,
+                "InfectionCard",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard)));
+        when(game.getState()).thenReturn(new InfectionState());
+
+        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
+
+        assertNull(drawnCard, "Expected no card to be returned in InfectionState");
+        verify(cityManagement, times(1)).infectCityWithOwnPlague(game, infectionCard, 1);
+    }
+
+    @Test
+    void testDrawInfectionCard_StartState() {
+        InfectionCard infectionCard1 = new InfectionCard(
+                1,
                 "InfectionCard",
                 cityRepository.getCityByName(CityName.BARCELONA)
         );
         InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard", cityRepository.getCityByName(ALICANTE));
         when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard1, infectionCard2)));
-
+        when(game.getState()).thenReturn(new StartState());
         InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
 
         assertEquals(infectionCard1, drawnCard, "Expected Barcelona infection card to be drawn");
+    }
+
+    @Test
+    void testDrawInfectionCard_InvalidState() {
+        InfectionCard infectionCard = new InfectionCard(
+                1,
+                "InfectionCard",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard)));
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
+
+        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
+
+        assertNull(drawnCard, "Expected no card to be returned in an invalid state");
     }
 
     @Test
@@ -278,10 +362,10 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
@@ -333,7 +417,7 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of(destinationCityCard)
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
         IUser user = new User("user1", "");
         createTestPlayers(user);
@@ -374,10 +458,10 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
@@ -403,13 +487,14 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.ALICANTE),
                 List.of(destinationCityCard)
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 27)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>(List.of(destinationCityCard)));
+        when(game.getPlayer("user1")).thenReturn(player);
 
         assertTrue(
                 player.getCards()
@@ -432,11 +517,11 @@ class GameManagementTest {
                 cityRepository.getCityByName(CityName.VALLADOLID),
                 List.of()
         );
-        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, 5)).thenReturn(availableDestinations);
+        when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
         ICity startCity = cityRepository.getCityByName(CityName.EVORA);
         ICity destinationCity = cityRepository.getCityByName(CityName.VALLADOLID);
-        IUser user = new User("user1");
+        IUser user = new User("user1", "password");
         createTestPlayers(user);
         IPlayer player = game.getPlayers()
                              .get(0);
@@ -489,9 +574,29 @@ class GameManagementTest {
 
     @Test
     void testGetAvailableActions() {
+        String lobbyCode = "testLobby";
+
         when(user.getUsername()).thenReturn("username");
         when(cityManagement.isHospitalBuildable(any(String.class), any(String.class))).thenReturn(true);
-        List<GameActions> actions = gameManagement.getAvailableActions(LOBBY_CODE, user);
+
+        game = mock(IGame.class);
+        GameStore.getInstance()
+                 .addGame(lobbyCode, game);
+
+        IPlayer player = mock(IPlayer.class);
+        ICity city = mock(ICity.class);
+        CityCard cityCard = mock(CityCard.class);
+
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getCurrentPosition()).thenReturn(city);
+        when(city.getId()).thenReturn(1);
+        when(game.getPlayers()).thenReturn(List.of(player));
+        when(player.getCards()).thenReturn(List.of(cityCard));
+        when(cityCard.getCity()).thenReturn(city);
+
+        when(game.getState()).thenReturn(mock(IGameState.class));
+        List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, null);
+
         assertEquals(5, actions.size());
     }
 
@@ -694,15 +799,15 @@ class GameManagementTest {
         when(connectionManagement.getAllDestinations(LOBBY_CODE)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
-        IUser user = new User("user1", "test");
-        createTestPlayers(user);
+        IUser testUser = new User("user1", "test");
+        createTestPlayers(testUser);
         IPlayer player = game.getPlayers()
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
         when(game.getPlayer("user1")).thenReturn(player);
         when(game.getState()).thenReturn(new EventState(new OnTheMoveDayAndNightEventCard(1)));
 
-        gameManagement.movePlayer(user, "lobbyCode", destinationCity, null);
+        gameManagement.movePlayer(testUser, "lobbyCode", destinationCity, null);
 
         assertEquals(
                 destinationCity,
@@ -710,4 +815,273 @@ class GameManagementTest {
                 "Expected player to have moved to Palma de Mallorca"
         );
     }
+
+    @Test
+    void testMovePlayer_StateMobilizationEvent() throws GameManagementException {
+        Map<ICity, List<ICard>> availableDestinations = Map.of(cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA),
+                List.of(),
+                cityRepository.getCityByName(CityName.BARCELONA),
+                List.of()
+        );
+        when(connectionManagement.getAvailableDestinations(anyString(), anyString())).thenReturn(availableDestinations);
+        ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
+        ICity destinationCity = cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA);
+        IUser testUser1 = new User("user1", "test");
+        IUser testUser2 = new User("user2", "test");
+
+        createTestPlayers(testUser1, testUser2);
+        IPlayer player = game.getPlayers()
+                             .get(0);
+        setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
+        when(game.getPlayer("user1")).thenReturn(player);
+        IPlayer player2 = game.getPlayers()
+                              .get(1);
+        setupPlayerForMove(startCity, player2, new Sailor(), new ArrayList<>());
+        when(game.getPlayer("user2")).thenReturn(player2);
+
+        StateMobilizationEventCard stateMobilizationEventCard = new StateMobilizationEventCard(1);
+        stateMobilizationEventCard.setPlayersToMove(game.getPlayers());
+        when(game.getState()).thenReturn(new EventState(stateMobilizationEventCard));
+
+        gameManagement.movePlayer(testUser1, "lobbyCode", destinationCity, null);
+
+        assertEquals(destinationCity, player.getCurrentPosition(), "Expected player1 to have moved to Palma de Mallorca"
+        );
+        assertEquals(1,
+                stateMobilizationEventCard.getPlayersToMove()
+                                          .size(),
+                "Expected playersToMove to be decreased by 1"
+        );
+
+        gameManagement.movePlayer(testUser2, "lobbyCode", startCity, null);
+
+        assertEquals(destinationCity,
+                player.getCurrentPosition(),
+                "Expected player2 to have moved to Palma de Mallorca"
+        );
+        assertEquals(0,
+                stateMobilizationEventCard.getPlayersToMove()
+                                          .size(),
+                "Expected playersToMove to be decreased by 1"
+        );
+    }
+
+    @Test
+    void testCreatePlayersWithDifferentUserCounts() throws PlayerManagementException {
+        List<IUser> twoUsers = List.of(new User("user1", "pass1"), new User("user2", "pass2"));
+        List<IUser> threeUsers = List.of(
+                new User("user1", "pass1"),
+                new User("user2", "pass2"),
+                new User("user3", "pass3")
+        );
+        List<IUser> fourUsers = List.of(
+                new User("user1", "pass1"),
+                new User("user2", "pass2"),
+                new User("user3", "pass3"),
+                new User("user4", "pass4")
+        );
+
+        doAnswer(invocation -> {
+            Player player = invocation.getArgument(1);
+            player.getCards()
+                  .add(mock(ICard.class));
+            return null;
+        }).when(playerManagement)
+          .drawPlayerCard(anyString(), any(Player.class));
+        when(game.getPlayers()).thenReturn(new ArrayList<>());
+
+        gameManagement.createPlayers(twoUsers, game);
+        assertEquals(
+                4,
+                game.getPlayers()
+                    .get(0)
+                    .getCards()
+                    .size()
+        );
+
+        game.getPlayers()
+            .clear();
+        gameManagement.createPlayers(threeUsers, game);
+        assertEquals(
+                3,
+                game.getPlayers()
+                    .get(0)
+                    .getCards()
+                    .size()
+        );
+
+        game.getPlayers()
+            .clear();
+        gameManagement.createPlayers(fourUsers, game);
+        assertEquals(
+                2,
+                game.getPlayers()
+                    .get(0)
+                    .getCards()
+                    .size()
+        );
+    }
+
+    @Test
+    void testSetStartingPlayer() {
+        IGame game = new Game(1, "testLobby");
+        ICity city1 = mock(ICity.class);
+        ICity city2 = mock(ICity.class);
+        IPlayer player1 = new Player(new User("user1", "pass1"));
+        IPlayer player2 = new Player(new User("user2", "pass2"));
+        player1.getCards()
+               .add(new CityCard(1, "City1", city1));
+        player2.getCards()
+               .add(new CityCard(2, "City2", city2));
+        game.getPlayers()
+            .add(player1);
+        game.getPlayers()
+            .add(player2);
+
+        gameManagement.setStartingPlayer(game);
+
+        assertEquals(
+                player1,
+                game.getPlayers()
+                    .get(0)
+        );
+    }
+
+    @Test
+    void testIsWaterTreatmentPlaceable() {
+        IUser user = new User("testUser", "testPassword");
+        when(game.getWaterTreatmentsLeft()).thenReturn(1);
+        when(regionManagement.getAvailableRegions(any(), anyString())).thenReturn(Set.of(mock(IRegionDTO.class)));
+
+        boolean result = gameManagement.isWaterTreatmentPlaceable(LOBBY_CODE, user);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void testDiscardInfectionCard() {
+        IGame game = mock(IGame.class);
+        InfectionCard infectionCard = new InfectionCard(1, "InfectionCard", mock(ICity.class));
+        List<InfectionCard> discardPile = new ArrayList<>();
+
+        when(game.getInfectionCardDiscardPile()).thenReturn(discardPile);
+
+        gameManagement.discardInfectionCard(game, infectionCard);
+
+        assertTrue(discardPile.contains(infectionCard), "The infection card should be in the discard pile");
+    }
+
+    @Test
+    void testIncreaseCurrentPlayerActions_CurrentState() {
+        PlayerTurnState playerTurnState = mock(PlayerTurnState.class);
+        when(game.getState()).thenReturn(playerTurnState);
+        when(playerTurnState.getActionsRemaining()).thenReturn(5);
+
+        gameManagement.increaseCurrentPlayerActions(game, 3);
+
+        verify(playerTurnState).setActionsRemaining(8);
+    }
+
+    @Test
+    void testIncreaseCurrentPlayerActions_PreviousState() {
+        PlayerTurnState playerTurnState = mock(PlayerTurnState.class);
+        when(game.getState()).thenReturn(mock(IGameState.class));
+        when(game.getPreviousState()).thenReturn(playerTurnState);
+        when(playerTurnState.getActionsRemaining()).thenReturn(5);
+
+        gameManagement.increaseCurrentPlayerActions(game, 3);
+
+        verify(playerTurnState).setActionsRemaining(8);
+    }
+
+    @Test
+    void testIncreaseCurrentPlayerActions_NoPlayerTurnState() {
+        PlayerTurnState playerTurnState = mock(PlayerTurnState.class);
+        when(game.getState()).thenReturn(mock(IGameState.class));
+        when(game.getPreviousState()).thenReturn(mock(IGameState.class));
+
+        gameManagement.increaseCurrentPlayerActions(game, 3);
+
+        verify(playerTurnState, never()).setActionsRemaining(anyInt());
+    }
+
+
+    /**
+     * Tests the shareKnowledgeRequestAccepted method.
+     * Ensures that the knowledge sharing between players is handled correctly.
+     *
+     * @throws PlayerManagementException if there is an error in player management
+     */
+    @Test
+    void shareKnowledgeRequestAcceptedTest() throws PlayerManagementException {
+        IGame notMockedGame = new Game(
+                "testGame",
+                mock(RoleRepository.class),
+                mock(CityRepository.class),
+                mock(RegionRepository.class),
+                mock(ConnectionRepository.class),
+                mock(PlagueRepository.class),
+                mock(CardRepository.class),
+                1,
+                0,
+                14,
+                20,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                0,
+                new PlayerTurnState(),
+                mock(IGameState.class),
+                1,
+                mock(GameStateChangeListener.class)
+        );
+        IPlayer currentPlayer = new Player(new User("test", "test"));
+        ICard currentPlayerCard = new CityCard(1, "test", mock(ICity.class));
+        currentPlayer.getCards()
+                     .add(currentPlayerCard);
+
+        IPlayer targetPlayer = new Player(new User("test2", "test2"));
+        ICard targetPlayerCard = new CityCard(2, "test2", mock(ICity.class));
+        targetPlayer.getCards()
+                    .add(targetPlayerCard);
+
+        String lobbyId = "testLobby";
+        ILobbyManagement lobbyManagement = mock(ILobbyManagement.class);
+        GameStore.getInstance()
+                 .addGame(lobbyId, notMockedGame);
+
+        when(playerManagement.getCard("testLobby", "test", 1)).thenReturn(currentPlayerCard);
+        when(playerManagement.getCard("testLobby", "test2", 2)).thenReturn(targetPlayerCard);
+
+        GameService gameService = mock(GameService.class);
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                lobbyId,
+                currentPlayer.getUser()
+                             .getUsername(),
+                targetPlayer.getUser()
+                            .getUsername(),
+                CardMapper.toDTO(currentPlayerCard),
+                CardMapper.toDTO(targetPlayerCard)
+        );
+
+        gameManagement.shareKnowledgeRequestAccepted(
+                currentPlayer,
+                targetPlayer,
+                lobbyId,
+                event,
+                lobbyManagement,
+                gameService
+        );
+        System.out.println("Current Player Cards: " + currentPlayer.getCards() + currentPlayerCard.getTitle());
+        System.out.println("Target Player Cards: " + targetPlayer.getCards() + targetPlayerCard.getTitle());
+
+        assert (currentPlayer.getCards()
+                             .contains(targetPlayerCard));
+        assert (targetPlayer.getCards()
+                            .contains(currentPlayerCard));
+        verify(gameService, times(1)).sendToAllInLobby(any(), any());
+    }
 }
+

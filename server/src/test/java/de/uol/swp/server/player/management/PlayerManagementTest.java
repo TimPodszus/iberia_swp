@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
 import de.uol.swp.server.cards.data.ICard;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,7 +59,7 @@ class PlayerManagementTest {
         MockitoAnnotations.openMocks(this);
         GameStore.getInstance()
                  .addGame(game.getGameId(), game);
-        playerManagement = new PlayerManagement(gameManagement, cityManagement);
+        playerManagement = new PlayerManagement(cityManagement);
     }
 
     /**
@@ -195,5 +197,57 @@ class PlayerManagementTest {
 
         playerManagement.setPlayerLocation(game.getGameId(), "testUser", 1);
         assertEquals(city, testPlayer.getCurrentPosition());
+    }
+
+    @Test
+    void testShuffleInfectionCardsFromDrawPile() {
+        CityRepository cityRepository = mock(CityRepository.class);
+        ICity barcelona = mock(ICity.class);
+        ICity alicante = mock(ICity.class);
+        ICity madrid = mock(ICity.class);
+
+        when(cityRepository.getCityByName(CityName.BARCELONA)).thenReturn(barcelona);
+        when(cityRepository.getCityByName(CityName.ALICANTE)).thenReturn(alicante);
+        when(cityRepository.getCityByName(CityName.MADRID)).thenReturn(madrid);
+
+        InfectionCard infectionCard1 = new InfectionCard(1, "InfectionCard1", barcelona);
+        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard2", alicante);
+        InfectionCard infectionCard3 = new InfectionCard(3, "InfectionCard3", madrid);
+
+        List<InfectionCard> discardPile = new ArrayList<>(List.of(infectionCard1, infectionCard2));
+        List<InfectionCard> drawPile = new ArrayList<>(List.of(infectionCard3));
+
+        IGame mockGame = mock(Game.class);
+        when(mockGame.getInfectionCardDiscardPile()).thenReturn(discardPile);
+        when(mockGame.getInfectionCardDrawPile()).thenReturn(drawPile);
+
+        playerManagement.shuffleInfectionCardsFromDrawPile(mockGame);
+
+        assertTrue(drawPile.contains(infectionCard1), "Expected draw pile to contain infectionCard1");
+        assertTrue(drawPile.contains(infectionCard2), "Expected draw pile to contain infectionCard2");
+        assertTrue(drawPile.contains(infectionCard3), "Expected draw pile to contain infectionCard3");
+        assertTrue(discardPile.isEmpty(), "Expected discard pile to be empty after shuffling");
+    }
+
+
+    @Test
+    void testDrawBottomInfectionCard() {
+        CityRepository cityRepository = new CityRepository();
+        InfectionCard infectionCard1 = new InfectionCard(1, "InfectionCard1", cityRepository.getCityByName(CityName.BARCELONA));
+        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard2", cityRepository.getCityByName(CityName.ALICANTE));
+        game.getInfectionCardDrawPile().add(infectionCard1);
+        game.getInfectionCardDrawPile().add(infectionCard2);
+
+        InfectionCard drawnCard = playerManagement.drawBottomInfectionCard(game);
+
+        assertEquals(infectionCard2, drawnCard, "Expected the last infection card to be drawn from the bottom of the draw pile");
+    }
+
+    @Test
+    void testDrawBottomInfectionCardWithEmptyDiscardPile() {
+        game.getInfectionCardDrawPile().clear();
+
+        assertThrows(IllegalStateException.class, () -> playerManagement.drawBottomInfectionCard(game), "Expected " +
+                "IllegalStateException when the discard pile is empty");
     }
 }

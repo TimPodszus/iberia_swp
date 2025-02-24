@@ -9,13 +9,13 @@ import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.cards.CardMapper;
-import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
-import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.cards.events.StateMobilizationEvent;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.management.ServerUserService;
 import org.apache.logging.log4j.LogManager;
@@ -23,13 +23,16 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class ConnectionService extends AbstractService {
     private static final Logger LOG = LogManager.getLogger(ConnectionService.class);
+
 
     IConnectionManagement connectionManagement;
 
@@ -69,7 +72,10 @@ public class ConnectionService extends AbstractService {
                 request.getCityId()
         ));
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(
+                request.getLobbyId(),
+                availableDestinations
+        );
         request.getMessageContext()
                .ifPresent(response::setMessageContext);
         request.getSession()
@@ -93,41 +99,23 @@ public class ConnectionService extends AbstractService {
         IUser user = userManagement.getUser(event.getUsername());
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error("User not logged in");
-                                                   return new GameException("User not logged in");
+                                                   LOG.error(USER_NOT_LOGGED_IN);
+                                                   return new GameException(USER_NOT_LOGGED_IN);
                                                });
 
         Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAllDestinations(
                 event.getLobbyId()));
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(availableDestinations);
+        AvailableDestinationsResponse response = new AvailableDestinationsResponse(
+                event.getLobbyId(),
+                availableDestinations
+        );
         response.setSession(session);
         post(response);
         LOG.debug("[Lobby: {}] Sent AvailableDestinationsResponse for player {}",
                 event.getLobbyId(),
                 event.getUsername()
         );
-    }
-
-    /**
-     * Converts a map of available destinations from ICity and ICard to a map of Integer and ICardDTO.
-     *
-     * @param availableDestinations the map of available destinations with ICity as keys and lists of ICard as values
-     * @return a map of available destinations with Integer as keys and lists of ICardDTO as values
-     */
-    private Map<Integer, List<ICardDTO>> convertToDtoMap(Map<ICity, List<ICard>> availableDestinations) {
-        Map<Integer, List<ICardDTO>> availableDestinationsAsDtos = new HashMap<>();
-
-        for (Map.Entry<ICity, List<ICard>> entry : availableDestinations.entrySet()) {
-            List<ICardDTO> cards = entry.getValue()
-                                        .stream()
-                                        .map(CardMapper::toDTO)
-                                        .toList();
-            availableDestinationsAsDtos.put(entry.getKey()
-                                                 .getId(), cards);
-        }
-
-        return availableDestinationsAsDtos;
     }
 
     /**
@@ -157,5 +145,55 @@ public class ConnectionService extends AbstractService {
                .ifPresent(response::setSession);
 
         post(response);
+    }
+
+    /**
+     * Handles the StateMobilizationEvent. Gets the available destinations for all players in the lobby and sends
+     * them to the clients.
+     *
+     * @param event the event containing the lobby ID
+     */
+    @Subscribe
+    public void onStateMobilizationEvent(StateMobilizationEvent event) {
+        LOG.debug("[Lobby: {}] Got StateMobilizationEvent. Sending available destinations to every user",
+                event.getLobbyId()
+        );
+        IGame game = connectionManagement.getGame(event.getLobbyId());
+        ScheduledExecutorService scheduler = null;
+        try {
+            // Warning is wrong, scheduler is shutdown in finally block. A close method does not exist.
+            scheduler = Executors.newScheduledThreadPool(1);
+            scheduler.schedule(() -> {
+                for (IPlayer player : game.getPlayers()) {
+                    Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
+                            event.getLobbyId(),
+                            player.getUser()
+                                  .getUsername()
+                    ));
+                    IUser user = player.getUser();
+                    AvailableDestinationsResponse response = new AvailableDestinationsResponse(game.getGameId(),
+                            availableDestinations
+                    );
+                    Session session = authenticationService.getSession(user)
+                                                           .orElse(null);
+
+                    if (session == null) {
+                        LOG.error("[LobbyID: {}] Session not found for user {}",
+                                game.getGameId(),
+                                player.getUser()
+                                      .getUsername()
+                        );
+                        break;
+                    }
+
+                    response.setSession(session);
+                    post(response);
+                }
+            }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+        } finally {
+            if (scheduler != null) {
+                scheduler.shutdown();
+            }
+        }
     }
 }

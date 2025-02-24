@@ -11,14 +11,13 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
-import de.uol.swp.server.player.data.IPlayer;
-import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.management.IRegionManagement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,8 +53,20 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param amount        the amount of infection cubes to add
      */
     public void infectCityWithOwnPlague(IGame game, InfectionCard infectionCard, int amount) {
-        PlagueName plagueName = findCity(game, infectionCard).getPlagueName();
-        infectCity(game, infectionCard, plagueName, amount);
+        if (game.getState() instanceof InfectionState || game.getState() instanceof StartState){
+            try {
+                PlagueName plagueName = findCity(game, infectionCard).getPlagueName();
+                infectCity(game, infectionCard, plagueName, amount);
+                LOG.debug("Infected city with its own plague: {}, amount: {}",
+                        infectionCard.getCity()
+                                     .getName(),
+                        amount
+                );
+            } catch (CityManagementException e) {
+                LOG.error("Error infecting city with its own plague: {}", e.getMessage());
+                throw e;
+            }
+        }
     }
 
     /**
@@ -73,8 +84,15 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             PlagueName plagueName,
             int amount
     ) throws CityManagementException {
-        infectCity(game, findCity(game, infectionCard), plagueName, amount, true);
-        gameManagement.discardInfectionCard(game, infectionCard);
+        try {
+            LOG.debug("Infecting city: {}, plague: {}, amount: {}", infectionCard.getCity().getName(), plagueName, amount);
+            infectCity(game, findCity(game, infectionCard), plagueName, amount, true);
+            gameManagement.discardInfectionCard(game, infectionCard);
+            LOG.debug("Infection card discarded: {}", infectionCard.getCity().getName());
+        } catch (CityManagementException e) {
+            LOG.error("Error infecting city: {}", e.getMessage());
+            throw e;
+        }
     }
 
     /**
