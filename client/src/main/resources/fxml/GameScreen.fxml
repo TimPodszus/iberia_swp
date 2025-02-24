@@ -175,7 +175,7 @@
                     <children>
                         <StackPane id="stackPaneCity3">
                             <children>
-                                <Circle id="city3" fill="DODGERBLUE" onMouseClicked="#onCityClickedEvent" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="15.0" userData="lesboa">
+                                <Circle id="city3" fill="DODGERBLUE" onMouseClicked="#onCityClickedEvent" onMouseEntered="#onMouseEnteredEvent" onMouseExited="#onMouseExitedEvent" radius="15.0" userData="lisboa">
                                     <styleClass>
                                         <String fx:value="city" />
                                         <String fx:value="city-blue" />
@@ -921,7 +921,7 @@
                 <Text layoutX="3.0" layoutY="16.0" mouseTransparent="true" text="A Coruña ⚓" x="61.737" y="80.185" />
                 <Text layoutX="13.0" layoutY="-9.0" mouseTransparent="true" text="Gibraltar ⚓" x="376.509" y="856.773" />
                 <Text layoutX="-3.0" layoutY="4.0" mouseTransparent="true" text="Huelva ⚓" x="189.029" y="772.1" />
-                <Text layoutX="11.0" layoutY="-2.0" mouseTransparent="true" text="Lesboa ⚓" x="11.425" y="639.509" />
+                <Text layoutX="11.0" layoutY="-2.0" mouseTransparent="true" text="Lisboa ⚓" x="11.425" y="639.509" />
                 <Text layoutX="9.0" layoutY="-1.0" mouseTransparent="true" text="Porto ⚓" x="36.843" y="354.091" />
                 <Text layoutX="16.0" layoutY="1.0" mouseTransparent="true" text="Vigo ⚓" x="31.141" y="242.234" />
                 <Text layoutX="-39.0" layoutY="-54.0" mouseTransparent="true" text="Ourense" x="230.0" y="230.0" />

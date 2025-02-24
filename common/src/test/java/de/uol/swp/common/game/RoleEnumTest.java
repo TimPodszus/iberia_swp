@@ -17,7 +17,10 @@ class RoleEnumTest {
 
     @Test
     void getDescription() {
-        assertEquals("Agrarwissenschaftler", RoleEnum.AGRICULTURAL_SCIENTIST.getDescription());
+        assertEquals(
+                "Extraaktion um einen Wasseraufbereitungsmarker zu platzieren. Bei Wasseraufbereitung, darf ein zusätzlicher Marker platziert werden",
+                RoleEnum.AGRICULTURAL_SCIENTIST.getDescription()
+        );
     }
 
     @Test
