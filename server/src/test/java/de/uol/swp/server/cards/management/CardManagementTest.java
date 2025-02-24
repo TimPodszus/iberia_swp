@@ -127,6 +127,7 @@ public class CardManagementTest {
         StateMobilizationEventCard card = mock(StateMobilizationEventCard.class);
         when(card.getId()).thenReturn(1);
         player.setCards(new ArrayList<>(List.of(card)));
+        when(game.getState()).thenReturn(new PlayerTurnState());
 
         cardManagement.playCard("1", "user", 1);
 
