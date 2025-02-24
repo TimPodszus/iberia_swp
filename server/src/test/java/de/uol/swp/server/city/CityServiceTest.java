@@ -88,6 +88,7 @@ public class CityServiceTest extends EventBusBasedTest {
         assertEquals(request1, request1);
 
         // Test for null
+        // Warning: Arguments to 'assertNotEquals()' in wrong order -> needed for full coverage
         assertNotEquals(request1, null);
 
         // Test for different class
