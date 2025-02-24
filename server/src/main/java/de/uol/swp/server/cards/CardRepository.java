@@ -135,6 +135,4 @@ public class CardRepository {
         cards.put(208, new AnotherDayEventCard(208));
         cards.put(209, new StateMobilizationEventCard(209));
     }
-
-
 }

@@ -312,6 +312,14 @@ public class GamePresenter extends AbstractPresenter {
             LOG.info("Initial position set");
         }
 
+        if (buildHospitalButton.isSelected()) {
+            LOG.trace("Player wants to build a hospital in city {}", cityId);
+            gameService.sendBuildHospitalRequest(lobbyId, cityId);
+            LOG.info("Hospital has been built");
+            buildHospitalButton.setSelected(false);
+            return;
+        }
+
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
             LOG.trace("Player wants to move to city {}", cityId);
@@ -319,11 +327,13 @@ public class GamePresenter extends AbstractPresenter {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
                 CardDialog cardDialog = new CardDialog(true, true, availableDestinations.get(cityId));
                 Optional<ICardDTO> result = cardDialog.showAndWait();
-                result.ifPresentOrElse(card -> {
-                    LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
-                    gameService.movePlayerToCity(lobbyId, cityId, card.getId());
-                    LOG.info("Player has been moved with discarding a card");
-                }, () -> LOG.info("Player has not selected a card to discard. Aborting move."));
+                result.ifPresentOrElse(
+                        card -> {
+                            LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
+                            gameService.movePlayerToCity(lobbyId, cityId, card.getId());
+                            LOG.info("Player has been moved with discarding a card");
+                        }, () -> LOG.info("Player has not selected a card to discard. Aborting move.")
+                );
                 return;
             }
 
@@ -390,9 +400,11 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
-        int connectionId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+        int connectionId = Integer.parseInt(source.getId()
+                                                  .replaceAll("\\D+", ""));
 
-        if (!source.getStyleClass().contains(CONNECTION_HIGHLIGHTED_CLASS)) {
+        if (!source.getStyleClass()
+                   .contains(CONNECTION_HIGHLIGHTED_CLASS)) {
             return;
         }
 
@@ -404,8 +416,7 @@ public class GamePresenter extends AbstractPresenter {
         }
 
         StateType currentState = gameDTO.getState();
-        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) ||
-                currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
+        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) || currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
 
         if (isValidState) {
             gameService.buildTrainTrack(lobbyId, connectionId);
@@ -423,9 +434,10 @@ public class GamePresenter extends AbstractPresenter {
     private void onRegionClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
         if (gameDTO.getState()
-                   .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
+                   .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
+                                                                 .contains(REGION_HIGHLIGHTED_CLASS)) {
             regionId = Integer.parseInt(source.getId()
-                                                  .replaceAll("\\D+", ""));
+                                              .replaceAll("\\D+", ""));
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
         }
     }
@@ -448,7 +460,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param event the mouse event that triggered this handler
      */
     @FXML
-    private void onInfectionCardDrawPileClickedEvent(MouseEvent event){
+    private void onInfectionCardDrawPileClickedEvent(MouseEvent event) {
         gameService.drawInfectionCard(lobbyId);
     }
 
@@ -484,9 +496,18 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildHospital(ActionEvent event) {
         if (buildHospitalButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
-        } else {
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE)) {
+                resetHighlightetCities();
 
+                Integer cityId = gameDTO.getCurrentPlayer()
+                                        .getCurrentPosition()
+                                        .getId();
+                highlightAvailableHospitalLocations(List.of(cityId));
+            }
+        } else {
+            resetHighlightetCities();
+            this.highlightAvailableDestinations();
         }
     }
 
@@ -1054,7 +1075,6 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
-     *
      */
     private void updatePlayerHandCards() {
         removePlayerHandCards();
@@ -1472,7 +1492,8 @@ public class GamePresenter extends AbstractPresenter {
             return;
         }
 
-        LOG.debug("Received {} available destinations",
+        LOG.debug(
+                "Received {} available destinations",
                 response.getCities()
                         .size()
         );
@@ -1499,8 +1520,32 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void highlightAvailableDestinations() {
         LOG.debug("Highlighting available destinations");
-        for (Map.Entry<Integer, List<ICardDTO>> entry : availableDestinations.entrySet()) {
-            int cityId = entry.getKey();
+        highlightCitys(availableDestinations.keySet()
+                                            .stream()
+                                            .toList());
+        LOG.info("Available destinations highlighted");
+    }
+
+    /**
+     * Highlights the available hospital locations on the game map.
+     * This method highlights the cities where hospitals can be built by updating their style classes.
+     *
+     * @param cityIds the list of city IDs where hospitals can be built
+     */
+    private void highlightAvailableHospitalLocations(List<Integer> cityIds) {
+        LOG.debug("Highlighting available hospital locations");
+        highlightCitys(cityIds);
+        LOG.info("Available hospital locations highlighted");
+    }
+
+    /**
+     * Highlights the specified cities on the game map.
+     * This method updates the style classes of the specified cities to indicate they are highlighted.
+     *
+     * @param cityIds the list of city IDs to highlight
+     */
+    private void highlightCitys(List<Integer> cityIds) {
+        for (Integer cityId : cityIds) {
             LOG.trace("Highlighting city {}", cityId);
             Node node = mapPane.lookup(CITY_ID + cityId);
             node.getStyleClass()
@@ -1510,7 +1555,6 @@ public class GamePresenter extends AbstractPresenter {
             node.getStyleClass()
                 .add(CITY_HIGHLIGHTED_CLASS);
         }
-        LOG.info("Available destinations highlighted");
     }
 
     /**
@@ -1615,7 +1659,7 @@ public class GamePresenter extends AbstractPresenter {
      * This method iterates through the list of regions and removes the highlight style class
      * from each region's corresponding StackPane node on the map.
      */
-    private void resetRegionStyle () {
+    private void resetRegionStyle() {
         List<IRegionDTO> regions = gameDTO.getRegions();
         for (IRegionDTO region : regions) {
             Node stackPane = mapPane.lookup(REGION_ID + region.getId());
