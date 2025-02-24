@@ -1,17 +1,19 @@
 package de.uol.swp.server;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.Session;
+import de.uol.swp.server.cards.CardMapper;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class is the base for creating a new Service.
@@ -22,6 +24,10 @@ import java.util.List;
  * @since 2019-10-08
  */
 public class AbstractService {
+
+    protected static final String USER_NOT_LOGGED_IN = "User not logged in";
+
+    protected static final int DEFAULT_MESSAGE_DELAY_MILLIS = 200;
     /**
      * The EventBus instance used for posting and handling events.
      * This is a protected final field, ensuring it is initialized once and cannot be changed.
@@ -86,5 +92,26 @@ public class AbstractService {
         List<Session> sessions = authenticationService.getSessions(new HashSet<>(lobby.getUsers()));
         message.setReceiver(sessions);
         post(message);
+    }
+
+    /**
+     * Converts a map of available destinations from ICity and ICard to a map of Integer and ICardDTO.
+     *
+     * @param availableDestinations the map of available destinations with ICity as keys and lists of ICard as values
+     * @return a map of available destinations with Integer as keys and lists of ICardDTO as values
+     */
+    protected Map<Integer, List<ICardDTO>> convertToDtoMap(Map<ICity, List<ICard>> availableDestinations) {
+        Map<Integer, List<ICardDTO>> availableDestinationsAsDtos = new HashMap<>();
+
+        for (Map.Entry<ICity, List<ICard>> entry : availableDestinations.entrySet()) {
+            List<ICardDTO> cards = entry.getValue()
+                                        .stream()
+                                        .map(CardMapper::toDTO)
+                                        .toList();
+            availableDestinationsAsDtos.put(entry.getKey()
+                                                 .getId(), cards);
+        }
+
+        return availableDestinationsAsDtos;
     }
 }

@@ -34,4 +34,9 @@ public abstract class Card implements ICard {
     public int hashCode() {
         return Objects.hash(id, title, type);
     }
+
+    @Override
+    public int getId() {
+        return id;
+    }
 }

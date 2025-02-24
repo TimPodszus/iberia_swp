@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RoleEnumTest {
     @Test
     void getColorCode() {
-        assertEquals("#60BC46", RoleEnum.AGRICULTURAL_SCIENTIST.getColorCode());
+        assertEquals("#1AB429", RoleEnum.AGRICULTURAL_SCIENTIST.getColorCode());
     }
 
     @Test

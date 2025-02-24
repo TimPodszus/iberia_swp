@@ -1,23 +1,21 @@
 package de.uol.swp.server.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
-import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.event.EndGameEvent;
-import de.uol.swp.common.game.message.event.StartGameEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.event.ShareRideEvent;
-import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.event.*;
+import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
@@ -31,8 +29,10 @@ import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -43,6 +43,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible for managing game-related requests such as creating games.
@@ -186,11 +190,83 @@ public class GameService extends AbstractService implements GameStateChangeListe
         if (!request.getUsername()
                     .isEmpty()) {
             this.sendShareRideEvent(request, destination);
+            LOG.debug(
+                    "[LobbyID: {}] Send share ride event and asked {} if he wants to be picked up",
+                    request.getLobbyId(),
+                    request.getUsername()
+            );
         }
 
-        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        LOG.info("[LobbyId: {}] Player has been moved. Sending board update event", request.getLobbyId());
+
+        if (game.getState() instanceof EventState eventState && eventState.getEventCard() instanceof StateMobilizationEventCard eventCard) {
+            this.sendAvailableDestinationsToRemainingPlayers(request.getLobbyId(), eventCard.getPlayersToMove());
+        }
+    }
+
+    /**
+     * Sends available destinations to all remaining players. Waits 500 ms before the messages are send to avoid
+     * concurrent access to cities on client side
+     *
+     * @param lobbyId          the id of the lobby
+     * @param remainingPlayers the remaining players, who have not moved yet
+     */
+    private void sendAvailableDestinationsToRemainingPlayers(String lobbyId, List<IPlayer> remainingPlayers) {
+        ScheduledExecutorService scheduler = null;
+        try {
+            // Warning is wrong, scheduler is shutdown in finally block. A close method does not exist.
+            scheduler = Executors.newScheduledThreadPool(1);
+            LOG.debug(
+                    "[LobbyID: {}] State mobilization is ongoing. Sending available destinations for remaining players to move",
+                    lobbyId
+            );
+            scheduler.schedule(() -> {
+                for (IPlayer player : remainingPlayers) {
+                    LOG.trace("[LobbyID: {}] {} has not moved yet. Sending available destinations for him",
+                            lobbyId,
+                            player.getUser()
+                                  .getUsername()
+                    );
+                    Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
+                            lobbyId,
+                            player.getUser()
+                                  .getUsername()
+                    ));
+                    AvailableDestinationsResponse response = new AvailableDestinationsResponse(lobbyId,
+                            availableDestinations
+                    );
+                    Session session = authenticationService.getSession(player.getUser())
+                                                           .orElse(null);
+
+                    if (session == null) {
+                        LOG.error("[LobbyID: {}] Session not found for user {}",
+                                lobbyId,
+                                player.getUser()
+                                      .getUsername()
+                        );
+                        break;
+                    }
+
+                    response.setSession(session);
+                    post(response);
+                    LOG.trace("[LobbyID: {}] Sent {} available destinations for {}",
+                            lobbyId,
+                            availableDestinations.size(),
+                            player.getUser()
+                                  .getUsername()
+                    );
+                }
+            }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+        } finally {
+            if (scheduler != null) {
+                scheduler.shutdown();
+            }
+        }
+        LOG.info("[LobbyID: {}] Sent available destinations for remaining players to move", lobbyId);
     }
 
     /**
@@ -258,6 +334,118 @@ public class GameService extends AbstractService implements GameStateChangeListe
         post(event);
         LOG.info("[LobbyID: {}] Asked player if he wants to be picked up", request.getLobbyId());
         gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
+    }
+
+    /**
+     * Handles incoming requests to exchange cards between players.
+     * This method locks the game in wait for confirmation, creates a ShareKnowledgeEvent,
+     * and posts it to the event bus.
+     *
+     * @param request the CardsExchangeRequest containing the lobby ID and cards to exchange
+     * @throws GameManagementException if the target player is not found or session is not found
+     */
+    @Subscribe
+    public void onCardsExchangeRequest(CardsExchangeRequest request) throws GameManagementException {
+        LOG.info("Received CardsExchangeRequest for lobby {}", request.getLobbyId());
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
+        Map<String, ICardDTO> cardsToExchange = request.getCardsToExchange();
+        String currentPlayerUsername = game.getCurrentPlayer()
+                                           .getUser()
+                                           .getUsername();
+        String targetPlayerUsername = cardsToExchange.keySet()
+                                                     .stream()
+                                                     .filter(username -> !username.equals(currentPlayerUsername))
+                                                     .findFirst()
+                                                     .orElseThrow(() -> {
+                                                         LOG.error(
+                                                                 "Target player not found for username {}",
+                                                                 currentPlayerUsername
+                                                         );
+                                                         return new GameManagementException("Target player not found");
+                                                     });
+
+        LOG.debug("Current player: {}, Target player: {}", currentPlayerUsername, targetPlayerUsername);
+
+        ShareKnowledgeEvent shareKnowledgeEvent = new ShareKnowledgeEvent(
+                request.getLobbyId(),
+                currentPlayerUsername,
+                targetPlayerUsername,
+                cardsToExchange.get(currentPlayerUsername),
+                cardsToExchange.get(targetPlayerUsername)
+        );
+
+        IUser user = lobbyManagement.getLobby(request.getLobbyId())
+                                    .getUsers()
+                                    .stream()
+                                    .filter(u -> u.getUsername()
+                                                  .equals(targetPlayerUsername))
+                                    .findFirst()
+                                    .orElseThrow(() -> {
+                                        LOG.error(
+                                                "Target player not found in lobby for username {}",
+                                                targetPlayerUsername
+                                        );
+                                        return new GameManagementException("Target player not found");
+                                    });
+        LOG.trace("Found target player in lobby: {}", user.getUsername());
+
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow(() -> {
+                                                   LOG.error("Session not found for user {}", user.getUsername());
+                                                   return new GameManagementException("Session not found");
+                                               });
+        LOG.trace("Session found for user {} {}", user.getUsername(), session);
+
+        shareKnowledgeEvent.setReceiver(List.of(session));
+        bus.post(shareKnowledgeEvent);
+        LOG.info("Posted ShareKnowledgeEvent to event bus for lobby {}", request.getLobbyId());
+    }
+
+    /**
+     * Handles incoming requests to share knowledge between players.
+     * This method unlocks the game from wait for confirmation, processes the ShareKnowledgeEvent,
+     * and updates the game state based on whether the request was accepted or not.
+     *
+     * @param request the ShareKnowledgeRequest containing the event and acceptance status
+     * @throws GameManagementException   if the target player is not found
+     * @throws PlayerManagementException if there is an error in player management
+     */
+    @Subscribe
+    public void onShareKnowledgeRequest(ShareKnowledgeRequest request) throws GameManagementException, PlayerManagementException {
+        LOG.info("Received ShareKnowledgeRequest for lobby {}", request.getLobbyId());
+        gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
+        ShareKnowledgeEvent event = request.getShareKnowledgeEvent();
+        IPlayer currentPlayer = gameManagement.getGame(event.getLobbyId())
+                                              .getCurrentPlayer();
+        IPlayer targetPlayer = gameManagement.getGame(event.getLobbyId())
+                                             .getPlayers()
+                                             .stream()
+                                             .filter(player -> player.getUser()
+                                                                     .getUsername()
+                                                                     .equals(event.getTargetPlayer()))
+                                             .findFirst()
+                                             .orElseThrow(() -> {
+                                                 LOG.error(
+                                                         "Target player not found for username {}",
+                                                         event.getTargetPlayer()
+                                                 );
+                                                 return new GameManagementException("Target player not found");
+                                             });
+
+        if (request.isAccepted()) {
+            gameManagement.shareKnowledgeRequestAccepted(
+                    currentPlayer,
+                    targetPlayer,
+                    event.getLobbyId(),
+                    event,
+                    lobbyManagement,
+                    this
+            );
+        } else {
+            gameManagement.postShareKnowledgeResponse(event, lobbyManagement, this, false);
+        }
+
     }
 
     @Override
