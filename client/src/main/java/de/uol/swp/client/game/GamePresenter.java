@@ -32,9 +32,11 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.EndGameEvent;
 import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
+import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -48,6 +50,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
@@ -173,7 +176,17 @@ public class GamePresenter extends AbstractPresenter {
     private ToggleButton treatInfectionButton;
 
     @FXML
-    private ToggleButton shareKnowledgeButton;
+    private Button shareKnowledgeButton;
+
+    @FXML
+    private ToggleButton endTurnButton;
+
+    @FXML
+    private ToggleButton roleButtonOne;
+
+    @FXML
+    private ToggleButton roleButtonTwo;
+
 
     private double mouseX;
 
@@ -321,14 +334,16 @@ public class GamePresenter extends AbstractPresenter {
                 LOG.debug("Player is a sailor and take a player with him to the harbour city {}", cityId);
                 PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
                 Optional<String> result = dialog.showAndWait();
-                result.ifPresentOrElse(username -> {
-                    LOG.debug("Player {} is taken with to the harbour city {}", username, cityId);
-                    gameService.movePlayerToCity(lobbyId, cityId, username);
-                    LOG.info("Player has been moved and has taken another player with him");
-                }, () -> {
-                    gameService.movePlayerToCity(lobbyId, cityId);
-                    LOG.info("Player has not selected a player to take with him. Moving alone.");
-                });
+                result.ifPresentOrElse(
+                        username -> {
+                            LOG.debug("Player {} is taken with to the harbour city {}", username, cityId);
+                            gameService.movePlayerToCity(lobbyId, cityId, username);
+                            LOG.info("Player has been moved and has taken another player with him");
+                        }, () -> {
+                            gameService.movePlayerToCity(lobbyId, cityId);
+                            LOG.info("Player has not selected a player to take with him. Moving alone.");
+                        }
+                );
                 return;
             }
             gameService.movePlayerToCity(this.lobbyId, cityId);
@@ -496,11 +511,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onShareKnowledge(ActionEvent event) {
-        if (shareKnowledgeButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
-        } else {
+        LOG.debug("Share knowledge action triggered");
+        gameService.sendShareKnowledgeRequest(this.gameDTO, this.lobbyId);
 
-        }
     }
 
     /**
@@ -516,6 +529,7 @@ public class GamePresenter extends AbstractPresenter {
 
         }
     }
+
 
     /**
      * Handles place water treatment action.
@@ -533,6 +547,65 @@ public class GamePresenter extends AbstractPresenter {
         } else {
             this.highlightAvailableDestinations();
             resetRegionStyle();
+        }
+    }
+
+    @FXML
+    private void onRoleButtonOne(ActionEvent event) {
+        if (roleButtonOne.isSelected()) {
+            LOG.debug("Role button one is selected");
+            if (gameDTO.getCurrentPlayer()
+                       .getRole()
+                       .getName()
+                       .equals(RoleEnum.POLITICIAN)) {
+                LOG.debug("Current player is a politician");
+                Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+                List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
+                                                              .getCards()
+                                                              .stream()
+                                                              .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                                     .getCurrentPosition()
+                                                                                                     .getId())
+                                                              .collect(Collectors.toList());
+                cardsToExchange.put(
+                        gameDTO.getCurrentPlayer()
+                               .getUsername(), currentPlayerCityCard
+                );
+                for (IPlayerDTO player : gameDTO.getPlayers()) {
+                    if (!player.getUsername()
+                               .equals(gameDTO.getCurrentPlayer()
+                                              .getUsername())) {
+                        cardsToExchange.put(player.getUsername(), player.getCards());
+                    }
+                }
+                LOG.debug("Cards to exchange: {}", cardsToExchange);
+                Platform.runLater(() -> {
+                    CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                            gameDTO.getCurrentPlayer()
+                                   .getUsername(), cardsToExchange
+                    );
+                    Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+                    result.ifPresent(map -> {
+                        LOG.debug("Card exchange result: {}", map);
+                        eventBus.post(new CardsExchangeRequest(map, lobbyId));
+                    });
+                });
+            }
+        }
+    }
+
+
+    @FXML
+    private void onRoleButtonTwo(ActionEvent event) {
+        if (roleButtonTwo.isSelected()) {
+            //TODO
+        }
+    }
+
+    @FXML
+    private void onEndTurn(ActionEvent event) {
+        if (endTurnButton.isSelected()) {
+            //TODO
         }
     }
 
@@ -600,7 +673,6 @@ public class GamePresenter extends AbstractPresenter {
         researchPlagueButton.setToggleGroup(toggleGroup);
         treatWaterButton.setToggleGroup(toggleGroup);
         treatInfectionButton.setToggleGroup(toggleGroup);
-        shareKnowledgeButton.setToggleGroup(toggleGroup);
 
         toggleGroup.selectedToggleProperty()
                    .addListener((observable, oldToggle, newToggle) -> {
@@ -835,8 +907,10 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
 
         playerCardsHBox.getChildren()
-                       .add(playerCardsHBox.getChildren()
-                                           .size() - 1, cardSlot);
+                       .add(
+                               playerCardsHBox.getChildren()
+                                              .size() - 1, cardSlot
+                       );
     }
 
     /**
@@ -847,7 +921,8 @@ public class GamePresenter extends AbstractPresenter {
     public void removePlayerHandCards() {
         playerCardsHBox.getChildren()
                        .removeIf(node -> node instanceof Pane && node.getStyleClass()
-                                                                     .contains("pile") && !Objects.equals(node.getId(),
+                                                                     .contains("pile") && !Objects.equals(
+                               node.getId(),
                                "roleCard"
                        ));
     }
@@ -941,6 +1016,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param gameDTO the game data transfer object containing the latest game state
      */
     private void updateBoard(IGameDTO gameDTO) {
+        LOG.trace("Updating game board with latest data");
         updateCities(gameDTO.getCities());
         updateConnections(gameDTO.getConnections());
         updateRegions(gameDTO.getRegions());
@@ -965,7 +1041,8 @@ public class GamePresenter extends AbstractPresenter {
                    .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
                                                                   .getUsername()
                                                                   .equals(user.getUsername())) {
-            gameService.requestAvailableDestination(this.lobbyId,
+            gameService.requestAvailableDestination(
+                    this.lobbyId,
                     gameDTO.getCurrentPlayer()
                            .getCurrentPosition()
                            .getId()
@@ -1103,7 +1180,8 @@ public class GamePresenter extends AbstractPresenter {
         playerButtons.getChildren()
                      .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(player.getUsername(),
+            if (!Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -1128,7 +1206,8 @@ public class GamePresenter extends AbstractPresenter {
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
+                cityId,
                 playersInCity
         )));
     }
@@ -1140,7 +1219,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
+            if (Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
                              .getUser()
                              .getUsername()
@@ -1476,7 +1556,8 @@ public class GamePresenter extends AbstractPresenter {
                                                                                               .getName()
                                                                                               .getDisplayName() + " mitgenommen werden?");
             if (result) {
-                gameService.sendShareRideRequest(lobbyId,
+                gameService.sendShareRideRequest(
+                        lobbyId,
                         event.getCity()
                              .getId()
                 );
@@ -1484,6 +1565,28 @@ public class GamePresenter extends AbstractPresenter {
                 gameService.sendShareRideRequest(lobbyId);
             }
         });
+
+    }
+
+    /**
+     * Handles the KnowledgeSharedEvent.
+     * <p>
+     * This method is called when a KnowledgeSharedEvent is received. It updates the game board
+     * with the latest data from the event and logs the result of the knowledge sharing action.
+     *
+     * @param response the KnowledgeSharedEvent containing the game data
+     */
+    @Subscribe
+    public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
+        LOG.debug("Received ShareKnowledgeResponse");
+        if (response.wasSuccessful()) {
+            LOG.info("Knowledge shared");
+            LOG.trace("Updating board of Game {}", response.getGameDTO());
+            this.gameDTO = response.getGameDTO();
+            Platform.runLater(() -> updateBoard(response.getGameDTO()));
+        } else {
+            LOG.info("Knowledge not shared");
+        }
 
     }
 

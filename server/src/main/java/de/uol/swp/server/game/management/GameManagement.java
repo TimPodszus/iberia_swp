@@ -1,26 +1,31 @@
 package de.uol.swp.server.game.management;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
-import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
-import de.uol.swp.server.city.management.ICityManagement;
+import de.uol.swp.server.game.GameMapper;
+import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -32,8 +37,6 @@ import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.google.inject.Inject;
 
 import java.util.*;
 
@@ -286,7 +289,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isHospitalBuildable()) {
             actions.add(GameActions.BUILD_HOSPITAL);
         }
-        if (isKnowledgeShareable()) {
+        if (isKnowledgeShareable(lobbyCode)) {
             actions.add(GameActions.SHARE_KNOWLEDGE);
         }
         if (isInfectionTreatable()) {
@@ -311,9 +314,28 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return true;
     }
 
-    private boolean isKnowledgeShareable() {
-        //TODO: Implement logic in #87
-        return true;
+    /**
+     * Checks if knowledge can be shared in the current game state.
+     *
+     * @param lobbyCode The code of the lobby where the game is being played
+     * @return true if knowledge can be shared, false otherwise
+     */
+    private boolean isKnowledgeShareable(String lobbyCode) {
+        IGame game = this.getGame(lobbyCode);
+        IPlayer currentPlayer = game.getCurrentPlayer();
+        int currentCityId = currentPlayer.getCurrentPosition()
+                                         .getId();
+
+        return game.getPlayers()
+                   .stream()
+                   .filter(player -> player.getCurrentPosition()
+                                           .getId() == currentCityId)
+                   .anyMatch(player -> player.getCards()
+                                             .stream()
+                                             .filter(card -> card instanceof CityCard)
+                                             .map(card -> (CityCard) card)
+                                             .anyMatch(card -> card.getCity()
+                                                                   .getId() == currentCityId));
     }
 
     private boolean isInfectionTreatable() {
@@ -620,11 +642,74 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IGame game = getGame(lobbyId);
         WaitForConfirmationState waitForConfirmationState = new WaitForConfirmationState();
         game.setState(waitForConfirmationState);
+        LOG.debug("[LobbyID: {}] Game locked in wait-for-confirmation state", lobbyId);
     }
 
     public void unlockGameInWaitForConfirmation(String lobbyId) {
         IGame game = getGame(lobbyId);
         game.setState(game.getPreviousState());
+        LOG.debug("[LobbyID: {}] Game unlocked from wait-for-confirmation state", lobbyId);
+    }
+
+    /**
+     * Handles the acceptance of a share knowledge request.
+     * This method exchanges the specified cards between the current player and the target player.
+     *
+     * @param currentPlayer   The player who initiated the share knowledge request
+     * @param targetPlayer    The player who accepted the share knowledge request
+     * @param lobbyId         The ID of the lobby where the game is being played
+     * @param event           The event containing details of the share knowledge request
+     * @param lobbyManagement The lobby management instance
+     * @param gameService     The game service instance
+     * @throws PlayerManagementException If there is an error during the card exchange
+     */
+    public void shareKnowledgeRequestAccepted(
+            IPlayer currentPlayer,
+            IPlayer targetPlayer,
+            String lobbyId,
+            ShareKnowledgeEvent event,
+            ILobbyManagement lobbyManagement,
+            GameService gameService
+    ) throws PlayerManagementException {
+
+        LOG.info(
+                "Share knowledge request accepted by target player {}",
+                targetPlayer.getUser()
+                            .getUsername()
+        );
+        ICard targetPlayerCard = playerManagement.getCard(
+                event.getLobbyId(),
+                targetPlayer.getUser()
+                            .getUsername(),
+                event.getTargetPlayerCard().getId()
+        );
+        ICard currentPlayerCard = playerManagement.getCard(
+                event.getLobbyId(),
+                currentPlayer.getUser()
+                             .getUsername(),
+               event.getCurrentPlayerCard().getId()
+        );
+        currentPlayer.getCards()
+                     .remove(currentPlayerCard);
+        targetPlayer.getCards()
+                    .remove(targetPlayerCard);
+        currentPlayer.getCards()
+                     .add(targetPlayerCard);
+        targetPlayer.getCards()
+                    .add(currentPlayerCard);
+
+        LOG.debug(
+                "Cards exchanged between {} and {}",
+                currentPlayer.getUser()
+                             .getUsername(),
+                targetPlayer.getUser()
+                            .getUsername()
+        );
+        IGameState gameState = this.getGame(event.getLobbyId())
+                                   .getState();
+        ((PlayerTurnState) gameState).reduceActionsRemaining(this.getGame(event.getLobbyId()));
+        LOG.trace("ReducedActionsRemaining");
+        postShareKnowledgeResponse(event, lobbyManagement, gameService, true);
     }
 
     /**
@@ -648,4 +733,35 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             playerTurnState.setActionsRemaining(playerTurnState.getActionsRemaining() + amount);
         }
     }
+
+
+    /**
+     * Posts a response to the share knowledge event.
+     *
+     * @param event           The event containing details of the share knowledge request
+     * @param lobbyManagement The lobby management instance
+     * @param gameService     The game service instance
+     * @param success         Indicates whether the share knowledge request was successful
+     */
+    @Override
+    public void postShareKnowledgeResponse(
+            ShareKnowledgeEvent event,
+            ILobbyManagement lobbyManagement,
+            GameService gameService,
+            boolean success
+    ) {
+
+        gameService.sendToAllInLobby(
+                lobbyManagement.getLobby(event.getLobbyId()),
+                new KnowledgeSharedEvent(
+                        event.getLobbyId(),
+                        success,
+                        GameMapper.toDTO(this.getGame(event.getLobbyId()))
+                )
+        );
+        LOG.trace("Posted ShareKnowledgeResponse to event bus for lobby {}", event.getLobbyId());
+
+    }
 }
+
+
