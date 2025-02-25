@@ -17,7 +17,6 @@ public class ChatService {
         this.eventBus = eventBus;
     }
 
-    @Subscribe
     public void sendChatMessage(String lobbyId, String message, String sender) {
         eventBus.post(new SendChatRequest(lobbyId, message, sender));
     }
