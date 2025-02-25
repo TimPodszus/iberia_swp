@@ -17,13 +17,11 @@ import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.connection.IConnectionDTO;
+import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
-import de.uol.swp.common.game.GameActions;
-import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.game.StateType;
+import de.uol.swp.common.game.*;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.EndGameEvent;
@@ -101,7 +99,7 @@ public class GamePresenter extends AbstractPresenter {
     @Inject
     private GameService gameService;
 
-    private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
+    private Map<Integer, DestinationInfo> availableDestinations = new HashMap<>();
 
     private List<IConnectionDTO> buildableTrainTracks = new ArrayList<>();
 
@@ -329,7 +327,12 @@ public class GamePresenter extends AbstractPresenter {
             LOG.trace("Player wants to move to city {}", cityId);
             if (cardDiscardNeeded(cityId)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
-                CardDialog cardDialog = new CardDialog(true, true, availableDestinations.get(cityId));
+                CardDialog cardDialog = new CardDialog(
+                        true,
+                        true,
+                        availableDestinations.get(cityId)
+                                             .getCardsUsableForMove()
+                );
                 Optional<ICardDTO> result = cardDialog.showAndWait();
                 result.ifPresentOrElse(
                         card -> {
@@ -341,25 +344,35 @@ public class GamePresenter extends AbstractPresenter {
                 return;
             }
 
-            if (movingByBoat(cityId) && gameDTO.getCurrentPlayer()
-                                               .getRole()
-                                               .getName() == RoleEnum.SAILOR && !this.getPlayersInCity()
-                                                                                     .isEmpty()) {
-                LOG.debug("Player is a sailor and take a player with him to the harbour city {}", cityId);
-                PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
-                Optional<String> result = dialog.showAndWait();
-                result.ifPresentOrElse(
-                        username -> {
-                            LOG.debug("Player {} is taken with to the harbour city {}", username, cityId);
-                            gameService.movePlayerToCity(lobbyId, cityId, username);
-                            LOG.info("Player has been moved and has taken another player with him");
-                        }, () -> {
-                            gameService.movePlayerToCity(lobbyId, cityId);
-                            LOG.info("Player has not selected a player to take with him. Moving alone.");
-                        }
-                );
-                return;
+            if (!this.getPlayersInCity()
+                     .isEmpty()) {
+                RoleEnum role = gameDTO.getCurrentPlayer()
+                                       .getRole()
+                                       .getName();
+
+                if ((checkPlayersTransportMode(
+                        cityId,
+                        TransportMode.SHIP
+                ) && role == RoleEnum.SAILOR) || (checkPlayersTransportMode(
+                        cityId,
+                        TransportMode.TRAIN
+                ) && role == RoleEnum.RAILWAY_PERSON)) {
+                    LOG.debug("Player is a {} and takes a player with him to the city {}", role, cityId);
+                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
+                    Optional<String> result = dialog.showAndWait();
+                    result.ifPresentOrElse(
+                            username -> {
+                                LOG.debug("Player {} is taken with to the city {}", username, cityId);
+                                gameService.movePlayerToCity(lobbyId, cityId, username);
+                                LOG.info("Player has been moved and has taken another player with him");
+                            }, () -> {
+                                gameService.movePlayerToCity(lobbyId, cityId);
+                                LOG.info("Player has not selected a player to take with him. Moving alone.");
+                            }
+                    );
+                }
             }
+
             gameService.movePlayerToCity(this.lobbyId, cityId);
             LOG.info("Player has been moved");
         }
@@ -375,25 +388,24 @@ public class GamePresenter extends AbstractPresenter {
     private boolean cardDiscardNeeded(int cityId) {
         LOG.debug("Checking if discarding a card is needed for moving to city {}", cityId);
         return !availableDestinations.get(cityId)
+                                     .getCardsUsableForMove()
                                      .isEmpty();
     }
 
     /**
-     * Checks if the player is moving by boat.
+     * Checks if the player is moving to the specified city using the given transport mode.
+     * This method verifies if the available destinations for the specified city include the given transport mode.
      *
-     * @param cityId the ID of the city to check
-     * @return true if the player is moving by boat, false otherwise
+     * @param cityId        the ID of the city to check
+     * @param transportMode the transport mode to check
+     * @return true if the player is moving by the specified transport mode to the city, false otherwise
      */
-    private boolean movingByBoat(int cityId) {
-        LOG.debug("Checking if player is moving by boat to city {}", cityId);
-        ICityDTO currentCity = gameDTO.getCurrentPlayer()
-                                      .getCurrentPosition();
-        ICityDTO destinationCity = gameDTO.getCities()
-                                          .stream()
-                                          .filter(city -> city.getId() == cityId)
-                                          .findFirst()
-                                          .orElseThrow();
-        return currentCity.isHarbourCity() && destinationCity.isHarbourCity();
+    private boolean checkPlayersTransportMode(int cityId, TransportMode transportMode) {
+        LOG.debug("Checking if player is moving by {} to city {}", transportMode, cityId);
+
+        return this.availableDestinations.get(cityId)
+                                         .getTransportModes()
+                                         .contains(transportMode);
     }
 
     /**
@@ -1002,7 +1014,6 @@ public class GamePresenter extends AbstractPresenter {
             updateBoard(gameDTO);
             GameStartDialog.showStartDialog();
             updatePlayers(gameDTO.getPlayers());
-
         });
     }
 
@@ -1020,6 +1031,7 @@ public class GamePresenter extends AbstractPresenter {
         LOG.trace("Updating game board with latest data");
         updateCities(gameDTO.getCities());
         updateConnections(gameDTO.getConnections());
+        updateCurrentPlayer(gameDTO.getCurrentPlayer());
         updateRegions(gameDTO.getRegions());
         updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
         updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
@@ -1101,7 +1113,9 @@ public class GamePresenter extends AbstractPresenter {
         for (IInfectionDTO infection : infections) {
             PlagueName plagueName = infection.getPlagueName();
             int severity = infection.getSeverity();
-            setPlagueCubesToCity(city.getId(), plagueName, severity);
+            if (severity != 0) {
+                setPlagueCubesToCity(city.getId(), plagueName, severity);
+            }
         }
     }
 
@@ -1231,6 +1245,29 @@ public class GamePresenter extends AbstractPresenter {
                                                .getName()));
             }
         }
+    }
+
+    /**
+     * Updates the current player button's style.
+     * <p>
+     * This method iterates through the player buttons and adds the "current-player" style class
+     * to the button corresponding to the current player, while removing it from the others.
+     *
+     * @param currentPlayer the current player whose button style needs to be updated
+     */
+    private void updateCurrentPlayer(IPlayerDTO currentPlayer) {
+        playerButtons.getChildren()
+                     .forEach(node -> {
+                         PlayerButton playerButton = (PlayerButton) node;
+                         if (playerButton.getUsername()
+                                         .equals(currentPlayer.getUsername())) {
+                             playerButton.getStyleClass()
+                                         .add("current-player");
+                         } else {
+                             playerButton.getStyleClass()
+                                         .remove("current-player");
+                         }
+                     });
     }
 
     /**
