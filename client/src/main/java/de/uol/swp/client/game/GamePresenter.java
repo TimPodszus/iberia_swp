@@ -193,7 +193,7 @@ public class GamePresenter extends AbstractPresenter {
 
     private IGameDTO gameDTO;
 
-    private boolean isDissmissibleDialog;
+    private boolean isDismissibleDialog;
 
     /**
      * Initializes the game screen presenter.
@@ -461,7 +461,7 @@ public class GamePresenter extends AbstractPresenter {
                                                                                                                                            REGION_HIGHLIGHTED_CLASS)) {
             Platform.runLater(() -> {
                 TreatWaterEventDialog dialog = new TreatWaterEventDialog(
-                        isDissmissibleDialog,
+                        isDismissibleDialog,
                         gameDTO.getWaterTreatmentsLeft(),
                         gameDTO.getState()
                 );
@@ -1696,7 +1696,7 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onTreatWaterEventResponse(TreatWaterEventResponse eventResponse) {
         List<IRegionDTO> regions = gameDTO.getRegions();
-        isDissmissibleDialog = eventResponse.isDismissible();
+        isDismissibleDialog = eventResponse.isDismissible();
         for (IRegionDTO region : regions) {
             Node stackPane = mapPane.lookup(REGION_ID + region.getId());
             stackPane.getStyleClass()

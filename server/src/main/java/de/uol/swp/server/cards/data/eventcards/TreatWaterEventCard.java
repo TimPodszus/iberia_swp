@@ -7,7 +7,7 @@ import de.uol.swp.server.cards.events.TreatWaterEvent;
  */
 public class TreatWaterEventCard extends EventCard {
     private static final String TITLE = "Wasser aufbereiten";
-    private static final String DESCRIPTION = "Platziere bis zu 2 Wasser aufbereitungsmarker in 1 oder 2 " +
+    private static final String DESCRIPTION = "Platziere bis zu 2 Wasseraufbereitungsmarker in 1 oder 2 " +
             "unterschiedlichen Region(en).";
 
     /**
