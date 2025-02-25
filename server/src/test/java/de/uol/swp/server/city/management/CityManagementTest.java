@@ -2,6 +2,7 @@ package de.uol.swp.server.city.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.StateType;
+import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
@@ -12,8 +13,12 @@ import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.infection.management.InfectionManagement;
 import de.uol.swp.server.plague.management.IPlagueManagement;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.management.RegionManagement;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -32,8 +37,9 @@ import static org.mockito.Mockito.when;
  * Test class for CityManagement.
  */
 public class CityManagementTest {
+    private static final String LOBBY_CODE = "lobbyCode";
 
-    private final IGame game = new Game(1, "123");
+    private final IGame game = new Game(1, LOBBY_CODE);
 
     private final ICity city = game.getCityRepository()
                                    .getCityByName(CityName.BARCELONA);
@@ -68,6 +74,8 @@ public class CityManagementTest {
         MockitoAnnotations.openMocks(this);
         cityManagement = new CityManagement(regionManagement, gameManagement, infectionManagement);
         when(regionManagement.reduceWaterTreatments(any(IGame.class), any(ICity.class), anyInt())).thenReturn(1);
+        GameStore.getInstance()
+                 .addGame(LOBBY_CODE, game);
     }
 
     /**
@@ -211,5 +219,56 @@ public class CityManagementTest {
         ICity cityToFind = cityManagement.getCity("lobbyCode", 1);
 
         assertEquals(1, cityToFind.getId());
+    }
+
+    @Test
+    void testBuildHospitalSucceeds() {
+        IUser user = new User("username", "password");
+        IPlayer player = new Player(user);
+        player.setCurrentPosition(game.getCityRepository()
+                                      .getCityByName(CityName.PALMA_DE_MALLORCA));
+        game.getPlayers()
+            .add(player);
+        game.setCurrentPlayerIndex(0);
+
+        CityCard cityCard = new CityCard(
+                1,
+                CityName.PALMA_DE_MALLORCA.getDisplayName(),
+                game.getCityRepository()
+                    .getCityByName(CityName.PALMA_DE_MALLORCA)
+        );
+        player.getCards()
+              .add(cityCard);
+
+        cityManagement.buildHospital(
+                LOBBY_CODE,
+                "username",
+                game.getCityRepository()
+                    .getCityByName(CityName.PALMA_DE_MALLORCA)
+                    .getId()
+        );
+        assertTrue(game.getCityRepository()
+                       .getCityByName(CityName.PALMA_DE_MALLORCA)
+                       .isHospitalBuilt());
+    }
+
+    @Test
+    void testBuildHospitalWithEventCardWithWrongColor() {
+        IUser user = new User("username", "password");
+        IPlayer player = new Player(user);
+        player.setCurrentPosition(game.getCityRepository()
+                                      .getCityByName(CityName.PALMA_DE_MALLORCA));
+        game.getPlayers()
+            .add(player);
+        game.setCurrentPlayerIndex(0);
+
+        int cityId = game.getCityRepository()
+                         .getCityByName(CityName.MADRID)
+                         .getId();
+
+        assertThrows(
+                CityManagementException.class,
+                () -> cityManagement.buildHospitalWithEventCard(LOBBY_CODE, cityId)
+        );
     }
 }
