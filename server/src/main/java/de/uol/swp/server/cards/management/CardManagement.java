@@ -1,18 +1,23 @@
 package de.uol.swp.server.cards.management;
 
 import de.uol.swp.server.AbstractManagement;
+import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.EventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.player.data.IPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class CardManagement extends AbstractManagement implements ICardManagement {
     private static final Logger LOG = LogManager.getLogger(CardManagement.class);
@@ -29,6 +34,46 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
                 playEventCard(game, username, eventCard);
             }
         }
+    }
+
+    @Override
+    public void playSecondChanceCard(String lobbyId, String username) throws CardNotFoundException {
+        IGame game = super.getGame(lobbyId);
+        ICity currentPosition = game.getPlayer(username)
+                                    .getCurrentPosition();
+        List<ICard> discardPile = game.getPlayerCardDiscardPile();
+
+        Optional<CityCard> cardForPlayersHand = discardPile.stream()
+                                        .filter(card -> card instanceof CityCard cityCard && cityCard.getCity().equals(currentPosition))
+                                        .map(CityCard.class::cast)
+                                        .findFirst();
+
+        if (cardForPlayersHand.isPresent()) {
+            game.getPlayer(username)
+                .addCard(cardForPlayersHand.get());
+            discardPile.remove(cardForPlayersHand.get());
+            game.setState(game.getPreviousState());
+            LOG.debug("[LobbyId: {}] CityCard added to player's hand", game.getGameId());
+        } else {
+            game.setState(game.getPreviousState());
+            LOG.debug("[LobbyId: {}] CityCard for city {} not found in discard pile for player {}",
+                    currentPosition.getId(), game.getGameId(),
+                    username);
+            throw new CardNotFoundException("CityCard not found in discard pile");
+        }
+    }
+
+    @Override
+    public void returnLastPlayedCard(String lobbyId, String username) {
+        IGame game = super.getGame(lobbyId);
+        ICard cardToReturn = game.getPlayerCardDiscardPile()
+                                 .get(game.getPlayerCardDiscardPile().size() - 1);
+
+        game.getPlayerCardDiscardPile()
+            .remove(cardToReturn);
+        game.getPlayer(username).addCard(cardToReturn);
+
+        LOG.debug("[LobbyId: {}] returned last played card to player's hand", game.getGameId());
     }
 
     /**
