@@ -20,13 +20,17 @@ public class TreatPlagueRequest extends AbstractGameRequest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TreatPlagueRequest that)) return false;
-        return getCityId() == that.getCityId() && getPlagueName() == that.getPlagueName();
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TreatPlagueRequest that)) {
+            return false;
+        }
+        return getCityId() == that.getCityId() && getPlagueName() == that.getPlagueName() && getLobbyId().equals(that.getLobbyId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCityId(), getPlagueName());
+        return Objects.hash(getLobbyId(), getCityId(), getPlagueName());
     }
 }

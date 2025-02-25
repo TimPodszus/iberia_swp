@@ -22,16 +22,24 @@ public class TreatPlagueResponse extends AbstractGameResponse {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TreatPlagueResponse that)) return false;
-        if (!super.equals(o)) return false;
-        return countryDoctor == that.countryDoctor &&
-                Objects.equals(availableCities, that.availableCities);
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TreatPlagueResponse that)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        return countryDoctor == that.countryDoctor && isSuccess() == that.isSuccess() && getLobbyId().equals(that.getLobbyId()) && Objects.equals(
+                availableCities,
+                that.availableCities
+        );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), availableCities, countryDoctor);
+        return Objects.hash(super.hashCode(), getLobbyId(), isSuccess(), availableCities, countryDoctor);
     }
 
 }

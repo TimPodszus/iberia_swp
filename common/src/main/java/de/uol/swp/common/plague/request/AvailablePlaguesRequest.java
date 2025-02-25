@@ -17,13 +17,17 @@ public class AvailablePlaguesRequest extends AbstractGameRequest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AvailablePlaguesRequest that)) return false;
-        return getCityId() == that.getCityId();
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof AvailablePlaguesRequest that)) {
+            return false;
+        }
+        return getCityId() == that.getCityId() && getLobbyId().equals(that.getLobbyId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCityId());
+        return Objects.hash(getLobbyId(), getCityId());
     }
 }

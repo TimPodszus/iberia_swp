@@ -21,15 +21,24 @@ public class AvailablePlaguesResponse extends AbstractGameResponse {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AvailablePlaguesResponse that)) return false;
-        if (!super.equals(o)) return false;
-        return getCityId() == that.getCityId() && Objects.equals(getAvailablePlagues(), that.getAvailablePlagues());
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof AvailablePlaguesResponse that)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        return getCityId() == that.getCityId() && isSuccess() == that.isSuccess() && getLobbyId().equals(that.getLobbyId()) && Objects.equals(
+                getAvailablePlagues(),
+                that.getAvailablePlagues()
+        );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getAvailablePlagues(), getCityId());
+        return Objects.hash(super.hashCode(), getLobbyId(), isSuccess(), getAvailablePlagues(), getCityId());
     }
 }
 
