@@ -2,10 +2,7 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
-import de.uol.swp.client.game.objects.GameFigure;
-import de.uol.swp.client.game.objects.HospitalSymbol;
-import de.uol.swp.client.game.objects.PlagueCube;
-import de.uol.swp.client.game.objects.PlayerButton;
+import de.uol.swp.client.game.objects.*;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.EventCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
@@ -75,6 +72,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Presenter class for the game screen.
@@ -152,6 +150,9 @@ public class GamePresenter extends AbstractPresenter {
     private Text infectionCardDrawPileCounter;
 
     @FXML
+    private VBox itemsVBox;
+
+    @FXML
     private HBox playerCardsHBox;
 
     @FXML
@@ -159,6 +160,9 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private HBox playerButtons;
+
+    @FXML
+    private Text remainingActionsText;
 
     @FXML
     private ToggleButton buildTrainTracksButton;
@@ -915,37 +919,13 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Adds a player hand card to the player's hand.
-     *
-     * @param card the card to be added to the player's hand
-     */
-    public void addPlayerHandCard(AbstractCard card) {
-        Pane cardSlot = new Pane();
-        cardSlot.getStyleClass()
-                .add("pile");
-        cardSlot.getChildren()
-                .add(card);
-        HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
-
-        playerCardsHBox.getChildren()
-                       .add(
-                               playerCardsHBox.getChildren()
-                                              .size() - 1, cardSlot
-                       );
-    }
-
-    /**
      * Removes all player hand cards except the role card.
      * Iterates through the children of `playerCardsHBox` and removes nodes that are instances of `Pane`,
      * have the style class "pile", and do not have the ID "roleCard".
      */
     public void removePlayerHandCards() {
         playerCardsHBox.getChildren()
-                       .removeIf(node -> node instanceof Pane && node.getStyleClass()
-                                                                     .contains("pile") && !Objects.equals(
-                               node.getId(),
-                               "roleCard"
-                       ));
+                       .removeIf(AbstractCard.class::isInstance);
     }
 
     /**
@@ -1046,16 +1026,17 @@ public class GamePresenter extends AbstractPresenter {
         updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
         updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
         updatePlayerHandCards();
+        updateInfectionCounter(gameDTO.getInfectionCounter());
+        updateEscalationStage(gameDTO.getEscalationStage());
+        updateHospitals(gameDTO.getCities());
+        updateResearchedPlagues(gameDTO.getPlagues());
+        updateItems(gameDTO);
+        updateRemainingActions(gameDTO.getRemainingActions());
 
         if (!gameDTO.getState()
                     .equals(StateType.START_STATE)) {
             updatePlayersInCities(gameDTO.getPlayers());
         }
-
-        updateInfectionCounter(gameDTO.getInfectionCounter());
-        updateEscalationStage(gameDTO.getEscalationStage());
-        updateHospitals(gameDTO.getCities());
-        updateResearchedPlagues(gameDTO.getPlagues());
 
         disableActionButtons();
         if (gameDTO.getState()
@@ -1089,7 +1070,8 @@ public class GamePresenter extends AbstractPresenter {
                     }
                 });
             }
-            addPlayerHandCard(abstractCard);
+            playerCardsHBox.getChildren()
+                           .add(abstractCard);
         }
     }
 
@@ -1286,6 +1268,59 @@ public class GamePresenter extends AbstractPresenter {
             gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage)
                       .getStyleClass()
                       .add("escalation-stage-active");
+        }
+    }
+
+    /**
+     * Updates the items displayed in the items VBox.
+     * Removes existing ItemCounter instances and adds new ones based on the current game state.
+     *
+     * @param game the game data transfer object containing the latest game state
+     */
+    private void updateItems(IGameDTO game) {
+        this.itemsVBox.getChildren()
+                      .removeIf(ItemCounter.class::isInstance);
+        for (IPlagueDTO plague : game.getPlagues()) {
+            switch (plague.getName()) {
+                case CHOLERA -> this.itemsVBox.getChildren()
+                                              .add(new ItemCounter(
+                                                      plague.getCubesRemaining(),
+                                                      ImageEnum.BLUE_PLAGUE_CUBE
+                                              ));
+                case TYPHUS -> this.itemsVBox.getChildren()
+                                             .add(new ItemCounter(
+                                                     plague.getCubesRemaining(),
+                                                     ImageEnum.RED_PLAGUE_CUBE
+                                             ));
+                case YELLOW_FEVER -> this.itemsVBox.getChildren()
+                                                   .add(new ItemCounter(
+                                                           plague.getCubesRemaining(),
+                                                           ImageEnum.YELLOW_PLAGUE_CUBE
+                                                   ));
+                case MALARIA -> this.itemsVBox.getChildren()
+                                              .add(new ItemCounter(
+                                                      plague.getCubesRemaining(),
+                                                      ImageEnum.BLACK_PLAGUE_CUBE
+                                              ));
+                default -> throw new IllegalStateException("Unexpected value: " + plague.getName());
+            }
+        }
+        this.itemsVBox.getChildren()
+                      .add(new ItemCounter(game.getWaterTreatmentsLeft(), ImageEnum.WATER_TREATMENT_MARKER));
+        this.itemsVBox.getChildren()
+                      .add(new ItemCounter(game.getTracksLeft(), ImageEnum.TRAIN_TRACK));
+    }
+
+    /**
+     * Updates the remaining actions text for the current player.
+     *
+     * @param remainingActions the number of actions remaining for the current player
+     */
+    private void updateRemainingActions(int remainingActions) {
+        if (remainingActions == 0) {
+            this.remainingActionsText.setText("Du bist nicht am Zug");
+        } else {
+            this.remainingActionsText.setText(Integer.toString(remainingActions));
         }
     }
 
