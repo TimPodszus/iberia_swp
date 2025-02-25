@@ -418,6 +418,7 @@ public class GamePresenter extends AbstractPresenter {
         Node source = (Node) event.getSource();
         int connectionId = Integer.parseInt(source.getId()
                                                   .replaceAll("\\D+", ""));
+        LOG.debug("Connection {} clicked", connectionId);
 
         if (!source.getStyleClass()
                    .contains(CONNECTION_HIGHLIGHTED_CLASS)) {
@@ -449,11 +450,13 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onRegionClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
+        regionId = Integer.parseInt(source.getId()
+                                          .replaceAll("\\D+", ""));
+        LOG.debug("Region {} clicked", regionId);
+
         if (gameDTO.getState()
                    .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
                                                                  .contains(REGION_HIGHLIGHTED_CLASS)) {
-            regionId = Integer.parseInt(source.getId()
-                                              .replaceAll("\\D+", ""));
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
         }
     }
@@ -466,6 +469,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onPlayerCardPileClickedEvent(MouseEvent event) {
+        LOG.debug("Player card pile clicked");
         gameService.drawPlayerCard(lobbyId);
     }
 
@@ -477,6 +481,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onInfectionCardDrawPileClickedEvent(MouseEvent event) {
+        LOG.debug("Infection card draw pile clicked");
         gameService.drawInfectionCard(lobbyId);
     }
 
@@ -654,6 +659,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onOptionsClickedEvent(ActionEvent event) {
+        LOG.debug("Options button clicked");
         eventBus.post(new ShowOptionsViewEvent());
     }
 
@@ -1077,6 +1083,7 @@ public class GamePresenter extends AbstractPresenter {
             AbstractCard abstractCard = CardFactory.createCard(card);
             if (abstractCard instanceof EventCard eventCard) {
                 abstractCard.setOnMouseClicked(event -> {
+                    LOG.debug("Event card {} clicked", eventCard.getCardId());
                     if (event.getButton() == MouseButton.PRIMARY) {
                         gameService.sendPlayCardRequest(lobbyId, eventCard.getCardId());
                     }
