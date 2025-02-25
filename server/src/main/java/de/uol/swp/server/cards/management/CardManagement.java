@@ -67,6 +67,10 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
             LOG.warn("[LobbyId: {}] Card with id {} not found in player's hand", game.getGameId(), cardId);
             return false;
         }
+        if (game.getState() instanceof WaitForPositioning) {
+            LOG.warn("[LobbyId: {}] Card can't be played during WaitForPositioning state", game.getGameId());
+            return false;
+        }
         if (playedCard instanceof AnotherDayEventCard) {
             return isAnotherDayEventCardPlayable(game);
         } else {
