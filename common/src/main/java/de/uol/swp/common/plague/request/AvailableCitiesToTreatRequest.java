@@ -2,21 +2,25 @@ package de.uol.swp.common.plague.request;
 
 import de.uol.swp.common.game.message.AbstractGameRequest;
 
-public class AvailableCitiesToTreatRequest extends AbstractGameRequest {
-    private final int cityID;
+import java.util.Objects;
 
-    public AvailableCitiesToTreatRequest(String lobbyID, int cityID) {
-        super(lobbyID);
-        this.cityID = cityID;
+public class AvailableCitiesToTreatRequest extends AbstractGameRequest {
+    private final int cityId;
+
+    public AvailableCitiesToTreatRequest(String lobbyId, int cityId) {
+        super(lobbyId);
+        this.cityId = cityId;
     }
 
     @Override
     public boolean equals(Object o) {
-        return false;
+        if (this == o) return true;
+        if (!(o instanceof AvailableCitiesToTreatRequest that)) return false;
+        return cityId == that.cityId;
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return Objects.hash(cityId);
     }
 }

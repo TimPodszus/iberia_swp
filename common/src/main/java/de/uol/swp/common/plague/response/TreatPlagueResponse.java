@@ -4,6 +4,8 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import lombok.Getter;
 
+import java.util.Objects;
+
 @Getter
 public class TreatPlagueResponse extends AbstractGameResponse {
 
@@ -14,6 +16,19 @@ public class TreatPlagueResponse extends AbstractGameResponse {
         super(lobbyId, success);
         this.plagueName = plagueName;
         this.cityID = cityID;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TreatPlagueResponse that)) return false;
+        if (!super.equals(o)) return false;
+        return getCityID() == that.getCityID() && getPlagueName() == that.getPlagueName();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getPlagueName(), getCityID());
     }
 }
 

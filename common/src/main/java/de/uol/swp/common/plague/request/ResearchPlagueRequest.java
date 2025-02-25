@@ -12,9 +12,6 @@ import de.uol.swp.common.plague.AbstractPlagueMessage;
  */
 public class ResearchPlagueRequest extends AbstractPlagueMessage {
 
-    public ResearchPlagueRequest() {
-
-    }
     public ResearchPlagueRequest(PlagueName name) {
         super(name);
     }

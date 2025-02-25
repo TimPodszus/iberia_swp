@@ -6,17 +6,33 @@ import de.uol.swp.common.infection.IInfectionDTO;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 public class AvailablePlaguesResponse extends AbstractGameResponse {
 
     private final List<IInfectionDTO> availablePlagues;
     private final RoleEnum role;
+    private final int cityId;
 
-    public AvailablePlaguesResponse(String lobbyId, boolean success, List<IInfectionDTO> availablePlagues, RoleEnum role) {
+    public AvailablePlaguesResponse(String lobbyId, boolean success, List<IInfectionDTO> availablePlagues, RoleEnum role, int cityId) {
         super(lobbyId, success);
         this.availablePlagues = availablePlagues;
         this.role = role;
+        this.cityId = cityId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AvailablePlaguesResponse that)) return false;
+        if (!super.equals(o)) return false;
+        return getCityId() == that.getCityId() && Objects.equals(getAvailablePlagues(), that.getAvailablePlagues()) && getRole() == that.getRole();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getAvailablePlagues(), getRole(), getCityId());
     }
 }
 
