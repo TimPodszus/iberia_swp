@@ -1,10 +1,8 @@
 package de.uol.swp.client.game.objects.cards;
 
 import de.uol.swp.common.game.PlagueName;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
+import javafx.scene.layout.VBox;
 
 /**
  * Represents an infection card in the game.
@@ -24,28 +22,14 @@ public class InfectionCard extends AbstractCard {
         this.setPrefSize(150, 100);
         this.setStyle("-fx-background-color: " + plagueName.getColorCode() + ";");
 
-        Text cityText = new Text(city);
-        StackPane cityStackPane = new StackPane();
-        cityStackPane.setStyle(TEXT_BACKGROUND_COLOR);
-        cityStackPane.getChildren()
-                     .add(cityText);
+        StackPane cityStackPane = createTextStackPane(city, 150.0, 10);
 
-        AnchorPane.setTopAnchor(cityStackPane, 10.0);
-        AnchorPane.setLeftAnchor(cityStackPane, 0.0);
-        AnchorPane.setRightAnchor(cityStackPane, 0.0);
-
-        ImageView imageView = new ImageView();
-        imageView.setFitHeight(65.0);
-        imageView.setFitWidth(130.0);
-        imageView.setPreserveRatio(true);
-        imageView.setPickOnBounds(true);
-
-        AnchorPane.setTopAnchor(imageView, 25.0);
-        AnchorPane.setBottomAnchor(imageView, 10.0);
-        AnchorPane.setLeftAnchor(imageView, 10.0);
-        AnchorPane.setRightAnchor(imageView, 10.0);
+        VBox textVBox = new VBox();
+        textVBox.setPrefSize(150, 100);
+        textVBox.getChildren()
+                .addAll(cityStackPane);
 
         this.getChildren()
-            .addAll(cityStackPane, imageView);
+            .addAll(textVBox);
     }
 }
