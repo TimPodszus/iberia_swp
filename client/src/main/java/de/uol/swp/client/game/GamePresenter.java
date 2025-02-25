@@ -321,7 +321,11 @@ public class GamePresenter extends AbstractPresenter {
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
             LOG.trace("Player wants to move to city {}", cityId);
-            if (cardDiscardNeeded(cityId)) {
+            RoleEnum role = gameDTO.getCurrentPlayer()
+                                   .getRole()
+                                   .getName();
+
+            if (cardDiscardNeeded(cityId, role)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
                 CardDialog cardDialog = new CardDialog(
                         true,
@@ -342,10 +346,6 @@ public class GamePresenter extends AbstractPresenter {
 
             if (!this.getPlayersInCity()
                      .isEmpty()) {
-                RoleEnum role = gameDTO.getCurrentPlayer()
-                                       .getRole()
-                                       .getName();
-
                 if ((checkPlayersTransportMode(
                         cityId,
                         TransportMode.SHIP
@@ -381,11 +381,13 @@ public class GamePresenter extends AbstractPresenter {
      * @param cityId the ID of the city to check
      * @return true if a card discard is needed, false otherwise
      */
-    private boolean cardDiscardNeeded(int cityId) {
+    private boolean cardDiscardNeeded(int cityId, RoleEnum role) {
         LOG.debug("Checking if discarding a card is needed for moving to city {}", cityId);
-        return !availableDestinations.get(cityId)
-                                     .getCardsUsableForMove()
-                                     .isEmpty();
+        return role != RoleEnum.SAILOR
+                && checkPlayersTransportMode(cityId, TransportMode.SHIP)
+                && !checkPlayersTransportMode(cityId, TransportMode.TRAIN)
+                && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE)
+                && !checkPlayersTransportMode(cityId, TransportMode.NONE);
     }
 
     /**
