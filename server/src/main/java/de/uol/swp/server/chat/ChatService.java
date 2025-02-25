@@ -2,6 +2,7 @@ package de.uol.swp.server.chat;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.chat.PlayerChatMessage;
+import de.uol.swp.common.chat.SendChatRequest;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -25,16 +26,17 @@ public class ChatService extends AbstractService {
     }
 
     @Subscribe
-    public void onPlayerChatMessage(PlayerChatMessage playerChatMessage) throws LobbyManagementException {
-        LOG.info("Chat message received: {}", playerChatMessage);
-        ILobby lobby = lobbyManagement.getLobby(playerChatMessage.getLobbyId());
+    public void onSendChatRequest(SendChatRequest request) throws LobbyManagementException {
+        LOG.info("Chat message received: {}", request.getMessage());
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
 
-        if (playerChatMessage.getLobbyId().isEmpty()) {
-            throw new LobbyManagementException("Lobby not found for code: " + playerChatMessage.getLobbyId());
+        if (request.getLobbyId().isEmpty()) {
+            throw new LobbyManagementException("Lobby not found for code: " + request.getLobbyId());
         }
 
+        PlayerChatMessage playerChatMessage = new PlayerChatMessage(request.getLobbyId(), request.getMessage(), request.getSender());
+
         chat.addMessage(playerChatMessage);
-        LOG.info("Message added to lobby: {}", playerChatMessage.getMessage());
         sendToAllInLobby(lobby, playerChatMessage);
     }
 }

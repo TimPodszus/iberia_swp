@@ -5,7 +5,6 @@ import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.chat.AbstractChatMessage;
-import de.uol.swp.common.chat.PlayerChatMessage;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -42,13 +41,16 @@ public class ChatDetailPresenter extends AbstractPresenter {
     private String lobbyId;
 
     private boolean isChatVisible = false;
+    @Inject
+    private final ChatService chatService;
 
     private static final Logger LOG = LogManager.getLogger(ChatDetailPresenter.class);
 
     @Inject
-    public ChatDetailPresenter(EventBus eventBus) {
+    public ChatDetailPresenter(EventBus eventBus, ChatService chatService) {
         this.eventBus = eventBus;
         this.eventBus.register(this);
+        this.chatService = chatService;
     }
 
     @FXML
@@ -59,11 +61,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
             return;
         }
 
-        PlayerChatMessage playerChatMessage = new PlayerChatMessage(lobbyId, message, UserStore.getInstance().getUser().getUsername());
-        LOG.info("PlayerChatMessage created: {}", playerChatMessage.getMessage());
-
-        eventBus.post(playerChatMessage);
-        LOG.info("PlayerChatMessage on bus");
+        chatService.sendChatMessage(lobbyId, message, UserStore.getInstance().getUser().getUsername());
         chatInput.clear();
     }
 
