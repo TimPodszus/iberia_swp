@@ -20,6 +20,7 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -47,18 +48,21 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private final ICityManagement cityManagement;
     private final IRegionManagement regionManagement;
     private final IConnectionManagement connectionManagement;
+    private final IPlagueManagement plagueManagement;
 
     @Inject
     public GameManagement(
             IPlayerManagement playerManagement,
             ICityManagement cityManagement,
             IConnectionManagement connectionManagement,
-            IRegionManagement regionManagement
+            IRegionManagement regionManagement,
+            IPlagueManagement plagueManagement
     ) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;
         this.connectionManagement = connectionManagement;
         this.regionManagement = regionManagement;
+        this.plagueManagement = plagueManagement;
     }
 
     /**
@@ -277,9 +281,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         infectionCardDiscardPile.add(infectionCard);
     }
 
-    public List<GameActions> getAvailableActions(String lobbyCode, IUser user) {
+    public List<GameActions> getAvailableActions(String lobbyId, IUser user) {
         List<GameActions> actions = new ArrayList<>();
-        if (areTrainTracksBuildable(lobbyCode)) {
+        if (areTrainTracksBuildable(lobbyId)) {
             actions.add(GameActions.BUILD_TRAIN_TRACKS);
         }
         if (isHospitalBuildable()) {
@@ -291,17 +295,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isInfectionTreatable()) {
             actions.add(GameActions.TREAT_INFECTION);
         }
-        if (isPlagueResearchable()) {
+        if (isPlagueResearchable(lobbyId)) {
             actions.add(GameActions.RESEARCH_PLAGUE);
         }
-        if (isWaterTreatmentPlaceable(lobbyCode, user)) {
+        if (isWaterTreatmentPlaceable(lobbyId, user)) {
             actions.add(GameActions.TREAT_WATER);
         }
         return actions;
     }
 
-    private boolean areTrainTracksBuildable(String lobbyCode) {
-        IGame game = super.getGame(lobbyCode);
+    private boolean areTrainTracksBuildable(String lobbyId) {
+        IGame game = super.getGame(lobbyId);
         return game.getTracksLeft() >= 0;
     }
 
@@ -320,9 +324,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return true;
     }
 
-    private boolean isPlagueResearchable() {
-        //TODO: Implement logic in #179
-        return true;
+    private boolean isPlagueResearchable(String lobbyId) {
+        IGame game = getGame(lobbyId);
+        return plagueManagement.canResearchPlague(game);
     }
 
     boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {

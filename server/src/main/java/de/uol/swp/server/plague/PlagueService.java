@@ -3,8 +3,6 @@ package de.uol.swp.server.plague;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.plague.CanResearchPlagueMessage;
-import de.uol.swp.common.plague.CanResearchPlagueRequest;
 import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.server.AbstractService;
@@ -54,15 +52,6 @@ public class PlagueService extends AbstractService {
         plagueManagement.researchPlague(game);
 
         sendToAll(new PlagueResearchedMessage(name));
-    }
-
-    @Subscribe
-    public void onCanResearchPlagueRequest(
-            CanResearchPlagueRequest canResearchPlagueRequest
-    ) {
-        IGame game = plagueManagement.getGame(canResearchPlagueRequest.getLobbyId());
-        boolean success = plagueManagement.canResearchPlague(game);
-        sendToAll(new CanResearchPlagueMessage(success));
     }
 
 }

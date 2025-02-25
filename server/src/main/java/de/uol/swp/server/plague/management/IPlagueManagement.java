@@ -12,4 +12,5 @@ public interface IPlagueManagement {
     void researchPlague(IGame game) throws PlagueManagementException;
 
     boolean canResearchPlague(IGame game);
+    IGame getGame(String lobbyId);
 }

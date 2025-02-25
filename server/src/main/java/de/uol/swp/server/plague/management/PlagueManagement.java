@@ -2,6 +2,7 @@ package de.uol.swp.server.plague.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  * This includes researching plagues by fulfilling specific conditions such as having the required cards,
  * being in the correct city, and having a hospital built in that city.
  */
-public class PlagueManagement implements IPlagueManagement {
+public class PlagueManagement extends AbstractManagement implements IPlagueManagement {
     private final IPlayerManagement playerManagement;
 
     /**
@@ -124,6 +125,9 @@ public class PlagueManagement implements IPlagueManagement {
     @Override
     public boolean canResearchPlague(IGame game) {
         PlagueName selectedPlague = getPlagueToResearch(game);
+        if (selectedPlague == null) {
+            return false;
+        }
         ICity currentCity = game.getCurrentPlayer().getCurrentPosition();
         return currentCity.isHospitalBuilt() && currentCity.getPlagueName().equals(selectedPlague);
     }

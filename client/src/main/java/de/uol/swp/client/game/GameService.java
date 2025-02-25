@@ -9,7 +9,6 @@ import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
-import de.uol.swp.common.plague.CanResearchPlagueRequest;
 import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
@@ -191,10 +190,6 @@ public class GameService {
         eventBus.post(new PlayCardRequest(lobbyId, cardId));
     }
 
-
-    public void sendCanResearchPlagueRequest(String lobbyId) {
-        eventBus.post(new CanResearchPlagueRequest(lobbyId));
-    }
 
     public void sendResearchPlagueRequest(String lobbyId) {
         eventBus.post(new ResearchPlagueRequest(lobbyId));

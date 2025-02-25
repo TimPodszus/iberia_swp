@@ -9,12 +9,7 @@ import de.uol.swp.client.game.objects.PlayerButton;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.EventCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
-import de.uol.swp.client.game.objects.dialogs.CardDialog;
-import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
-import de.uol.swp.client.game.objects.dialogs.CardSelectionWaterTreatmentDialog;
-import de.uol.swp.client.game.objects.dialogs.EndGameDialog;
-import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
-import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
+import de.uol.swp.client.game.objects.dialogs.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.data.CityCardDTO;
@@ -37,7 +32,6 @@ import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
-import de.uol.swp.common.plague.CanResearchPlagueMessage;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -57,17 +51,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Shape;
-import javafx.scene.shape.StrokeType;
+import javafx.scene.shape.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
@@ -80,13 +66,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -524,21 +504,13 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onResearchPlague(ActionEvent event) {
-        onResearchPlagueRequest();
-        if (researchPlagueButton.isSelected()) {
-            gameService.sendResearchPlagueRequest(gameDTO.getGameId());
-        }
+        if (gameDTO.getState()
+                .equals(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
+                gameService.sendResearchPlagueRequest(gameDTO.getGameId());
+            }
+
     }
 
-
-    private void onResearchPlagueRequest() {
-        gameService.sendCanResearchPlagueRequest(gameDTO.getGameId());
-    }
-
-    @Subscribe
-    private void updateResearchPlagueButton(CanResearchPlagueMessage message) {
-        researchPlagueButton.setVisible(message.isSuccess());
-    }
 
     @Subscribe
     private void onPlagueResearchedMessage(PlagueResearchedMessage message) {
