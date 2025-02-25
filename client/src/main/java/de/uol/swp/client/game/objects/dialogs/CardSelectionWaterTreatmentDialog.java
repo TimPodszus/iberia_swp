@@ -40,8 +40,12 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
      * @param dismissible whether the dialog can be dismissed
      * @param cityCards   the list of player cards to display
      */
-    public CardSelectionWaterTreatmentDialog(boolean dismissible, List<CityCardDTO> cityCards, RoleEnum role,
-                                             int waterTreatmentsLeft) {
+    public CardSelectionWaterTreatmentDialog(
+            boolean dismissible,
+            List<CityCardDTO> cityCards,
+            RoleEnum role,
+            int waterTreatmentsLeft
+    ) {
         this.dismissible = dismissible;
         this.cityCards = cityCards;
 
@@ -52,8 +56,12 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         super.setHeaderText(HEADER);
         this.setContent();
         this.setButtons();
+        this.addToggleGroupListener();
         super.setResultConverter(dialogButton -> {
             if (dialogButton == ButtonType.OK) {
+                if (selectedAmount == 1 && role.equals(RoleEnum.AGRICULTURAL_SCIENTIST)) {
+                    return new Pair<>(null, selectedAmount);
+                }
                 return new Pair<>(convertToCardDTO(this.selectedCard), selectedAmount);
             } else {
                 return null;
@@ -65,12 +73,17 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
      * Sets the buttons for the dialog.
      */
     private void setButtons() {
-        super.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        super.getDialogPane()
+             .getButtonTypes()
+             .add(ButtonType.OK);
         if (this.dismissible) {
-            super.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+            super.getDialogPane()
+                 .getButtonTypes()
+                 .add(ButtonType.CANCEL);
         }
 
-        okButton = (Button) super.getDialogPane().lookupButton(ButtonType.OK);
+        okButton = (Button) super.getDialogPane()
+                                 .lookupButton(ButtonType.OK);
         okButton.setDisable(true);
 
         Label titleLabel = new Label("Wählen Sie zuerst die Anzahl");
@@ -80,15 +93,17 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         buttonBox.setAlignment(Pos.CENTER);
 
         addButton("1", "1", buttonBox);
-        if(!cityCards.isEmpty() && waterTreatmentsLeft >= 2) {
+        if (!cityCards.isEmpty() && waterTreatmentsLeft >= 2) {
             addButton("2", "2", buttonBox);
             if (role.equals(RoleEnum.AGRICULTURAL_SCIENTIST) && waterTreatmentsLeft >= 3) {
                 addButton("3", "3", buttonBox);
             }
         }
 
-        VBox mainBox = (VBox) super.getDialogPane().getContent();
-        mainBox.getChildren().addAll(titleLabel, buttonBox);
+        VBox mainBox = (VBox) super.getDialogPane()
+                                   .getContent();
+        mainBox.getChildren()
+               .addAll(titleLabel, buttonBox);
     }
 
     /**
@@ -103,7 +118,8 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         button.setToggleGroup(buttonGroup);
         button.setUserData(parameter);
         button.setOnAction(event -> handleButtonAction((String) button.getUserData()));
-        buttonBox.getChildren().add(button);
+        buttonBox.getChildren()
+                 .add(button);
     }
 
 
@@ -117,15 +133,13 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         if (parameter.equals("1")) {
             if (role.equals(RoleEnum.AGRICULTURAL_SCIENTIST)) {
                 enableOkButton();
+                setDisableAllCards(true);
+                unselectCard();
             } else {
-                for (AbstractCard card : displayedPlayerCards) {
-                    card.setDisable(false);
-                }
+                setDisableAllCards(false);
             }
         } else {
-            for (AbstractCard card : displayedPlayerCards) {
-                card.setDisable(false);
-            }
+            setDisableAllCards(false);
         }
     }
 
@@ -137,7 +151,8 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         cardBox.setAlignment(Pos.CENTER);
         for (AbstractCard card : this.displayedPlayerCards) {
             card.setOnMouseClicked(mouseEvent -> onCardClicked(card.getCardId()));
-            cardBox.getChildren().add(card);
+            cardBox.getChildren()
+                   .add(card);
         }
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -145,8 +160,10 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
 
         VBox mainBox = new VBox(10);
         mainBox.setAlignment(Pos.CENTER);
-        mainBox.getChildren().add(scrollPane);
-        super.getDialogPane().setContent(mainBox);
+        mainBox.getChildren()
+               .add(scrollPane);
+        super.getDialogPane()
+             .setContent(mainBox);
     }
 
 
@@ -217,6 +234,44 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         if (okButton != null) {
             okButton.setDisable(false);
         }
+    }
+
+    /**
+     * Unselects the currently selected card.
+     */
+    private void unselectCard() {
+        if (selectedCard != null) {
+            selectedCard.unselect();
+            selectedCard = null;
+        }
+    }
+
+    /**
+     * Enables all cards.
+     */
+    private void setDisableAllCards(boolean disable) {
+        for (AbstractCard card : displayedPlayerCards) {
+            card.setDisable(disable);
+        }
+    }
+
+    /**
+     * Adds a listener to the toggle group to disable the OK button if no card is selected.
+     */
+    private void addToggleGroupListener() {
+        buttonGroup.selectedToggleProperty()
+                   .addListener((observable, oldValue, newValue) -> {
+                       if (newValue != null && (newValue.getUserData()
+                                                        .equals("2") || newValue.getUserData()
+                                                                                .equals("3")) && selectedCard == null) {
+                           okButton.setDisable(true);
+                       }
+                       if (newValue == null) {
+                           okButton.setDisable(true);
+                           unselectCard();
+                           setDisableAllCards(true);
+                       }
+                   });
     }
 
 }

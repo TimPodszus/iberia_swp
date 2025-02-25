@@ -4,9 +4,12 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
+import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EventState;
+import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
@@ -34,7 +37,7 @@ public class CardManagementTest {
     @Mock
     IGame game;
 
-    private CardManagement cardManagement;
+    private ICardManagement cardManagement;
 
     /**
      * Sets up the test environment before each test.
@@ -60,6 +63,7 @@ public class CardManagementTest {
         ICard card = mock(CityCard.class);
         when(card.getId()).thenReturn(1);
         player.setCards(new ArrayList<>(List.of(card)));
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
 
         cardManagement.playCard("1", "user", 1);
 
@@ -82,6 +86,7 @@ public class CardManagementTest {
         EventCard card = mock(EventCard.class);
         when(card.getId()).thenReturn(1);
         player.setCards(new ArrayList<>(List.of(card)));
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
 
         cardManagement.playCard("1", "user", 1);
 
@@ -94,44 +99,126 @@ public class CardManagementTest {
         verify(game).setState(any(EventState.class));
     }
 
+    /**
+     * Tests the playCard method for a card that is not in the player's hand.
+     */
     @Test
-    void testIsCardPlayable_AnotherDayEventCard_Playable() {
+    void testPlayEventCardWithWrongId() {
+        IUser user = new User("user", "password");
+        IPlayer player = new Player(user);
+        when(game.getPlayer("user")).thenReturn(player);
+        player.setCards(new ArrayList<>(List.of()));
+
+        cardManagement.playCard("1", "user", 1);
+
+        verify(game, never()).setState(any());
+    }
+
+    /**
+     * Tests the playCard method for a card that is not an event card.
+     */
+    @Test
+    void testPlayEventCardWithStateMobilization() {
+        IUser user = new User("user", "password");
+        IPlayer player = new Player(user);
+        when(game.getPlayer("user")).thenReturn(player);
+        when(game.getPlayers()).thenReturn(List.of(player));
+
+        StateMobilizationEventCard card = mock(StateMobilizationEventCard.class);
+        when(card.getId()).thenReturn(1);
+        player.setCards(new ArrayList<>(List.of(card)));
+        when(game.getState()).thenReturn(new PlayerTurnState());
+
+        cardManagement.playCard("1", "user", 1);
+
+        assertEquals(
+                0,
+                player.getCards()
+                      .size()
+        );
+        verify(card, times(1)).setPlayersToMove(any());
+        verify(card, times(1)).execute("1", "user");
+        verify(game).setState(any(EventState.class));
+    }
+
+    /**
+     * Tests the playCard method for a card that is not an event card.
+     */
+    @Test
+    void testPlayEventCardWithAnotherDay() {
+        IUser user = new User("user", "password");
+        IPlayer player = new Player(user);
+        when(game.getPlayer("user")).thenReturn(player);
+        when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getState()).thenReturn(new PlayerTurnState());
+
         AnotherDayEventCard card = mock(AnotherDayEventCard.class);
+        when(card.getId()).thenReturn(1);
+        player.setCards(new ArrayList<>(List.of(card)));
+
+        cardManagement.playCard("1", "user", 1);
+
+        assertEquals(
+                0,
+                player.getCards()
+                      .size()
+        );
+        verify(card, times(1)).execute("1", "user");
+        verify(game).setState(any(EventState.class));
+    }
+
+    /**
+     * Tests the playCard method for a card that is not an event card.
+     */
+    @Test
+    void testPlayEventCardWithAnotherDayNotInPlayerTurnState() {
+        IUser user = new User("user", "password");
+        IPlayer player = new Player(user);
+        when(game.getPlayer("user")).thenReturn(player);
+        when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getState()).thenReturn(mock(EventState.class));
+
+        AnotherDayEventCard card = mock(AnotherDayEventCard.class);
+        when(card.getId()).thenReturn(1);
+        player.setCards(new ArrayList<>(List.of(card)));
+
+        cardManagement.playCard("1", "user", 1);
+
+        assertEquals(
+                1,
+                player.getCards()
+                      .size()
+        );
+        verify(card, never()).execute("1", "user");
+        verify(game, never()).setState(any(EventState.class));
+    }
+
+    @Test
+    void testIsCardPlayable_TreatWaterEventCard_Playable() {
+        TreatWaterEventCard card = mock(TreatWaterEventCard.class);
         when(card.getId()).thenReturn(1);
         IUser user = new User("user", "password");
         IPlayer player = new Player(user);
-        player.getCards()
-              .add(card);
+        player.getCards().add(card);
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
         when(game.getPlayer("user")).thenReturn(player);
+        when(game.getWaterTreatmentsLeft()).thenReturn(1);
 
-        boolean result = cardManagement.isCardPlayable(game,1, "user");
+        boolean result = cardManagement.isCardPlayable(game, 1, "user");
 
         assertTrue(result);
     }
 
     @Test
-    void testIsCardPlayable_AnotherDayEventCard_NotPlayable() {
-        AnotherDayEventCard card = mock(AnotherDayEventCard.class);
+    void testIsCardPlayable_TreatWaterEventCard_NotPlayable() {
+        TreatWaterEventCard card = mock(TreatWaterEventCard.class);
         when(card.getId()).thenReturn(1);
         IUser user = new User("user", "password");
         IPlayer player = new Player(user);
-        when(game.getPlayer("user")).thenReturn(player);
-        player.getCards()
-              .add(card);
+        player.getCards().add(card);
         when(game.getState()).thenReturn(mock(DrawCardState.class));
-
-        boolean result = cardManagement.isCardPlayable(game,1, "user");
-
-        assertFalse(result);
-    }
-
-    @Test
-    void testIsCardPlayable_CardNotFound() {
-        IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
         when(game.getPlayer("user")).thenReturn(player);
-        player.getCards().clear();
+        when(game.getWaterTreatmentsLeft()).thenReturn(0);
 
         boolean result = cardManagement.isCardPlayable(game, 1, "user");
 
@@ -139,14 +226,17 @@ public class CardManagementTest {
     }
 
     @Test
-    void testIsCardPlayable_CardNotPlayable() {
-        IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
-        when(game.getPlayer("user")).thenReturn(player);
+    void testIsStateCorrect() {
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
+        assertTrue(cardManagement.isStateCorrect(game));
+
+        when(game.getState()).thenReturn(mock(InfectionState.class));
+        assertTrue(cardManagement.isStateCorrect(game));
+
         when(game.getState()).thenReturn(mock(DrawCardState.class));
+        assertTrue(cardManagement.isStateCorrect(game));
 
-        boolean result = cardManagement.isCardPlayable(game, 1, "user");
-
-        assertFalse(result);
+        when(game.getState()).thenReturn(mock(EventState.class));
+        assertFalse(cardManagement.isStateCorrect(game));
     }
 }

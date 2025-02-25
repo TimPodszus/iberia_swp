@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RoleEnumTest {
     @Test
     void getColorCode() {
-        assertEquals("#60BC46", RoleEnum.AGRICULTURAL_SCIENTIST.getColorCode());
+        assertEquals("#1AB429", RoleEnum.AGRICULTURAL_SCIENTIST.getColorCode());
     }
 
     @Test
@@ -17,7 +17,10 @@ class RoleEnumTest {
 
     @Test
     void getDescription() {
-        assertEquals("Agrarwissenschaftler", RoleEnum.AGRICULTURAL_SCIENTIST.getDescription());
+        assertEquals(
+                "Extraaktion um einen Wasseraufbereitungsmarker zu platzieren. Bei Wasseraufbereitung, darf ein zusätzlicher Marker platziert werden",
+                RoleEnum.AGRICULTURAL_SCIENTIST.getDescription()
+        );
     }
 
     @Test

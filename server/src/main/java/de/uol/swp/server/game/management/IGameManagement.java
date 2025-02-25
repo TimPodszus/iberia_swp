@@ -1,17 +1,21 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.game.GameActions;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.GameNotFoundException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -103,6 +107,41 @@ public interface IGameManagement {
      * @param lobbyId the ID of the lobby in which the game is happening
      */
     void unlockGameInWaitForConfirmation(String lobbyId);
+
+    /**
+     * Handles the acceptance of a share knowledge request.
+     *
+     * @param currentPlayer   the player currently taking the action
+     * @param targetPlayer    the player with whom knowledge is being shared
+     * @param lobbyId         the ID of the lobby in which the game is happening
+     * @param event           the event representing the share knowledge request
+     * @param lobbyManagement the lobby management service
+     * @param gameService     the game service
+     * @throws PlayerManagementException if an error occurs during the process
+     */
+    void shareKnowledgeRequestAccepted(
+            IPlayer currentPlayer,
+            IPlayer targetPlayer,
+            String lobbyId,
+            ShareKnowledgeEvent event,
+            ILobbyManagement lobbyManagement,
+            GameService gameService
+    ) throws PlayerManagementException;
+
+    /**
+     * Posts the response to a share knowledge request.
+     *
+     * @param event           the event representing the share knowledge request
+     * @param lobbyManagement the lobby management service
+     * @param gameService     the game service
+     * @param success         whether the share knowledge request was successful
+     */
+    void postShareKnowledgeResponse(
+            ShareKnowledgeEvent event,
+            ILobbyManagement lobbyManagement,
+            GameService gameService,
+            boolean success
+    );
 
     /**
      * Increases the number of actions the current player has in the game.

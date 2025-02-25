@@ -16,6 +16,7 @@ public interface ClientUserService {
 
     /**
      * Login with username and password
+     *
      * @param username the name of the user
      * @param password the password of the user
      * @since 2017-03-17
@@ -24,49 +25,30 @@ public interface ClientUserService {
 
     /**
      * Log out from server
+     *
      * @implNote the User Object has to contain a unique identifier in order to
-     * 			 remove the correct user
+     * remove the correct user
      * @since 2017-03-17
      */
     void logout(IUserDTO user);
 
     /**
      * Create a new persistent user
-     * @implNote the User Object has to contain a unique identifier in order to
-     * 			 remove the correct user
+     *
      * @param user The user to create
+     * @implNote the User Object has to contain a unique identifier in order to
+     * remove the correct user
      * @since 2019-09-02
      */
     void createUser(IUserDTO user);
 
-    /**
-     * Removes a user from the sore
-     * Remove the User specified by the User object.
-     *
-     * @implNote the User Object has to contain a unique identifier in order to
-     * 			 remove the correct user
-     * @param user The user to remove
-     * @since 2019-10-10
-     */
-    void dropUser(IUserDTO user);
 
     /**
-     * Update a user
-     * Updates the User specified by the User object.
+     * Change the password of a user
      *
-     * @implNote the User Object has to contain a unique identifier in order to
-     * 			 update the correct user
-     * @param user the user object containing all infos to
-     *             update, if some values are not set, (e.g. password is "")
-     *             these fields are not updated
+     * @param user        The user whose password is to be changed
+     * @param newPassword The new password to set
      * @since 2019-09-02
      */
-    void updateUser(IUserDTO user);
-
-    /**
-     * Retrieve the list of all current logged in users
-     * @since 2017-03-17
-     */
-    void retrieveAllUsers();
-
+    void changePassword(IUserDTO user, String newPassword);
 }

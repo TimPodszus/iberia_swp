@@ -1,11 +1,14 @@
 package de.uol.swp.server.cards;
 
+import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
+import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
 import de.uol.swp.server.city.CityRepository;
 import lombok.Getter;
 
@@ -17,6 +20,7 @@ public class CardRepository {
     CityRepository cityRepository;
     private Map<Integer, ICard> cards;
 
+    @Inject
     public CardRepository(CityRepository cityRepository) {
         this.cityRepository = cityRepository;
         createAllCards();
@@ -130,7 +134,7 @@ public class CardRepository {
         cards.put(148, new InfectionCard(148, CityName.HUELVA.getDisplayName(), cityRepository.getCity(48)));
         cards.put(207, new OnTheMoveDayAndNightEventCard(207));
         cards.put(208, new AnotherDayEventCard(208));
+        cards.put(209, new StateMobilizationEventCard(209));
+        cards.put(210, new TreatWaterEventCard(210));
     }
-
-
 }

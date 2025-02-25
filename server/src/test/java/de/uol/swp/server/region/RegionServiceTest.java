@@ -3,22 +3,26 @@ package de.uol.swp.server.region;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
+import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.events.TreatWaterEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.management.GameManagementException;
+import de.uol.swp.server.game.states.EventState;
+import de.uol.swp.server.game.states.PlaceExtraWaterTreatmentState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.PlagueRepository;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
@@ -35,6 +39,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,22 +54,13 @@ public class RegionServiceTest extends EventBusBasedTest {
     private IPlayerManagement playerManagement;
 
     @Mock
-    private IGameManagement gameManagement;
-
-    @Mock
     private ILobbyManagement lobbyManagement;
 
     @Mock
     private AuthenticationService authenticationService;
 
     @InjectMocks
-    RegionService regionService = new RegionService(
-            getBus(),
-            regionManagement,
-            playerManagement,
-            gameManagement,
-            lobbyManagement
-    );
+    RegionService regionService = new RegionService(getBus(), regionManagement, playerManagement, lobbyManagement);
 
     @BeforeEach
     void setUp() {
@@ -86,8 +82,18 @@ public class RegionServiceTest extends EventBusBasedTest {
         super.handleEvent(request);
     }
 
+    @Subscribe
+    public void onTreatWaterEvent(TreatWaterEvent event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onWaterTreatmentEventRequest(WaterTreatmentRequest request) {
+        super.handleEvent(request);
+    }
+
     @Test
-    public void testOnSendAvailableRegionsRequest_UserUnknown() {
+    void testOnSendAvailableRegionsRequest_UserUnknown() {
         AvailableRegionsRequest availableRegionsRequest = mock(AvailableRegionsRequest.class);
         Session session = mock(Session.class);
 
@@ -106,7 +112,7 @@ public class RegionServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    public void testOnSendAvailableRegionsRequest_Success() throws InterruptedException {
+    void testOnSendAvailableRegionsRequest_Success() throws InterruptedException {
         AvailableRegionsRequest availableRegionsRequest = mock(AvailableRegionsRequest.class);
         Session session = mock(Session.class);
         IUserDTO userDTO = mock(IUserDTO.class);
@@ -124,7 +130,7 @@ public class RegionServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    public void testOnWaterTreatmentRegionRequest_UserUnknown() {
+    void testOnWaterTreatmentRegionRequest_UserUnknown() {
         WaterTreatmentRegionRequest waterTreatmentRegionRequest = mock(WaterTreatmentRegionRequest.class);
         Session session = mock(Session.class);
 
@@ -138,12 +144,12 @@ public class RegionServiceTest extends EventBusBasedTest {
         );
 
         Throwable cause = exception.getCause();
-        assertTrue(cause instanceof GameException);
+        assertInstanceOf(GameException.class, cause);
         assertEquals("User is unknown", cause.getMessage());
     }
 
     @Test
-    public void testOnWaterTreatmentRegionRequest_Success() throws InterruptedException {
+    void testOnWaterTreatmentRegionRequest_Success() throws InterruptedException {
         WaterTreatmentRegionRequest waterTreatmentRegionRequest = mock(WaterTreatmentRegionRequest.class);
         Session session = mock(Session.class);
         IUserDTO user = mock(IUserDTO.class);
@@ -171,7 +177,7 @@ public class RegionServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    public void testOnSendWaterTreatmentRequest_UserUnknown() {
+    void testOnSendWaterTreatmentRequest_UserUnknown() {
         WaterTreatmentRequest waterTreatmentRequest = mock(WaterTreatmentRequest.class);
         Session session = mock(Session.class);
 
@@ -190,7 +196,7 @@ public class RegionServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    public void testOnSendWaterTreatmentRequest_Success() throws  PlayerManagementException, GameManagementException, InterruptedException {
+    void testOnSendWaterTreatmentRequest_Success() throws PlayerManagementException, GameManagementException, InterruptedException {
         WaterTreatmentRequest waterTreatmentRequest = mock(WaterTreatmentRequest.class);
         Session session = mock(Session.class);
         IUserDTO userDTO = mock(IUserDTO.class);
@@ -221,7 +227,7 @@ public class RegionServiceTest extends EventBusBasedTest {
         when(waterTreatmentRequest.getAmount()).thenReturn(amount);
         when(waterTreatmentRequest.getCard()).thenReturn(cityCard);
         when(playerManagement.getCard(lobbyId, username, cityCard.getId())).thenReturn(card);
-        when(gameManagement.getGame(lobbyId)).thenReturn(game);
+        when(regionManagement.getGame(lobbyId)).thenReturn(game);
         when(lobbyManagement.getLobby(lobbyId)).thenReturn(lobby);
         when(game.getCityRepository()).thenReturn(cityRepository);
         when(cityRepository.getCities()).thenReturn(List.of(city));
@@ -239,7 +245,127 @@ public class RegionServiceTest extends EventBusBasedTest {
                 card,
                 UserMapper.toUser(userDTO)
         );
-        verify(gameManagement, times(1)).getGame(lobbyId);
+        verify(regionManagement, times(1)).getGame(lobbyId);
         verify(lobbyManagement, times(1)).getLobby(lobbyId);
+    }
+
+    @Test
+    void testOnTreatWaterEvent() {
+        TreatWaterEvent event = new TreatWaterEvent("lobby1", "user1");
+        IGame game = mock(IGame.class);
+        IPlayer player = mock(IPlayer.class);
+        IUser user = mock(IUser.class);
+        Session session = mock(Session.class);
+
+        when(regionManagement.getGame("lobby1")).thenReturn(game);
+        when(game.getPlayers()).thenReturn(List.of(player));
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("user1");
+        when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
+
+        regionService.onTreatWaterEvent(event);
+
+        verify(regionManagement).getGame("lobby1");
+        verify(authenticationService).getSession(user);
+    }
+
+    @Test
+    void testOnWaterTreatmentEventRequest() throws GameException {
+        WaterTreatmentEventRequest request = mock(WaterTreatmentEventRequest.class);
+        IGame game = mock(IGame.class);
+        IUserDTO userDTO = mock(IUserDTO.class);
+        Session session = mock(Session.class);
+        ILobby lobby = mock(ILobby.class);
+        ICity city = mock(ICity.class);
+        RegionRepository regionRepository = mock(RegionRepository.class);
+        ConnectionRepository connectionRepository = mock(ConnectionRepository.class);
+        PlagueRepository plagueRepository = mock(PlagueRepository.class);
+        CityRepository cityRepository = mock(CityRepository.class);
+
+        when(game.getCityRepository()).thenReturn(cityRepository);
+        when(cityRepository.getCities()).thenReturn(List.of(city));
+        when(game.getConnectionRepository()).thenReturn(connectionRepository);
+        when(game.getRegionRepository()).thenReturn(regionRepository);
+        when(game.getPlagueRepository()).thenReturn(plagueRepository);
+        when(userDTO.getUsername()).thenReturn("user1");
+        when(userDTO.getPassword()).thenReturn("password");
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(userDTO);
+        when(request.getLobbyId()).thenReturn("lobby1");
+        when(regionManagement.getGame("lobby1")).thenReturn(game);
+        when(lobbyManagement.getLobby("lobby1")).thenReturn(lobby);
+        when(authenticationService.getSession(UserMapper.toUser(userDTO))).thenReturn(Optional.of(session));
+
+        when(game.getState()).thenReturn(mock(EventState.class));
+        when(request.getAmount()).thenReturn(1);
+
+        regionService.onWaterTreatmentEventRequest(request);
+
+        verify(regionManagement).increaseWaterTreatment(anyInt(), eq(game), eq(1));
+        verify(game).setState(any(PlaceExtraWaterTreatmentState.class));
+    }
+
+    @Test
+    void testOnWaterTreatmentEventRequest_Dismissed() throws GameException {
+        WaterTreatmentEventRequest request = mock(WaterTreatmentEventRequest.class);
+        IGame game = mock(IGame.class);
+        IUserDTO userDTO = mock(IUserDTO.class);
+        Session session = mock(Session.class);
+        ILobby lobby = mock(ILobby.class);
+        ICity city = mock(ICity.class);
+        RegionRepository regionRepository = mock(RegionRepository.class);
+        ConnectionRepository connectionRepository = mock(ConnectionRepository.class);
+        PlagueRepository plagueRepository = mock(PlagueRepository.class);
+        CityRepository cityRepository = mock(CityRepository.class);
+
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
+        when(game.getCityRepository()).thenReturn(cityRepository);
+        when(cityRepository.getCities()).thenReturn(List.of(city));
+        when(game.getConnectionRepository()).thenReturn(connectionRepository);
+        when(game.getRegionRepository()).thenReturn(regionRepository);
+        when(game.getPlagueRepository()).thenReturn(plagueRepository);
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(userDTO);
+        when(request.getLobbyId()).thenReturn("lobby1");
+        when(regionManagement.getGame("lobby1")).thenReturn(game);
+        when(lobbyManagement.getLobby("lobby1")).thenReturn(lobby);
+        when(request.isDismissed()).thenReturn(true);
+
+        regionService.onWaterTreatmentEventRequest(request);
+
+        verify(game).setState(game.getPreviousState());
+    }
+
+    @Test
+    void testOnWaterTreatmentEventRequest_NotDismissed() throws GameException {
+        WaterTreatmentEventRequest request = mock(WaterTreatmentEventRequest.class);
+        IGame game = mock(IGame.class);
+        IUserDTO userDTO = mock(IUserDTO.class);
+        Session session = mock(Session.class);
+        ILobby lobby = mock(ILobby.class);
+        ICity city = mock(ICity.class);
+        RegionRepository regionRepository = mock(RegionRepository.class);
+        ConnectionRepository connectionRepository = mock(ConnectionRepository.class);
+        PlagueRepository plagueRepository = mock(PlagueRepository.class);
+        CityRepository cityRepository = mock(CityRepository.class);
+
+        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
+        when(game.getCityRepository()).thenReturn(cityRepository);
+        when(cityRepository.getCities()).thenReturn(List.of(city));
+        when(game.getConnectionRepository()).thenReturn(connectionRepository);
+        when(game.getRegionRepository()).thenReturn(regionRepository);
+        when(game.getPlagueRepository()).thenReturn(plagueRepository);
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(userDTO);
+        when(request.getLobbyId()).thenReturn("lobby1");
+        when(regionManagement.getGame("lobby1")).thenReturn(game);
+        when(lobbyManagement.getLobby("lobby1")).thenReturn(lobby);
+        when(request.isDismissed()).thenReturn(false);
+        when(request.getAmount()).thenReturn(2);
+
+        regionService.onWaterTreatmentEventRequest(request);
+
+        verify(regionManagement).increaseWaterTreatment(request.getRegionId(), game, request.getAmount());
+        verify(game).setState(game.getPreviousState());
     }
 }
