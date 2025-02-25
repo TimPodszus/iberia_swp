@@ -553,17 +553,18 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onResearchPlague(ActionEvent event) {
+        LOG.debug("Research plague action triggered");
         if (gameDTO.getState()
                 .equals(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
                 gameService.sendResearchPlagueRequest(gameDTO.getGameId());
             }
-
     }
 
 
     @Subscribe
     private void onPlagueResearchedMessage(PlagueResearchedMessage message) {
         PlagueName researchedPlague = message.getName();
+        LOG.debug("Setting plague marker for plague {}", researchedPlague);
         if (researchedPlague == PlagueName.CHOLERA) {
             plagueMarkerBlueImage.setVisible(true);
         } else if (researchedPlague == PlagueName.YELLOW_FEVER) {

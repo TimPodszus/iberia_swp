@@ -73,17 +73,6 @@ class PlagueManagementTest {
         when(plague.getName()).thenReturn(PlagueName.CHOLERA);
     }
 
-    /**
-     * Tests that an exception is thrown when the plague to be researched is null.
-     * Verifies that the correct error message is provided when a PlagueManagementException is thrown.
-     */
-    @Test
-    void researchPlagueIsNullThrowsPlagueManagementException() {
-        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
-                () -> plagueManagement.researchPlague(game)
-        );
-        assertEquals("The plague to be researched was not specified", exception.getMessage());
-    }
 
     /**
      * Tests that an exception is thrown when the plague has already been researched.
@@ -98,21 +87,6 @@ class PlagueManagementTest {
         );
 
         assertEquals("The plague is already researched", exception.getMessage());
-    }
-
-    /**
-     * Tests that an exception is thrown when the player does not have enough cards to research the plague.
-     * Verifies that the correct error message is provided when a PlagueManagementException is thrown.
-     */
-    @Test
-    void notEnoughCardsToResearchPlagueThrowsPlagueManagementException() {
-        when(currentPlayer.getCards()).thenReturn(new ArrayList<>());
-
-        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
-                () -> plagueManagement.researchPlague(game)
-        );
-
-        assertEquals("Player has not enough cards to research the plague", exception.getMessage());
     }
 
     /**

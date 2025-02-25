@@ -351,6 +351,7 @@ public class GameService {
 
 
     public void sendResearchPlagueRequest(String lobbyId) {
+        LOG.debug("Sending ResearchPlagueRequest with Id {}", lobbyId);
         eventBus.post(new ResearchPlagueRequest(lobbyId));
     }
 }

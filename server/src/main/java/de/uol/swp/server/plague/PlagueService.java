@@ -10,6 +10,8 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -18,6 +20,9 @@ import org.greenrobot.eventbus.Subscribe;
 public class PlagueService extends AbstractService {
 
     private final IPlagueManagement plagueManagement;
+
+    private static final Logger LOG = LogManager.getLogger(PlagueService.class);
+
 
 
     /**
@@ -46,11 +51,13 @@ public class PlagueService extends AbstractService {
             ResearchPlagueRequest researchPlagueRequest
     ) throws PlagueManagementException {
 
+        LOG.debug("");
         IGame game = plagueManagement.getGame(researchPlagueRequest.getLobbyId());
         PlagueName name = researchPlagueRequest.getName();
 
         plagueManagement.researchPlague(game);
 
+        LOG.debug("Sending PlagueResearchedMessage");
         sendToAll(new PlagueResearchedMessage(name));
     }
 
