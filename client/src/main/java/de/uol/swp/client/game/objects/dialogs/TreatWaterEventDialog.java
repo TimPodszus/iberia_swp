@@ -2,6 +2,7 @@ package de.uol.swp.client.game.objects.dialogs;
 
 import de.uol.swp.common.game.StateType;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
@@ -12,7 +13,7 @@ import javafx.scene.Scene;
 import java.util.concurrent.CompletableFuture;
 
 public class TreatWaterEventDialog extends Stage {
-
+    private static final String HEADER = "Platzierung der Wasseraufbereitung";
     private final boolean isDismissible;
     private final int waterTreatmentsLeft;
     private final StateType stateType;
@@ -26,11 +27,15 @@ public class TreatWaterEventDialog extends Stage {
         this.waterTreatmentsLeft = waterTreatmentsLeft;
         this.stateType = stateType;
         initialize();
+        this.setTitle(HEADER);
     }
 
     private void initialize() {
         VBox vbox = new VBox(10);
         HBox buttonBox = new HBox(10);
+
+        Label selectionLabel = new Label("Wähle die Anzahl");
+        vbox.getChildren().add(selectionLabel);
 
         ToggleButton toggleButton1 = new ToggleButton(String.valueOf(1));
         toggleButton1.setToggleGroup(toggleGroup);
@@ -70,7 +75,7 @@ public class TreatWaterEventDialog extends Stage {
             }
         });
 
-        Scene scene = new Scene(vbox);
+        Scene scene = new Scene(vbox, 100, 100);
         this.setScene(scene);
     }
 
