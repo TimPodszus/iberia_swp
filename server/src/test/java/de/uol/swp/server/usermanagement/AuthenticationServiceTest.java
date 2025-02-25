@@ -1,6 +1,7 @@
 package de.uol.swp.server.usermanagement;
 
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.usermanagement.management.UserManagement;
 import org.greenrobot.eventbus.Subscribe;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.message.UserLoggedOutMessage;
@@ -29,8 +30,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test class for AuthenticationService.
  */
-public class AuthenticationServiceTest extends EventBusBasedTest
-{
+public class AuthenticationServiceTest extends EventBusBasedTest {
 
     final IUser user = new User("name", "password");
     final IUser user2 = new User("name2", "password2");
@@ -45,8 +45,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest
     AuthenticationService authService;
 
     @BeforeEach
-    void setUp()
-    {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
         userStore = mock(UserStore.class);
         userManagement = mock(UserManagement.class);
@@ -54,40 +53,34 @@ public class AuthenticationServiceTest extends EventBusBasedTest
     }
 
     @Subscribe
-    public void onEvent(ClientAuthorizedMessage e)
-    {
+    public void onEvent(ClientAuthorizedMessage e) {
         handleEvent(e);
     }
 
     @Subscribe
-    public void onEvent(ServerExceptionMessage e)
-    {
+    public void onEvent(ServerExceptionMessage e) {
         handleEvent(e);
     }
 
     @Subscribe
-    public void onEvent(UserLoggedOutMessage e)
-    {
+    public void onEvent(UserLoggedOutMessage e) {
         handleEvent(e);
     }
 
     @Subscribe
-    public void onEvent(AllOnlineUsersResponse e)
-    {
+    public void onEvent(AllOnlineUsersResponse e) {
         handleEvent(e);
     }
 
     @Test
-    void loginTest()
-    {
+    void loginTest() {
         final LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
         post(loginRequest);
         verify(userManagement, atLeast(1)).login(user.getUsername(), user.getPassword());
     }
 
     @Test
-    void loginTestFail() throws InterruptedException
-    {
+    void loginTestFail() throws InterruptedException {
         final LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
         when(userManagement.login(user.getUsername(), user.getPassword())).thenThrow(new RuntimeException("Test"));
         postAndWait(loginRequest);
@@ -95,8 +88,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest
     }
 
     @Test
-    void logoutTest()
-    {
+    void logoutTest() {
         loginUser(user);
         final LogoutRequest logoutRequest = new LogoutRequest();
         authService.getSession(user)
@@ -105,16 +97,14 @@ public class AuthenticationServiceTest extends EventBusBasedTest
         verify(userManagement, atLeast(1)).logout(user);
     }
 
-    private void loginUser(IUser userToLogin)
-    {
+    private void loginUser(IUser userToLogin) {
         final LoginRequest loginRequest = new LoginRequest(userToLogin.getUsername(), userToLogin.getPassword());
         when(userManagement.login(userToLogin.getUsername(), userToLogin.getPassword())).thenReturn(userToLogin);
         post(loginRequest);
     }
 
     @Test
-    void loggedInUsers() throws InterruptedException
-    {
+    void loggedInUsers() throws InterruptedException {
         loginUser(user);
         RetrieveAllOnlineUsersRequest request = new RetrieveAllOnlineUsersRequest();
         postAndWait(request);
@@ -132,8 +122,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest
     }
 
     @Test
-    void twoLoggedInUsers() throws InterruptedException
-    {
+    void twoLoggedInUsers() throws InterruptedException {
         loginUser(user);
         loginUser(user2);
         RetrieveAllOnlineUsersRequest request = new RetrieveAllOnlineUsersRequest();
@@ -146,8 +135,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest
     }
 
     @Test
-    void loggedInUsersEmpty() throws InterruptedException
-    {
+    void loggedInUsersEmpty() throws InterruptedException {
         RetrieveAllOnlineUsersRequest request = new RetrieveAllOnlineUsersRequest();
         postAndWait(request);
         assertInstanceOf(AllOnlineUsersResponse.class, event);
@@ -156,8 +144,7 @@ public class AuthenticationServiceTest extends EventBusBasedTest
     }
 
     @Test
-    void getSessionsForUsersTest()
-    {
+    void getSessionsForUsersTest() {
         loginUser(user);
         loginUser(user2);
         loginUser(user3);

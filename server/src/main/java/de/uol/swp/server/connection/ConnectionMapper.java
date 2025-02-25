@@ -1,9 +1,8 @@
 package de.uol.swp.server.connection;
 
-import de.uol.swp.common.connection.ConnectionDTO;
-import de.uol.swp.common.connection.IConnectionDTO;
+import de.uol.swp.common.connection.dto.ConnectionDTO;
+import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.server.connection.data.IConnection;
-import de.uol.swp.common.city.CityName;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
@@ -23,10 +22,7 @@ public class ConnectionMapper {
     public static IConnectionDTO toDTO(IConnection connection) {
         return new ConnectionDTO(
                 connection.getId(),
-                connection.getCityNames()
-                          .stream()
-                          .map(CityName::getDisplayName)
-                          .toList(),
+                connection.getCityNames(),
                 connection.isTrainTrack(),
                 connection.isTrainTrackBuildable()
         );
@@ -43,10 +39,7 @@ public class ConnectionMapper {
         for (IConnection connection : connections) {
             ConnectionDTO connectionDTO = new ConnectionDTO(
                     connection.getId(),
-                    connection.getCityNames()
-                              .stream()
-                              .map(CityName::getDisplayName)
-                              .toList(),
+                    connection.getCityNames(),
                     connection.isTrainTrack(),
                     connection.isTrainTrackBuildable()
             );

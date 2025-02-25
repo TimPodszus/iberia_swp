@@ -3,6 +3,7 @@ package de.uol.swp.server.game.states;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.server.game.data.IGame;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Represents the state in the game where it is a player's turn to take actions.
@@ -11,6 +12,7 @@ import lombok.Getter;
  * on the completion of these actions.
  */
 @Getter
+@Setter
 public class PlayerTurnState implements IGameState {
     int actionsRemaining = 4;
     public StateType getStateType() {

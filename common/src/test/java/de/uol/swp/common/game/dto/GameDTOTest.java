@@ -1,13 +1,13 @@
 package de.uol.swp.common.game.dto;
 
-import de.uol.swp.common.cards.CityCardDTO;
-import de.uol.swp.common.cards.ICardDTO;
-import de.uol.swp.common.cards.InfectionCardDTO;
+import de.uol.swp.common.cards.data.CityCardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.connection.ConnectionDTO;
-import de.uol.swp.common.connection.IConnectionDTO;
+import de.uol.swp.common.connection.dto.ConnectionDTO;
+import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.StateType;
@@ -164,6 +164,12 @@ public class GameDTOTest {
     void testGetCurrentPlayer() {
         IGameDTO game = createTestGameDTO("gameId");
         assertEquals(players.get(currentPlayerIndex), game.getCurrentPlayer());
+    }
+
+    @Test
+    void testGetPlayer() {
+        IGameDTO game = createTestGameDTO("gameId");
+        assertEquals(players.get(0), game.getPlayer("player1"));
     }
 
     private IGameDTO createTestGameDTO(String gameId) {

@@ -1,7 +1,7 @@
 package de.uol.swp.server.city.management;
 
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.cards.InfectionCard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 
@@ -20,7 +20,10 @@ public interface ICityManagement {
      * @throws CityManagementException if an error occurs during infection
      */
     void infectCity(
-            IGame game, InfectionCard infectionCard, PlagueName plagueName, int amount
+            IGame game,
+            InfectionCard infectionCard,
+            PlagueName plagueName,
+            int amount
     ) throws CityManagementException;
 
     /**
@@ -40,4 +43,30 @@ public interface ICityManagement {
      * @param amount        the amount of infection
      */
     void infectCityWithOwnPlague(IGame game, InfectionCard infectionCard, int amount);
+
+    /**
+     * Builds a hospital in the specified city.
+     *
+     * @param lobbyId  the ID of the lobby where the hospital is to be built
+     * @param userName the name of the user requesting the hospital build
+     * @param cityId   the ID of the city where the hospital is to be built
+     */
+    void buildHospital(String lobbyId, String userName, Integer cityId);
+
+    /**
+     * Builds a hospital in the specified city using an event card.
+     *
+     * @param lobbyId the ID of the lobby where the hospital is to be built
+     * @param cityId  the ID of the city where the hospital is to be built
+     */
+    void buildHospitalWithEventCard(String lobbyId, Integer cityId);
+
+    /**
+     * Checks if a hospital can be built in the specified city by the specified user.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param username  the name of the user
+     * @return true if the hospital can be built, false otherwise
+     */
+    boolean isHospitalBuildable(String lobbyCode, String username);
 }

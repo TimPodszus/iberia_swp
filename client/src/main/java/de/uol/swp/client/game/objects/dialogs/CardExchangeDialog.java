@@ -2,7 +2,7 @@ package de.uol.swp.client.game.objects.dialogs;
 
 import de.uol.swp.client.game.CardFactory;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
-import de.uol.swp.common.cards.ICardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -84,6 +84,9 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(vBox);
+        super.getDialogPane()
+             .setContent(scrollPane);
+
     }
 
     /**
@@ -109,7 +112,9 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
      * @param id the ID of the clicked card
      */
     private void onPlayerCardClicked(int id) {
-        this.currentPlayerSelectedCard.unselect();
+        if (this.currentPlayerSelectedCard != null) {
+            this.currentPlayerSelectedCard.unselect();
+        }
         setCurrentPlayerSelectedCard(id);
         this.currentPlayerSelectedCard.select();
     }
@@ -121,7 +126,9 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
      * @param id the ID of the clicked card
      */
     private void onOpponentCardClicked(int id) {
-        this.opponentSelectedCard.unselect();
+        if (this.opponentSelectedCard != null) {
+            this.opponentSelectedCard.unselect();
+        }
         setOpponentSelectedCard(id);
         this.opponentSelectedCard.select();
     }

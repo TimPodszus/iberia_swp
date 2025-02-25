@@ -1,8 +1,12 @@
 package de.uol.swp.server.role;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RoleRepository
 {
     public static List<Role> getAllRoles()

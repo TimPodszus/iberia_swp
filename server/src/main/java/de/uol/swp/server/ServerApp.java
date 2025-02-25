@@ -3,6 +3,8 @@ package de.uol.swp.server;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import de.uol.swp.common.Configuration;
+import de.uol.swp.server.cards.CardService;
+import de.uol.swp.server.city.CityService;
 import de.uol.swp.server.communication.ServerHandler;
 import de.uol.swp.server.communication.netty.NettyServerHandler;
 import de.uol.swp.server.communication.netty.Server;
@@ -10,10 +12,11 @@ import de.uol.swp.server.connection.ConnectionService;
 import de.uol.swp.server.di.ServerModule;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.lobby.LobbyService;
+import de.uol.swp.server.region.RegionService;
 import de.uol.swp.server.player.PlayerService;
 import de.uol.swp.server.plague.PlagueService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
-import de.uol.swp.server.usermanagement.UserManagement;
+import de.uol.swp.server.usermanagement.management.UserManagement;
 import de.uol.swp.server.usermanagement.UserService;
 import io.netty.channel.ChannelHandler;
 import org.apache.logging.log4j.LogManager;
@@ -80,6 +83,9 @@ class ServerApp {
         injector.getInstance(ConnectionService.class);
         injector.getInstance(PlagueService.class);
         injector.getInstance(PlayerService.class);
+        injector.getInstance(CardService.class);
+        injector.getInstance(RegionService.class);
+        injector.getInstance(CityService.class);
     }
 
 }

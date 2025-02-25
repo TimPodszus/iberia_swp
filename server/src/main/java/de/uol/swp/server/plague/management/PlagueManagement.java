@@ -3,7 +3,7 @@ package de.uol.swp.server.plague.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.AbstractManagement;
-import de.uol.swp.server.cards.CityCard;
+import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.Game;
