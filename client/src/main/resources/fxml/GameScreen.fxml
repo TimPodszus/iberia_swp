@@ -1267,55 +1267,63 @@
                         </VBox>
                     </children>
                 </HBox>
-                <Text layoutX="10.0" layoutY="-3.0" mouseTransparent="true" text="Gijón ⚓" x="301.49" y="76.399" />
-                <Text mouseTransparent="true" text="Santander ⚓" x="437.855" y="90.688" />
-                <Text mouseTransparent="true" text="San Sebastián Donostia ⚓" wrappingWidth="95.62109375" x="589.625" y="82.227" />
-                <Text layoutX="-1.0" layoutY="-5.0" mouseTransparent="true" text="Pamplona" x="668.948" y="182.703" />
-                <Text layoutX="27.0" layoutY="-6.0" mouseTransparent="true" text="Huesca" x="728.704" y="231.883" />
-                <Text layoutX="1.0" layoutY="-5.0" mouseTransparent="true" text="Girona" x="997.871" y="243.517" />
-                <Text layoutX="13.0" mouseTransparent="true" text="Zaragoza" x="722.886" y="298.514" />
-                <Text layoutX="11.0" layoutY="-1.0" mouseTransparent="true" text="Barcelona ⚓" x="975.661" y="322.31" />
-                <Text layoutX="7.0" layoutY="2.0" mouseTransparent="true" text="Tarragona ⚓" x="870.458" y="368.9" />
-                <Text layoutX="22.0" layoutY="3.0" mouseTransparent="true" text="Valencia ⚓" x="771.544" y="523.955" />
-                <Text layoutX="21.0" layoutY="-22.0" mouseTransparent="true" text="Málaga ⚓" x="432.024" y="827.145" />
-                <Text layoutX="3.0" layoutY="16.0" mouseTransparent="true" text="A Coruña ⚓" x="61.737" y="80.185" />
-                <Text layoutX="13.0" layoutY="-9.0" mouseTransparent="true" text="Gibraltar ⚓" x="376.509" y="856.773" />
-                <Text layoutX="-3.0" layoutY="4.0" mouseTransparent="true" text="Huelva ⚓" x="189.029" y="772.1" />
-                <Text layoutX="11.0" layoutY="-2.0" mouseTransparent="true" text="Lisboa ⚓" x="11.425" y="639.509" />
-                <Text layoutX="9.0" layoutY="-1.0" mouseTransparent="true" text="Porto ⚓" x="36.843" y="354.091" />
-                <Text layoutX="16.0" layoutY="1.0" mouseTransparent="true" text="Vigo ⚓" x="31.141" y="242.234" />
-                <Text layoutX="-39.0" layoutY="-54.0" mouseTransparent="true" text="Ourense" x="230.0" y="230.0" />
-                <Text layoutX="-59.0" layoutY="-16.0" mouseTransparent="true" text="León" x="350.0" y="181.116" />
-                <Text layoutX="4.0" layoutY="-1.0" mouseTransparent="true" text="Teruel" x="633.443" y="428.112" />
-                <Text layoutX="-64.0" layoutY="-23.0" mouseTransparent="true" text="Soria" x="590.346" y="335.376" />
-                <Text layoutX="-75.0" layoutY="-30.0" mouseTransparent="true" text="Valladolid" x="456.552" y="318.02" />
-                <Text layoutX="-29.0" layoutY="-12.0" mouseTransparent="true" text="Braga" x="203.681" y="294.837" />
-                <Text layoutX="-22.0" layoutY="-21.0" mouseTransparent="true" text="Coimbra" x="180.0" y="449.58" />
-                <Text layoutX="9.0" mouseTransparent="true" text="Madrid" x="521.684" y="423.223" />
-                <Text layoutX="-9.0" layoutY="-4.0" mouseTransparent="true" text="Toledo" x="344.906" y="470.627" />
-                <Text layoutX="-52.0" layoutY="-43.0" mouseTransparent="true" text="Cáceres" x="300.0" y="527.697" />
-                <Text layoutX="-50.0" layoutY="-23.0" mouseTransparent="true" text="Badajoz" x="263.34" y="568.251" />
-                <Text layoutX="13.0" layoutY="-5.0" mouseTransparent="true" text="Évora" x="151.767" y="596.283" />
-                <Text layoutX="16.0" layoutY="-3.0" mouseTransparent="true" text="Jaén" x="506.87" y="673.083" />
-                <Text layoutX="11.0" layoutY="-5.0" mouseTransparent="true" text="Granada" x="528.597" y="734.313" />
-                <Text layoutX="8.0" layoutY="-6.0" mouseTransparent="true" text="Córdoba" x="312.315" y="690.859" />
-                <Text layoutX="3.0" layoutY="4.0" mouseTransparent="true" text="Bilbao- Bilbo" wrappingWidth="49.0615234375" x="512.418" y="138.281" />
-                <Text layoutX="-104.0" layoutY="1.0" mouseTransparent="true" text="Santiago De Compostela" wrappingWidth="69.071044921875" x="127.638" y="155.586" />
-                <Text layoutX="1.0" mouseTransparent="true" text="Vitoria Gasteiz" wrappingWidth="69.97265624999989" x="552.3" y="260.271" />
-                <Text layoutX="8.0" layoutY="-4.0" mouseTransparent="true" text="Burgos" x="483.169" y="228.619" />
-                <Text layoutX="14.0" layoutY="-11.0" mouseTransparent="true" text="Palma De Mallorca ⚓" wrappingWidth="78.1416015625" x="910.617" y="487.301" />
-                <Text layoutX="-23.0" layoutY="-1.0" mouseTransparent="true" text="Almería ⚓" x="593.779" y="813.48" />
-                <Text layoutX="21.0" layoutY="-29.0" mouseTransparent="true" text="Cartagena ⚓" x="706.833" y="730.571" />
-                <Text layoutX="5.0" layoutY="-9.0" mouseTransparent="true" text="Alicante ⚓" x="761.668" y="648.391" />
-                <Text layoutX="-8.0" layoutY="-4.0" mouseTransparent="true" text="Albacete" x="575.0" y="560.0" />
-                <Text layoutX="2.0" layoutY="-10.0" mouseTransparent="true" text="Ciudad Real" x="473.292" y="574.324" />
-                <Text layoutY="5.0" mouseTransparent="true" text="Sevilla" x="260.0" y="750.0" />
-                <Text layoutX="20.0" layoutY="-9.0" mouseTransparent="true" text="Cádiz ⚓" x="227.817" y="821.416" />
-                <Text layoutX="5.0" layoutY="-3.0" mouseTransparent="true" text="Albufeira ⚓" x="77.628" y="785.148" />
-                <Text layoutX="15.0" layoutY="-69.0" mouseTransparent="true" text="Andorra De Vella" wrappingWidth="76.07107543945312" x="895.281" y="242.459" />
-                <Text layoutX="1.0" layoutY="1.0" mouseTransparent="true" text="Cuenca" x="563.373" y="485.021" />
-                <Text layoutX="4.0" layoutY="-9.0" mouseTransparent="true" text="Salamanca" x="249.32" y="384.707" />
-                <StackPane id="waterMarkRegion1" layoutX="210.0" layoutY="133.0" mouseTransparent="true" styleClass="water-mark">
+                <Text layoutX="10.0" layoutY="-3.0" mouseTransparent="true" text="Gijón ⚓" x="301.49" y="76.399"/>
+                <Text mouseTransparent="true" text="Santander ⚓" x="437.855" y="90.688"/>
+                <Text mouseTransparent="true" text="San Sebastián Donostia ⚓" wrappingWidth="95.62109375" x="589.625"
+                      y="82.227"/>
+                <Text layoutX="-1.0" layoutY="-5.0" mouseTransparent="true" text="Pamplona" x="668.948" y="182.703"/>
+                <Text layoutX="27.0" layoutY="-6.0" mouseTransparent="true" text="Huesca" x="728.704" y="231.883"/>
+                <Text layoutX="1.0" layoutY="-5.0" mouseTransparent="true" text="Girona" x="997.871" y="243.517"/>
+                <Text layoutX="13.0" mouseTransparent="true" text="Zaragoza" x="722.886" y="298.514"/>
+                <Text layoutX="11.0" layoutY="-1.0" mouseTransparent="true" text="Barcelona ⚓" x="975.661" y="322.31"/>
+                <Text layoutX="7.0" layoutY="2.0" mouseTransparent="true" text="Tarragona ⚓" x="870.458" y="368.9"/>
+                <Text layoutX="22.0" layoutY="3.0" mouseTransparent="true" text="Valencia ⚓" x="771.544" y="523.955"/>
+                <Text layoutX="21.0" layoutY="-22.0" mouseTransparent="true" text="Málaga ⚓" x="432.024" y="827.145"/>
+                <Text layoutX="3.0" layoutY="16.0" mouseTransparent="true" text="A Coruña ⚓" x="61.737" y="80.185"/>
+                <Text layoutX="13.0" layoutY="-9.0" mouseTransparent="true" text="Gibraltar ⚓" x="376.509" y="856.773"/>
+                <Text layoutX="-3.0" layoutY="4.0" mouseTransparent="true" text="Huelva ⚓" x="189.029" y="772.1"/>
+                <Text layoutX="11.0" layoutY="-2.0" mouseTransparent="true" text="Lisboa ⚓" x="11.425" y="639.509"/>
+                <Text layoutX="9.0" layoutY="-1.0" mouseTransparent="true" text="Porto ⚓" x="36.843" y="354.091"/>
+                <Text layoutX="16.0" layoutY="1.0" mouseTransparent="true" text="Vigo ⚓" x="31.141" y="242.234"/>
+                <Text layoutX="-39.0" layoutY="-54.0" mouseTransparent="true" text="Ourense" x="230.0" y="230.0"/>
+                <Text layoutX="-59.0" layoutY="-16.0" mouseTransparent="true" text="León" x="350.0" y="181.116"/>
+                <Text layoutX="4.0" layoutY="-1.0" mouseTransparent="true" text="Teruel" x="633.443" y="428.112"/>
+                <Text layoutX="-64.0" layoutY="-23.0" mouseTransparent="true" text="Soria" x="590.346" y="335.376"/>
+                <Text layoutX="-75.0" layoutY="-30.0" mouseTransparent="true" text="Valladolid" x="456.552" y="318.02"/>
+                <Text layoutX="-29.0" layoutY="-12.0" mouseTransparent="true" text="Braga" x="203.681" y="294.837"/>
+                <Text layoutX="-22.0" layoutY="-21.0" mouseTransparent="true" text="Coimbra" x="180.0" y="449.58"/>
+                <Text layoutX="9.0" mouseTransparent="true" text="Madrid" x="521.684" y="423.223"/>
+                <Text layoutX="-9.0" layoutY="-4.0" mouseTransparent="true" text="Toledo" x="344.906" y="470.627"/>
+                <Text layoutX="-52.0" layoutY="-43.0" mouseTransparent="true" text="Cáceres" x="300.0" y="527.697"/>
+                <Text layoutX="-50.0" layoutY="-23.0" mouseTransparent="true" text="Badajoz" x="263.34" y="568.251"/>
+                <Text layoutX="13.0" layoutY="-5.0" mouseTransparent="true" text="Évora" x="151.767" y="596.283"/>
+                <Text layoutX="16.0" layoutY="-3.0" mouseTransparent="true" text="Jaén" x="506.87" y="673.083"/>
+                <Text layoutX="11.0" layoutY="-5.0" mouseTransparent="true" text="Granada" x="528.597" y="734.313"/>
+                <Text layoutX="8.0" layoutY="-6.0" mouseTransparent="true" text="Córdoba" x="312.315" y="690.859"/>
+                <Text layoutX="3.0" layoutY="4.0" mouseTransparent="true" text="Bilbao- Bilbo"
+                      wrappingWidth="49.0615234375" x="512.418" y="138.281"/>
+                <Text layoutX="-104.0" layoutY="1.0" mouseTransparent="true" text="Santiago De Compostela"
+                      wrappingWidth="69.071044921875" x="127.638" y="155.586"/>
+                <Text layoutX="1.0" mouseTransparent="true" text="Vitoria Gasteiz" wrappingWidth="69.97265624999989"
+                      x="552.3" y="260.271"/>
+                <Text layoutX="8.0" layoutY="-4.0" mouseTransparent="true" text="Burgos" x="483.169" y="228.619"/>
+                <Text layoutX="14.0" layoutY="-11.0" mouseTransparent="true" text="Palma De Mallorca ⚓"
+                      wrappingWidth="78.1416015625" x="910.617" y="487.301"/>
+                <Text layoutX="-23.0" layoutY="-1.0" mouseTransparent="true" text="Almería ⚓" x="593.779" y="813.48"/>
+                <Text layoutX="21.0" layoutY="-29.0" mouseTransparent="true" text="Cartagena ⚓" x="706.833"
+                      y="730.571"/>
+                <Text layoutX="5.0" layoutY="-9.0" mouseTransparent="true" text="Alicante ⚓" x="761.668" y="648.391"/>
+                <Text layoutX="-8.0" layoutY="-4.0" mouseTransparent="true" text="Albacete" x="575.0" y="560.0"/>
+                <Text layoutX="2.0" layoutY="-10.0" mouseTransparent="true" text="Ciudad Real" x="473.292" y="574.324"/>
+                <Text layoutY="5.0" mouseTransparent="true" text="Sevilla" x="260.0" y="750.0"/>
+                <Text layoutX="20.0" layoutY="-9.0" mouseTransparent="true" text="Cádiz ⚓" x="227.817" y="821.416"/>
+                <Text layoutX="5.0" layoutY="-3.0" mouseTransparent="true" text="Albufeira ⚓" x="77.628" y="785.148"/>
+                <Text layoutX="15.0" layoutY="-69.0" mouseTransparent="true" text="Andorra De Vella"
+                      wrappingWidth="76.07107543945312" x="895.281" y="242.459"/>
+                <Text layoutX="1.0" layoutY="1.0" mouseTransparent="true" text="Cuenca" x="563.373" y="485.021"/>
+                <Text layoutX="4.0" layoutY="-9.0" mouseTransparent="true" text="Salamanca" x="249.32" y="384.707"/>
+                <StackPane id="waterMarkRegion1" layoutX="210.0" layoutY="133.0" mouseTransparent="true"
+                           styleClass="water-mark">
                     <children>
                         <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE"/>
                         <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
@@ -1996,7 +2004,7 @@
                     </VBox>
                 </children>
             </VBox>
-            <VBox mouseTransparent="true" prefHeight="200.0" prefWidth="100.0">
+            <VBox mouseTransparent="true">
                 <children>
                     <Region mouseTransparent="true" VBox.vgrow="ALWAYS"/>
                     <VBox spacing="1.0" styleClass="action-buttons-box">
