@@ -14,4 +14,11 @@ public class Plague implements IPlague {
     private int cubesRemaining;
     @Setter
     private boolean researched;
+
+    public void increaseCubes(int amount) {
+        if (cubesRemaining + amount > 24) {
+            throw new IllegalArgumentException("Amount of cubes cannot exceed 24");
+        }
+        cubesRemaining += amount;
+    }
 }

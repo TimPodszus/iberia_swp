@@ -13,8 +13,7 @@ import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.CardSelectionWaterTreatmentDialog;
 import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
 import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
-import de.uol.swp.client.game.objects.dialogs.CardSelectionDialog;
-import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
+import de.uol.swp.client.game.objects.dialogs.CardDialog;
 import de.uol.swp.client.game.objects.dialogs.SelectCityToTreatDialog;
 import de.uol.swp.client.game.objects.dialogs.TreatPlagueDialog;
 import de.uol.swp.client.game.objects.dialogs.*;
@@ -40,8 +39,7 @@ import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
-import de.uol.swp.common.plague.IPlagueDTO;
-import de.uol.swp.common.plague.response.AvailableCitiesToTreatResponse;
+import de.uol.swp.common.plague.dto.IPlagueDTO;
 import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -49,6 +47,7 @@ import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
 import de.uol.swp.common.user.IUserDTO;
+
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -113,6 +112,8 @@ public class GamePresenter extends AbstractPresenter {
     private List<IConnectionDTO> buildableTrainTracks = new ArrayList<>();
 
     private int regionId;
+
+    private int cityIdToTreat;
 
     @FXML
     private AnchorPane gameScreen;
@@ -539,96 +540,15 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onTreatPlague(ActionEvent event) {
         if (treatInfectionButton.isSelected()) {
-            LOG.debug("Seuche behandeln Button ist ausgewählt, sende Request...");
-            gameService.sendAvailablePlaguesRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
-        } else {
-            LOG.debug("Button ist nicht ausgewählt!");
-        }
-    }
-
-    /**
-     * Handles the response containing available plagues in the player's city.
-     * Opens a dialog for the player to select a plague to treat.
-     *
-     * @param response The response containing the list of available plagues.
-     */
-    @Subscribe
-    public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
-        System.out.println("AvailablePlaguesResponse empfangen! Anzahl Seuchen: " + response.getAvailablePlagues().size());
-
-        Platform.runLater(() -> {
-            TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
-            LOG.debug("Dialog wird geöffnet...");
-            Optional<PlagueName> result = dialog.showAndWait();
-            LOG.debug("Dialog wurde geschlossen.");
-
-            result.ifPresent(selectedPlague -> {
-                int count = 0;
-                boolean isCountryDoctor;
-                if (count == 1) {
-                    isCountryDoctor = true;
-                } else {
-                    isCountryDoctor = false;
-                }
-                LOG.info("Ausgewählte Seuche: {}", selectedPlague);
-                gameService.sendTreatPlagueRequest(
-                        lobbyId,
-                        gameDTO.getCurrentPlayer().getCurrentPosition().getId(),
-                        selectedPlague,
-                        isCountryDoctor
-                );
-
-
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE)) {
+                gameService.sendAvailablePlaguesRequest(lobbyId, gameDTO.getCurrentPlayer()
+                                                                      .getCurrentPosition()
+                                                                      .getId());
+            } else {
                 treatInfectionButton.setSelected(false);
-                count++;
-
-                if (response.getRole().equals(RoleEnum.COUNTRY_DOCTOR)) {
-                    gameService.sendAvailableCitiesToTreatRequest(
-                            lobbyId,
-                            gameDTO.getCurrentPlayer().getCurrentPosition().getId()
-                    );
-                }
-            });
-
-        });
-    }
-
-    /**
-     * Handles the response after successfully treating a plague.
-     * Updates the board and, if the player is a country doctor, sends a request for available cities.
-     *
-     * @param response The response confirming the plague treatment.
-     */
-    @Subscribe
-    public void onTreatPlagueResponse(TreatPlagueResponse response) {
-        LOG.info("TreatPlagueResponse erhalten: Stadt ID {}, Seuche {}", response.getCityID(), response.getPlagueName());
-        Platform.runLater(() -> updateBoard(gameDTO));
-
-        if (RoleEnum.COUNTRY_DOCTOR == gameDTO.getCurrentPlayer().getRole().getName()) {
-            LOG.debug("Spieler ist COUNTRY_DOCTOR - Anfrage für behandelbare Städte senden.");
-            gameService.sendAvailableCitiesToTreatRequest(lobbyId, gameDTO.getCurrentPlayer().getCurrentPosition().getId());
+            }
         }
-    }
-
-    /**
-     * Handles the response containing cities where the player can treat plagues.
-     * Opens a dialog for the player to select a city.
-     *
-     * @param response The response containing a list of available cities.
-     */
-    @Subscribe
-    public void onAvailableCitiesToTreatResponse(AvailableCitiesToTreatResponse response) {
-        LOG.info("AvailableCitiesToTreatResponse empfangen! Anzahl Städte: {}", response.getAvailableCities().size());
-        Platform.runLater(() -> {
-            SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(response.getAvailableCities());
-            Optional<ICityDTO> selectedCity = dialog.showAndWait();
-
-            selectedCity.ifPresent(city -> {
-                        LOG.info("Spieler hat Stadt {} ausgewählt, sende AvailablePlaguesRequest", city.getName());
-                        gameService.sendAvailablePlaguesRequest(lobbyId, city.getId());
-                    }
-            );
-        });
     }
 
     /**
@@ -1782,6 +1702,58 @@ public class GamePresenter extends AbstractPresenter {
 
         EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
         Platform.runLater(dialog::showEndGameDialog);
+    }
+
+    /**
+     * Handles the response containing available plagues in the player's city.
+     * Opens a dialog for the player to select a plague to treat.
+     *
+     * @param response The response containing the list of available plagues.
+     */
+    @Subscribe
+    public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
+        LOG.info(
+                "AvailablePlaguesResponse empfangen! Anzahl Seuchen: {}",
+                response.getAvailablePlagues()
+                        .size()
+        );
+        this.cityIdToTreat = response.getCityId();
+        Platform.runLater(() -> {
+            TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
+            Optional<PlagueName> result = dialog.showAndWait();
+            result.ifPresent(selectedPlague -> {
+                LOG.info("Ausgewählte Seuche: {}", selectedPlague);
+                gameService.sendTreatPlagueRequest(
+                        lobbyId, cityIdToTreat,
+                        selectedPlague
+                );
+
+                treatInfectionButton.setSelected(false);
+            });
+
+        });
+    }
+
+    /**
+     * Handles the response after successfully treating a plague.
+     * Updates the board and, if the player is a country doctor, sends a request for available cities.
+     *
+     * @param response The response confirming the plague treatment.
+     */
+    @Subscribe
+    public void onTreatPlagueResponse(TreatPlagueResponse response) {
+        LOG.info("TreatPlagueResponse received from Lobby: {}", response.getLobbyId());
+        if (response.isCountryDoctor()) {
+            Platform.runLater(() -> {
+                SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(response.getAvailableCities());
+                Optional<ICityDTO> selectedCity = dialog.showAndWait();
+                selectedCity.ifPresent(city -> {
+                    LOG.info("Spieler hat Stadt {} ausgewählt, sende AvailablePlaguesRequest", city.getName());
+                    this.cityIdToTreat = city.getId();
+                    gameService.sendAvailablePlaguesRequest(lobbyId, city.getId());
+                });
+            });
+        }
     }
 
     /**

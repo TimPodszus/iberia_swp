@@ -1,6 +1,5 @@
 package de.uol.swp.common.plague.response;
 
-import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import lombok.Getter;
@@ -12,13 +11,11 @@ import java.util.Objects;
 public class AvailablePlaguesResponse extends AbstractGameResponse {
 
     private final List<IInfectionDTO> availablePlagues;
-    private final RoleEnum role;
     private final int cityId;
 
-    public AvailablePlaguesResponse(String lobbyId, boolean success, List<IInfectionDTO> availablePlagues, RoleEnum role, int cityId) {
+    public AvailablePlaguesResponse(String lobbyId, boolean success, List<IInfectionDTO> availablePlagues, int cityId) {
         super(lobbyId, success);
         this.availablePlagues = availablePlagues;
-        this.role = role;
         this.cityId = cityId;
     }
 
@@ -27,12 +24,12 @@ public class AvailablePlaguesResponse extends AbstractGameResponse {
         if (this == o) return true;
         if (!(o instanceof AvailablePlaguesResponse that)) return false;
         if (!super.equals(o)) return false;
-        return getCityId() == that.getCityId() && Objects.equals(getAvailablePlagues(), that.getAvailablePlagues()) && getRole() == that.getRole();
+        return getCityId() == that.getCityId() && Objects.equals(getAvailablePlagues(), that.getAvailablePlagues());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getAvailablePlagues(), getRole(), getCityId());
+        return Objects.hash(super.hashCode(), getAvailablePlagues(), getCityId());
     }
 }
 

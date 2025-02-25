@@ -11,4 +11,11 @@ public class Infection implements IInfection {
     @Setter
     private int severity;
     private final PlagueName plagueName;
+
+    public void decreaseSeverity(int amount) {
+        if(severity - amount < 0) {
+            throw new IllegalArgumentException("Severity cannot be negative");
+        }
+        severity -= amount;
+    }
 }

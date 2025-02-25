@@ -11,24 +11,22 @@ public class TreatPlagueRequest extends AbstractGameRequest {
 
     private final int cityId;
     private final PlagueName plagueName;
-    private final boolean isCountryDoctor;
 
-    public TreatPlagueRequest(String lobbyId, int cityId, PlagueName plagueName, boolean isCountryDoctor) {
+    public TreatPlagueRequest(String lobbyId, int cityId, PlagueName plagueName) {
         super(lobbyId);
         this.cityId = cityId;
         this.plagueName = plagueName;
-        this.isCountryDoctor = isCountryDoctor;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof TreatPlagueRequest that)) return false;
-        return getCityId() == that.getCityId() && isCountryDoctor() == that.isCountryDoctor() && getPlagueName() == that.getPlagueName();
+        return getCityId() == that.getCityId() && getPlagueName() == that.getPlagueName();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCityId(), getPlagueName(), isCountryDoctor());
+        return Objects.hash(getCityId(), getPlagueName());
     }
 }

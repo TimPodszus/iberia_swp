@@ -94,18 +94,13 @@ public class City implements ICity {
      * Removes a specified number of plague cubes from the infections of the given plague.
      *
      * @param plagueName the name of the plague from which cubes should be removed.
-     * @param count the number of plague cubes to remove.
+     * @param amount the number of plague cubes to remove.
      * @throws IllegalArgumentException if there are not enough plague cubes to remove.
      */
-    public void removePlagueCubes(PlagueName plagueName, int count) {
-        int currentCount;
+    public void removePlagueCubes(PlagueName plagueName, int amount) {
         for (IInfection infection : infections) {
             if (infection.getPlagueName().equals(plagueName)) {
-                currentCount = infection.getSeverity();
-                if (currentCount < count) {
-                    throw new IllegalArgumentException("No plague cubes to remove.");
-                }
-                infection.setSeverity(currentCount - count);
+                infection.decreaseSeverity(amount);
             }
         }
     }

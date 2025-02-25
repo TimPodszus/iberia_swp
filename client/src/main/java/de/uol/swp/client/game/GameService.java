@@ -14,7 +14,6 @@ import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.request.DrawInfectionCardRequest;
-import de.uol.swp.common.plague.request.AvailableCitiesToTreatRequest;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
@@ -187,16 +186,6 @@ public class GameService {
      */
     public void sendAvailableRegionsRequest(String lobbyCode) {
         eventBus.post(new AvailableRegionsRequest(lobbyCode));
-    }
-
-    /**
-     * Sends a request to retrieve the list of available cities where a plague can be treated.
-     *
-     * @param lobbyID The unique identifier of the game lobby.
-     * @param cityID  The ID of the city from which the treatment request is sent.
-     */
-    public void sendAvailableCitiesToTreatRequest(String lobbyID, int cityID) {
-        eventBus.post(new AvailableCitiesToTreatRequest(lobbyID, cityID));
     }
 
     /**
@@ -374,9 +363,8 @@ public class GameService {
      * @param lobbyID        The unique identifier of the game lobby.
      * @param cityID         The ID of the city where the plague treatment is performed.
      * @param selectedPlague The plague that should be treated.
-     * @param isCountryDoctor Indicates whether the treating player has the "Country Doctor" role.
      */
-    public void sendTreatPlagueRequest(String lobbyID, int cityID, PlagueName selectedPlague, boolean isCountryDoctor) {
-        eventBus.post(new TreatPlagueRequest(lobbyID, cityID, selectedPlague, isCountryDoctor));
+    public void sendTreatPlagueRequest(String lobbyID, int cityID, PlagueName selectedPlague) {
+        eventBus.post(new TreatPlagueRequest(lobbyID, cityID, selectedPlague));
     }
 }

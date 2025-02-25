@@ -1,19 +1,16 @@
 package de.uol.swp.server.plague;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.plague.PlagueResearchedMessage;
-import de.uol.swp.common.plague.request.AvailableCitiesToTreatRequest;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
-import de.uol.swp.common.plague.response.AvailableCitiesToTreatResponse;
 import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import de.uol.swp.server.AbstractService;
@@ -22,9 +19,8 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.states.WaitForConfirmationState;
+import de.uol.swp.server.game.states.TreatExtraPlagueState;
 import de.uol.swp.server.infection.InfectionMapper;
-import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.management.IPlagueManagement;
@@ -51,7 +47,6 @@ public class PlagueService extends AbstractService {
      *
      * @param plagueManagement The management class for researching plagues
      * @param eventBus         The server-wide EventBus
-     * @param lobbyManagement
      * @since 2024-10-04
      */
     @Inject
@@ -92,29 +87,38 @@ public class PlagueService extends AbstractService {
             AvailablePlaguesRequest request
     ) {
         LOG.debug("Received AvailablePlaguesRequest for lobbyId: {}", request.getLobbyId());
-
         IGame game = plagueManagement.getGame(request.getLobbyId());
 
-        List<IInfection> infections = plagueManagement.getInfectionsInCity(game);
-        List<IInfectionDTO> infectionsInCity = InfectionMapper.toDTOList(infections);
-
-
-        LOG.debug("Found {} infections in city {}", infectionsInCity.size(), game.getCurrentPlayer().getCurrentPosition().getName());
+        List<IInfectionDTO> infectionsInCity = InfectionMapper.toDTOList(plagueManagement.getInfectionsInCity(
+                game,
+                request.getCityId()
+        ));
+        LOG.debug(
+                "Found {} infections in city {}",
+                infectionsInCity.size(),
+                game.getCurrentPlayer()
+                    .getCurrentPosition()
+                    .getName()
+        );
 
         AvailablePlaguesResponse availablePlaguesResponse = new AvailablePlaguesResponse(
                 request.getLobbyId(),
                 true,
                 infectionsInCity,
-                game.getCurrentPlayer().getRole().getName(),
                 request.getCityId()
         );
         request.getSession()
-                .ifPresent(availablePlaguesResponse::setSession);
+               .ifPresent(availablePlaguesResponse::setSession);
         request.getMessageContext()
-                .ifPresent(availablePlaguesResponse::setMessageContext);
+               .ifPresent(availablePlaguesResponse::setMessageContext);
 
-        LOG.debug("Sending AvailablePlaguesResponse with {} plagues and role: {}", infectionsInCity.size(), game.getCurrentPlayer().getRole().getName());
-
+        LOG.debug(
+                "Sending AvailablePlaguesResponse with {} plagues and role: {}",
+                infectionsInCity.size(),
+                game.getCurrentPlayer()
+                    .getRole()
+                    .getName()
+        );
         post(availablePlaguesResponse);
     }
 
@@ -129,63 +133,40 @@ public class PlagueService extends AbstractService {
     public void onTreatPlagueRequest(
             TreatPlagueRequest request
     ) throws PlagueManagementException {
-        LOG.debug("Received TreatPlagueRequest for lobbyId: {}, cityId: {}, plagueName: {}",
-                request.getLobbyId(), request.getCityId(), request.getPlagueName());
+        AbstractResponseMessage response;
+        LOG.debug(
+                "Received TreatPlagueRequest for lobbyId: {}, cityId: {}, plagueName: {}",
+                request.getLobbyId(),
+                request.getCityId(),
+                request.getPlagueName()
+        );
         IGame game = plagueManagement.getGame(request.getLobbyId());
         ICity city = game.getCityRepository().getCity(request.getCityId());
 
         LOG.debug("Removing one plague cube of type {} from city {}", request.getPlagueName(), city.getName());
-        boolean isCountryDoctor = request.isCountryDoctor();
-        plagueManagement.treatPlague(request.getPlagueName(), city, game, isCountryDoctor);
+        plagueManagement.treatPlague(request.getPlagueName(), city, game);
 
-        if (game.getCurrentPlayer().getRole().getName().equals(RoleEnum.COUNTRY_DOCTOR) && !isCountryDoctor) {
-            TreatPlagueResponse treatPlagueResponse = new TreatPlagueResponse(request.getLobbyId(), true, request.getPlagueName(), city.getId());
-            request.getSession()
-                    .ifPresent(treatPlagueResponse::setSession);
-            request.getMessageContext()
-                    .ifPresent(treatPlagueResponse::setMessageContext);
-            game.setState(new WaitForConfirmationState());
-            post(treatPlagueResponse);
-            LOG.debug("Sending TreatPlagueResponse for lobbyId: {}, cityId: {}, plagueName: {}",
-                    request.getLobbyId(), city.getId(), request.getPlagueName());
-        }
-
-        if (game.getState().getStateType().equals(StateType.WAIT_FOR_CONFIRMATION_STATE) && isCountryDoctor) {
-            game.setState(game.getPreviousState());
-            LOG.info("Game changed back to PlayerTurnState");
-        }
-        IGameDTO gameDTO = GameMapper.toDTO(game);
+        IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
 
-
+        if (game.getCurrentPlayer()
+                .getRole() instanceof CountryDoctor && !(game.getPreviousState() instanceof TreatExtraPlagueState)) {
+            game.setState(new TreatExtraPlagueState());
+            response = new TreatPlagueResponse(
+                    request.getLobbyId(),
+                    true,
+                    CityMapper.toDTOList(plagueManagement.getCitiesNearBy(game, city)),
+                    true
+            );
+        }else{
+            game.setState(game.getPreviousState());
+            response = new StatusResponse(request.getLobbyId(), true, "Plague treated successfully");
+        }
+        request.getSession()
+               .ifPresent(response::setSession);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        post(response);
     }
-
-    /**
-     * Handles a request for cities where a player can treat plagues.
-     * Retrieves nearby cities and sends a response with the list of available cities.
-     *
-     * @param request The request containing the lobby ID and session details.
-     */
-    @Subscribe
-    public void onAvailableCitiesToTreatRequest(
-            AvailableCitiesToTreatRequest request
-    ) {
-        IGame game = plagueManagement.getGame(request.getLobbyId());
-
-        LOG.debug("Fetching cities near city with ID {}", game.getCurrentPlayer().getCurrentPosition().getId());
-        List<ICity> citiesNearBy = plagueManagement.getCitiesNearBy(game, game.getCurrentPlayer().getCurrentPosition());
-
-        List<ICityDTO> cityDTOList = CityMapper.toDTOList(citiesNearBy);
-        LOG.debug("Found {} nearby cities for treatment", cityDTOList.size());
-
-        AvailableCitiesToTreatResponse availableCitiesToTreatResponse = new AvailableCitiesToTreatResponse(request.getLobbyId(), true, cityDTOList);
-
-        request.getSession().ifPresent(availableCitiesToTreatResponse::setSession);
-        request.getMessageContext().ifPresent(availableCitiesToTreatResponse::setMessageContext);
-        LOG.debug("Sending AvailableCitiesToTreatResponse with {} cities", cityDTOList.size());
-
-        post(availableCitiesToTreatResponse);
-    }
-
 }
