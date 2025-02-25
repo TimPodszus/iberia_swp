@@ -44,9 +44,6 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
 
         if (eventCard instanceof StateMobilizationEventCard stateMobilizationEventCard) {
             stateMobilizationEventCard.setPlayersToMove(new ArrayList<>(game.getPlayers()));
-        } else {
-            LOG.warn("[LobbyId: {}] Card with id {} is not playable", game.getGameId(), eventCard.getId());
-            //Todo: #202 - Was passiert mit serverseitigen Exceptions?
         }
 
         eventCard.execute(game.getGameId(), username);
