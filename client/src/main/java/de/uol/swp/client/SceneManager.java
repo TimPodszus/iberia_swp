@@ -461,7 +461,11 @@ public class SceneManager {
      */
     @Subscribe
     public void onCreateGameResponseEvent(CreateGameResponse response) {
-        showGameScreen(response.getLobbyId());
+        if (response.isSuccess()) {
+            showGameScreen(response.getLobbyId());
+        } else {
+            showError("Error creating game: " + response.getDescription());
+        }
     }
 
     /**
