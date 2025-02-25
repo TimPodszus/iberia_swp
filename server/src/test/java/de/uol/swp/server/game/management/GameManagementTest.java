@@ -792,7 +792,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMovePlayer_StateMobilizationEvent() throws GameManagementException {
+    void testMovePlayer_StateMobilizationEvent() throws GameManagementException, IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
                 new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE))),
