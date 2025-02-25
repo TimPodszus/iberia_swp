@@ -142,4 +142,11 @@ public interface IGameDTO {
      * @return the player with the specified username or null if no player with the specified username exists
      */
     IPlayerDTO getPlayer(String username);
+
+    /**
+     * Gets the number of actions remaining for the current player.
+     *
+     * @return the number of actions remaining
+     */
+    int getRemainingActions();
 }

@@ -60,6 +60,7 @@ public class GameDTOTest {
     private final int waterTreatmentsLeft = 5;
     private final int tracksLeft = 5;
     private final int currentPlayerIndex = 0;
+    private final int remainingActions = 4;
 
     @Test
     void testConstructor() {
@@ -89,6 +90,7 @@ public class GameDTOTest {
         assertEquals(waterTreatmentsLeft, gameDTO.getWaterTreatmentsLeft(), "WaterTreatmentsLeft is not set correctly");
         assertEquals(tracksLeft, gameDTO.getTracksLeft(), "TracksLeft is not set correctly");
         assertEquals(currentPlayerIndex, gameDTO.getCurrentPlayerIndex(), "CurrentPlayerIndex is not set correctly");
+        assertEquals(remainingActions, gameDTO.getRemainingActions(), "RemainingActions is not set correctly");
     }
 
     @Test
@@ -154,7 +156,8 @@ public class GameDTOTest {
                 0,
                 0,
                 0,
-                StateType.START_STATE
+                StateType.START_STATE,
+                0
         );
         assertTrue(emptyGame.getCities()
                             .isEmpty());
@@ -188,7 +191,8 @@ public class GameDTOTest {
                 waterTreatmentsLeft,
                 tracksLeft,
                 currentPlayerIndex,
-                StateType.START_STATE
+                StateType.START_STATE,
+                remainingActions
         );
     }
 }
