@@ -23,9 +23,11 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
         if (isCardPlayable(game, cardId, username)) {
             ICard card = game.getPlayer(username)
                              .playCard(cardId);
+            game.getPlayerCardDiscardPile()
+                .add(card);
             if (card instanceof EventCard eventCard) {
                 playEventCard(game, username, eventCard);
-        }
+            }
         }
     }
 
