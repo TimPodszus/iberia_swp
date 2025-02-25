@@ -9,9 +9,7 @@ import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class is the base for creating a new Service.
@@ -22,6 +20,10 @@ import java.util.List;
  * @since 2019-10-08
  */
 public class AbstractService {
+
+    protected static final String USER_NOT_LOGGED_IN = "User not logged in";
+
+    protected static final int DEFAULT_MESSAGE_DELAY_MILLIS = 200;
     /**
      * The EventBus instance used for posting and handling events.
      * This is a protected final field, ensuring it is initialized once and cannot be changed.

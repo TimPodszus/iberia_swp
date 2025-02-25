@@ -21,9 +21,9 @@ class AvailableRegionsResponseTest {
         regions1.add(region);
         regions2.add(region);
 
-        AvailableRegionsResponse response1 = new AvailableRegionsResponse(regions1);
-        AvailableRegionsResponse response2 = new AvailableRegionsResponse(regions2);
-        AvailableRegionsResponse response3 = new AvailableRegionsResponse(regions3);
+        AvailableRegionsResponse response1 = new AvailableRegionsResponse("lobbyId", regions1);
+        AvailableRegionsResponse response2 = new AvailableRegionsResponse("lobbyId", regions2);
+        AvailableRegionsResponse response3 = new AvailableRegionsResponse("lobbyId", regions3);
 
         assertEquals(response1, response2);
         assertNotEquals(response1, response3);
@@ -39,9 +39,9 @@ class AvailableRegionsResponseTest {
         regions1.add(region);
         regions2.add(region);
 
-        AvailableRegionsResponse response1 = new AvailableRegionsResponse(regions1);
-        AvailableRegionsResponse response2 = new AvailableRegionsResponse(regions2);
-        AvailableRegionsResponse response3 = new AvailableRegionsResponse(regions3);
+        AvailableRegionsResponse response1 = new AvailableRegionsResponse("lobbyId", regions1);
+        AvailableRegionsResponse response2 = new AvailableRegionsResponse("lobbyId", regions2);
+        AvailableRegionsResponse response3 = new AvailableRegionsResponse("lobbyId", regions3);
 
         assertEquals(response1.hashCode(), response2.hashCode());
         assertNotEquals(response1.hashCode(), response3.hashCode());
