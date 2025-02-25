@@ -1194,6 +1194,9 @@ public class GamePresenter extends AbstractPresenter {
         if (!playerCardDiscardPileList.isEmpty()) {
             AbstractCard card = getCard(playerCardDiscardPileList);
             setPlayerCardDiscardPile(card);
+        } else {
+            playerCardDiscardPile.getChildren()
+                                 .removeAll();
         }
     }
 
