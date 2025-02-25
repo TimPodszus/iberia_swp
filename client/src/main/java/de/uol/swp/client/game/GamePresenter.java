@@ -28,6 +28,7 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.EndGameEvent;
 import de.uol.swp.common.game.message.event.ShareRideEvent;
@@ -48,6 +49,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
@@ -1499,5 +1501,28 @@ public class GamePresenter extends AbstractPresenter {
                    stackPane.getStyleClass()
                             .remove(CITY_HIGHLIGHTED_CLASS);
                });
+    }
+
+    /**
+     * Handles game responses.
+     * <p>
+     * This method is called when a game response is received. If the response indicates
+     * a failure, it displays an error alert with the response description.
+     *
+     * @param response the game response
+     */
+    @Subscribe
+    public void onGameResponse(AbstractGameResponse response) {
+        if (response.isSuccess()) {
+            return;
+        }
+
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Fehler");
+            alert.setHeaderText("Fehler bei der Anfrage");
+            alert.setContentText(response.getDescription());
+            alert.showAndWait();
+        });
     }
 }
