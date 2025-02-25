@@ -1869,108 +1869,6 @@
             </AnchorPane>
         </AnchorPane>
     </StackPane>
-    <VBox layoutX="10.0" layoutY="10.0" mouseTransparent="true" AnchorPane.bottomAnchor="0.0"
-          AnchorPane.rightAnchor="0.0">
-        <HBox mouseTransparent="true" nodeOrientation="RIGHT_TO_LEFT">
-            <VBox.margin>
-                <Insets bottom="20.0"/>
-            </VBox.margin>
-            <Pane fx:id="playerCardDiscardPile" prefHeight="150.0" prefWidth="100.0" styleClass="pile">
-                <HBox.margin>
-                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                </HBox.margin>
-            </Pane>
-            <Pane fx:id="playerCardDrawPile" onMouseClicked="#onPlayerCardPileClickedEvent" prefHeight="150.0"
-                  prefWidth="100.0" styleClass="pile">
-                <HBox.margin>
-                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                </HBox.margin>
-                <children>
-                    <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true"
-                               mouseTransparent="true">
-                        <image>
-                            <Image url="@../img/player-card-back.png"/>
-                        </image>
-                    </ImageView>
-                    <Text fx:id="playerCardDrawPileCounter" layoutX="50.0" layoutY="15.0" strokeType="OUTSIDE"
-                          strokeWidth="0.0" text="48" textAlignment="RIGHT" wrappingWidth="50.0" mouseTransparent="true">
-                        <font>
-                            <Font name="System Bold" size="18.0"/>
-                        </font>
-                    </Text>
-                </children>
-            </Pane>
-        </HBox>
-        <HBox>
-            <StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-                       prefHeight="80.0" prefWidth="80.0">
-                <HBox.margin>
-                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                </HBox.margin>
-                <Pane prefHeight="80.0" prefWidth="80.0">
-                    <styleClass>
-                        <String fx:value="plague-marker"/>
-                        <String fx:value="plague-marker-red"/>
-                    </styleClass>
-                </Pane>
-                <ImageView fx:id="plagueMarkerRedImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
-                           preserveRatio="true">
-                    <Image url="@../img/magnifying-glass.png"/>
-                </ImageView>
-            </StackPane>
-            <StackPane layoutX="15.0" layoutY="15.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-                       minWidth="-Infinity" prefHeight="80.0" prefWidth="80.0">
-                <HBox.margin>
-                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                </HBox.margin>
-                <Pane prefHeight="80.0" prefWidth="80.0">
-                    <styleClass>
-                        <String fx:value="plague-marker"/>
-                        <String fx:value="plague-marker-blue"/>
-                    </styleClass>
-                </Pane>
-                <ImageView fx:id="plagueMarkerBlueImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
-                           preserveRatio="true">
-                    <Image url="@../img/magnifying-glass.png"/>
-                </ImageView>
-            </StackPane>
-            <StackPane layoutX="371.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-                       minWidth="-Infinity" prefHeight="80.0" prefWidth="80.0">
-                <HBox.margin>
-                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                </HBox.margin>
-                <Pane prefHeight="80.0" prefWidth="80.0">
-                    <styleClass>
-                        <String fx:value="plague-marker"/>
-                        <String fx:value="plague-marker-black"/>
-                    </styleClass>
-                </Pane>
-                <ImageView fx:id="plagueMarkerBlackImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
-                           preserveRatio="true">
-                    <Image url="@../img/magnifying-glass.png"/>
-                </ImageView>
-            </StackPane>
-            <StackPane layoutX="451.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-                       minWidth="-Infinity" prefHeight="80.0" prefWidth="80.0">
-                <HBox.margin>
-                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                </HBox.margin>
-                <Pane prefHeight="80.0" prefWidth="80.0">
-                    <styleClass>
-                        <String fx:value="plague-marker"/>
-                        <String fx:value="plague-marker-yellow"/>
-                    </styleClass>
-                    <StackPane.margin>
-                        <Insets/>
-                    </StackPane.margin>
-                </Pane>
-                <ImageView fx:id="plagueMarkerYellowImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true"
-                           preserveRatio="true">
-                    <Image url="@../img/magnifying-glass.png"/>
-                </ImageView>
-            </StackPane>
-        </HBox>
-    </VBox>
     <HBox layoutX="10.0" layoutY="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
         <children>
             <StackPane prefHeight="40.0" prefWidth="40.0">
@@ -1997,110 +1895,145 @@
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
         </padding>
     </HBox>
-    <HBox fx:id="playerCardsHBox" layoutX="10.0" layoutY="10.0" AnchorPane.bottomAnchor="0.0"
+    <HBox layoutX="10.0" layoutY="10.0" mouseTransparent="true" AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0">
         <children>
-            <Pane fx:id="roleCard" prefHeight="150.0" prefWidth="100.0"
-                  styleClass="pile">
-
+            <VBox prefHeight="200.0" prefWidth="300.0" styleClass="action-buttons-box">
+                <children>
+                    <HBox>
+                        <children>
+                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Übrige Aktionen: ">
+                                <HBox.margin>
+                                    <Insets left="5.0"/>
+                                </HBox.margin>
+                            </Text>
+                            <Text fx:id="remainingActionsText" strokeType="OUTSIDE" strokeWidth="0.0" text="4"/>
+                        </children>
+                    </HBox>
+                    <HBox prefWidth="200.0">
+                        <children>
+                            <VBox alignment="CENTER" spacing="1.0">
+                                <children>
+                                    <ToggleButton fx:id="buildTrainTracksButton" mnemonicParsing="false"
+                                                  onAction="#onBuildTrainTrack" prefHeight="30.0" prefWidth="150.0"
+                                                  styleClass="action-button" text="Schienen bauen">
+                                        <VBox.margin>
+                                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                        </VBox.margin>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="buildHospitalButton" mnemonicParsing="false"
+                                                  onAction="#onBuildHospital" prefHeight="30.0" prefWidth="150.0"
+                                                  styleClass="action-button" text="Krankenhaus bauen">
+                                        <VBox.margin>
+                                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                        </VBox.margin>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="treatInfectionButton" mnemonicParsing="false"
+                                                  onAction="#onTreatPlague" prefHeight="30.0" prefWidth="150.0"
+                                                  styleClass="action-button" text="Seuche behandeln">
+                                        <VBox.margin>
+                                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                        </VBox.margin>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="roleButtonOne" mnemonicParsing="false"
+                                                  onAction="#onRoleButtonOne" prefHeight="30.0" prefWidth="150.0"
+                                                  styleClass="action-button" text="Rollenaktion 1">
+                                        <VBox.margin>
+                                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                        </VBox.margin>
+                                    </ToggleButton>
+                                </children>
+                            </VBox>
+                            <VBox alignment="CENTER" spacing="1.0">
+                                <children>
+                                    <Button fx:id="shareKnowledgeButton" mnemonicParsing="false"
+                                            onAction="#onShareKnowledge" prefHeight="30.0" prefWidth="150.0"
+                                            styleClass="action-button" text="Wissen teilen">
+                                        <VBox.margin>
+                                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                        </VBox.margin>
+                                    </Button>
+                                    <ToggleButton fx:id="researchPlagueButton" mnemonicParsing="false"
+                                                  onAction="#onResearchPlague" prefHeight="30.0" prefWidth="150.0"
+                                                  styleClass="action-button" text="Seuche erforschen">
+                                        <VBox.margin>
+                                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                        </VBox.margin>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="treatWaterButton" mnemonicParsing="false"
+                                                  onAction="#onPlaceWaterTreatment" prefHeight="30.0" prefWidth="150.0"
+                                                  styleClass="action-button" text="Wasser aufbereiten">
+                                        <VBox.margin>
+                                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                        </VBox.margin>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="roleButtonTwo" mnemonicParsing="false"
+                                                  onAction="#onRoleButtonTwo" prefHeight="30.0" prefWidth="150.0"
+                                                  styleClass="action-button" text="Rollenaktion 2">
+                                        <VBox.margin>
+                                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                        </VBox.margin>
+                                    </ToggleButton>
+                                </children>
+                            </VBox>
+                            <VBox alignment="CENTER" layoutX="179.0" layoutY="17.0" spacing="10.0"/>
+                        </children>
+                    </HBox>
+                    <ToggleButton fx:id="endTurnButton" mnemonicParsing="false" onAction="#onEndTurn" prefHeight="30.0"
+                                  prefWidth="350.0" styleClass="end-turn-button" text="Zug beenden">
+                        <VBox.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </VBox.margin>
+                    </ToggleButton>
+                </children>
                 <HBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                 </HBox.margin>
-            </Pane>
-            <HBox styleClass="action-buttons-box">
-                <HBox.margin>
-                    <Insets bottom="5.0" left="40.0" right="5.0" top="5.0"/>
-                </HBox.margin>
+            </VBox>
+            <VBox mouseTransparent="true">
                 <children>
-                    <VBox alignment="CENTER" spacing="10.0">
+                    <Region mouseTransparent="true" VBox.vgrow="ALWAYS"/>
+                    <VBox spacing="1.0" styleClass="action-buttons-box">
+                        <VBox.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </VBox.margin>
                         <children>
-                            <ToggleButton fx:id="buildTrainTracksButton" mnemonicParsing="false"
-                                          onAction="#onBuildTrainTrack" prefHeight="30.0" prefWidth="150.0"
-                                          styleClass="action-button" text="Schienen bauen">
-                                <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                </VBox.margin>
-                            </ToggleButton>
-                            <ToggleButton fx:id="buildHospitalButton" mnemonicParsing="false"
-                                          onAction="#onBuildHospital" prefHeight="30.0" prefWidth="150.0"
-                                          styleClass="action-button" text="Krankenhaus bauen">
-                                <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                </VBox.margin>
-                            </ToggleButton>
-                            <ToggleButton fx:id="treatInfectionButton" mnemonicParsing="false" onAction="#onTreatPlague"
-                                          prefHeight="30.0" prefWidth="150.0" styleClass="action-button"
-                                          text="Seuche behandeln">
-                                <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                </VBox.margin>
-                            </ToggleButton>
-                        </children>
-                    </VBox>
-                    <VBox alignment="CENTER" spacing="10.0">
-                        <children>
-                            <Button fx:id="shareKnowledgeButton" mnemonicParsing="false"
-                                    onAction="#onShareKnowledge" prefHeight="30.0" prefWidth="150.0"
-                                    styleClass="action-button" text="Wissen teilen">
-                                <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                </VBox.margin>
-                            </Button>
-                            <ToggleButton fx:id="researchPlagueButton" mnemonicParsing="false"
-                                          onAction="#onResearchPlague" prefHeight="30.0" prefWidth="150.0"
-                                          styleClass="action-button" text="Seuche erforschen">
-                                <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                </VBox.margin>
-                            </ToggleButton>
-                            <ToggleButton fx:id="treatWaterButton" mnemonicParsing="false"
-                                          onAction="#onPlaceWaterTreatment" prefHeight="30.0" prefWidth="150.0"
-                                          styleClass="action-button" text="Wasser aufbereiten">
-                                <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                </VBox.margin>
-                            </ToggleButton>
-                        </children>
-                    </VBox>
-                    <VBox alignment="CENTER" layoutX="179.0" layoutY="17.0" spacing="10.0">
-                        <children>
-                            <ToggleButton fx:id="roleButtonOne" mnemonicParsing="false" onAction="#onRoleButtonOne"
-                                          prefHeight="30.0"
-                                          prefWidth="150.0" styleClass="action-button" text="Rollenaktion 1">
-                                <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                </VBox.margin>
-                            </ToggleButton>
-                            <ToggleButton fx:id="roleButtonTwo" mnemonicParsing="false" onAction="#onRoleButtonTwo"
-                                          prefHeight="30.0"
-                                          prefWidth="150.0" styleClass="action-button" text="Rollenaktion 2">
-                                <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                </VBox.margin>
-                            </ToggleButton>
-                            <ToggleButton fx:id="endTurnButton" mnemonicParsing="false" onAction="#onEndTurn"
-                                          prefHeight="30.0" prefWidth="150.0" styleClass="end-turn-button"
-                                          text="Zug beenden">
-                                <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                </VBox.margin>
-                            </ToggleButton>
+                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Rollenkarte"/>
+                            <HBox fx:id="roleCard" spacing="5.0"/>
                         </children>
                     </VBox>
                 </children>
-            </HBox>
+            </VBox>
+            <VBox mouseTransparent="true" prefHeight="200.0" prefWidth="100.0">
+                <children>
+                    <Region mouseTransparent="true" VBox.vgrow="ALWAYS"/>
+                    <VBox spacing="1.0" styleClass="action-buttons-box">
+                        <children>
+                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Spielerkarten"/>
+                            <HBox fx:id="playerCardsHBox" spacing="5.0">
+                                <VBox.margin>
+                                    <Insets/>
+                                </VBox.margin>
+                            </HBox>
+                        </children>
+                        <VBox.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </VBox.margin>
+                    </VBox>
+                </children>
+            </VBox>
         </children>
     </HBox>
-    <VBox layoutX="10.0" layoutY="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox layoutX="10.0" layoutY="10.0" mouseTransparent="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <children>
-            <HBox>
+            <HBox mouseTransparent="true">
                 <children>
-                    <VBox>
+                    <VBox mouseTransparent="true">
                         <HBox.margin>
                             <Insets right="10.0"/>
                         </HBox.margin>
                         <children>
-                            <HBox>
+                            <HBox mouseTransparent="true">
                                 <children>
                                     <StackPane>
                                         <HBox.margin>
@@ -2229,39 +2162,46 @@
                             </HBox>
                         </children>
                     </VBox>
-                    <HBox>
-                        <children>
-                            <Pane fx:id="infectionCardDrawPile" onMouseClicked="#onInfectionCardDrawPileClickedEvent"
-                                  prefHeight="100.0" prefWidth="150.0" styleClass="pile">
-                                <HBox.margin>
-                                    <Insets/>
-                                </HBox.margin>
-                                <children>
-                                    <ImageView fitHeight="100.0" fitWidth="150.0" pickOnBounds="true"
-                                               preserveRatio="true" mouseTransparent="true">
-                                        <image>
-                                            <Image url="@../img/infection-card-back.png"/>
-                                        </image>
-                                    </ImageView>
-                                    <Text fx:id="infectionCardDrawPileCounter" fill="WHITE" layoutY="15.0"
-                                          strokeType="OUTSIDE" strokeWidth="0.0" text="48" wrappingWidth="50.0" mouseTransparent="true">
-                                        <font>
-                                            <Font name="System Bold" size="18.0"/>
-                                        </font>
-                                    </Text>
-                                </children>
-                            </Pane>
-                            <Pane fx:id="infectionCardDiscardPile" layoutX="330.0" layoutY="10.0" prefHeight="100.0"
-                                  prefWidth="150.0" styleClass="pile">
-                                <HBox.margin>
-                                    <Insets left="20.0"/>
-                                </HBox.margin>
-                            </Pane>
-                        </children>
+                    <VBox styleClass="action-buttons-box">
                         <HBox.margin>
                             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                         </HBox.margin>
-                    </HBox>
+                        <children>
+                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Infektionskarten"/>
+                            <HBox>
+                                <children>
+                                    <Pane fx:id="infectionCardDrawPile"
+                                          onMouseClicked="#onInfectionCardDrawPileClickedEvent" prefHeight="100.0"
+                                          prefWidth="150.0" styleClass="pile">
+                                        <HBox.margin>
+                                            <Insets/>
+                                        </HBox.margin>
+                                        <children>
+                                            <ImageView fitHeight="100.0" fitWidth="150.0" mouseTransparent="true"
+                                                       pickOnBounds="true" preserveRatio="true">
+                                                <image>
+                                                    <Image url="@../img/infection-card-back.png"/>
+                                                </image>
+                                            </ImageView>
+                                            <Text fx:id="infectionCardDrawPileCounter" fill="WHITE" layoutY="15.0"
+                                                  mouseTransparent="true" strokeType="OUTSIDE" strokeWidth="0.0"
+                                                  text="48" wrappingWidth="50.0">
+                                                <font>
+                                                    <Font name="System Bold" size="18.0"/>
+                                                </font>
+                                            </Text>
+                                        </children>
+                                    </Pane>
+                                    <Pane fx:id="infectionCardDiscardPile" layoutX="330.0" layoutY="10.0"
+                                          prefHeight="100.0" prefWidth="150.0">
+                                        <HBox.margin>
+                                            <Insets left="20.0"/>
+                                        </HBox.margin>
+                                    </Pane>
+                                </children>
+                            </HBox>
+                        </children>
+                    </VBox>
                 </children>
             </HBox>
             <HBox alignment="TOP_RIGHT" mouseTransparent="true">
@@ -2391,6 +2331,159 @@
                     </VBox>
                 </children>
             </HBox>
+        </children>
+    </VBox>
+    <VBox mouseTransparent="true" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <children>
+            <HBox mouseTransparent="true">
+                <children>
+                    <Region mouseTransparent="true" HBox.hgrow="ALWAYS"/>
+                    <VBox fx:id="itemsVBox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+                          mouseTransparent="true" prefWidth="100.0" spacing="2.0" styleClass="action-buttons-box">
+                        <HBox.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </HBox.margin>
+                        <children>
+                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Items"/>
+                        </children>
+                    </VBox>
+                </children>
+            </HBox>
+            <HBox mouseTransparent="true">
+                <children>
+                    <Region mouseTransparent="true" HBox.hgrow="ALWAYS"/>
+                    <VBox styleClass="action-buttons-box">
+                        <HBox.margin>
+                            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                        </HBox.margin>
+                        <children>
+                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Spielerkarten"/>
+                            <HBox spacing="20.0">
+                                <children>
+                                    <Pane fx:id="playerCardDiscardPile" prefHeight="150.0" prefWidth="100.0"/>
+                                    <Pane fx:id="playerCardDrawPile" onMouseClicked="#onPlayerCardPileClickedEvent"
+                                          prefHeight="150.0" prefWidth="100.0" styleClass="pile">
+                                        <children>
+                                            <ImageView fitHeight="150.0" fitWidth="200.0" mouseTransparent="true"
+                                                       pickOnBounds="true" preserveRatio="true">
+                                                <image>
+                                                    <Image url="@../img/player-card-back.png"/>
+                                                </image>
+                                            </ImageView>
+                                            <Text fx:id="playerCardDrawPileCounter" layoutX="50.0" layoutY="15.0"
+                                                  mouseTransparent="true" strokeType="OUTSIDE" strokeWidth="0.0"
+                                                  text="48" textAlignment="RIGHT" wrappingWidth="50.0">
+                                                <font>
+                                                    <Font name="System Bold" size="18.0"/>
+                                                </font>
+                                            </Text>
+                                        </children>
+                                    </Pane>
+                                </children>
+                            </HBox>
+                        </children>
+                    </VBox>
+                </children>
+            </HBox>
+            <VBox styleClass="action-buttons-box">
+                <children>
+                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Seuchen">
+                        <VBox.margin>
+                            <Insets bottom="2.0"/>
+                        </VBox.margin>
+                    </Text>
+                    <HBox mouseTransparent="true" spacing="2.0">
+                        <children>
+                            <StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+                                       minWidth="-Infinity" prefHeight="60.0" prefWidth="60.0">
+                                <HBox.margin>
+                                    <Insets/>
+                                </HBox.margin>
+                                <children>
+                                    <Pane>
+                                        <styleClass>
+                                            <String fx:value="plague-marker"/>
+                                            <String fx:value="plague-marker-red"/>
+                                        </styleClass>
+                                    </Pane>
+                                    <ImageView fx:id="plagueMarkerRedImage" fitHeight="40.0" fitWidth="40.0"
+                                               pickOnBounds="true" preserveRatio="true">
+                                        <image>
+                                            <Image url="@../img/magnifying-glass.png"/>
+                                        </image>
+                                    </ImageView>
+                                </children>
+                            </StackPane>
+                            <StackPane layoutX="15.0" layoutY="15.0" maxHeight="-Infinity" maxWidth="-Infinity"
+                                       minHeight="-Infinity" minWidth="-Infinity" prefHeight="60.0" prefWidth="60.0">
+                                <HBox.margin>
+                                    <Insets/>
+                                </HBox.margin>
+                                <children>
+                                    <Pane>
+                                        <styleClass>
+                                            <String fx:value="plague-marker"/>
+                                            <String fx:value="plague-marker-blue"/>
+                                        </styleClass>
+                                    </Pane>
+                                    <ImageView fx:id="plagueMarkerBlueImage" fitHeight="40.0" fitWidth="40.0"
+                                               pickOnBounds="true" preserveRatio="true">
+                                        <image>
+                                            <Image url="@../img/magnifying-glass.png"/>
+                                        </image>
+                                    </ImageView>
+                                </children>
+                            </StackPane>
+                            <StackPane layoutX="371.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity"
+                                       minHeight="-Infinity" minWidth="-Infinity" prefHeight="60.0" prefWidth="60.0">
+                                <HBox.margin>
+                                    <Insets/>
+                                </HBox.margin>
+                                <children>
+                                    <Pane>
+                                        <styleClass>
+                                            <String fx:value="plague-marker"/>
+                                            <String fx:value="plague-marker-black"/>
+                                        </styleClass>
+                                    </Pane>
+                                    <ImageView fx:id="plagueMarkerBlackImage" fitHeight="40.0" fitWidth="40.0"
+                                               pickOnBounds="true" preserveRatio="true">
+                                        <image>
+                                            <Image url="@../img/magnifying-glass.png"/>
+                                        </image>
+                                    </ImageView>
+                                </children>
+                            </StackPane>
+                            <StackPane layoutX="451.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity"
+                                       minHeight="-Infinity" minWidth="-Infinity" prefHeight="60.0" prefWidth="60.0">
+                                <HBox.margin>
+                                    <Insets/>
+                                </HBox.margin>
+                                <children>
+                                    <Pane>
+                                        <styleClass>
+                                            <String fx:value="plague-marker"/>
+                                            <String fx:value="plague-marker-yellow"/>
+                                        </styleClass>
+                                        <StackPane.margin>
+                                            <Insets/>
+                                        </StackPane.margin>
+                                    </Pane>
+                                    <ImageView fx:id="plagueMarkerYellowImage" fitHeight="40.0" fitWidth="40.0"
+                                               pickOnBounds="true" preserveRatio="true">
+                                        <image>
+                                            <Image url="@../img/magnifying-glass.png"/>
+                                        </image>
+                                    </ImageView>
+                                </children>
+                            </StackPane>
+                        </children>
+                    </HBox>
+                </children>
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </VBox.margin>
+            </VBox>
         </children>
     </VBox>
 </AnchorPane>
