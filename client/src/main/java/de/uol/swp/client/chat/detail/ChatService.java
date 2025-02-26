@@ -1,11 +1,10 @@
 package de.uol.swp.client.chat.detail;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.chat.SendChatRequest;
+import de.uol.swp.common.chat.request.SendChatRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
 
 public class ChatService {
     private static final Logger LOG = LogManager.getLogger(ChatService.class);

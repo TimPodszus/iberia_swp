@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.user.UserStore;
-import de.uol.swp.common.chat.AbstractChatMessage;
+import de.uol.swp.common.chat.messages.AbstractChatMessage;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
