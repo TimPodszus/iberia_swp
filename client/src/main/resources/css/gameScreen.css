@@ -99,6 +99,28 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
+.action-button.current-player {
+    -fx-padding: 6 8 8 8;
+    -fx-background-insets: 0, 0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color: linear-gradient(from 0% 93% to 0% 100%, #13a335 0%, #139532 100%),
+    #199f39,
+    #60ff7f,
+    radial-gradient(center 50% 50%, radius 100%, #6eff97, #30bd5f);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.end-turn-button {
+    -fx-padding: 6 8 8 8;
+    -fx-background-insets: 0, 0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color: linear-gradient(from 0% 93% to 0% 100%, #ff4d4d 0%, #ff0000 100%),
+    #ff4d4d,
+    #ff0000,
+    radial-gradient(center 50% 50%, radius 100%, #ff4d4d, #ff0000);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
 .action-button:selected {
     -fx-padding: 6 8 8 8;
     -fx-background-insets: 0, 0 0 2 0, 0 0 3 0, 0 0 4 0;
@@ -157,7 +179,7 @@
 }
 
 .region-highlight {
-    -fx-fill: rgb(119, 228, 76);
+    -fx-fill: rgb(119, 228, 76, 0.5);
     -fx-stroke: #77E44C;
     -fx-stroke-width: 3px;
 }

@@ -1,6 +1,8 @@
 package de.uol.swp.server;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.game.message.AbstractGameRequest;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
@@ -11,9 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class is the base for creating a new Service.
@@ -24,6 +24,10 @@ import java.util.List;
  * @since 2019-10-08
  */
 public class AbstractService {
+
+    protected static final String USER_NOT_LOGGED_IN = "User not logged in";
+
+    protected static final int DEFAULT_MESSAGE_DELAY_MILLIS = 200;
     /**
      * The EventBus instance used for posting and handling events.
      * This is a protected final field, ensuring it is initialized once and cannot be changed.
@@ -95,5 +99,24 @@ public class AbstractService {
         message.setReceiver(sessions);
         post(message);
 
+    }
+
+    /**
+     * Sends a status response based on the given game request.
+     *
+     * @param request     the game request containing the lobby ID and session information
+     * @param status      the status to be sent in the response (true for success, false for failure)
+     * @param description a description of the status
+     * @see AbstractGameRequest
+     * @see StatusResponse
+     * @since 2019-10-08
+     */
+    protected void sendStatusResponse(AbstractGameRequest request, boolean status, String description) {
+        StatusResponse response = new StatusResponse(request.getLobbyId(), status, description);
+        request.getSession()
+               .ifPresent(response::setSession);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        post(response);
     }
 }

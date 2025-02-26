@@ -1,21 +1,21 @@
 package de.uol.swp.server.game;
 
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
-import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.game.message.request.*;
+import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
+import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
-import de.uol.swp.common.player.request.MovePlayerRequest;
+import de.uol.swp.common.game.message.response.StatusResponse;
+import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
@@ -27,22 +27,30 @@ import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.GameInitializationException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
-import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.PlagueRepository;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import org.greenrobot.eventbus.EventBusException;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,9 +60,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -89,7 +95,8 @@ public class GameServiceTest extends EventBusBasedTest {
 
     @Spy
     @InjectMocks
-    GameService gameService = new GameService(getBus(),
+    GameService gameService = new GameService(
+            getBus(),
             lobbyManagement,
             gameManagement,
             cityManagement,
@@ -118,18 +125,35 @@ public class GameServiceTest extends EventBusBasedTest {
         handleEvent(response);
     }
 
+    /**
+     * Handles AvailableActionsResponse events.
+     *
+     * @param event the AvailableActionsResponse
+     */
     @Subscribe
     public void onEvent(AvailableActionsResponse event) {
         super.handleEvent(event);
     }
 
+    /**
+     * Handles ShareRideRequest events.
+     *
+     * @param event the ShareRideRequest
+     */
     @Subscribe
     public void onShareRideEvent(ShareRideRequest event) {
         super.handleEvent(event);
     }
 
     @Subscribe
-    public void onAnotherDayEvent(AnotherDayEvent event) { super.handleEvent(event); }
+    public void onAnotherDayEvent(AnotherDayEvent event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onStatusResponse(StatusResponse event) {
+        super.handleEvent(event);
+    }
 
     /**
      * Sets up the test environment.
@@ -143,10 +167,11 @@ public class GameServiceTest extends EventBusBasedTest {
      * Tests the onMovePlayerRequest method with valid inputs.
      *
      * @throws InterruptedException    if the thread is interrupted
-     * @throws GameManagementException if there is an error in game management
+     * @throws IllegalGameStateException if the game is in an illegal state
+     * @throws GameException           if the player cannot be moved
      */
     @Test
-    void testOnMovePlayerRequest() throws InterruptedException, GameManagementException {
+    void testOnMovePlayerRequest() throws InterruptedException, IllegalGameStateException, GameException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
@@ -172,8 +197,11 @@ public class GameServiceTest extends EventBusBasedTest {
         assertInstanceOf(BoardUpdateEvent.class, event);
     }
 
+    /**
+     * Tests the onMovePlayerRequest method with an unknown player to take with.
+     */
     @Test
-    void testOnMovePlayerRequestWithUnknownPlayerToTakeWith() throws InterruptedException, GameManagementException {
+    void testOnMovePlayerRequestWithUnknownPlayerToTakeWith() throws IllegalGameStateException, GameException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
@@ -190,13 +218,18 @@ public class GameServiceTest extends EventBusBasedTest {
         ILobby lobby = new Lobby("lobbycode", "Test", List.of(user, user2), user, 4);
         when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
 
-        assertThrows(EventBusException.class, () -> postAndWait(movePlayerRequest));
+        assertThrows(SessionNotFoundException.class, () -> gameService.onMovePlayerRequest(movePlayerRequest));
 
         verify(gameManagement, atLeast(1)).movePlayer(user, "lobbycode", city, null);
     }
 
+    /**
+     * Tests the onMovePlayerRequest method with a not logged-in player to take with.
+     *
+     * @throws GameManagementException if there is an error in game management
+     */
     @Test
-    void testOnMovePlayerRequestWithNotLoggedInPlayerToTakeWith() throws GameManagementException {
+    void testOnMovePlayerRequestWithNotLoggedInPlayerToTakeWith() throws IllegalGameStateException, GameException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
@@ -211,7 +244,7 @@ public class GameServiceTest extends EventBusBasedTest {
         ILobby lobby = new Lobby("lobbycode", "Test", List.of(user), user, 4);
         when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
 
-        assertThrows(EventBusException.class, () -> postAndWait(movePlayerRequest));
+        assertThrows(SessionNotFoundException.class, () -> gameService.onMovePlayerRequest(movePlayerRequest));
 
         verify(gameManagement, atLeast(1)).movePlayer(user, "lobbycode", city, null);
     }
@@ -224,8 +257,93 @@ public class GameServiceTest extends EventBusBasedTest {
         MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12, 1);
         movePlayerRequest.setSession(null);
 
-        assertThrows(GameException.class, () -> gameService.onMovePlayerRequest(movePlayerRequest));
+        assertThrows(SessionNotFoundException.class, () -> gameService.onMovePlayerRequest(movePlayerRequest));
     }
+
+    /**
+     * Tests the onMovePlayerRequest method when the game is in an illegal state.
+     *
+     * @throws InterruptedException      if the thread is interrupted
+     * @throws IllegalGameStateException if the game is in an illegal state
+     * @throws GameException             if there is an error in the game logic
+     */
+    @Test
+    void testOnMovePlayerRequest_IllegalGameState() throws InterruptedException, IllegalGameStateException, GameException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12);
+        movePlayerRequest.setSession(session);
+
+        ICity city = new CityRepository().getCity(12);
+        when(cityManagement.getCity("lobbycode", 12)).thenReturn(city);
+        doThrow(IllegalGameStateException.class).when(gameManagement)
+                                                .movePlayer(user, "lobbycode", city, null);
+
+        postAndWait(movePlayerRequest);
+
+        assertInstanceOf(StatusResponse.class, event);
+        assertFalse(((StatusResponse) event).isSuccess());
+    }
+
+    /**
+     * Tests the onMovePlayerRequest method when a PlayerManagementException is thrown.
+     *
+     * @throws InterruptedException      if the thread is interrupted
+     * @throws IllegalGameStateException if the game is in an illegal state
+     * @throws GameException             if there is an error in the game logic
+     */
+    @Test
+    void testOnMovePlayerRequest_PlayerManagementException() throws InterruptedException, IllegalGameStateException, GameException, PlayerManagementException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12);
+        movePlayerRequest.setSession(session);
+
+        ICity city = new CityRepository().getCity(12);
+        when(cityManagement.getCity("lobbycode", 12)).thenReturn(city);
+        when(playerManagement.getCard(anyString(), anyString(), anyInt())).thenThrow(PlayerManagementException.class);
+
+        postAndWait(movePlayerRequest);
+
+        assertInstanceOf(StatusResponse.class, event);
+        assertFalse(((StatusResponse) event).isSuccess());
+    }
+
+    /**
+     * Tests the onMovePlayerRequest method when a GameException is thrown.
+     *
+     * @throws InterruptedException      if the thread is interrupted
+     * @throws IllegalGameStateException if the game is in an illegal state
+     * @throws GameException             if there is an error in the game logic
+     */
+    @Test
+    void testOnMovePlayerRequest_GameException() throws InterruptedException, IllegalGameStateException, GameException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        MovePlayerRequest movePlayerRequest = new MovePlayerRequest("lobbycode", 12);
+        movePlayerRequest.setSession(session);
+
+        ICity city = new CityRepository().getCity(12);
+        when(cityManagement.getCity("lobbycode", 12)).thenReturn(city);
+        IGame game = new Game(2, "lobbycode");
+        when(gameManagement.getGame("lobbycode")).thenReturn(game);
+        ILobby lobby = new Lobby("lobbycode", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbycode")).thenReturn(lobby);
+        doThrow(GameException.class).when(gameManagement)
+                                    .movePlayer(user, "lobbycode", city, null);
+
+        postAndWait(movePlayerRequest);
+
+        assertInstanceOf(StatusResponse.class, event);
+        assertFalse(((StatusResponse) event).isSuccess());
+    }
+
 
     /**
      * Tests the onAvailableActionsRequest method.
@@ -248,9 +366,11 @@ public class GameServiceTest extends EventBusBasedTest {
 
     /**
      * Tests setting player positioning when the lobby is not found.
+     *
+     * @throws GameManagementException if there is an error in game management
      */
     @Test
-    void testOnPositionRequest_LobbyNotFound() throws GameManagementException {
+    void testOnPositionRequest_LobbyNotFound() throws IllegalGameStateException, GameException {
         PositioningRequest positioningRequest = mock(PositioningRequest.class);
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(mock(IGame.class));
         when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(null);
@@ -265,9 +385,11 @@ public class GameServiceTest extends EventBusBasedTest {
 
     /**
      * Tests setting player positioning when the game is null.
+     *
+     * @throws GameManagementException if there is an error in game management
      */
     @Test
-    void testOnPositionRequest_GameIsNull() throws GameManagementException {
+    void testOnPositionRequest_GameIsNull() throws IllegalGameStateException, GameException {
         PositioningRequest positioningRequest = mock(PositioningRequest.class);
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(mock(IGame.class));
         when(gameManagement.setPositioning(positioningRequest)).thenReturn(null);
@@ -280,10 +402,70 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     /**
-     * Tests create game  when the game is null.
+     * Tests the onPositionRequest method when an IllegalGameStateException is thrown.
+     * Ensures that a StatusResponse event is posted with a failure status.
+     *
+     * @throws IllegalGameStateException if the game is in an illegal state
+     * @throws GameException             if there is an error in the game logic
+     * @throws InterruptedException      if the thread is interrupted
      */
     @Test
-    void testOnCreateGameRequest_GameIsNull() throws PlayerManagementException {
+    void testOnPositionRequest_IllegalGameState() throws IllegalGameStateException, GameException, InterruptedException {
+        PositioningRequest positioningRequest = new PositioningRequest(LOBBY_CODE, 2);
+        when(gameManagement.setPositioning(positioningRequest)).thenThrow(IllegalGameStateException.class);
+
+        postAndWait(positioningRequest);
+
+        assertInstanceOf(StatusResponse.class, event);
+        assertFalse(((StatusResponse) event).isSuccess());
+    }
+
+    /**
+     * Tests the onPositionRequest method when a GameException is thrown.
+     * Ensures that a StatusResponse event is posted with a failure status.
+     *
+     * @throws IllegalGameStateException if the game is in an illegal state
+     * @throws GameException             if there is an error in the game logic
+     * @throws InterruptedException      if the thread is interrupted
+     */
+    @Test
+    void testOnPositionRequest_GameException() throws IllegalGameStateException, GameException, InterruptedException {
+        PositioningRequest positioningRequest = new PositioningRequest(LOBBY_CODE, 2);
+        when(gameManagement.setPositioning(positioningRequest)).thenThrow(GameException.class);
+
+        postAndWait(positioningRequest);
+
+        assertInstanceOf(StatusResponse.class, event);
+        assertFalse(((StatusResponse) event).isSuccess());
+    }
+
+    /**
+     * Tests setting player positioning when the game is not null.
+     *
+     * @throws GameInitializationException if the game cannot be initialized
+     * @throws InterruptedException        if the thread is interrupted
+     */
+    @Test
+    void testOnCreateGameRequest() throws GameInitializationException, InterruptedException {
+        List<IUserDTO> users = List.of(new UserDTO("username", "password"));
+        IGame testGame = new Game(1, "lobby123");
+        CreateGameRequest createGameRequest = new CreateGameRequest(LOBBY_CODE, GAME_ID, users);
+        when(gameManagement.createAndInitializeGame(createGameRequest)).thenReturn(testGame);
+        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(mock(Lobby.class));
+
+        postAndWait(createGameRequest);
+
+        assertInstanceOf(CreateGameResponse.class, event);
+        assertTrue(((CreateGameResponse) event).isSuccess());
+    }
+
+    /**
+     * Tests create game when the game is null.
+     *
+     * @throws PlayerManagementException if there is an error in player management
+     */
+    @Test
+    void testOnCreateGameRequest_GameIsNull() throws GameInitializationException {
         List<IUserDTO> users = List.of(new UserDTO("username", "password"));
         CreateGameRequest createGameRequest = new CreateGameRequest(LOBBY_CODE, GAME_ID, users);
         when(gameManagement.createAndInitializeGame(createGameRequest)).thenReturn(null);
@@ -296,16 +478,171 @@ public class GameServiceTest extends EventBusBasedTest {
         assertNull(event, "No event should be posted when the game creation fails.");
     }
 
+    /**
+     * Tests create game when the game initialization fails.
+     *
+     * @throws GameInitializationException if the game cannot be initialized
+     * @throws InterruptedException        if the thread is interrupted
+     */
     @Test
-    void testOnBuildTrainTrackRequest_UserIsNull() throws GameManagementException, GameException {
-        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
-        request.setSession(null);
+    void testOnCreateGameRequest_FailedInitialization() throws GameInitializationException, InterruptedException {
+        List<IUserDTO> users = List.of(new UserDTO("username", "password"));
+        CreateGameRequest createGameRequest = new CreateGameRequest(LOBBY_CODE, GAME_ID, users);
+        when(gameManagement.createAndInitializeGame(createGameRequest)).thenThrow(GameInitializationException.class);
 
-        assertThrows(GameException.class, () -> gameService.onBuildTrainTrackRequest(request));
+        postAndWait(createGameRequest);
+
+        assertInstanceOf(CreateGameResponse.class, event);
+        assertFalse(((CreateGameResponse) event).isSuccess());
+    }
+
+    /**
+     * Tests the onShareKnowledgeRequest method when the request is accepted.
+     *
+     * @throws GameManagementException   if there is an error in game management
+     * @throws PlayerManagementException if there is an error in player management
+     */
+    @Test
+    void testOnShareKnowledgeRequest_Accepted() throws GameManagementException, PlayerManagementException {
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                "lobbyId",
+                "currentPlayer",
+                "targetPlayer",
+                mock(ICardDTO.class),
+                mock(ICardDTO.class)
+        );
+        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", true, event);
+
+        IGame game = mock(IGame.class);
+        IPlayer currentPlayer = mock(IPlayer.class);
+        IPlayer targetPlayer = mock(IPlayer.class);
+        IUser currentUser = mock(IUser.class);
+        IUser targetUser = mock(IUser.class);
+
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
+        when(game.getPlayers()).thenReturn(List.of(currentPlayer, targetPlayer));
+        when(currentPlayer.getUser()).thenReturn(currentUser);
+        when(targetPlayer.getUser()).thenReturn(targetUser);
+        when(currentUser.getUsername()).thenReturn("currentPlayer");
+        when(targetUser.getUsername()).thenReturn("targetPlayer");
+
+        gameService.onShareKnowledgeRequest(request);
+
+        verify(gameManagement).unlockGameInWaitForConfirmation("lobbyId");
+        verify(gameManagement).shareKnowledgeRequestAccepted(
+                eq(currentPlayer),
+                eq(targetPlayer),
+                eq("lobbyId"),
+                eq(event),
+                eq(lobbyManagement),
+                eq(gameService)
+        );
+    }
+
+    /**
+     * Tests the onShareKnowledgeRequest method when the request is denied.
+     *
+     * @throws GameManagementException   if there is an error in game management
+     * @throws PlayerManagementException if there is an error in player management
+     */
+    @Test
+    void testOnShareKnowledgeRequest_Denied() throws GameManagementException, PlayerManagementException {
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                "lobbyId",
+                "currentPlayer",
+                "targetPlayer",
+                mock(ICardDTO.class),
+                mock(ICardDTO.class)
+        );
+        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", false, event);
+
+        IGame game = mock(IGame.class);
+        IPlayer currentPlayer = mock(IPlayer.class);
+        IPlayer targetPlayer = mock(IPlayer.class);
+        IUser currentUser = mock(IUser.class);
+        IUser targetUser = mock(IUser.class);
+
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
+        when(game.getPlayers()).thenReturn(List.of(currentPlayer, targetPlayer));
+        when(currentPlayer.getUser()).thenReturn(currentUser);
+        when(targetPlayer.getUser()).thenReturn(targetUser);
+        when(currentUser.getUsername()).thenReturn("currentPlayer");
+        when(targetUser.getUsername()).thenReturn("targetPlayer");
+
+        gameService.onShareKnowledgeRequest(request);
+
+        verify(gameManagement).unlockGameInWaitForConfirmation("lobbyId");
+        verify(gameManagement).postShareKnowledgeResponse(eq(event), eq(lobbyManagement), eq(gameService), eq(false));
+    }
+
+
+    @Test
+    void onCardsExchangeRequestTest() throws GameManagementException {
+        String lobbyId = "lobbyId";
+        IPlayer player1 = new Player(new User("player1", "password"));
+        IPlayer player2 = new Player(new User("player2", "password"));
+        ILobby lobby = new Lobby(lobbyId, "test", List.of(player1.getUser(), player2.getUser()), player1.getUser(), 4);
+        Session session = UUIDSession.create(player1.getUser());
+        Session session2 = UUIDSession.create(player2.getUser());
+        when(authenticationService.getSession(player1.getUser())).thenReturn(Optional.of(session));
+        when(authenticationService.getSession(player2.getUser())).thenReturn(Optional.of(session2));
+
+        ArrayList<IPlayer> players = new ArrayList<>();
+        players.add(player1);
+        IGame notMockedGame = new Game(
+                "testGame",
+                mock(RoleRepository.class),
+                mock(CityRepository.class),
+                mock(RegionRepository.class),
+                mock(ConnectionRepository.class),
+                mock(PlagueRepository.class),
+                mock(CardRepository.class),
+                1,
+                0,
+                14,
+                20,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                players,
+                0,
+                mock(IGameState.class),
+                mock(IGameState.class),
+                1,
+                mock(GameStateChangeListener.class)
+        );
+
+        when(gameManagement.getGame(any())).thenReturn(notMockedGame);
+        when(lobbyManagement.getLobby(any())).thenReturn(lobby);
+
+
+        Map<String, ICardDTO> cards = Map.of("player1", mock(ICardDTO.class), "player2", mock(ICardDTO.class));
+
+        CardsExchangeRequest request = new CardsExchangeRequest(cards, lobbyId);
+        gameService.onCardsExchangeRequest(request);
+
+        verify(gameManagement).lockGameInWaitForConfirmation(lobbyId);
     }
 
     @Test
-    void testOnBuildTrainTrackRequest_WithoutExtraTrackState() throws GameManagementException, GameException {
+    void testOnBuildTrainTrackRequest_UserIsNull() {
+        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
+        request.setSession(null);
+
+        assertThrows(SessionNotFoundException.class, () -> gameService.onBuildTrainTrackRequest(request));
+    }
+
+    /**
+     * Tests the onBuildTrainTrackRequest method without the extra track state.
+     *
+     * @throws GameException             if there is an error in the game logic
+     * @throws IllegalGameStateException if the game is in an illegal state
+     */
+    @Test
+    void testOnBuildTrainTrackRequest_WithoutExtraTrackState() throws GameException, IllegalGameStateException {
         BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
@@ -326,23 +663,68 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
     }
+
+    /**
+     * Tests the onBuildTrainTrackRequest method when the connection is null.
+     * Ensures that a StatusResponse event is posted with a failure status.
+     */
+    @Test
+    void testOnBuildTrainTrackRequest_GameException() throws IllegalGameStateException, GameException, InterruptedException {
+        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+        IConnection connection = new Connection(1, List.of(CityName.ALICANTE, CityName.ALBACETE), true);
+        when(connectionManagement.getConnection("lobbyId", 1)).thenReturn(connection);
+        doThrow(GameException.class).when(gameManagement)
+                                    .buildTrainTrack(user, "lobbyId", connection);
+        postAndWait(request);
+
+        assertInstanceOf(StatusResponse.class, event);
+        assertFalse(((StatusResponse) event).isSuccess());
+    }
+
+    /**
+     * Tests the onBuildTrainTrackRequest method when the game is in a state that does not allow building train tracks.
+     * Ensures a StatusResponse is send correctly
+     */
+    @Test
+    void testOnBuildTrainTrackRequest_IllegalGameState() throws IllegalGameStateException, GameException, InterruptedException {
+        BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+        IConnection connection = new Connection(1, List.of(CityName.ALICANTE, CityName.ALBACETE), true);
+        when(connectionManagement.getConnection("lobbyId", 1)).thenReturn(connection);
+        doThrow(IllegalGameStateException.class).when(gameManagement)
+                                                .buildTrainTrack(user, "lobbyId", connection);
+        postAndWait(request);
+
+        assertInstanceOf(StatusResponse.class, event);
+        assertFalse(((StatusResponse) event).isSuccess());
+    }
+
+    /**
+     * Tests the onGameStateChange method when the game state is DrawCardState.
+     * Ensures that the game state is changed to EndGameState.
+     */
     @Test
     void testOnGameStateChange_DrawCardState() {
         ILobby lobby = mock(ILobby.class);
-        IGame game = mock(IGame.class);
+        IGame testGame = mock(IGame.class);
         when(lobbyManagement.getLobby("gameId")).thenReturn(lobby);
         DrawCardState drawCardState = new DrawCardState();
-        when(game.getState()).thenReturn(drawCardState);
-        when(game.getPlayerCardDrawPile()).thenReturn(List.of());
-        when(game.getGameId()).thenReturn("gameId");
+        when(testGame.getState()).thenReturn(drawCardState);
+        when(testGame.getPlayerCardDrawPile()).thenReturn(List.of());
+        when(testGame.getGameId()).thenReturn("gameId");
 
-        gameService.onGameStateChange(game);
+        gameService.onGameStateChange(testGame);
 
-        verify(game).setState(any(EndGameState.class));
+        verify(testGame).setState(any(EndGameState.class));
     }
 
     @Test
-    void testOnBuildTrainTrackRequest_WithExtraTrackState() throws GameManagementException, GameException {
+    void testOnBuildTrainTrackRequest_WithExtraTrackState() throws GameException, IllegalGameStateException {
         BuildTrainTrackRequest request = new BuildTrainTrackRequest("lobbyId", 1);
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
@@ -362,7 +744,8 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
         assertInstanceOf(BoardUpdateEvent.class, event);
-        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));}
+        verify(gameService, times(1)).post(any(BuildableTrainTracksResponse.class));
+    }
 
     @Test
     void testOnAnotherDayEvent() {

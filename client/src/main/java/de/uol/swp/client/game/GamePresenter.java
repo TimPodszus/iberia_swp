@@ -22,27 +22,29 @@ import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.connection.IConnectionDTO;
+import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
-import de.uol.swp.common.game.GameActions;
-import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.game.StateType;
+import de.uol.swp.common.game.*;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.EndGameEvent;
 import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CardExchangeResponse;
 import de.uol.swp.common.game.message.response.CardSelectionResponse;
+import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
+import de.uol.swp.common.region.message.response.TreatWaterEventResponse;
 import de.uol.swp.common.user.IUserDTO;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -51,6 +53,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -75,6 +79,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import javafx.util.Pair;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -109,6 +114,8 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CITY_CLASS = "city";
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
+
+    @Setter
     private String lobbyId;
 
     private IUserDTO user;
@@ -116,7 +123,7 @@ public class GamePresenter extends AbstractPresenter {
     @Inject
     private GameService gameService;
 
-    private Map<Integer, List<ICardDTO>> availableDestinations = new HashMap<>();
+    private Map<Integer, DestinationInfo> availableDestinations = new HashMap<>();
 
     private List<IConnectionDTO> buildableTrainTracks = new ArrayList<>();
 
@@ -189,13 +196,25 @@ public class GamePresenter extends AbstractPresenter {
     private ToggleButton treatInfectionButton;
 
     @FXML
-    private ToggleButton shareKnowledgeButton;
+    private Button shareKnowledgeButton;
+
+    @FXML
+    private ToggleButton endTurnButton;
+
+    @FXML
+    private ToggleButton roleButtonOne;
+
+    @FXML
+    private ToggleButton roleButtonTwo;
+
 
     private double mouseX;
 
     private double mouseY;
 
     private IGameDTO gameDTO;
+
+    private boolean isDismissibleDialog;
 
     @FXML
     private AnchorPane chatPane;
@@ -294,10 +313,10 @@ public class GamePresenter extends AbstractPresenter {
         Shape shape = (Shape) event.getSource();
         if (shape instanceof Polygon) {
             shape.getStyleClass()
-                    .add("hover-effect-polygon");
+                 .add("hover-effect-polygon");
         } else {
             shape.getStyleClass()
-                    .add("hover-effect");
+                 .add("hover-effect");
         }
     }
 
@@ -311,10 +330,10 @@ public class GamePresenter extends AbstractPresenter {
         Shape shape = (Shape) event.getSource();
         if (shape instanceof Polygon) {
             shape.getStyleClass()
-                    .remove("hover-effect-polygon");
+                 .remove("hover-effect-polygon");
         } else {
             shape.getStyleClass()
-                    .remove("hover-effect");
+                 .remove("hover-effect");
         }
     }
 
@@ -327,47 +346,74 @@ public class GamePresenter extends AbstractPresenter {
     private void onCityClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
         int cityId = Integer.parseInt(source.getId()
-                .replaceAll("\\D+", ""));
+                                            .replaceAll("\\D+", ""));
         LOG.debug("City {} clicked", cityId);
         if (gameDTO.getState()
-                .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
+                   .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
             LOG.debug("Setting initial position to city {}", cityId);
             gameService.setPosition(gameDTO.getGameId(), cityId);
             LOG.info("Initial position set");
         }
 
+        if (buildHospitalButton.isSelected()) {
+            LOG.trace("Player wants to build a hospital in city {}", cityId);
+            gameService.sendBuildHospitalRequest(lobbyId, cityId);
+            LOG.info("Hospital has been built");
+            buildHospitalButton.setSelected(false);
+            return;
+        }
+
         if (source.getStyleClass()
-                .contains(CITY_HIGHLIGHTED_CLASS)) {
+                  .contains(CITY_HIGHLIGHTED_CLASS)) {
             LOG.trace("Player wants to move to city {}", cityId);
             if (cardDiscardNeeded(cityId)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
-                CardDialog cardDialog = new CardDialog(true, true, availableDestinations.get(cityId));
+                CardDialog cardDialog = new CardDialog(
+                        true,
+                        true,
+                        availableDestinations.get(cityId)
+                                             .getCardsUsableForMove()
+                );
                 Optional<ICardDTO> result = cardDialog.showAndWait();
-                result.ifPresentOrElse(card -> {
-                    LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
-                    gameService.movePlayerToCity(lobbyId, cityId, card.getId());
-                    LOG.info("Player has been moved with discarding a card");
-                }, () -> LOG.info("Player has not selected a card to discard. Aborting move."));
+                result.ifPresentOrElse(
+                        card -> {
+                            LOG.debug("Player has selected card {} to get to city {}", card.getId(), cityId);
+                            gameService.movePlayerToCity(lobbyId, cityId, card.getId());
+                            LOG.info("Player has been moved with discarding a card");
+                        }, () -> LOG.info("Player has not selected a card to discard. Aborting move.")
+                );
                 return;
             }
 
-            if (movingByBoat(cityId) && gameDTO.getCurrentPlayer()
-                    .getRole()
-                    .getName() == RoleEnum.SAILOR && !this.getPlayersInCity()
-                    .isEmpty()) {
-                LOG.debug("Player is a sailor and take a player with him to the harbour city {}", cityId);
-                PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
-                Optional<String> result = dialog.showAndWait();
-                result.ifPresentOrElse(username -> {
-                    LOG.debug("Player {} is taken with to the harbour city {}", username, cityId);
-                    gameService.movePlayerToCity(lobbyId, cityId, username);
-                    LOG.info("Player has been moved and has taken another player with him");
-                }, () -> {
-                    gameService.movePlayerToCity(lobbyId, cityId);
-                    LOG.info("Player has not selected a player to take with him. Moving alone.");
-                });
-                return;
+            if (!this.getPlayersInCity()
+                     .isEmpty()) {
+                RoleEnum role = gameDTO.getCurrentPlayer()
+                                       .getRole()
+                                       .getName();
+
+                if ((checkPlayersTransportMode(
+                        cityId,
+                        TransportMode.SHIP
+                ) && role == RoleEnum.SAILOR) || (checkPlayersTransportMode(
+                        cityId,
+                        TransportMode.TRAIN
+                ) && role == RoleEnum.RAILWAY_PERSON)) {
+                    LOG.debug("Player is a {} and takes a player with him to the city {}", role, cityId);
+                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
+                    Optional<String> result = dialog.showAndWait();
+                    result.ifPresentOrElse(
+                            username -> {
+                                LOG.debug("Player {} is taken with to the city {}", username, cityId);
+                                gameService.movePlayerToCity(lobbyId, cityId, username);
+                                LOG.info("Player has been moved and has taken another player with him");
+                            }, () -> {
+                                gameService.movePlayerToCity(lobbyId, cityId);
+                                LOG.info("Player has not selected a player to take with him. Moving alone.");
+                            }
+                    );
+                }
             }
+
             gameService.movePlayerToCity(this.lobbyId, cityId);
             LOG.info("Player has been moved");
         }
@@ -383,25 +429,24 @@ public class GamePresenter extends AbstractPresenter {
     private boolean cardDiscardNeeded(int cityId) {
         LOG.debug("Checking if discarding a card is needed for moving to city {}", cityId);
         return !availableDestinations.get(cityId)
-                .isEmpty();
+                                     .getCardsUsableForMove()
+                                     .isEmpty();
     }
 
     /**
-     * Checks if the player is moving by boat.
+     * Checks if the player is moving to the specified city using the given transport mode.
+     * This method verifies if the available destinations for the specified city include the given transport mode.
      *
-     * @param cityId the ID of the city to check
-     * @return true if the player is moving by boat, false otherwise
+     * @param cityId        the ID of the city to check
+     * @param transportMode the transport mode to check
+     * @return true if the player is moving by the specified transport mode to the city, false otherwise
      */
-    private boolean movingByBoat(int cityId) {
-        LOG.debug("Checking if player is moving by boat to city {}", cityId);
-        ICityDTO currentCity = gameDTO.getCurrentPlayer()
-                .getCurrentPosition();
-        ICityDTO destinationCity = gameDTO.getCities()
-                .stream()
-                .filter(city -> city.getId() == cityId)
-                .findFirst()
-                .orElseThrow();
-        return currentCity.isHarbourCity() && destinationCity.isHarbourCity();
+    private boolean checkPlayersTransportMode(int cityId, TransportMode transportMode) {
+        LOG.debug("Checking if player is moving by {} to city {}", transportMode, cityId);
+
+        return this.availableDestinations.get(cityId)
+                                         .getTransportModes()
+                                         .contains(transportMode);
     }
 
     /**
@@ -412,22 +457,23 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
-        int connectionId = Integer.parseInt(source.getId().replaceAll("\\D+", ""));
+        int connectionId = Integer.parseInt(source.getId()
+                                                  .replaceAll("\\D+", ""));
 
-        if (!source.getStyleClass().contains(CONNECTION_HIGHLIGHTED_CLASS)) {
+        if (!source.getStyleClass()
+                   .contains(CONNECTION_HIGHLIGHTED_CLASS)) {
             return;
         }
 
         boolean isBuildable = buildableTrainTracks.stream()
-                .anyMatch(connection -> connection.getId() == connectionId);
+                                                  .anyMatch(connection -> connection.getId() == connectionId);
 
         if (!isBuildable) {
             return;
         }
 
         StateType currentState = gameDTO.getState();
-        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) ||
-                currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
+        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) || currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
 
         if (isValidState) {
             gameService.buildTrainTrack(lobbyId, connectionId);
@@ -444,11 +490,35 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onRegionClickedEvent(MouseEvent event) {
         Node source = (Node) event.getSource();
+        regionId = Integer.parseInt(source.getId()
+                                          .replaceAll("\\D+", ""));
         if (gameDTO.getState()
-                .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)) {
-            regionId = Integer.parseInt(source.getId()
-                    .replaceAll("\\D+", ""));
+                   .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
+                                                                 .contains(REGION_HIGHLIGHTED_CLASS)) {
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
+        } else if ((gameDTO.getState()
+                           .equals(StateType.EVENT_STATE) || gameDTO.getState()
+                                                                    .equals(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
+                                                                                                                                   .contains(
+                                                                                                                                           REGION_HIGHLIGHTED_CLASS)) {
+            Platform.runLater(() -> {
+                TreatWaterEventDialog dialog = new TreatWaterEventDialog(
+                        isDismissibleDialog,
+                        gameDTO.getWaterTreatmentsLeft(),
+                        gameDTO.getState()
+                );
+                dialog.showAndWaitForResult()
+                      .thenAccept(selectedValue -> {
+                          if (selectedValue != null) {
+                              LOG.debug("Player has selected {} water treatments", selectedValue);
+                              gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
+                          } else {
+                              LOG.debug("Player has not selected any water treatments");
+                              gameService.sendTreatWaterEventRequest(lobbyId, regionId, 0, true);
+                          }
+                      });
+            });
+            resetRegionStyle();
         }
     }
 
@@ -470,7 +540,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param event the mouse event that triggered this handler
      */
     @FXML
-    private void onInfectionCardDrawPileClickedEvent(MouseEvent event) {
+    private void onInfectionCardDrawPileClickedEvent(MouseEvent event){
         gameService.drawInfectionCard(lobbyId);
     }
 
@@ -483,13 +553,13 @@ public class GamePresenter extends AbstractPresenter {
     private void onBuildTrainTrack(ActionEvent event) {
         if (buildTrainTracksButton.isSelected()) {
             if (gameDTO.getState()
-                    .equals(StateType.PLAYER_TURN_STATE)) {
+                       .equals(StateType.PLAYER_TURN_STATE)) {
                 resetHighlightetCities();
                 gameService.requestBuildableTrainTracks(
                         this.lobbyId,
                         gameDTO.getCurrentPlayer()
-                                .getCurrentPosition()
-                                .getId()
+                               .getCurrentPosition()
+                               .getId()
                 );
             }
         } else {
@@ -506,9 +576,18 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildHospital(ActionEvent event) {
         if (buildHospitalButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/85
-        } else {
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE)) {
+                resetHighlightetCities();
 
+                Integer cityId = gameDTO.getCurrentPlayer()
+                                        .getCurrentPosition()
+                                        .getId();
+                highlightAvailableHospitalLocations(List.of(cityId));
+            }
+        } else {
+            resetHighlightetCities();
+            this.highlightAvailableDestinations();
         }
     }
 
@@ -533,11 +612,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onShareKnowledge(ActionEvent event) {
-        if (shareKnowledgeButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
-        } else {
+        LOG.debug("Share knowledge action triggered");
+        gameService.sendShareKnowledgeRequest(this.gameDTO, this.lobbyId);
 
-        }
     }
 
     /**
@@ -554,6 +631,7 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+
     /**
      * Handles place water treatment action.
      *
@@ -563,13 +641,72 @@ public class GamePresenter extends AbstractPresenter {
     private void onPlaceWaterTreatment(ActionEvent event) {
         if (treatWaterButton.isSelected()) {
             if (gameDTO.getState()
-                    .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
+                       .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
                 resetHighlightetCities();
                 gameService.sendAvailableRegionsRequest(lobbyId);
             }
         } else {
             this.highlightAvailableDestinations();
             resetRegionStyle();
+        }
+    }
+
+    @FXML
+    private void onRoleButtonOne(ActionEvent event) {
+        if (roleButtonOne.isSelected()) {
+            LOG.debug("Role button one is selected");
+            if (gameDTO.getCurrentPlayer()
+                       .getRole()
+                       .getName()
+                       .equals(RoleEnum.POLITICIAN)) {
+                LOG.debug("Current player is a politician");
+                Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+                List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
+                                                              .getCards()
+                                                              .stream()
+                                                              .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                                     .getCurrentPosition()
+                                                                                                     .getId())
+                                                              .collect(Collectors.toList());
+                cardsToExchange.put(
+                        gameDTO.getCurrentPlayer()
+                               .getUsername(), currentPlayerCityCard
+                );
+                for (IPlayerDTO player : gameDTO.getPlayers()) {
+                    if (!player.getUsername()
+                               .equals(gameDTO.getCurrentPlayer()
+                                              .getUsername())) {
+                        cardsToExchange.put(player.getUsername(), player.getCards());
+                    }
+                }
+                LOG.debug("Cards to exchange: {}", cardsToExchange);
+                Platform.runLater(() -> {
+                    CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                            gameDTO.getCurrentPlayer()
+                                   .getUsername(), cardsToExchange
+                    );
+                    Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+                    result.ifPresent(map -> {
+                        LOG.debug("Card exchange result: {}", map);
+                        eventBus.post(new CardsExchangeRequest(map, lobbyId));
+                    });
+                });
+            }
+        }
+    }
+
+
+    @FXML
+    private void onRoleButtonTwo(ActionEvent event) {
+        if (roleButtonTwo.isSelected()) {
+            //TODO
+        }
+    }
+
+    @FXML
+    private void onEndTurn(ActionEvent event) {
+        if (endTurnButton.isSelected()) {
+            //TODO
         }
     }
 
@@ -594,15 +731,15 @@ public class GamePresenter extends AbstractPresenter {
         PlayerButton playerButton = (PlayerButton) event.getSource();
         LOG.debug("[LobbyId: {}]Player button {} clicked", this.lobbyId, playerButton.getUsername());
         IPlayerDTO player = gameDTO.getPlayers()
-                .stream()
-                .filter(p -> p.getUsername()
-                        .equals(playerButton.getUsername()))
-                .findFirst()
-                .orElseThrow();
+                                   .stream()
+                                   .filter(p -> p.getUsername()
+                                                 .equals(playerButton.getUsername()))
+                                   .findFirst()
+                                   .orElseThrow();
 
         List<ICardDTO> cards = player.getCards();
         RoleCard playerRoleCard = new RoleCard(player.getRole()
-                .getName());
+                                                     .getName());
         CardDialog cardDialog = new CardDialog(cards, playerRoleCard);
         cardDialog.show();
     }
@@ -637,19 +774,18 @@ public class GamePresenter extends AbstractPresenter {
         researchPlagueButton.setToggleGroup(toggleGroup);
         treatWaterButton.setToggleGroup(toggleGroup);
         treatInfectionButton.setToggleGroup(toggleGroup);
-        shareKnowledgeButton.setToggleGroup(toggleGroup);
 
         toggleGroup.selectedToggleProperty()
-                .addListener((observable, oldToggle, newToggle) -> {
-                    if (newToggle == null) {
-                        oldToggle.setSelected(false);
-                    }
-                    if (newToggle != null && oldToggle instanceof ToggleButton toggleButton && toggleButton.getOnAction() != null) {
-                        toggleButton.getOnAction()
-                                .handle(new ActionEvent(toggleButton, null));
-                    }
+                   .addListener((observable, oldToggle, newToggle) -> {
+                       if (newToggle == null) {
+                           oldToggle.setSelected(false);
+                       }
+                       if (newToggle != null && oldToggle instanceof ToggleButton toggleButton && toggleButton.getOnAction() != null) {
+                           toggleButton.getOnAction()
+                                       .handle(new ActionEvent(toggleButton, null));
+                       }
 
-                });
+                   });
     }
 
     /**
@@ -660,7 +796,7 @@ public class GamePresenter extends AbstractPresenter {
     public void setTrainConnection(int connectionId) {
         Line line = (Line) mapPane.lookup(CONNECTION_ID + connectionId);
         line.getStyleClass()
-                .add("train-connection");
+            .add("train-connection");
     }
 
     /**
@@ -674,14 +810,14 @@ public class GamePresenter extends AbstractPresenter {
 
         if (waterMarks == 0) {
             stackPane.getStyleClass()
-                    .remove("water-mark-visible");
+                     .remove("water-mark-visible");
             stackPane.getStyleClass()
-                    .add("water-mark");
+                     .add("water-mark");
         } else {
             stackPane.getStyleClass()
-                    .add("water-mark-visible");
+                     .add("water-mark-visible");
             stackPane.getStyleClass()
-                    .remove("water-mark");
+                     .remove("water-mark");
 
             for (Node child : stackPane.getChildren()) {
                 if (child instanceof Text text) {
@@ -708,7 +844,7 @@ public class GamePresenter extends AbstractPresenter {
         for (Node node : existingPlagues) {
             if (node.getUserData() == plagueName) {
                 plagueDisplayVBox.getChildren()
-                        .remove(node);
+                                 .remove(node);
                 break;
             }
         }
@@ -723,18 +859,18 @@ public class GamePresenter extends AbstractPresenter {
         text.setStrokeWidth(0.0);
 
         plagueHBox.getChildren()
-                .addAll(plagueCube, text);
+                  .addAll(plagueCube, text);
         plagueHBox.setUserData(plagueName);
         if (cubes == 3) {
             plagueHBox.getStyleClass()
-                    .add("plague-cubes-display-warning");
+                      .add("plague-cubes-display-warning");
         } else {
             plagueHBox.getStyleClass()
-                    .add("plague-cubes-display");
+                      .add("plague-cubes-display");
         }
 
         plagueDisplayVBox.getChildren()
-                .add(plagueHBox);
+                         .add(plagueHBox);
     }
 
     /**
@@ -777,12 +913,12 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(hospitalSymbol, new Insets(1.0, 1.0, 1.0, 1.0));
 
         hospitalHBox.getChildren()
-                .add(hospitalSymbol);
+                    .add(hospitalSymbol);
         hospitalHBox.getStyleClass()
-                .add("hospital");
+                    .add("hospital");
 
         plagueDisplayVBox.getChildren()
-                .add(0, hospitalHBox);
+                         .add(0, hospitalHBox);
     }
 
     private void removeHospitalFromCity(int cityId) {
@@ -790,9 +926,9 @@ public class GamePresenter extends AbstractPresenter {
 
         for (Node node : plagueDisplayVBox.getChildren()) {
             if (node instanceof HBox hbox && hbox.getStyleClass()
-                    .contains("hospital")) {
+                                                 .contains("hospital")) {
                 plagueDisplayVBox.getChildren()
-                        .remove(hbox);
+                                 .remove(hbox);
                 break;
             }
         }
@@ -812,14 +948,14 @@ public class GamePresenter extends AbstractPresenter {
         List<Color> playerColors = new ArrayList<>();
         for (IPlayerDTO player : players) {
             playerColors.add(Color.web(player.getRole()
-                    .getName()
-                    .getColorCode()));
+                                             .getName()
+                                             .getColorCode()));
         }
 
         GameFigure gameFigure = new GameFigure(playerColors);
 
         stackPaneCity.getChildren()
-                .addAll(gameFigure);
+                     .addAll(gameFigure);
     }
 
     /**
@@ -830,7 +966,7 @@ public class GamePresenter extends AbstractPresenter {
         for (int i = 1; i <= 48; i++) {
             StackPane stackPaneCity = (StackPane) mapPane.lookup("#stackPaneCity" + i);
             stackPaneCity.getChildren()
-                    .removeIf(GameFigure.class::isInstance);
+                         .removeIf(GameFigure.class::isInstance);
         }
     }
 
@@ -841,9 +977,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setInfectionCardDiscardPile(AbstractCard card) {
         infectionCardDiscardPile.getChildren()
-                .removeAll();
+                                .removeAll();
         infectionCardDiscardPile.getChildren()
-                .add(card);
+                                .add(card);
     }
 
     /**
@@ -853,9 +989,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setPlayerCardDiscardPile(AbstractCard card) {
         playerCardDiscardPile.getChildren()
-                .removeAll();
+                             .removeAll();
         playerCardDiscardPile.getChildren()
-                .add(card);
+                             .add(card);
     }
 
     /**
@@ -872,8 +1008,10 @@ public class GamePresenter extends AbstractPresenter {
         HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
 
         playerCardsHBox.getChildren()
-                .add(playerCardsHBox.getChildren()
-                        .size() - 1, cardSlot);
+                       .add(
+                               playerCardsHBox.getChildren()
+                                              .size() - 1, cardSlot
+                       );
     }
 
     /**
@@ -883,10 +1021,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void removePlayerHandCards() {
         playerCardsHBox.getChildren()
-                .removeIf(node -> node instanceof Pane && node.getStyleClass()
-                        .contains("pile") && !Objects.equals(node.getId(),
-                        "roleCard"
-                ));
+                       .removeIf(node -> node instanceof Pane && node.getStyleClass()
+                                                                     .contains("pile") && !Objects.equals(
+                               node.getId(),
+                               "roleCard"
+                       ));
     }
 
     /**
@@ -896,9 +1035,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setRoleCard(RoleCard roleCard) {
         this.roleCard.getChildren()
-                .removeAll();
+                     .removeAll();
         this.roleCard.getChildren()
-                .add(roleCard);
+                     .add(roleCard);
     }
 
     /**
@@ -930,6 +1069,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onBoardUpdateEvent(BoardUpdateEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         this.gameDTO = event.getGameDTO();
 
         Platform.runLater(() -> updateBoard(gameDTO));
@@ -945,16 +1089,19 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onStartGameEvent(StartGameEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         this.gameDTO = event.getGameDTO();
-        this.lobbyId = event.getLobbyId();
         this.user = UserStore.getInstance()
-                .getUser();
+                             .getUser();
 
         Platform.runLater(() -> {
             updateBoard(gameDTO);
             GameStartDialog.showStartDialog();
             updatePlayers(gameDTO.getPlayers());
-
         });
     }
 
@@ -969,8 +1116,10 @@ public class GamePresenter extends AbstractPresenter {
      * @param gameDTO the game data transfer object containing the latest game state
      */
     private void updateBoard(IGameDTO gameDTO) {
+        LOG.trace("Updating game board with latest data");
         updateCities(gameDTO.getCities());
         updateConnections(gameDTO.getConnections());
+        updateCurrentPlayer(gameDTO.getCurrentPlayer());
         updateRegions(gameDTO.getRegions());
         updateInfectionCardDiscardPile(gameDTO.getInfectionCardDiscardPile());
         updateInfectionCardDrawPile(gameDTO.getInfectionCardDrawPile());
@@ -979,7 +1128,7 @@ public class GamePresenter extends AbstractPresenter {
         updatePlayerHandCards();
 
         if (!gameDTO.getState()
-                .equals(StateType.START_STATE)) {
+                    .equals(StateType.START_STATE)) {
             updatePlayersInCities(gameDTO.getPlayers());
         }
 
@@ -990,13 +1139,14 @@ public class GamePresenter extends AbstractPresenter {
 
         disableActionButtons();
         if (gameDTO.getState()
-                .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
-                .getUsername()
-                .equals(user.getUsername())) {
-            gameService.requestAvailableDestination(this.lobbyId,
+                   .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
+                                                                  .getUsername()
+                                                                  .equals(user.getUsername())) {
+            gameService.requestAvailableDestination(
+                    this.lobbyId,
                     gameDTO.getCurrentPlayer()
-                            .getCurrentPosition()
-                            .getId()
+                           .getCurrentPosition()
+                           .getId()
             );
             gameService.sendAvailableActionsRequest(this.lobbyId);
         }
@@ -1005,14 +1155,17 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
+     *
      */
     private void updatePlayerHandCards() {
         removePlayerHandCards();
         IPlayerDTO player = gameDTO.getPlayer(user.getUsername());
         List<ICardDTO> playerHand = player.getCards();
+        StateType state = gameDTO.getState();
         for (ICardDTO card : playerHand) {
             AbstractCard abstractCard = CardFactory.createCard(card);
-            if (abstractCard instanceof EventCard eventCard) {
+            if (abstractCard instanceof EventCard eventCard && (state.equals(StateType.PLAYER_TURN_STATE) || state.equals(
+                    StateType.DRAW_CARD_STATE) || state.equals(StateType.INFECTION_STATE))) {
                 abstractCard.setOnMouseClicked(event -> {
                     if (event.getButton() == MouseButton.PRIMARY) {
                         gameService.sendPlayCardRequest(lobbyId, eventCard.getCardId());
@@ -1032,9 +1185,9 @@ public class GamePresenter extends AbstractPresenter {
         for (ICityDTO city : cities) {
             Node stackPane = mapPane.lookup(CITY_ID + city.getId());
             stackPane.getStyleClass()
-                    .remove(CITY_HIGHLIGHTED_CLASS);
+                     .remove(CITY_HIGHLIGHTED_CLASS);
             stackPane.getStyleClass()
-                    .add(CITY_CLASS);
+                     .add(CITY_CLASS);
             updateInfections(city);
         }
     }
@@ -1049,7 +1202,9 @@ public class GamePresenter extends AbstractPresenter {
         for (IInfectionDTO infection : infections) {
             PlagueName plagueName = infection.getPlagueName();
             int severity = infection.getSeverity();
-            setPlagueCubesToCity(city.getId(), plagueName, severity);
+            if (severity != 0) {
+                setPlagueCubesToCity(city.getId(), plagueName, severity);
+            }
         }
     }
 
@@ -1128,15 +1283,16 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updatePlayers(List<IPlayerDTO> players) {
         playerButtons.getChildren()
-                .clear();
+                     .clear();
         for (IPlayerDTO player : players) {
-            if (!Objects.equals(player.getUsername(),
+            if (!Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
-                            .getUser()
-                            .getUsername()
+                             .getUser()
+                             .getUsername()
             )) {
                 playerButtons.getChildren()
-                        .add(new PlayerButton(player.getUsername(), this::onPlayerButtonClickedEvent));
+                             .add(new PlayerButton(player.getUsername(), this::onPlayerButtonClickedEvent));
             }
         }
         updateCurrentUserRole(players);
@@ -1151,9 +1307,9 @@ public class GamePresenter extends AbstractPresenter {
     private void updatePlayersInCities(List<IPlayerDTO> players) {
         removeAllGameFigures();
         Map<Integer, List<IPlayerDTO>> playersByCity = players.stream()
-                .filter(player -> player.getCurrentPosition() != null)
-                .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
-                        .getId()));
+                                                              .filter(player -> player.getCurrentPosition() != null)
+                                                              .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
+                                                                                                             .getId()));
 
         playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
                 playersInCity
@@ -1167,15 +1323,39 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCurrentUserRole(List<IPlayerDTO> players) {
         for (IPlayerDTO player : players) {
-            if (Objects.equals(player.getUsername(),
+            if (Objects.equals(
+                    player.getUsername(),
                     UserStore.getInstance()
-                            .getUser()
-                            .getUsername()
+                             .getUser()
+                             .getUsername()
             )) {
                 setRoleCard(new RoleCard(player.getRole()
-                        .getName()));
+                                               .getName()));
             }
         }
+    }
+
+    /**
+     * Updates the current player button's style.
+     * <p>
+     * This method iterates through the player buttons and adds the "current-player" style class
+     * to the button corresponding to the current player, while removing it from the others.
+     *
+     * @param currentPlayer the current player whose button style needs to be updated
+     */
+    private void updateCurrentPlayer(IPlayerDTO currentPlayer) {
+        playerButtons.getChildren()
+                     .forEach(node -> {
+                         PlayerButton playerButton = (PlayerButton) node;
+                         if (playerButton.getUsername()
+                                         .equals(currentPlayer.getUsername())) {
+                             playerButton.getStyleClass()
+                                         .add("current-player");
+                         } else {
+                             playerButton.getStyleClass()
+                                         .remove("current-player");
+                         }
+                     });
     }
 
     /**
@@ -1186,14 +1366,14 @@ public class GamePresenter extends AbstractPresenter {
     private void updateInfectionCounter(int infectionCounter) {
         if (gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1)) instanceof Circle) {
             gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1))
-                    .getStyleClass()
-                    .remove("infection-grade-active");
+                      .getStyleClass()
+                      .remove("infection-grade-active");
         }
 
         if (gameScreen.lookup(INFECTION_GRADE_ID + infectionCounter) instanceof Circle) {
             gameScreen.lookup(INFECTION_GRADE_ID + infectionCounter)
-                    .getStyleClass()
-                    .add("infection-grade-active");
+                      .getStyleClass()
+                      .add("infection-grade-active");
         }
     }
 
@@ -1205,14 +1385,14 @@ public class GamePresenter extends AbstractPresenter {
     private void updateEscalationStage(int escalationStage) {
         if (gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1)) instanceof Circle) {
             gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1))
-                    .getStyleClass()
-                    .remove("escalation-stage-active");
+                      .getStyleClass()
+                      .remove("escalation-stage-active");
         }
 
         if (gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage) instanceof Circle) {
             gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage)
-                    .getStyleClass()
-                    .add("escalation-stage-active");
+                      .getStyleClass()
+                      .add("escalation-stage-active");
         }
     }
 
@@ -1249,9 +1429,9 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateResearchedPlagues(List<IPlagueDTO> plagues) {
         PlagueName[] researchedPlagues = plagues.stream()
-                .filter(IPlagueDTO::isResearched)
-                .map(IPlagueDTO::getName)
-                .toArray(PlagueName[]::new);
+                                                .filter(IPlagueDTO::isResearched)
+                                                .map(IPlagueDTO::getName)
+                                                .toArray(PlagueName[]::new);
         setResearchedPlagues(researchedPlagues);
     }
 
@@ -1279,7 +1459,7 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onAvailableActionsResponse(AvailableActionsResponse response) {
         if (!response.getLobbyId()
-                .equals(lobbyId)) {
+                     .equals(lobbyId)) {
             return;
         }
 
@@ -1316,12 +1496,22 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onCardSelectionResponse(CardSelectionResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         CardDialog dialog = new CardDialog(true, response.isDismissible(), response.getCards());
         Optional<ICardDTO> result = dialog.showAndWait();
     }
 
     @Subscribe
     public void onCardExchangeResponse(CardExchangeResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
         Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
@@ -1336,6 +1526,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailableRegionsResponse(AvailableRegionsResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         setAvailableRegions(response.getRegions());
     }
 
@@ -1350,13 +1545,18 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onCardsToDiscardForRegionResponse(CardsToDiscardForRegionResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         Platform.runLater(() -> {
             CardSelectionWaterTreatmentDialog cardSelectionDialog = new CardSelectionWaterTreatmentDialog(
                     true,
                     response.getCityCards(),
                     gameDTO.getCurrentPlayer()
-                            .getRole()
-                            .getName(),
+                           .getRole()
+                           .getName(),
                     gameDTO.getWaterTreatmentsLeft()
             );
             Optional<Pair<CityCardDTO, Integer>> result = cardSelectionDialog.showAndWait();
@@ -1381,7 +1581,7 @@ public class GamePresenter extends AbstractPresenter {
         for (IRegionDTO region : regions) {
             Node node = mapPane.lookup(REGION_ID + region.getId());
             node.getStyleClass()
-                    .add(REGION_HIGHLIGHTED_CLASS);
+                .add(REGION_HIGHLIGHTED_CLASS);
         }
     }
 
@@ -1394,7 +1594,13 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailableDestinationsResponse(AvailableDestinationsResponse response) {
-        LOG.debug("Received {} available destinations",
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
+        LOG.debug(
+                "Received {} available destinations",
                 response.getCities()
                         .size()
         );
@@ -1405,6 +1611,11 @@ public class GamePresenter extends AbstractPresenter {
 
     @Subscribe
     public void onBuildableTrainTracksResponse(BuildableTrainTracksResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         this.buildableTrainTracks = response.getConnections();
         highlightBuildableTrainTrackHighlight(true);
     }
@@ -1416,18 +1627,41 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void highlightAvailableDestinations() {
         LOG.debug("Highlighting available destinations");
-        for (Map.Entry<Integer, List<ICardDTO>> entry : availableDestinations.entrySet()) {
-            int cityId = entry.getKey();
+        highlightCitys(availableDestinations.keySet()
+                                            .stream()
+                                            .toList());
+        LOG.info("Available destinations highlighted");
+    }
+
+    /**
+     * Highlights the available hospital locations on the game map.
+     * This method highlights the cities where hospitals can be built by updating their style classes.
+     *
+     * @param cityIds the list of city IDs where hospitals can be built
+     */
+    private void highlightAvailableHospitalLocations(List<Integer> cityIds) {
+        LOG.debug("Highlighting available hospital locations");
+        highlightCitys(cityIds);
+        LOG.info("Available hospital locations highlighted");
+    }
+
+    /**
+     * Highlights the specified cities on the game map.
+     * This method updates the style classes of the specified cities to indicate they are highlighted.
+     *
+     * @param cityIds the list of city IDs to highlight
+     */
+    private void highlightCitys(List<Integer> cityIds) {
+        for (Integer cityId : cityIds) {
             LOG.trace("Highlighting city {}", cityId);
             Node node = mapPane.lookup(CITY_ID + cityId);
             node.getStyleClass()
-                    .removeAll(CITY_CLASS);
+                .removeAll(CITY_CLASS);
             node.getStyleClass()
-                    .removeAll(CITY_HIGHLIGHTED_CLASS);
+                .removeAll(CITY_HIGHLIGHTED_CLASS);
             node.getStyleClass()
-                    .add(CITY_HIGHLIGHTED_CLASS);
+                .add(CITY_HIGHLIGHTED_CLASS);
         }
-        LOG.info("Available destinations highlighted");
     }
 
     /**
@@ -1441,8 +1675,8 @@ public class GamePresenter extends AbstractPresenter {
         for (IPlayerDTO player : gameDTO.getPlayers()) {
             boolean isNotCurrentPlayer = !player.equals(gameDTO.getCurrentPlayer());
             boolean playersAreInSameCity = player.getCurrentPosition()
-                    .equals(gameDTO.getCurrentPlayer()
-                            .getCurrentPosition());
+                                                 .equals(gameDTO.getCurrentPlayer()
+                                                                .getCurrentPosition());
             if (isNotCurrentPlayer && playersAreInSameCity) {
                 LOG.trace("Player {} is in the same city as the current player", player.getUsername());
                 playersInCity.add(player);
@@ -1463,19 +1697,47 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onShareRideEvent(ShareRideEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         Platform.runLater(() -> {
             boolean result = ConfirmationDialog.showConfirmationDialog("Willst du zu " + event.getCity()
-                    .getName()
-                    .getDisplayName() + " mitgenommen werden?");
+                                                                                              .getName()
+                                                                                              .getDisplayName() + " mitgenommen werden?");
             if (result) {
-                gameService.sendShareRideRequest(lobbyId,
+                gameService.sendShareRideRequest(
+                        lobbyId,
                         event.getCity()
-                                .getId()
+                             .getId()
                 );
             } else {
                 gameService.sendShareRideRequest(lobbyId);
             }
         });
+
+    }
+
+    /**
+     * Handles the KnowledgeSharedEvent.
+     * <p>
+     * This method is called when a KnowledgeSharedEvent is received. It updates the game board
+     * with the latest data from the event and logs the result of the knowledge sharing action.
+     *
+     * @param response the KnowledgeSharedEvent containing the game data
+     */
+    @Subscribe
+    public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
+        LOG.debug("Received ShareKnowledgeResponse");
+        if (response.wasSuccessful()) {
+            LOG.info("Knowledge shared");
+            LOG.trace("Updating board of Game {}", response.getGameDTO());
+            this.gameDTO = response.getGameDTO();
+            Platform.runLater(() -> updateBoard(response.getGameDTO()));
+        } else {
+            LOG.info("Knowledge not shared");
+        }
 
     }
 
@@ -1489,8 +1751,24 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onEndGameEvent(EndGameEvent event) {
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+
         EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
         Platform.runLater(dialog::showEndGameDialog);
+    }
+
+    @Subscribe
+    public void onTreatWaterEventResponse(TreatWaterEventResponse eventResponse) {
+        List<IRegionDTO> regions = gameDTO.getRegions();
+        isDismissibleDialog = eventResponse.isDismissible();
+        for (IRegionDTO region : regions) {
+            Node stackPane = mapPane.lookup(REGION_ID + region.getId());
+            stackPane.getStyleClass()
+                     .add(REGION_HIGHLIGHTED_CLASS);
+        }
     }
 
     /**
@@ -1504,7 +1782,7 @@ public class GamePresenter extends AbstractPresenter {
         for (IRegionDTO region : regions) {
             Node stackPane = mapPane.lookup(REGION_ID + region.getId());
             stackPane.getStyleClass()
-                    .remove(REGION_HIGHLIGHTED_CLASS);
+                     .remove(REGION_HIGHLIGHTED_CLASS);
         }
     }
 
@@ -1517,10 +1795,10 @@ public class GamePresenter extends AbstractPresenter {
         for (IConnectionDTO connection : this.buildableTrainTracks) {
             Line line = (Line) mapPane.lookup(CONNECTION_ID + connection.getId());
             line.getStyleClass()
-                    .removeAll(CONNECTION_HIGHLIGHTED_CLASS);
+                .removeAll(CONNECTION_HIGHLIGHTED_CLASS);
             if (highlight) {
                 line.getStyleClass()
-                        .add(CONNECTION_HIGHLIGHTED_CLASS);
+                    .add(CONNECTION_HIGHLIGHTED_CLASS);
             }
         }
     }
@@ -1533,10 +1811,33 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void resetHighlightetCities() {
         gameDTO.getCities()
-                .forEach(city -> {
-                    Node stackPane = mapPane.lookup(CITY_ID + city.getId());
-                    stackPane.getStyleClass()
+               .forEach(city -> {
+                   Node stackPane = mapPane.lookup(CITY_ID + city.getId());
+                   stackPane.getStyleClass()
                             .remove(CITY_HIGHLIGHTED_CLASS);
-                });
+               });
+    }
+
+    /**
+     * Handles game responses.
+     * <p>
+     * This method is called when a game response is received. If the response indicates
+     * a failure, it displays an error alert with the response description.
+     *
+     * @param response the game response
+     */
+    @Subscribe
+    public void onGameResponse(AbstractGameResponse response) {
+        if (response.isSuccess()) {
+            return;
+        }
+
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Fehler");
+            alert.setHeaderText("Fehler bei der Anfrage");
+            alert.setContentText(response.getDescription());
+            alert.showAndWait();
+        });
     }
 }

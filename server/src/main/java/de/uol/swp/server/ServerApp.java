@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import de.uol.swp.common.Configuration;
 import de.uol.swp.server.cards.CardService;
 import de.uol.swp.server.chat.ChatService;
+import de.uol.swp.server.city.CityService;
 import de.uol.swp.server.communication.ServerHandler;
 import de.uol.swp.server.communication.netty.NettyServerHandler;
 import de.uol.swp.server.communication.netty.Server;
@@ -83,6 +84,7 @@ class ServerApp {
         injector.getInstance(PlayerService.class);
         injector.getInstance(CardService.class);
         injector.getInstance(RegionService.class);
+        injector.getInstance(CityService.class);
         injector.getInstance(ChatService.class);
     }
 
