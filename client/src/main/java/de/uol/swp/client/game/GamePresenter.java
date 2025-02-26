@@ -23,6 +23,7 @@ import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.*;
 import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.EndGameEvent;
 import de.uol.swp.common.game.message.event.ShareRideEvent;
@@ -38,6 +39,7 @@ import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
+import de.uol.swp.common.region.message.response.TreatWaterEventResponse;
 import de.uol.swp.common.user.IUserDTO;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -45,6 +47,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -195,6 +198,8 @@ public class GamePresenter extends AbstractPresenter {
     private double mouseY;
 
     private IGameDTO gameDTO;
+
+    private boolean isDismissibleDialog;
 
     /**
      * Initializes the game screen presenter.
@@ -458,6 +463,29 @@ public class GamePresenter extends AbstractPresenter {
                    .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
                                                                  .contains(REGION_HIGHLIGHTED_CLASS)) {
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
+        } else if ((gameDTO.getState()
+                           .equals(StateType.EVENT_STATE) || gameDTO.getState()
+                                                                    .equals(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
+                                                                                                                                   .contains(
+                                                                                                                                           REGION_HIGHLIGHTED_CLASS)) {
+            Platform.runLater(() -> {
+                TreatWaterEventDialog dialog = new TreatWaterEventDialog(
+                        isDismissibleDialog,
+                        gameDTO.getWaterTreatmentsLeft(),
+                        gameDTO.getState()
+                );
+                dialog.showAndWaitForResult()
+                      .thenAccept(selectedValue -> {
+                          if (selectedValue != null) {
+                              LOG.debug("Player has selected {} water treatments", selectedValue);
+                              gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
+                          } else {
+                              LOG.debug("Player has not selected any water treatments");
+                              gameService.sendTreatWaterEventRequest(lobbyId, regionId, 0, true);
+                          }
+                      });
+            });
+            resetRegionStyle();
         }
     }
 
@@ -1079,9 +1107,11 @@ public class GamePresenter extends AbstractPresenter {
         removePlayerHandCards();
         IPlayerDTO player = gameDTO.getPlayer(user.getUsername());
         List<ICardDTO> playerHand = player.getCards();
+        StateType state = gameDTO.getState();
         for (ICardDTO card : playerHand) {
             AbstractCard abstractCard = CardFactory.createCard(card);
-            if (abstractCard instanceof EventCard eventCard) {
+            if (abstractCard instanceof EventCard eventCard && (state.equals(StateType.PLAYER_TURN_STATE) || state.equals(
+                    StateType.DRAW_CARD_STATE) || state.equals(StateType.INFECTION_STATE))) {
                 abstractCard.setOnMouseClicked(event -> {
                     LOG.debug("Event card {} clicked", eventCard.getCardId());
                     if (event.getButton() == MouseButton.PRIMARY) {
@@ -1732,6 +1762,17 @@ public class GamePresenter extends AbstractPresenter {
         Platform.runLater(dialog::showEndGameDialog);
     }
 
+    @Subscribe
+    public void onTreatWaterEventResponse(TreatWaterEventResponse eventResponse) {
+        List<IRegionDTO> regions = gameDTO.getRegions();
+        isDismissibleDialog = eventResponse.isDismissible();
+        for (IRegionDTO region : regions) {
+            Node stackPane = mapPane.lookup(REGION_ID + region.getId());
+            stackPane.getStyleClass()
+                     .add(REGION_HIGHLIGHTED_CLASS);
+        }
+    }
+
     /**
      * Resets the style of all regions on the game map.
      * <p>
@@ -1777,5 +1818,28 @@ public class GamePresenter extends AbstractPresenter {
                    stackPane.getStyleClass()
                             .remove(CITY_HIGHLIGHTED_CLASS);
                });
+    }
+
+    /**
+     * Handles game responses.
+     * <p>
+     * This method is called when a game response is received. If the response indicates
+     * a failure, it displays an error alert with the response description.
+     *
+     * @param response the game response
+     */
+    @Subscribe
+    public void onGameResponse(AbstractGameResponse response) {
+        if (response.isSuccess()) {
+            return;
+        }
+
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Fehler");
+            alert.setHeaderText("Fehler bei der Anfrage");
+            alert.setContentText(response.getDescription());
+            alert.showAndWait();
+        });
     }
 }
