@@ -41,4 +41,5 @@ public interface IRegionManagement {
 
     IGame getGame(String lobbyCode);
 
+    void increaseWaterTreatment(int regionId, IGame game, int amount);
 }

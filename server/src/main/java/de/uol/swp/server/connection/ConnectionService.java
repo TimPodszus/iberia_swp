@@ -13,7 +13,7 @@ import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
 import de.uol.swp.server.cards.events.StateMobilizationEvent;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
-import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
