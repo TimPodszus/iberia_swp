@@ -1362,7 +1362,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateRemainingActions(int remainingActions) {
         if (remainingActions == 0) {
-            this.remainingActionsText.setText("Du bist nicht am Zug");
+            this.remainingActionsText.setText("Du kannst gerade keine Aktionen ausführen");
         } else {
             this.remainingActionsText.setText(Integer.toString(remainingActions));
         }
