@@ -25,6 +25,9 @@ import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.GameInitializationException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -38,6 +41,7 @@ import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -75,14 +79,14 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param request The request containing the necessary data to create the game
      * @return The newly created game
      */
-    public IGame createAndInitializeGame(CreateGameRequest request) {
+    public IGame createAndInitializeGame(CreateGameRequest request) throws GameInitializationException {
         IGame game = new Game(request.getDifficulty(), request.getLobbyId());
         GameStore.getInstance()
                  .addGame(request.getLobbyId(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
         } catch (PlayerManagementException e) {
-            //TODO: irgendwo Fehler anzeigen "Fehler beim Initialisieren des Spiels"
+            throw new GameInitializationException("Failed to initialize game", e);
         }
         return game;
     }
@@ -128,7 +132,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;
             game.setCurrentPlayerIndex(nextPlayerIndex);
         }
-
     }
 
     /**
@@ -200,49 +203,48 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param request The request with where the position is to be set
      */
-    public IGame setPositioning(PositioningRequest request) throws GameManagementException {
+    public IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
         IGame game = getGame(request.getLobbyId());
+        IGameState gameState = game.getState();
 
-        if (game == null) {
-            throw new GameManagementException("Game not found");
+        if (!(gameState instanceof WaitForPositioning)) {
+            LOG.error("[LobbyID: {}] Game is not in a state that allows setting positioning", game.getGameId());
+            throw new IllegalGameStateException("Game is not in a state that allows setting positioning");
         }
 
-        if (game.getState() instanceof WaitForPositioning waitForPositioning) {
-            List<IPlayer> players = game.getPlayers();
-            IPlayer requestPlayer = null;
-            for (IPlayer player : players) {
-                if (player.getUser()
-                          .getUsername()
-                          .equals(request.getSession()
-                                         .orElseThrow(() -> new GameManagementException("Session not found"))
-                                         .getUser()
-                                         .getUsername())) {
-                    requestPlayer = player;
-                    break;
-                }
+        List<IPlayer> players = game.getPlayers();
+        IPlayer requestPlayer = null;
+        for (IPlayer player : players) {
+            if (player.getUser()
+                      .getUsername()
+                      .equals(request.getSession()
+                                     .orElseThrow(() -> new SessionNotFoundException("Session not found"))
+                                     .getUser()
+                                     .getUsername())) {
+                requestPlayer = player;
+                break;
             }
-            try {
-                assert requestPlayer != null;
-                if (requestPlayer.getCurrentPosition() != null) {
-                    throw new GameManagementException("Player is already positioned");
-                }
-                playerManagement.setStartingPosition(
-                        game.getGameId(),
-                        game.getCityRepository()
-                            .getCityNameById(request.getCityId()),
-                        requestPlayer
-                );
-                waitForPositioning.setPositionedPlayersCount(waitForPositioning.getPositionedPlayersCount() + 1);
-            } catch (PlayerManagementException e) {
-                throw new GameManagementException("Failed to set Position");
+        }
+
+        try {
+            assert requestPlayer != null;
+            if (requestPlayer.getCurrentPosition() != null) {
+                return game;
             }
-            if (waitForPositioning.getPositionedPlayersCount() == game.getPlayers()
-                                                                      .size()) {
-                game.setState(new PlayerTurnState());
-                game.setCurrentPlayerIndex(0);
-            }
-        } else {
-            throw new GameManagementException("Game is not in a state that allows setting positioning");
+            playerManagement.setStartingPosition(
+                    game.getGameId(),
+                    game.getCityRepository()
+                        .getCityNameById(request.getCityId()),
+                    requestPlayer
+            );
+            ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
+        } catch (PlayerManagementException e) {
+            throw new GameException("Failed to set Position");
+        }
+        if (((WaitForPositioning) gameState).getPositionedPlayersCount() == game.getPlayers()
+                                                                                .size()) {
+            game.setState(new PlayerTurnState());
+            game.setCurrentPlayerIndex(0);
         }
         return game;
     }
@@ -363,7 +365,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException {
+    public void movePlayer(
+            IUser user, String lobbyId, ICity city, ICard card
+    ) throws GameException, IllegalGameStateException {
         IGame game = super.getGame(lobbyId);
 
         IGameState gameState = game.getState();
@@ -399,7 +403,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     city.getName()
                         .getDisplayName()
             );
-            throw new GameManagementException("There is no available connection between " + player.getCurrentPosition()
+            throw new GameException("There is no available connection between " + player.getCurrentPosition()
                                                                                                   .getName()
                                                                                                   .getDisplayName() + " and " + city.getName()
                                                                                                                                     .getDisplayName());
@@ -417,12 +421,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param lobbyId   the ID of the lobby
      * @param gameState the current game state
-     * @throws GameManagementException when the game state does not allow moving players
+     * @throws IllegalGameStateException when the game state does not allow moving players
      */
-    private void validateGameStateForMove(String lobbyId, IGameState gameState) throws GameManagementException {
+    private void validateGameStateForMove(String lobbyId, IGameState gameState) throws IllegalGameStateException {
         if (!(gameState instanceof PlayerTurnState) && !(gameState instanceof EventState)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows moving players", lobbyId);
-            throw new GameManagementException("Game is not in a state that allows moving players");
+            throw new IllegalGameStateException("Game is not in a state that allows moving players");
         }
     }
 
@@ -434,14 +438,14 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param game the game instance
      * @param user the user requesting the move
      * @return the player for the move
-     * @throws GameManagementException when the user requesting the move is not the current player
+     * @throws GameException when the user requesting the move is not the current player
      */
-    private IPlayer getPlayerForMove(IGame game, IUser user) throws GameManagementException {
+    private IPlayer getPlayerForMove(IGame game, IUser user) throws GameException {
         IPlayer player = game.getState() instanceof PlayerTurnState ? game.getCurrentPlayer() : game.getPlayer(user.getUsername());
         if (game.getState() instanceof PlayerTurnState && !player.getUser()
                                                                  .equals(user)) {
             LOG.error("[LobbyID: {}] {} is not the current player", game.getGameId(), user.getUsername());
-            throw new GameManagementException("Player is not the current player");
+            throw new GameException("Player is not the current player");
         }
         return player;
     }
@@ -558,20 +562,22 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void buildTrainTrack(IUser user, String lobbyId, IConnection connection) throws GameManagementException {
+    public void buildTrainTrack(
+            IUser user, String lobbyId, IConnection connection
+    ) throws IllegalGameStateException, GameException {
         IGame game = super.getGame(lobbyId);
 
         IGameState gameState = game.getState();
         if (!(gameState instanceof PlayerTurnState)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows to build train tracks", lobbyId);
-            throw new GameManagementException("Game is not in a state that allows to build train tracks");
+            throw new IllegalGameStateException("Game is not in a state that allows to build train tracks");
         }
 
         IPlayer player = game.getCurrentPlayer();
         if (!player.getUser()
                    .equals(user)) {
             LOG.error("[LobbyID: {}] {} is not the current player", lobbyId, user.getUsername());
-            throw new GameManagementException("Player is not the current player");
+            throw new GameException("Player is not the current player");
         }
 
         List<IConnection> buildableTrainTracks = getBuildableTrainTracks(lobbyId, game, player);
@@ -585,7 +591,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     connection.getCityNames()
                               .get(1)
             );
-            throw new GameManagementException("Connection between " + connection.getCityNames()
+            throw new GameException("Connection between " + connection.getCityNames()
                                                                                 .get(0) + " and " + connection.getCityNames()
                                                                                                               .get(1) + " is not buildable");
         }
@@ -615,7 +621,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                               .filter(name -> !name.equals(player.getCurrentPosition()
                                                                                  .getName()))
                                               .findFirst()
-                                              .orElseThrow(() -> new GameManagementException(
+                                              .orElseThrow(() -> new GameException(
                                                       "Error while building train track"));
 
                 game.setState(new BuildExtraTrainTrackState(connectionManagement.getBuildableTrainTracks(

@@ -1,6 +1,8 @@
 package de.uol.swp.server;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.game.message.AbstractGameRequest;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
@@ -88,5 +90,24 @@ public class AbstractService {
         List<Session> sessions = authenticationService.getSessions(new HashSet<>(lobby.getUsers()));
         message.setReceiver(sessions);
         post(message);
+    }
+
+    /**
+     * Sends a status response based on the given game request.
+     *
+     * @param request     the game request containing the lobby ID and session information
+     * @param status      the status to be sent in the response (true for success, false for failure)
+     * @param description a description of the status
+     * @see AbstractGameRequest
+     * @see StatusResponse
+     * @since 2019-10-08
+     */
+    protected void sendStatusResponse(AbstractGameRequest request, boolean status, String description) {
+        StatusResponse response = new StatusResponse(request.getLobbyId(), status, description);
+        request.getSession()
+               .ifPresent(response::setSession);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        post(response);
     }
 }
