@@ -124,8 +124,8 @@ public interface IPlayerManagement {
     /**
      * Retrieves the player with the specified user in the specified lobby.
      *
-     * @param game   the game in which the player is to be retrieved
-     * @param user    the user for whom the player is to be retrieved
+     * @param game the game in which the player is to be retrieved
+     * @param user the user for whom the player is to be retrieved
      * @return the player with the specified user in the specified lobby
      */
     IPlayer getPlayerByUser(IUser user, IGame game);

@@ -4,6 +4,7 @@ import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.AbstractGameRequest;
 
 import lombok.Getter;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -18,8 +19,12 @@ public class SortedCardsRequest extends AbstractGameRequest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SortedCardsRequest that = (SortedCardsRequest) o;
         return Objects.equals(getLobbyId(), that.getLobbyId()) && Objects.equals(cards, that.cards);
     }

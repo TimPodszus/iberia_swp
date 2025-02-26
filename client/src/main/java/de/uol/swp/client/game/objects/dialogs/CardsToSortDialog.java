@@ -39,14 +39,21 @@ public class CardsToSortDialog extends Dialog<List<ICardDTO>> {
     private void setContent() {
         super.initStyle(StageStyle.DECORATED);
         super.setTitle(TITLE);
-        super.setHeaderText(SORT_CARDS_HEADER);
+
+        VBox headerBox = new VBox();
+        headerBox.setSpacing(5);
+
+        Label header = new Label(SORT_CARDS_HEADER);
+        header.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        Label instructions = new Label("Drag und drop die Karten um sie zu sortieren. (Links nach rechts)");
+        instructions.setStyle("-fx-font-size: 12px;");
+
+        headerBox.getChildren().addAll(header, instructions);
+        super.setHeaderText(null);
+        super.getDialogPane().setHeader(headerBox);
 
         VBox mainBox = new VBox();
         mainBox.setSpacing(10);
-
-        Label instructions = new Label("Drag und drop die Karten um sie zu sortieren. Die erste Karte ist die Oberste.");
-        mainBox.getChildren()
-               .add(instructions);
 
         cardBox = new HBox();
         cardBox.setSpacing(10);
@@ -111,6 +118,7 @@ public class CardsToSortDialog extends Dialog<List<ICardDTO>> {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(cardBox);
+        mainBox.getChildren().add(scrollPane);
         super.getDialogPane()
              .setContent(scrollPane);
     }

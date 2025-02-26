@@ -18,9 +18,15 @@ public class CardsToSortResponse extends AbstractGameResponse {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CardsToSortResponse that)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CardsToSortResponse that)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         return Objects.equals(cards, that.cards);
     }
 

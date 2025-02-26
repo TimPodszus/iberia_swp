@@ -5,6 +5,7 @@ import de.uol.swp.common.game.message.AbstractGameRequest;
 import java.util.Objects;
 
 public class GetCardsToSortRequest extends AbstractGameRequest {
+
     public GetCardsToSortRequest(String lobbyId) {
         super(lobbyId);
     }

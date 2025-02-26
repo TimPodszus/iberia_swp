@@ -133,9 +133,11 @@ public class PlayerService extends AbstractService {
         AbstractResponseMessage response;
         Optional<Session> session = request.getSession();
         try {
-            List<ICardDTO> cards = playerManagement.getCardsToSort(request.getLobbyId(),
+            List<ICardDTO> cards = playerManagement.getCardsToSort(
+                    request.getLobbyId(),
                     UserMapper.toUser(Objects.requireNonNull(session.map(Session::getUser)
-                                                                    .orElse(null))));
+                                                                    .orElse(null)))
+            );
             response = new CardsToSortResponse(request.getLobbyId(), true, "Cards retrieved successfully", cards);
         } catch (PlayerManagementException | IllegalStateException e) {
             response = new StatusResponse(request.getLobbyId(), false, e.getMessage());
