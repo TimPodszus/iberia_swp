@@ -328,6 +328,9 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
             IPlayer player = getPlayerByUser(user, game);
             if (player != null && player.equals(game.getCurrentPlayer()) && player.getRole() instanceof ScientistAtTheRoyalAcademy) {
                 for (int i = 0; i < 3; i++) {
+                    if(game.getPlayerCardDrawPile().isEmpty()){
+                        break;
+                    }
                     cards.add(game.getPlayerCardDrawPile()
                                   .get(i));
                 }

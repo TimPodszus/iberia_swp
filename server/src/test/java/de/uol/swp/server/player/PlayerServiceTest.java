@@ -6,6 +6,9 @@ import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
+import de.uol.swp.common.player.request.GetCardsToSortRequest;
+import de.uol.swp.common.player.request.SortedCardsRequest;
+import de.uol.swp.common.player.response.CardsToSortResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.cards.data.InfectionCard;
@@ -15,12 +18,14 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Sailor;
+import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.usermanagement.UserMapper;
@@ -29,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -55,6 +61,9 @@ public class PlayerServiceTest extends EventBusBasedTest {
     @Mock
     private Session session;
 
+    @Mock
+    private AuthenticationService authenticationService;
+
     @InjectMocks
     PlayerService playerService = new PlayerService(
             getBus(),
@@ -71,6 +80,11 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Subscribe
     public void onStatusResponse(StatusResponse event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onCardsToSortResponse(CardsToSortResponse event) {
         super.handleEvent(event);
     }
 
@@ -181,6 +195,87 @@ public class PlayerServiceTest extends EventBusBasedTest {
         postAndWait(request);
 
         verify(playerManagement, times(1)).getGame("validGameId");
+        assertInstanceOf(StatusResponse.class, super.event);
+    }
+
+    @Test
+    void onGetCardsToSortRequest_Success() throws PlayerManagementException, InterruptedException {
+        GetCardsToSortRequest request = mock(GetCardsToSortRequest.class);
+        Session session = mock(Session.class);
+        IUser user = new User("testUser", "testPassword");
+        List<ICardDTO> cards = List.of(mock(ICardDTO.class));
+
+        when(request.getLobbyId()).thenReturn("validGameId");
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(UserMapper.toDTO(user));
+        when(playerManagement.getCardsToSort("validGameId", user)).thenReturn(cards);
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).getCardsToSort("validGameId", user);
+        assertInstanceOf(CardsToSortResponse.class, super.event);
+    }
+
+    @Test
+    void onSortedCardsRequest_Success() throws InterruptedException {
+        SortedCardsRequest request = mock(SortedCardsRequest.class);
+        Session session = mock(Session.class);
+        when(authenticationService.getSession(any())).thenReturn(Optional.ofNullable(session));
+        IUser user = new User("testUser", "testPassword");
+        List<ICardDTO> cards = List.of(mock(ICardDTO.class));
+        IGame game = new Game(1, "validGameId");
+
+        when(request.getLobbyId()).thenReturn("validGameId");
+        assert session != null;
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(UserMapper.toDTO(user));
+        when(request.getCards()).thenReturn(cards);
+        when(playerManagement.getGame("validGameId")).thenReturn(game);
+        when(lobbyManagement.getLobby("validGameId")).thenReturn(mock(ILobby.class));
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).sortCards("validGameId", user, cards);
+        assertInstanceOf(StatusResponse.class, super.event);
+    }
+
+    @Test
+    void onGetCardsToSortRequest_IllegalStateException() throws PlayerManagementException, InterruptedException {
+        GetCardsToSortRequest request = mock(GetCardsToSortRequest.class);
+        Session session = mock(Session.class);
+        IUser user = new User("testUser", "testPassword");
+
+        when(request.getLobbyId()).thenReturn("validGameId");
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(UserMapper.toDTO(user));
+        when(playerManagement.getCardsToSort("validGameId", user)).thenThrow(new IllegalStateException("Test exception"));
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).getCardsToSort("validGameId", user);
+        assertInstanceOf(StatusResponse.class, super.event);
+    }
+
+    @Test
+    void onSortedCardsRequest_IllegalStateException() throws InterruptedException {
+        SortedCardsRequest request = mock(SortedCardsRequest.class);
+        Session session = mock(Session.class);
+        IUser user = new User("testUser", "testPassword");
+        List<ICardDTO> cards = List.of(mock(ICardDTO.class));
+        IGame game = new Game(1, "validGameId");
+
+        when(request.getLobbyId()).thenReturn("validGameId");
+        when(request.getSession()).thenReturn(Optional.of(session));
+        when(session.getUser()).thenReturn(UserMapper.toDTO(user));
+        when(request.getCards()).thenReturn(cards);
+        when(playerManagement.getGame("validGameId")).thenReturn(game);
+        when(lobbyManagement.getLobby("validGameId")).thenReturn(mock(ILobby.class));
+
+        doThrow(new IllegalStateException("Test exception")).when(playerManagement).sortCards("validGameId", user, cards);
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).sortCards("validGameId", user, cards);
         assertInstanceOf(StatusResponse.class, super.event);
     }
 }

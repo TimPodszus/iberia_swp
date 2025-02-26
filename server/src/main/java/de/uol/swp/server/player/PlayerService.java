@@ -161,15 +161,14 @@ public class PlayerService extends AbstractService {
                                                                     .orElse(null))),
                     request.getCards()
             );
+            IGameDTO gameDTO = GameMapper.toDTO(game);
+            ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+            sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
             response = new StatusResponse(request.getLobbyId(), true, "Karten wurden erfolgreich sortiert");
         } catch (IllegalStateException e) {
             response = new StatusResponse(request.getLobbyId(), false, e.getMessage());
         }
         response.setSession(session.orElse(null));
         post(response);
-
-        IGameDTO gameDTO = GameMapper.toDTO(game);
-        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 }
