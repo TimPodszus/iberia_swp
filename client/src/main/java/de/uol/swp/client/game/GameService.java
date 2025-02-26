@@ -130,7 +130,7 @@ public class GameService {
      */
     @Subscribe
     public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
-        LOG.debug("Received ShareKnowledgeEvent: " + event);
+        LOG.debug("Received ShareKnowledgeEvent: {}", event);
         Platform.runLater(() -> {
             boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
                                                                                               .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()
@@ -355,5 +355,14 @@ public class GameService {
      */
     public void sendBuildHospitalRequest(String lobbyId, int cityId) {
         eventBus.post(new BuildHospitalRequest(lobbyId, cityId));
+    }
+
+    /**
+     * Sends a request to end the turn in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby where the turn is to be ended
+     */
+    public void sendEndTurnRequest(String lobbyId) {
+        eventBus.post(new EndTurnRequest(lobbyId));
     }
 }

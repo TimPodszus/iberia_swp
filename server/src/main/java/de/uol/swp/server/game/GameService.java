@@ -11,6 +11,7 @@ import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.player.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -475,5 +476,47 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
+    }
+
+    /**
+     * Handles the end turn request from a player. This method retrieves the user from the session,
+     * ends the turn for the user in the specified lobby, and sends a board update event to all players in the lobby.
+     *
+     * @param request the end turn request containing the session and lobby ID
+     * @throws GameException           if the user is unknown or any error occurs while ending the turn
+     */
+    @Subscribe
+    public void onEndTurnRequest(EndTurnRequest request) throws GameException {
+        LOG.debug("[Lobby: {}] Got EndTurnRequest for current Player", request.getLobbyId());
+        IUserDTO user = request.getSession()
+                               .map(Session::getUser)
+                               .orElse(null);
+        if (user == null) {
+            LOG.error("[LobbyID: {}] User is unknown", request.getLobbyId());
+            throw new GameException("User is unknown");
+        }
+
+        try {
+            gameManagement.endTurn(request.getLobbyId(), UserMapper.toUser(user));
+        } catch (IllegalStateException e) {
+            LOG.error("[LobbyID: {}] Turn could not be ended", request.getLobbyId());
+            StatusResponse response = new StatusResponse(
+                    request.getLobbyId(),
+                    false,
+                    "Wenn du nicht am Zug bist, kannst du deinen Zug nicht beenden"
+            );
+
+            request.getMessageContext()
+                   .ifPresent(response::setMessageContext);
+            request.getSession()
+                     .ifPresent(response::setSession);
+            post(response);
+
+            return;
+        }
+
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 }
