@@ -8,7 +8,7 @@ import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
-import de.uol.swp.common.player.request.DrawPlayerCardResponse;
+import de.uol.swp.common.player.response.DrawPlayerCardResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.GameMapper;
