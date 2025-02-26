@@ -30,7 +30,7 @@ public class ChatManagement implements IChatManagement {
     public IChatMessage addChatMessage(String lobbyId, String message) {
         LOG.debug("[LobbyId: {}] Adding chat message from server", lobbyId);
         IChatMessage chatMessage = new ServerChatMessage(lobbyId, message);
-        chatStore.addChatMessage(lobbyId, chatMessage);
+        chatStore.addChatMessage(chatMessage);
         LOG.info("[LobbyId: {}] Chat message from server added", lobbyId);
         return chatMessage;
     }
@@ -39,7 +39,7 @@ public class ChatManagement implements IChatManagement {
     public IChatMessage addChatMessage(String lobbyId, String sender, String message) {
         LOG.debug("[LobbyId: {}] Adding chat message from player {}", lobbyId, sender);
         IChatMessage chatMessage = new PlayerChatMessage(lobbyId, sender, message);
-        chatStore.addChatMessage(lobbyId, chatMessage);
+        chatStore.addChatMessage(chatMessage);
         LOG.info("[LobbyId: {}] Chat message from player added", lobbyId);
         return chatMessage;
     }

@@ -2,7 +2,6 @@ package de.uol.swp.server.chat;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.chat.messages.AbstractChatMessage;
-import de.uol.swp.common.chat.messages.PlayerChatMessage;
 import de.uol.swp.common.chat.messages.ServerChatMessage;
 import de.uol.swp.common.chat.request.GetChatRequest;
 import de.uol.swp.common.chat.request.SendChatRequest;
@@ -11,11 +10,11 @@ import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.chat.data.IChatMessage;
+import de.uol.swp.server.chat.data.PlayerChatMessage;
 import de.uol.swp.server.chat.event.ServerMessageEvent;
 import de.uol.swp.server.chat.management.IChatManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.lobby.management.LobbyManagement;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
@@ -28,11 +27,11 @@ import java.util.List;
 
 public class ChatService extends AbstractService {
     private static final Logger LOG = LogManager.getLogger(ChatService.class);
-    private final ILobbyManagement lobbyManagement;
-    private final IChatManagement chatManagement;
+    protected ILobbyManagement lobbyManagement;
+    protected IChatManagement chatManagement;
 
     @Inject
-    public ChatService(EventBus bus, LobbyManagement lobbyManagement, IChatManagement chatManagement) {
+    public ChatService(EventBus bus, ILobbyManagement lobbyManagement, IChatManagement chatManagement) {
         super(bus);
         this.lobbyManagement = lobbyManagement;
         this.chatManagement = chatManagement;
@@ -90,6 +89,7 @@ public class ChatService extends AbstractService {
             request.getMessageContext()
                    .ifPresent(response::setMessageContext);
             LOG.info("[LobbyId: {}] Chat messages sent to user", request.getLobbyId());
+            post(response);
         } catch (IllegalAccessException e) {
             LOG.error("[LobbyId: {}] User is not allowed to access chat messages", request.getLobbyId());
             StatusResponse response = new StatusResponse(request.getLobbyId(),
@@ -126,7 +126,8 @@ public class ChatService extends AbstractService {
      */
     private AbstractChatMessage convertToChatMessage(IChatMessage chatMessage) {
         if (chatMessage instanceof PlayerChatMessage playerChatMessage) {
-            return new PlayerChatMessage(chatMessage.getLobbyId(),
+            return new de.uol.swp.common.chat.messages.PlayerChatMessage(
+                    chatMessage.getLobbyId(),
                     playerChatMessage.getSender(),
                     playerChatMessage.getMessage()
             );

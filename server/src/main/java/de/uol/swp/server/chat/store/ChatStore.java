@@ -3,6 +3,7 @@ package de.uol.swp.server.chat.store;
 import com.google.inject.Singleton;
 import de.uol.swp.server.chat.data.IChatMessage;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,12 +22,17 @@ public class ChatStore implements IChatStore {
     }
 
     @Override
-    public void addChatMessage(String lobbyId, IChatMessage chatMessage) {
-        if (!chatMessages.containsKey(lobbyId)) {
-            chatMessages.put(lobbyId, List.of(chatMessage));
+    public void addChatMessage(IChatMessage chatMessage) {
+        if (!chatMessages.containsKey(chatMessage.getLobbyId())) {
+            chatMessages.put(chatMessage.getLobbyId(), new ArrayList<>(List.of(chatMessage)));
         } else {
-            chatMessages.get(lobbyId)
+            chatMessages.get(chatMessage.getLobbyId())
                         .add(chatMessage);
         }
+    }
+
+    @Override
+    public void removeChat(String lobbyId) {
+        chatMessages.remove(lobbyId);
     }
 }

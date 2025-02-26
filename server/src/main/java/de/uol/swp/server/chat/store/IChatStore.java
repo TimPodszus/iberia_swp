@@ -20,8 +20,14 @@ public interface IChatStore {
     /**
      * Adds a chat message to the specified lobby.
      *
-     * @param lobbyId the ID of the lobby
      * @param chatMessage the chat message to add
      */
-    void addChatMessage(String lobbyId, IChatMessage chatMessage);
+    void addChatMessage(IChatMessage chatMessage);
+
+    /**
+     * Removes the chat messages for the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    void removeChat(String lobbyId);
 }
