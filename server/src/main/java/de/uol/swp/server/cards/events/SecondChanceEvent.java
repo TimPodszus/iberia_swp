@@ -30,10 +30,10 @@ public class SecondChanceEvent extends AbstractMessage implements ServerInternal
      */
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (this == o) {
+            return true;
         }
-        if (!super.equals(o)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
         SecondChanceEvent that = (SecondChanceEvent) o;
