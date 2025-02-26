@@ -1,18 +1,19 @@
-package de.uol.swp.common.player.response;
+package de.uol.swp.common.player.message.response;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import lombok.Getter;
 
+import java.util.List;
 import java.util.Objects;
 
 @Getter
-public class DrawPlayerCardResponse extends AbstractGameResponse {
-    private final ICardDTO card;
+public class CardsToSortResponse extends AbstractGameResponse {
+    private final List<ICardDTO> cards;
 
-    public DrawPlayerCardResponse(String lobbyId, boolean success, String description, ICardDTO card) {
+    public CardsToSortResponse(String lobbyId, boolean success, String description, List<ICardDTO> cards) {
         super(lobbyId, success, description);
-        this.card = card;
+        this.cards = cards;
     }
 
     @Override
@@ -20,17 +21,17 @@ public class DrawPlayerCardResponse extends AbstractGameResponse {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof DrawPlayerCardResponse that)) {
+        if (!(o instanceof CardsToSortResponse that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        return Objects.equals(card, that.card);
+        return Objects.equals(cards, that.cards);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), card);
+        return Objects.hash(super.hashCode(), cards);
     }
 }

@@ -23,4 +23,23 @@ public interface ICardManagement {
      * @return the game associated with the specified lobby
      */
     IGame getGame(String lobbyId);
+
+    /**
+     * Checks if the card is playable.
+     *
+     * @param game     the game instance to check
+     * @param cardId   the id of the card to check
+     * @param username the username of the player
+     * @return true if the card is playable, false otherwise
+     */
+    boolean isCardPlayable(IGame game, int cardId, String username);
+
+    /**
+     * Checks if the state of the game is correct.
+     *
+     * @param game the game instance to check
+     * @return true if the state is correct, false otherwise
+     */
+    boolean isStateCorrect(IGame game);
+
 }

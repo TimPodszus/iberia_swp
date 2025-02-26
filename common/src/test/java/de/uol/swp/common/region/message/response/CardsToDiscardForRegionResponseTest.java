@@ -1,6 +1,7 @@
 package de.uol.swp.common.region.message.response;
 
 import de.uol.swp.common.cards.data.CityCardDTO;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -42,5 +43,36 @@ class CardsToDiscardForRegionResponseTest {
 
         assertEquals(response1.hashCode(), response2.hashCode());
         assertNotEquals(response1.hashCode(), response3.hashCode());
+    }
+
+    @Test
+    void testConstructorAndGetCityCards() {
+        CityCardDTO card1 = mock(CityCardDTO.class);
+        CityCardDTO card2 = mock(CityCardDTO.class);
+
+        List<CityCardDTO> cardsList = List.of(card1, card2);
+
+        CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse("lobbyId", cardsList);
+
+        assertNotNull(response.getCityCards());
+        assertEquals(2, response.getCityCards().size());
+        assertTrue(response.getCityCards().contains(card1));
+        assertTrue(response.getCityCards().contains(card2));
+    }
+
+    @Test
+    void testEqualsWithNullAndDifferentClass() {
+        List<CityCardDTO> cardsList = List.of();
+        CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse("lobbyId", cardsList);
+        assertNotEquals(null, response);
+        assertNotEquals(new Object(), response);
+    }
+
+    @Test
+    void testEqualsWithDifferentSubclass() {
+        List<CityCardDTO> cardsList = List.of();
+        CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse("lobbyId", cardsList);
+        AbstractResponseMessage differentSubclass = new AbstractResponseMessage() {};
+        assertNotEquals(response, differentSubclass);
     }
 }

@@ -1,6 +1,7 @@
 package de.uol.swp.common.player.response;
 
 import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.player.message.response.DrawPlayerCardResponse;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

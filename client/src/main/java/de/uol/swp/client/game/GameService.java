@@ -8,12 +8,16 @@ import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.city.request.BuildHospitalRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
+import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.player.message.request.*;
+import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.common.player.request.*;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
+import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
 import javafx.application.Platform;
@@ -330,6 +334,18 @@ public class GameService {
      */
     public void sendPlayCardRequest(String lobbyId, int cardId) {
         eventBus.post(new PlayCardRequest(lobbyId, cardId));
+    }
+
+    /**
+     * Sends a request to perform water treatment in the specified region.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param regionId the ID of the region where the water treatment is to be performed
+     * @param amount the amount of water treatments to be performed
+     * @param dismissed whether the event was dismissed
+     */
+    public void sendTreatWaterEventRequest(String lobbyId, int regionId, int amount, boolean dismissed) {
+        eventBus.post(new WaterTreatmentEventRequest(lobbyId, regionId, amount, dismissed));
     }
 
     /**
