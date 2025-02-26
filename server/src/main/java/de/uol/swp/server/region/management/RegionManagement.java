@@ -12,6 +12,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.plague.data.IPlague;
@@ -89,7 +90,7 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
             int amount,
             ICard card,
             IUser user
-    ) throws RegionManagementException, GameManagementException, PlayerManagementException {
+    ) throws RegionManagementException, GameManagementException, GameException {
         IGame game = getGame(lobbyCode);
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             IRegion region = game.getRegionRepository()

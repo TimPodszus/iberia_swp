@@ -17,6 +17,7 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.store.GameStore;
@@ -140,8 +141,11 @@ class PlayerManagementTest {
     @Test
     void addCard_AddsCardToPlayer() {
         ICard card = new CityCard(1, "test", mock(ICity.class));
-        List<ICard> cards = List.of(card);
-
+        List<ICard> cards = new ArrayList<>(List.of(card));
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+        game.getPlayers()
+            .add(player);
         when(player.getCards()).thenReturn(cards);
 
         playerManagement.addCard(
@@ -151,15 +155,22 @@ class PlayerManagementTest {
                 card
         );
 
-        verify(cards, times(1)).add(card);
+        assertTrue(cards.contains(card));
     }
 
     /**
      * Tests that discardCard discards a single card from the player's hand.
      */
     @Test
-    void discardCard_DiscardSingleCard() throws PlayerManagementException {
+    void discardCard_DiscardSingleCard() throws GameException {
         ICard infectionCard = new InfectionCard(1, "test", mock(ICity.class));
+        ArrayList<ICard> cards = new ArrayList<ICard>();
+        cards.add(infectionCard);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+        when(player.getCards()).thenReturn(cards);
+        game.getPlayers()
+            .add(player);
 
         playerManagement.discardPlayerCard(
                 game.getGameId(),
@@ -176,10 +187,18 @@ class PlayerManagementTest {
      * Tests that discardCards discards multiple cards from the player's hand.
      */
     @Test
-    void discardCards_DiscardMultipleCards() throws PlayerManagementException {
+    void discardCards_DiscardMultipleCards() throws GameException {
         ICard card1 = new InfectionCard(1, "test", mock(ICity.class));
         ICard card2 = new CityCard(1, "test", mock(ICity.class));
-        List<ICard> cards = List.of(card1, card2);
+        ArrayList<ICard> cards = new ArrayList<ICard>();
+        cards.add(card1);
+        cards.add(card2);
+
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+        when(player.getCards()).thenReturn(cards);
+        game.getPlayers()
+            .add(player);
 
         playerManagement.discardPlayerCards(
                 game.getGameId(),

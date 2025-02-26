@@ -11,6 +11,7 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.StartState;
@@ -206,9 +207,9 @@ public class PlayerManagement implements IPlayerManagement {
      * @param lobbyCode the code of the lobby
      * @param username  the username of the player
      * @param cardId    the ID of the card to be discarded
-     * @throws PlayerManagementException if an error occurs while discarding the card
+     * @throws GameException if an error occurs while discarding the card
      */
-    public void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws PlayerManagementException {
+    public void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws GameException {
         discardPlayerCards(lobbyCode, username, List.of(cardId));
     }
 
@@ -218,13 +219,9 @@ public class PlayerManagement implements IPlayerManagement {
      * @param lobbyCode the code of the lobby
      * @param username  the username of the player
      * @param cardIds   the list of IDs of the cards to be discarded
-     * @throws PlayerManagementException if an error occurs while discarding the cards
+     * @throws GameException if an error occurs while discarding the cards
      */
-    public void discardPlayerCards(
-            String lobbyCode,
-            String username,
-            List<Integer> cardIds
-    ) throws PlayerManagementException {
+    public void discardPlayerCards(String lobbyCode, String username, List<Integer> cardIds) throws GameException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyCode);
         IPlayer player = game.getPlayer(username);
@@ -234,7 +231,7 @@ public class PlayerManagement implements IPlayerManagement {
                                .stream()
                                .filter(c -> Objects.equals(c.getId(), cardId))
                                .findFirst()
-                               .orElseThrow(() -> new PlayerManagementException("Card not found"));
+                               .orElseThrow(() -> new GameException("Card not found"));
 
             player.getCards()
                   .remove(card);

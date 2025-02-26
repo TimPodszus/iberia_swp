@@ -49,17 +49,21 @@ public class CityService extends AbstractService {
      * @param request the BuildHospitalRequest containing the details for building a hospital
      */
     @Subscribe
-    public void onBuildHospitalRequest(BuildHospitalRequest request) throws PlayerManagementException {
+    public void onBuildHospitalRequest(BuildHospitalRequest request) {
         LOG.debug("Got BuildHospitalRequest for lobby {}", request.getLobbyId());
 
-        cityManagement.buildHospital(
-                request.getLobbyId(),
-                request.getSession()
-                       .orElseThrow()
-                       .getUser()
-                       .getUsername(),
-                request.getCityId()
-        );
+        try {
+            cityManagement.buildHospital(
+                    request.getLobbyId(),
+                    request.getSession()
+                           .orElseThrow()
+                           .getUser()
+                           .getUsername(),
+                    request.getCityId()
+            );
+        } catch (Exception e) {
+            LOG.error("Error building hospital: {} ", e.getMessage());
+        }
 
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());

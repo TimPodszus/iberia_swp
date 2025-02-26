@@ -9,6 +9,7 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.StartState;
@@ -293,7 +294,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             String lobbyId,
             String username,
             Integer cityId
-    ) throws CityManagementException, PlayerManagementException {
+    ) throws CityManagementException, GameException {
         IGame game = getGame(lobbyId);
         IPlayer player = game.getPlayer(username);
 

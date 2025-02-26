@@ -12,12 +12,15 @@ import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 
 @Singleton
 public class PlagueService extends AbstractService {
+    private final Logger LOG = LogManager.getLogger(PlagueService.class);
 
     private final IPlagueManagement plagueManagement;
 
@@ -44,15 +47,15 @@ public class PlagueService extends AbstractService {
      * @since 2024-10-04
      */
     @Subscribe
-    public void onResearchPlagueRequest(
-            ResearchPlagueRequest researchPlagueRequest,
-            IGame game
-    ) throws PlagueManagementException, PlayerManagementException {
+    public void onResearchPlagueRequest(ResearchPlagueRequest researchPlagueRequest, IGame game) {
         PlagueName name = researchPlagueRequest.getName();
 
-        plagueManagement.researchPlague(name, game);
-
-        sendToAll(new PlagueResearchedMessage(name));
+        try {
+            plagueManagement.researchPlague(name, game);
+            sendToAll(new PlagueResearchedMessage(name));
+        } catch (Exception e) {
+            LOG.error("Error while researching plague: {}", e.getMessage());
+        }
     }
 
 }

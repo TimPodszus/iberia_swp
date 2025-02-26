@@ -5,15 +5,18 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.plague.data.Plague;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -140,12 +143,18 @@ class PlagueManagementTest {
      * and the game state is updated accordingly.
      */
     @Test
-    void researchPlagueSuccessful() throws PlagueManagementException, PlayerManagementException {
+    void researchPlagueSuccessful() throws PlagueManagementException, GameException {
+        IUser user = mock(IUser.class);
+
         when(plague.isResearched()).thenReturn(false);
 
         when(currentPlayer.getCurrentPosition()).thenReturn(currentCity);
         when(currentCity.isHospitalBuilt()).thenReturn(true);
         when(currentCity.getPlagueName()).thenReturn(PlagueName.CHOLERA);
+        doNothing().when(playerManagement)
+                   .discardPlayerCards(any(String.class), any(String.class), anyList());
+        when(currentPlayer.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
 
         plagueManagement.researchPlague(PlagueName.CHOLERA, game);
 

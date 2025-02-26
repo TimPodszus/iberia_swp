@@ -2,7 +2,7 @@ package de.uol.swp.server.plague.management;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.game.exceptions.GameException;
 
 public interface IPlagueManagement {
     /**
@@ -12,8 +12,5 @@ public interface IPlagueManagement {
      * @param game             the current game instance
      * @throws PlagueManagementException if the plague cannot be researched due to game conditions
      */
-    void researchPlague(
-            PlagueName plagueToResearch,
-            IGame game
-    ) throws PlagueManagementException, PlayerManagementException;
+    void researchPlague(PlagueName plagueToResearch, IGame game) throws PlagueManagementException, GameException;
 }

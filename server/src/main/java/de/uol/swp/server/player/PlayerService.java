@@ -10,12 +10,14 @@ import de.uol.swp.common.player.request.*;
 import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardResponse;
+import de.uol.swp.common.player.request.DiscardPlayerCardRequest;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.data.IPlayer;
@@ -97,7 +99,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
                     request.getCard()
                            .getId()
             );
-        } catch (PlayerManagementException e) {
+        } catch (GameException e) {
             LOG.error("Error discarding a player card: {}", e.getMessage());
             StatusResponse response = new StatusResponse(
                     request.getLobbyId(),

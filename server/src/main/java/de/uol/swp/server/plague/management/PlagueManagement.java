@@ -6,6 +6,7 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -46,7 +47,7 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     public void researchPlague(
             PlagueName plagueToResearch,
             IGame game
-    ) throws PlagueManagementException, PlayerManagementException {
+    ) throws PlagueManagementException, GameException {
         if (plagueToResearch == null) {
             throw new PlagueManagementException("The plague to be researched was not specified");
         }

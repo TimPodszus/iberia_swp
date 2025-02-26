@@ -8,6 +8,7 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -15,7 +16,6 @@ import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.role.*;
@@ -313,7 +313,7 @@ class RegionManagementTest {
     }
 
     @Test
-    void testIncreaseWaterTreatmentsFromRegion_Success() throws RegionManagementException, GameManagementException, PlayerManagementException {
+    void testIncreaseWaterTreatmentsFromRegion_Success() throws RegionManagementException, GameManagementException, GameException {
         String lobbyId = "testLobbyId";
         RegionManagement spyRegionManagement = spy(regionManagement);
         doReturn(game).when(spyRegionManagement)
@@ -337,7 +337,7 @@ class RegionManagementTest {
     }
 
     @Test
-    void testIncreaseWaterTreatmentsFromRegion_PlayerNotCurrent() throws PlayerManagementException {
+    void testIncreaseWaterTreatmentsFromRegion_PlayerNotCurrent() throws GameException {
         String lobbyId = "testLobbyId";
         RegionManagement spyRegionManagement = spy(regionManagement);
         doReturn(game).when(spyRegionManagement)
@@ -362,7 +362,7 @@ class RegionManagementTest {
     }
 
     @Test
-    void testIncreaseWaterTreatmentsFromRegion_NotPlayerTurnState() throws RegionManagementException, PlayerManagementException {
+    void testIncreaseWaterTreatmentsFromRegion_NotPlayerTurnState() throws RegionManagementException, GameException {
         String lobbyId = "testLobbyId";
         RegionManagement spyRegionManagement = spy(regionManagement);
         doReturn(game).when(spyRegionManagement)

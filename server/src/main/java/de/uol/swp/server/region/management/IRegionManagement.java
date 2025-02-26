@@ -6,6 +6,7 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.data.IRegion;
@@ -36,7 +37,7 @@ public interface IRegionManagement {
             int amount,
             ICard card,
             IUser user
-    ) throws RegionManagementException, GameManagementException, PlayerManagementException;
+    ) throws RegionManagementException, GameManagementException, GameException;
 
     Set<IRegionDTO> getAvailableRegions(IUserDTO user, String lobbyCode) throws RegionManagementException;
 

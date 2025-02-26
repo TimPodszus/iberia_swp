@@ -5,6 +5,7 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
@@ -70,7 +71,7 @@ public interface IPlayerManagement {
      * @param cardId    the ID of the card to be discarded
      * @throws PlayerManagementException if an error occurs while discarding the card
      */
-    void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws PlayerManagementException;
+    void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws GameException;
 
     /**
      * Discards multiple cards for a player in a specified lobby.
@@ -80,7 +81,7 @@ public interface IPlayerManagement {
      * @param cardIds   the list of IDs of the cards to be discarded
      * @throws PlayerManagementException if an error occurs while discarding the cards
      */
-    void discardPlayerCards(String lobbyCode, String username, List<Integer> cardIds) throws PlayerManagementException;
+    void discardPlayerCards(String lobbyCode, String username, List<Integer> cardIds) throws GameException;
 
     /**
      * Retrieves a card for a player in a specified lobby.

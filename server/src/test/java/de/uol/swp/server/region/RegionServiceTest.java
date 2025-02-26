@@ -196,7 +196,7 @@ public class RegionServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnSendWaterTreatmentRequest_Success() throws PlayerManagementException, GameManagementException, InterruptedException {
+    void testOnSendWaterTreatmentRequest_Success() throws PlayerManagementException, GameManagementException, InterruptedException, GameException {
         WaterTreatmentRequest waterTreatmentRequest = mock(WaterTreatmentRequest.class);
         Session session = mock(Session.class);
         IUserDTO userDTO = mock(IUserDTO.class);
