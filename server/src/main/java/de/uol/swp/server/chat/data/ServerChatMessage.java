@@ -8,9 +8,10 @@ public class ServerChatMessage extends ChatMessage {
     /**
      * Constructs a new ServerChatMessage with the specified message.
      *
+     * @param lobbyId the ID of the lobby the chat message belongs to
      * @param message the message content
      */
-    public ServerChatMessage(String message) {
-        super(message);
+    public ServerChatMessage(String lobbyId, String message) {
+        super(lobbyId, message);
     }
 }
