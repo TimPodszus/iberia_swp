@@ -39,7 +39,7 @@ import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.common.player.request.DiscardPlayerCardEvent;
+import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
@@ -628,7 +628,7 @@ public class GamePresenter extends AbstractPresenter {
                                                               .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
                                                                                                      .getCurrentPosition()
                                                                                                      .getId())
-                                                              .collect(Collectors.toList());
+                                                              .toList();
                 cardsToExchange.put(
                         gameDTO.getCurrentPlayer()
                                .getUsername(), currentPlayerCityCard

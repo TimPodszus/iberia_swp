@@ -6,12 +6,9 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
-import de.uol.swp.server.plague.management.PlagueManagementException;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
@@ -20,10 +17,9 @@ import org.greenrobot.eventbus.Subscribe;
 
 @Singleton
 public class PlagueService extends AbstractService {
-    private final Logger LOG = LogManager.getLogger(PlagueService.class);
+    private static final Logger LOG = LogManager.getLogger(PlagueService.class);
 
     private final IPlagueManagement plagueManagement;
-
 
     /**
      * Constructor

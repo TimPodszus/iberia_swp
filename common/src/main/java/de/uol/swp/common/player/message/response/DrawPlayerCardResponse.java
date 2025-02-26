@@ -1,4 +1,4 @@
-package de.uol.swp.common.player.message.request;
+package de.uol.swp.common.player.message.response;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;

@@ -69,7 +69,7 @@ public interface IPlayerManagement {
      * @param lobbyCode the code of the lobby
      * @param username  the username of the player
      * @param cardId    the ID of the card to be discarded
-     * @throws PlayerManagementException if an error occurs while discarding the card
+     * @throws GameException if an error occurs while discarding the card
      */
     void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws GameException;
 
@@ -79,7 +79,7 @@ public interface IPlayerManagement {
      * @param lobbyCode the code of the lobby
      * @param username  the username of the player
      * @param cardIds   the list of IDs of the cards to be discarded
-     * @throws PlayerManagementException if an error occurs while discarding the cards
+     * @throws GameException if an error occurs while discarding the cards
      */
     void discardPlayerCards(String lobbyCode, String username, List<Integer> cardIds) throws GameException;
 

@@ -5,7 +5,6 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
-import de.uol.swp.server.player.management.PlayerManagementException;
 
 /**
  * Interface for managing city-related operations in the game.

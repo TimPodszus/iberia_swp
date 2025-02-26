@@ -8,7 +8,6 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagementException;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.usermanagement.IUser;
 

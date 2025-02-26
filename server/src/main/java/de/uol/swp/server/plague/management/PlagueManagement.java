@@ -10,7 +10,6 @@ import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.management.IPlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 
 import java.util.List;
 import java.util.Map;

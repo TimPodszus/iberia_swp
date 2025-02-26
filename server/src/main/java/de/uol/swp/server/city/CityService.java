@@ -10,7 +10,6 @@ import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
@@ -61,12 +60,12 @@ public class CityService extends AbstractService {
                            .getUsername(),
                     request.getCityId()
             );
+
+            IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+            ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+            sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
         } catch (Exception e) {
             LOG.error("Error building hospital: {} ", e.getMessage());
         }
-
-        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
-        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 }

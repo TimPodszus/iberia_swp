@@ -12,10 +12,8 @@ import de.uol.swp.server.plague.data.Plague;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
-import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,11 +57,11 @@ class PlagueManagementTest {
         MockitoAnnotations.openMocks(this);
 
         List<ICard> playerCards = List.of(
-                mockCityCard(PlagueName.CHOLERA),
-                mockCityCard(PlagueName.CHOLERA),
-                mockCityCard(PlagueName.CHOLERA),
-                mockCityCard(PlagueName.CHOLERA),
-                mockCityCard(PlagueName.CHOLERA)
+                mockCityCard(),
+                mockCityCard(),
+                mockCityCard(),
+                mockCityCard(),
+                mockCityCard()
         );
 
         when(game.getCurrentPlayer()).thenReturn(currentPlayer);
@@ -164,14 +162,13 @@ class PlagueManagementTest {
     /**
      * Helper method to mock a CityCard and associate it with a specific plague.
      *
-     * @param plagueName the name of the plague to associate with the CityCard.
      * @return a mock CityCard associated with the specified plague.
      */
-    private CityCard mockCityCard(PlagueName plagueName) {
+    private CityCard mockCityCard() {
         CityCard cityCard = mock(CityCard.class);
         City city = mock(City.class);
 
-        when(city.getPlagueName()).thenReturn(plagueName);
+        when(city.getPlagueName()).thenReturn(PlagueName.CHOLERA);
         when(cityCard.getCity()).thenReturn(city);
 
         return cityCard;

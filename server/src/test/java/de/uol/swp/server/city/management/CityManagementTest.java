@@ -16,7 +16,6 @@ import de.uol.swp.server.infection.management.InfectionManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.RegionManagement;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;

@@ -18,7 +18,6 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionMapper;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.usermanagement.IUser;

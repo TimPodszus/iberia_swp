@@ -23,8 +23,6 @@ public class Player implements IPlayer {
     @Setter
     private List<ICard> cards = new ArrayList<>();
     private final IUser user;
-    @Setter
-    private CardsAmountChangeListener cardsAmountChangeListener;
 
 
     @Override

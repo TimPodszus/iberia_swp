@@ -21,7 +21,6 @@ import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
