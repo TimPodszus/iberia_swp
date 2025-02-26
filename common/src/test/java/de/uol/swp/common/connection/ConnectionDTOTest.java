@@ -1,6 +1,7 @@
 package de.uol.swp.common.connection;
 
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.connection.dto.ConnectionDTO;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

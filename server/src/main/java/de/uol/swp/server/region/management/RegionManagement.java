@@ -101,7 +101,10 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
                 throw new GameManagementException("Player is not the current player");
             }
             region.increaseWaterTreatments(amount);
-            playerManagement.discardPlayerCard(lobbyCode, user.getUsername(), card.getId());
+            game.setWaterTreatmentsLeft(game.getWaterTreatmentsLeft() - amount);
+            if (card != null) {
+                playerManagement.discardPlayerCard(lobbyCode, user.getUsername(), card.getId());
+            }
             playerTurnState.reduceActionsRemaining(game);
             LOG.debug(
                     "Increased water treatments in region {} by {} for player {}",
@@ -298,5 +301,21 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
             region.decreaseWaterTreatments(region.getWaterTreatments());
             LOG.debug("Decreased all water treatments in region {}", region.getId());
         }
+    }
+
+    /**
+     * Increases the water treatments in the specified region.
+     * <p>
+     * This method increases the water treatments in the specified region by 1.
+     *
+     * @param regionId the ID of the region where water treatments are to be increased
+     * @param game     the game instance
+     */
+    public void increaseWaterTreatment(int regionId, IGame game, int amount) {
+        IRegion region = game.getRegionRepository()
+                             .getRegionByID(regionId);
+        region.increaseWaterTreatments(amount);
+        game.setWaterTreatmentsLeft(game.getWaterTreatmentsLeft() - amount);
+        LOG.debug("Increased water treatments in region {}", regionId);
     }
 }

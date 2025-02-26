@@ -1,14 +1,12 @@
 package de.uol.swp.server;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.game.message.AbstractGameRequest;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.Session;
-import de.uol.swp.server.cards.CardMapper;
-import de.uol.swp.server.cards.data.ICard;
-import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import org.greenrobot.eventbus.EventBus;
@@ -95,23 +93,21 @@ public class AbstractService {
     }
 
     /**
-     * Converts a map of available destinations from ICity and ICard to a map of Integer and ICardDTO.
+     * Sends a status response based on the given game request.
      *
-     * @param availableDestinations the map of available destinations with ICity as keys and lists of ICard as values
-     * @return a map of available destinations with Integer as keys and lists of ICardDTO as values
+     * @param request     the game request containing the lobby ID and session information
+     * @param status      the status to be sent in the response (true for success, false for failure)
+     * @param description a description of the status
+     * @see AbstractGameRequest
+     * @see StatusResponse
+     * @since 2019-10-08
      */
-    protected Map<Integer, List<ICardDTO>> convertToDtoMap(Map<ICity, List<ICard>> availableDestinations) {
-        Map<Integer, List<ICardDTO>> availableDestinationsAsDtos = new HashMap<>();
-
-        for (Map.Entry<ICity, List<ICard>> entry : availableDestinations.entrySet()) {
-            List<ICardDTO> cards = entry.getValue()
-                                        .stream()
-                                        .map(CardMapper::toDTO)
-                                        .toList();
-            availableDestinationsAsDtos.put(entry.getKey()
-                                                 .getId(), cards);
-        }
-
-        return availableDestinationsAsDtos;
+    protected void sendStatusResponse(AbstractGameRequest request, boolean status, String description) {
+        StatusResponse response = new StatusResponse(request.getLobbyId(), status, description);
+        request.getSession()
+               .ifPresent(response::setSession);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        post(response);
     }
 }

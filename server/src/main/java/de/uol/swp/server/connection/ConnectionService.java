@@ -2,18 +2,18 @@ package de.uol.swp.server.connection;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
 import de.uol.swp.server.cards.events.StateMobilizationEvent;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
-import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
@@ -68,9 +68,10 @@ public class ConnectionService extends AbstractService {
                 request.getCityId()
         );
 
-        Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(request.getLobbyId(),
+        Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
+                request.getLobbyId(),
                 request.getCityId()
-        ));
+        );
 
         AvailableDestinationsResponse response = new AvailableDestinationsResponse(
                 request.getLobbyId(),
@@ -103,8 +104,9 @@ public class ConnectionService extends AbstractService {
                                                    return new GameException(USER_NOT_LOGGED_IN);
                                                });
 
-        Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAllDestinations(
-                event.getLobbyId()));
+        Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAllDestinations(
+                event.getLobbyId()
+        );
 
         AvailableDestinationsResponse response = new AvailableDestinationsResponse(
                 event.getLobbyId(),
@@ -165,11 +167,11 @@ public class ConnectionService extends AbstractService {
             scheduler = Executors.newScheduledThreadPool(1);
             scheduler.schedule(() -> {
                 for (IPlayer player : game.getPlayers()) {
-                    Map<Integer, List<ICardDTO>> availableDestinations = convertToDtoMap(connectionManagement.getAvailableDestinations(
+                    Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
                             event.getLobbyId(),
                             player.getUser()
                                   .getUsername()
-                    ));
+                    );
                     IUser user = player.getUser();
                     AvailableDestinationsResponse response = new AvailableDestinationsResponse(game.getGameId(),
                             availableDestinations

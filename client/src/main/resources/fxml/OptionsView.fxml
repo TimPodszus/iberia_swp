@@ -1,36 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Slider?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
-
-<AnchorPane prefHeight="720.0" prefWidth="1280.0" styleClass="background-pane" stylesheets="@../css/optionView.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.options.OptionsPresenter">
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane prefHeight="720.0" prefWidth="1280.0" styleClass="background-pane" stylesheets="@../css/optionView.css"
+            xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="de.uol.swp.client.options.OptionsPresenter">
     <children>
-        <AnchorPane layoutX="261.0" layoutY="118.0" prefHeight="200.0" prefWidth="200.0" styleClass="content-pane" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="60.0">
+        <AnchorPane layoutX="261.0" layoutY="118.0" prefHeight="200.0" prefWidth="200.0" styleClass="content-pane"
+                    AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0"
+                    AnchorPane.topAnchor="60.0">
             <children>
-                <Label layoutX="161.0" layoutY="70.0" styleClass="h2" text="Optionen" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                <VBox layoutX="14.0" layoutY="47.0" prefHeight="200.0" prefWidth="514.0" spacing="18.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+                <Label layoutX="161.0" layoutY="70.0" styleClass="h2" text="Optionen" AnchorPane.leftAnchor="0.0"
+                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                <VBox layoutX="14.0" layoutY="47.0" prefHeight="200.0" prefWidth="514.0" spacing="18.0"
+                      AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                      AnchorPane.topAnchor="40.0">
                     <children>
                         <VBox prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
-                     <children>
-                        <Label text="Lautstärke" />
-                        <Slider fx:id="volumeSlider" blockIncrement="5.0" onKeyPressed="#onVolumeChange" onMouseReleased="#onVolumeChange" snapToTicks="true" value="100.0" />
-                        <Label fx:id="volumeLabel" alignment="CENTER" maxWidth="1.7976931348623157E308" text="100%" VBox.vgrow="ALWAYS" />
-                     </children>
-                  </VBox>
-                  <VBox fillWidth="false" prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
-                     <children>
-                        <Label text="Chat" />
-                        <CheckBox fx:id="chatEnabledCheckbox" mnemonicParsing="false" onAction="#onChatEnabledChange" selected="true" text="Chat aktiviert" />
-                     </children>
-                  </VBox>
-               </children>
-            </VBox>
-         </children>
-      </AnchorPane>
-      <Button fx:id="backButton" layoutX="24.0" layoutY="30.0" mnemonicParsing="false" onAction="#onBackButton" prefHeight="48.0" prefWidth="48.0" styleClass="back-button" text="&lt;-" AnchorPane.leftAnchor="16.0" AnchorPane.topAnchor="20.0" />
-   </children>
+                            <children>
+                                <Label text="Lautstärke"/>
+                                <Slider fx:id="volumeSlider" blockIncrement="5.0" onKeyPressed="#onVolumeChange"
+                                        onMouseReleased="#onVolumeChange" snapToTicks="true" value="100.0"/>
+                                <Label fx:id="volumeLabel" alignment="CENTER" maxWidth="1.7976931348623157E308"
+                                       text="100%" VBox.vgrow="ALWAYS"/>
+                            </children>
+                        </VBox>
+                        <VBox fillWidth="false" prefWidth="100.0" spacing="6.0" VBox.vgrow="NEVER">
+                            <children>
+                                <Label text="Chat"/>
+                                <CheckBox fx:id="chatEnabledCheckbox" mnemonicParsing="false"
+                                          onAction="#onChatEnabledChange" selected="true" text="Chat aktiviert"/>
+                            </children>
+                        </VBox>
+                        <VBox fillWidth="false" layoutX="10.0" layoutY="84.0" prefWidth="100.0" spacing="6.0">
+                            <children>
+                                <Label text="Neues Passwort eingeben"/>
+                                <PasswordField fx:id="newPasswordField"/>
+                                <Label layoutX="10.0" layoutY="10.0" text="Neues Passwort wiederholen"/>
+                                <PasswordField fx:id="newPasswordRepeatField"/>
+                                <Button mnemonicParsing="false" text="Neues Passwort setzen"
+                                        fx:id="changePasswordButton"
+                                        onAction="#onChangePasswordButton"/>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
+        <Button fx:id="backButton" layoutX="24.0" layoutY="30.0" mnemonicParsing="false" onAction="#onBackButton"
+                prefHeight="48.0" prefWidth="48.0" styleClass="back-button" text="&lt;-" AnchorPane.leftAnchor="16.0"
+                AnchorPane.topAnchor="20.0"/>
+    </children>
 </AnchorPane>

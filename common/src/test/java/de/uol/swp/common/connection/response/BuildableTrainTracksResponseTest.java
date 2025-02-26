@@ -1,6 +1,6 @@
 package de.uol.swp.common.connection.response;
 
-import de.uol.swp.common.connection.IConnectionDTO;
+import de.uol.swp.common.connection.dto.IConnectionDTO;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

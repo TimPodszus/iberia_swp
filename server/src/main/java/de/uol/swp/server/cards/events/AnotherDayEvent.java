@@ -32,12 +32,10 @@ public class AnotherDayEvent extends AbstractMessage implements ServerInternalMe
         if (this == object) {
             return true;
         }
-        if (!(object instanceof AnotherDayEvent that)) {
+        if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        if (!super.equals(object)) {
-            return false;
-        }
+        AnotherDayEvent that = (AnotherDayEvent) object;
         return amountOfActions == that.amountOfActions &&
                 Objects.equals(lobbyId, that.lobbyId) &&
                 Objects.equals(username, that.username);
