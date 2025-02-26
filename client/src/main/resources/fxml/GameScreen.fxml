@@ -2070,13 +2070,13 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                 </VBox.margin>
                             </ToggleButton>
-                            <ToggleButton fx:id="endTurnButton" mnemonicParsing="false" onAction="#onEndTurn"
+                            <Button fx:id="endTurnButton" mnemonicParsing="false" onAction="#onEndTurn"
                                           prefHeight="30.0" prefWidth="150.0" styleClass="end-turn-button"
                                           text="Zug beenden">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                 </VBox.margin>
-                            </ToggleButton>
+                            </Button>
                         </children>
                     </VBox>
                 </children>
