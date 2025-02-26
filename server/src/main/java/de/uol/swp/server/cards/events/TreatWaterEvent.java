@@ -6,26 +6,22 @@ import lombok.Getter;
 
 import java.util.Objects;
 
-/**
- * Event to increase current player's action by two.
- */
 @Getter
-public class AnotherDayEvent extends AbstractMessage implements ServerInternalMessage {
+public class TreatWaterEvent extends AbstractMessage implements ServerInternalMessage {
     private final String lobbyId;
     private final String username;
-    private final int amountOfActions;
 
     /**
-     * Constructs a new MovePlayerAnywhereEvent.
+     * Constructs a new TreatWaterEvent.
      *
      * @param lobbyId  the ID of the lobby
      * @param username the username of the player
      */
-    public AnotherDayEvent(String lobbyId, String username) {
+    public TreatWaterEvent(String lobbyId, String username) {
         this.lobbyId = lobbyId;
         this.username = username;
-        this.amountOfActions = 2;
     }
+
 
     @Override
     public boolean equals(Object object) {
@@ -35,14 +31,12 @@ public class AnotherDayEvent extends AbstractMessage implements ServerInternalMe
         if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        AnotherDayEvent that = (AnotherDayEvent) object;
-        return amountOfActions == that.amountOfActions &&
-                Objects.equals(lobbyId, that.lobbyId) &&
-                Objects.equals(username, that.username);
+        TreatWaterEvent that = (TreatWaterEvent) object;
+        return Objects.equals(lobbyId, that.lobbyId) && Objects.equals(username, that.username);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), lobbyId, username, amountOfActions);
+        return Objects.hash(super.hashCode(), lobbyId, username);
     }
 }
