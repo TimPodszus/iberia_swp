@@ -13,6 +13,8 @@ import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.infection.management.InfectionManagement;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagement;
+import de.uol.swp.server.plague.management.IPlagueManagement;
+import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.management.IRegionManagement;
@@ -52,5 +54,6 @@ public class ServerModule extends AbstractModule {
         bind(IRegionManagement.class).to(RegionManagement.class);
         bind(ServerUserService.class).to(UserManagement.class);
         bind(ICardManagement.class).to(CardManagement.class);
+        bind(IPlagueManagement.class).to(PlagueManagement.class);
     }
 }

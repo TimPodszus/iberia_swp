@@ -12,6 +12,7 @@ import de.uol.swp.server.connection.ConnectionService;
 import de.uol.swp.server.di.ServerModule;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.lobby.LobbyService;
+import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.region.RegionService;
 import de.uol.swp.server.player.PlayerService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
@@ -84,6 +85,7 @@ class ServerApp {
         injector.getInstance(CardService.class);
         injector.getInstance(RegionService.class);
         injector.getInstance(CityService.class);
+        injector.getInstance(PlayerService.class);
     }
 
 }
