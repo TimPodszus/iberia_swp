@@ -13,7 +13,7 @@ import de.uol.swp.server.cards.events.TreatWaterEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
-import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.states.EventState;

@@ -18,7 +18,7 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.TreatWaterEvent;
-import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
