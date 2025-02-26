@@ -3,6 +3,7 @@ package de.uol.swp.server.player.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.*;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
@@ -13,17 +14,20 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.role.ScientistAtTheRoyalAcademy;
 import de.uol.swp.server.usermanagement.IUser;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 
-public class PlayerManagement implements IPlayerManagement {
+public class PlayerManagement extends AbstractManagement implements IPlayerManagement{
     private final ICityManagement cityManagement;
 
     @Inject
@@ -43,8 +47,7 @@ public class PlayerManagement implements IPlayerManagement {
      * @throws PlayerManagementException if the player is not found for the given user
      */
     public ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException {
-        IPlayer player = GameStore.getInstance()
-                                  .getGame(lobbyCode)
+        IPlayer player = getGame(lobbyCode)
                                   .getPlayers()
                                   .stream()
                                   .filter(p -> Objects.equals(
@@ -300,5 +303,89 @@ public class PlayerManagement implements IPlayerManagement {
         }
 
         return infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1);
+    }
+
+    /**
+     * Gets the cards to sort for the specified user in the given lobby.
+     * This method retrieves the game instance using the provided lobby ID, then finds the player by their user.
+     * It then checks if the player is the current player and has the role of ScientistAtTheRoyalAcademy.
+     * If the conditions are met, it retrieves the top three cards from the player's card draw pile and returns them.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param user    the user for whom the cards are to be sorted
+     * @return the top three cards from the player's card draw pile
+     * @throws PlayerManagementException if the player is not found for the given user or if the player is not the current player or does not have the role of ScientistAtTheRoyalAcademy
+     * @throws IllegalStateException     if the game is not in the turn state
+     */
+    @Override
+    public List<ICardDTO> getCardsToSort(
+            String lobbyId,
+            IUser user
+    ) throws PlayerManagementException, IllegalStateException {
+        IGame game = getGame(lobbyId);
+        List<ICard> cards = new ArrayList<>();
+        if (game.getState() instanceof PlayerTurnState playerTurnState) {
+            IPlayer player = getPlayerByUser(user, game);
+            if (player != null && player.equals(game.getCurrentPlayer()) && player.getRole() instanceof ScientistAtTheRoyalAcademy) {
+                for (int i = 0; i < 3; i++) {
+                    cards.add(game.getPlayerCardDrawPile()
+                                  .get(i));
+                }
+                playerTurnState.reduceActionsRemaining(game);
+            } else {
+                throw new PlayerManagementException(
+                        "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
+            }
+        } else {
+            throw new IllegalStateException("Das Spiel befindet sich nicht im Zug-Status");
+        }
+        return CardMapper.toMixedCardDTOList(cards);
+    }
+
+    /**
+     * Sorts the cards for the specified user in the given lobby.
+     * This method retrieves the game instance using the provided lobby ID, then finds the player by their user.
+     * It then checks if the player is the current player and has the role of ScientistAtTheRoyalAcademy.
+     * If the conditions are met, it sorts the cards in the player's card draw pile according to the specified order.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param user    the user for whom the cards are to be sorted
+     * @param cards   the list of cards to be sorted
+     * @throws IllegalStateException if the player is not the current player or does not have the role of ScientistAtTheRoyalAcademy
+     */
+    @Override
+    public void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws IllegalStateException {
+        IGame game = getGame(lobbyId);
+        IPlayer player = getPlayerByUser(user, game);
+        if (player != null && player.equals(game.getCurrentPlayer()) && player.getRole() instanceof ScientistAtTheRoyalAcademy) {
+            List<ICard> playerCardDrawPile = game.getPlayerCardDrawPile();
+            for (int i = cards.size() - 1; i >= 0; i--) {
+                ICardDTO cardDTO = cards.get(i);
+                ICard card = game.getPlayerCardDrawPile()
+                                 .stream()
+                                 .filter(c -> Objects.equals(c.getId(), cardDTO.getId()))
+                                 .findFirst()
+                                 .orElseThrow(() -> new IllegalStateException("Karte nicht gefunden"));
+                playerCardDrawPile.remove(card);
+                playerCardDrawPile.add(0, card);
+            }
+        } else {
+            throw new IllegalStateException(
+                    "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
+        }
+    }
+
+    /**
+     * Gets the Player by the User.
+     * @param user The User
+     * @param game The Game
+     */
+    public IPlayer getPlayerByUser(IUser user, IGame game) {
+        return game.getPlayers()
+                   .stream()
+                   .filter(p -> p.getUser()
+                                 .equals(user))
+                   .findFirst()
+                   .orElse(null);
     }
 }

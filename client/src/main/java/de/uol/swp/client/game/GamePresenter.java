@@ -38,6 +38,7 @@ import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.player.response.CardsToSortResponse;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
@@ -623,6 +624,9 @@ public class GamePresenter extends AbstractPresenter {
                         eventBus.post(new CardsExchangeRequest(map, lobbyId));
                     });
                 });
+            }
+            else if(gameDTO.getCurrentPlayer().getRole().getName().equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)){
+                gameService.sendGetCardsToSortRequest(lobbyId);
             }
         }
     }
@@ -1688,6 +1692,20 @@ public class GamePresenter extends AbstractPresenter {
 
         EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
         Platform.runLater(dialog::showEndGameDialog);
+    }
+
+    @Subscribe
+    public void onCardsToSortResponse(CardsToSortResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+        Platform.runLater(() -> {
+            CardsToSortDialog cardsToSortDialog = new CardsToSortDialog(true, response.getCards());
+            cardsToSortDialog.showAndWait()
+                             .ifPresent(result -> gameService.sendSortedCardRequest(lobbyId, result));
+        });
+        roleButtonOne.setSelected(false);
     }
 
     /**

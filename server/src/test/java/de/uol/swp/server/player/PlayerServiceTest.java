@@ -15,6 +15,7 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -40,6 +41,9 @@ public class PlayerServiceTest extends EventBusBasedTest {
     @Mock
     private IGameManagement gameManagement;
 
+    @Mock
+    private ILobbyManagement lobbyManagement;
+
     private final IGame game = new Game(1, "validGameId");
 
     @Mock
@@ -51,7 +55,14 @@ public class PlayerServiceTest extends EventBusBasedTest {
     @Mock
     private Session session;
 
-    private PlayerService playerService;
+    @InjectMocks
+    PlayerService playerService = new PlayerService(
+            getBus(),
+            playerManagement,
+            gameManagement,
+            lobbyManagement
+    );
+
 
     @Subscribe
     public void onBoardUpdateEvent(BoardUpdateEvent event) {
@@ -63,11 +74,9 @@ public class PlayerServiceTest extends EventBusBasedTest {
         super.handleEvent(event);
     }
 
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        playerService = new PlayerService(super.getBus(), playerManagement, gameManagement);
         IUser user = new User("testUser", "testPassword");
 
         when(request.getLobbyId()).thenReturn("validGameId");
@@ -75,8 +84,8 @@ public class PlayerServiceTest extends EventBusBasedTest {
         when(session.getUser()).thenReturn(UserMapper.toDTO(user));
         when(request.getSession()).thenReturn(Optional.of(session));
 
-        GameStore.getInstance()
-                 .addGame("validGameId", game);
+        GameStore.getInstance().addGame("validGameId", game);
+        when(playerManagement.getGame("validGameId")).thenReturn(game);
     }
 
     @Test
@@ -146,12 +155,11 @@ public class PlayerServiceTest extends EventBusBasedTest {
         game.getPlayers()
             .add(player);
         player.setRole(new Sailor());
-        when(gameManagement.getGame("validGameId")).thenReturn(game);
         when(gameManagement.drawInfectionCard(game)).thenReturn(infectionCard);
 
         postAndWait(request);
 
-        verify(gameManagement, times(1)).getGame("validGameId");
+        verify(playerManagement, times(1)).getGame("validGameId");
         verify(gameManagement, times(1)).drawInfectionCard(game);
         assertInstanceOf(BoardUpdateEvent.class, super.event);
     }
@@ -169,11 +177,10 @@ public class PlayerServiceTest extends EventBusBasedTest {
         when(request.getLobbyId()).thenReturn("validGameId");
         when(request.getSession()).thenReturn(Optional.of(session));
         when(session.getUser()).thenReturn(UserMapper.toDTO(user1));
-        when(gameManagement.getGame("validGameId")).thenReturn(game);
 
         postAndWait(request);
 
-        verify(gameManagement, times(1)).getGame("validGameId");
+        verify(playerManagement, times(1)).getGame("validGameId");
         assertInstanceOf(StatusResponse.class, super.event);
     }
 }

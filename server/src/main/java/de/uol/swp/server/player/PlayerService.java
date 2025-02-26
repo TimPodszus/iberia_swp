@@ -2,30 +2,41 @@ package de.uol.swp.server.player;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.player.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.request.DrawPlayerCardRequest;
+import de.uol.swp.common.player.request.GetCardsToSortRequest;
+import de.uol.swp.common.player.request.SortedCardsRequest;
+import de.uol.swp.common.player.response.CardsToSortResponse;
 import de.uol.swp.common.player.response.DrawPlayerCardResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 /**
  * Service class for handling player-related operations.
  */
 public class PlayerService extends AbstractService {
-    private final IPlayerManagement playerManagement;
-    private final IGameManagement gameManagement;
+    IPlayerManagement playerManagement;
+    IGameManagement gameManagement;
+    ILobbyManagement lobbyManagement;
 
     /**
      * Constructs a new PlayerService.
@@ -34,10 +45,13 @@ public class PlayerService extends AbstractService {
      * @param playerManagement the player management instance for player operations
      */
     @Inject
-    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement) {
+    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement,
+                         ILobbyManagement lobbyManagement
+    ) {
         super(bus);
         this.playerManagement = playerManagement;
         this.gameManagement = gameManagement;
+        this.lobbyManagement = lobbyManagement;
     }
 
     /**
@@ -58,7 +72,7 @@ public class PlayerService extends AbstractService {
         }
         response.setSession(session);
         post(response);
-        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
@@ -72,7 +86,7 @@ public class PlayerService extends AbstractService {
         AbstractResponseMessage response;
         Session session = request.getSession()
                                  .orElseThrow(() -> new IllegalStateException("Session not present"));
-        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
         if (!game.getCurrentPlayer()
                  .getUser()
                  .equals(UserMapper.toUser(session.getUser()))) {
@@ -105,7 +119,57 @@ public class PlayerService extends AbstractService {
         }
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
 
-        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    /**
+     * Handles the GetCardsToSortRequest event.
+     *
+     * @param request the request to get cards to sort
+     */
+    @Subscribe
+    public void onGetCardsToSortRequest(GetCardsToSortRequest request) {
+        AbstractResponseMessage response;
+        Optional<Session> session = request.getSession();
+        try {
+            List<ICardDTO> cards = playerManagement.getCardsToSort(request.getLobbyId(),
+                    UserMapper.toUser(Objects.requireNonNull(session.map(Session::getUser)
+                                                                    .orElse(null))));
+            response = new CardsToSortResponse(request.getLobbyId(), true, "Cards retrieved successfully", cards);
+        } catch (PlayerManagementException | IllegalStateException e) {
+            response = new StatusResponse(request.getLobbyId(), false, e.getMessage());
+        }
+        response.setSession(session.orElse(null));
+        post(response);
+    }
+
+    /**
+     * Handles the SortedCardsRequest event.
+     *
+     * @param request the request to sort cards
+     */
+    @Subscribe
+    public void onSortedCardsRequest(SortedCardsRequest request) {
+        AbstractResponseMessage response;
+        Optional<Session> session = request.getSession();
+        IGame game = playerManagement.getGame(request.getLobbyId());
+        try {
+            playerManagement.sortCards(
+                    request.getLobbyId(),
+                    UserMapper.toUser(Objects.requireNonNull(session.map(Session::getUser)
+                                                                    .orElse(null))),
+                    request.getCards()
+            );
+            response = new StatusResponse(request.getLobbyId(), true, "Karten wurden erfolgreich sortiert");
+        } catch (IllegalStateException e) {
+            response = new StatusResponse(request.getLobbyId(), false, e.getMessage());
+        }
+        response.setSession(session.orElse(null));
+        post(response);
+
+        IGameDTO gameDTO = GameMapper.toDTO(game);
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 }

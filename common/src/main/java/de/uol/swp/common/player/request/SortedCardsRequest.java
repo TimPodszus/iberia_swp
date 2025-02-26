@@ -1,6 +1,6 @@
 package de.uol.swp.common.player.request;
 
-import de.uol.swp.common.cards.data.CardDTO;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.AbstractGameRequest;
 
 import lombok.Getter;
@@ -9,9 +9,9 @@ import java.util.Objects;
 
 @Getter
 public class SortedCardsRequest extends AbstractGameRequest {
-    private final List<CardDTO> cards;
+    private final List<ICardDTO> cards;
 
-    public SortedCardsRequest(String lobbyId, List<CardDTO> cards) {
+    public SortedCardsRequest(String lobbyId, List<ICardDTO> cards) {
         super(lobbyId);
         this.cards = cards;
     }
