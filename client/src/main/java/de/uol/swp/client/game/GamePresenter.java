@@ -33,7 +33,6 @@ import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
-import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
