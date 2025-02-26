@@ -1,10 +1,10 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.TransportMode;
-import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
@@ -328,8 +328,8 @@ class GameManagementTest {
     @Test
     void testMoveByLand() throws GameManagementException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
-                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.CARRIAGE)))
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
+                              .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.CARRIAGE)))
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
@@ -383,9 +383,9 @@ class GameManagementTest {
         );
 
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.ALICANTE).getId(),
-                new DestinationInfo(CardMapper.toMixedCardDTOList(
-                        List.of(destinationCityCard)),
+                cityRepository.getCityByName(CityName.ALICANTE)
+                              .getId(), new DestinationInfo(
+                        CardMapper.toMixedCardDTOList(List.of(destinationCityCard)),
                         new ArrayList<>(List.of(TransportMode.SHIP))
                 )
         );
@@ -427,8 +427,8 @@ class GameManagementTest {
     @Test
     void testMoveSailorBySea() throws GameManagementException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.ALICANTE).getId(),
-                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.SHIP)))
+                cityRepository.getCityByName(CityName.ALICANTE)
+                              .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.SHIP)))
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
@@ -456,9 +456,9 @@ class GameManagementTest {
         );
 
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.ALICANTE).getId(),
-                new DestinationInfo(CardMapper.toMixedCardDTOList(
-                        List.of(destinationCityCard)),
+                cityRepository.getCityByName(CityName.ALICANTE)
+                              .getId(), new DestinationInfo(
+                        CardMapper.toMixedCardDTOList(List.of(destinationCityCard)),
                         new ArrayList<>(List.of(TransportMode.SHIP))
                 )
         );
@@ -489,8 +489,8 @@ class GameManagementTest {
     @Test
     void testTrainRide() throws GameManagementException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.VALLADOLID).getId(),
-                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.TRAIN)))
+                cityRepository.getCityByName(CityName.VALLADOLID)
+                              .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.TRAIN)))
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
@@ -569,11 +569,12 @@ class GameManagementTest {
         when(game.getPlayers()).thenReturn(List.of(player));
         when(player.getCards()).thenReturn(List.of(cityCard));
         when(cityCard.getCity()).thenReturn(city);
+        when(player.getRole()).thenReturn(new Politician());
 
         when(game.getState()).thenReturn(mock(IGameState.class));
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(5, actions.size());
+        assertEquals(7, actions.size());
     }
 
     @Test
@@ -770,8 +771,8 @@ class GameManagementTest {
     @Test
     void testMovePlayer_OnTheMoveDayAndNightEvent() throws GameManagementException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
-                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
+                              .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
         );
         when(connectionManagement.getAllDestinations(LOBBY_CODE)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
@@ -796,9 +797,11 @@ class GameManagementTest {
     @Test
     void testMovePlayer_StateMobilizationEvent() throws GameManagementException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
+                              .getId(),
                 new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE))),
-                cityRepository.getCityByName(CityName.BARCELONA).getId(),
+                cityRepository.getCityByName(CityName.BARCELONA)
+                              .getId(),
                 new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
         );
         when(connectionManagement.getAvailableDestinations(anyString(), anyString())).thenReturn(availableDestinations);

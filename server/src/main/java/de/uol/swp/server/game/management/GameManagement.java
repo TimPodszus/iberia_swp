@@ -2,9 +2,9 @@ package de.uol.swp.server.game.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -303,8 +303,47 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isWaterTreatmentPlaceable(lobbyCode, user)) {
             actions.add(GameActions.TREAT_WATER);
         }
+        if (roleActionOneAvailable(lobbyCode, user)) {
+            actions.add(GameActions.ROLE_ACTION_ONE);
+        }
+        if (roleActionTwoAvailable(lobbyCode, user)) {
+            actions.add(GameActions.ROLE_ACTION_TWO);
+        }
         return actions;
     }
+
+    private boolean roleActionOneAvailable(String lobbyCode, IUser user) {
+        if (getGame(lobbyCode).getCurrentPlayer()
+                              .getRole()
+                              .getName()
+                              .equals(RoleEnum.POLITICIAN)) {
+            return getGame(lobbyCode).getCurrentPlayer()
+                                     .getCards()
+                                     .stream()
+                                     .anyMatch(card -> card instanceof CityCard);
+        }
+        return false;
+    }
+
+    private boolean roleActionTwoAvailable(String lobbyCode, IUser user) {
+        if (getGame(lobbyCode).getCurrentPlayer()
+                              .getRole()
+                              .getName()
+                              .equals(RoleEnum.POLITICIAN)) {
+            boolean playerHasCurrentCityCard = getGame(lobbyCode).getCurrentPlayer()
+                                                                 .getCards()
+                                                                 .stream()
+                                                                 .anyMatch(card -> card instanceof CityCard);
+
+            boolean currentCityCardIsOnDiscardPile = getGame(lobbyCode).getPlayerCardDiscardPile()
+                                                                       .stream()
+                                                                       .anyMatch(card -> card instanceof CityCard);
+
+            return playerHasCurrentCityCard || currentCityCardIsOnDiscardPile;
+        }
+        return false;
+    }
+
 
     private boolean areTrainTracksBuildable(String lobbyCode) {
         IGame game = super.getGame(lobbyCode);
@@ -369,20 +408,23 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IPlayer player = getPlayerForMove(game, user);
 
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
-        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
-                && (availableDestinations.get(city.getId())
-                                         .getTransportModes()
-                                         .contains(TransportMode.CARRIAGE) ||
-                    availableDestinations.get(city.getId())
-                                         .getTransportModes()
-                                         .contains(TransportMode.TRAIN) ||
-                    availableDestinations.get(city.getId())
-                                         .getTransportModes()
-                                         .contains(TransportMode.NONE));
-        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
-                && availableDestinations.get(city.getId())
-                                        .getTransportModes()
-                                        .contains(TransportMode.SHIP);
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId()) && (availableDestinations.get(
+                                                                                                                         city.getId())
+                                                                                                                 .getTransportModes()
+                                                                                                                 .contains(
+                                                                                                                         TransportMode.CARRIAGE) || availableDestinations.get(
+                                                                                                                                                                                 city.getId())
+                                                                                                                                                                         .getTransportModes()
+                                                                                                                                                                         .contains(
+                                                                                                                                                                                 TransportMode.TRAIN) || availableDestinations.get(
+                                                                                                                                                                                                                                      city.getId())
+                                                                                                                                                                                                                              .getTransportModes()
+                                                                                                                                                                                                                              .contains(
+                                                                                                                                                                                                                                      TransportMode.NONE));
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId()) && availableDestinations.get(city.getId())
+                                                                                                               .getTransportModes()
+                                                                                                               .contains(
+                                                                                                                       TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error(
