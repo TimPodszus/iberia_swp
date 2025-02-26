@@ -349,7 +349,11 @@ public class GameService {
         eventBus.post(new BuildHospitalRequest(lobbyId, cityId));
     }
 
-
+    /**
+     * Posts a request to research a plague for the given game lobby.
+     *
+     * @param lobbyId The game lobby's unique identifier.
+     */
     public void sendResearchPlagueRequest(String lobbyId) {
         LOG.debug("Sending ResearchPlagueRequest with Id {}", lobbyId);
         eventBus.post(new ResearchPlagueRequest(lobbyId));

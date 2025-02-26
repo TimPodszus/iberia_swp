@@ -5,6 +5,7 @@ import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.plague.data.Plague;
 import de.uol.swp.server.plague.data.PlagueRepository;
@@ -26,7 +27,7 @@ class PlagueServiceTest {
 
     private PlagueService plagueService;
     private IPlagueManagement plagueManagement;
-
+    private ILobbyManagement lobbyManagement;
     private PlagueRepository plagueRepository;
     private EventBus eventBus;
     private IGame game;
@@ -36,7 +37,8 @@ class PlagueServiceTest {
         plagueManagement = mock(IPlagueManagement.class);
         eventBus = mock(EventBus.class);
         game = mock(Game.class);
-        plagueService = spy(new PlagueService(plagueManagement, eventBus));
+        lobbyManagement = mock(ILobbyManagement.class);
+        plagueService = spy(new PlagueService(plagueManagement, eventBus, lobbyManagement));
         plagueRepository = mock(PlagueRepository.class);
         when(game.getPlagueRepository()).thenReturn(plagueRepository);
         eventBus.register(plagueService);

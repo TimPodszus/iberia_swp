@@ -560,24 +560,6 @@ public class GamePresenter extends AbstractPresenter {
             }
     }
 
-
-    @Subscribe
-    private void onPlagueResearchedMessage(PlagueResearchedMessage message) {
-        PlagueName researchedPlague = message.getName();
-        LOG.debug("Setting plague marker for plague {}", researchedPlague);
-        if (researchedPlague == PlagueName.CHOLERA) {
-            plagueMarkerBlueImage.setVisible(true);
-        } else if (researchedPlague == PlagueName.YELLOW_FEVER) {
-            plagueMarkerYellowImage.setVisible(true);
-        } else if (researchedPlague == PlagueName.MALARIA) {
-            plagueMarkerBlackImage.setVisible(true);
-        } else if (researchedPlague == PlagueName.TYPHUS) {
-            plagueMarkerRedImage.setVisible(true);
-        }
-    }
-
-
-
     /**
      * Handles place water treatment action.
      *

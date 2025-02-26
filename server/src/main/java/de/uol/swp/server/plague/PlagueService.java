@@ -1,12 +1,17 @@
 package de.uol.swp.server.plague;
 
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.plague.PlagueResearchedMessage;
+import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.AbstractGameResponse;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.plague.ResearchPlagueRequest;
+import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
@@ -16,13 +21,13 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 
-@Singleton
 public class PlagueService extends AbstractService {
 
     private final IPlagueManagement plagueManagement;
 
     private static final Logger LOG = LogManager.getLogger(PlagueService.class);
 
+    private final ILobbyManagement lobbyManagement;
 
 
     /**
@@ -33,32 +38,43 @@ public class PlagueService extends AbstractService {
      * @since 2024-10-04
      */
     @Inject
-    public PlagueService(IPlagueManagement plagueManagement, EventBus eventBus) {
+    public PlagueService(IPlagueManagement plagueManagement, EventBus eventBus, ILobbyManagement lobbyManagement) {
         super(eventBus);
         this.plagueManagement = plagueManagement;
+        this.lobbyManagement = lobbyManagement;
     }
 
     /**
      * Handles ResearchPlagueRequest found on the EventBus.
      * If a ResearchPlagueRequest is detected, it triggers the plague research process.
      *
-     * @param researchPlagueRequest The ResearchPlagueRequest found on the EventBus
+     * @param request The ResearchPlagueRequest found on the EventBus
      * @see PlagueManagement#researchPlague(IGame)
      * @since 2024-10-04
      */
     @Subscribe
     public void onResearchPlagueRequest(
-            ResearchPlagueRequest researchPlagueRequest
+            ResearchPlagueRequest request
     ) throws PlagueManagementException {
+        LOG.debug("ResearchPlagueRequest received");
+        AbstractGameResponse response;
+        Session session = request.getSession().orElse(null);
+        IGame game = plagueManagement.getGame(request.getLobbyId());
+        try {
+            plagueManagement.researchPlague(game);
+            response = new StatusResponse(request.getLobbyId(), true, "Plage wurde erforscht");
+        } catch (PlagueManagementException e) {
+            LOG.error("Error while researching plague", e);
+            response = new StatusResponse(request.getLobbyId(), false, e.getMessage());
+        }
 
-        LOG.debug("");
-        IGame game = plagueManagement.getGame(researchPlagueRequest.getLobbyId());
-        PlagueName name = researchPlagueRequest.getName();
+        response.setSession(session);
+        post(response);
 
-        plagueManagement.researchPlague(game);
-
-        LOG.debug("Sending PlagueResearchedMessage");
-        sendToAll(new PlagueResearchedMessage(name));
+        IGameDTO gameDTO = GameMapper.toDTO(game);
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        LOG.debug("Sending new BoardUpdateEvent after successful plague research");
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 
 }
