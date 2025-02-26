@@ -20,7 +20,6 @@ import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.player.message.request.MovePlayerRequest;
-import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
@@ -541,34 +540,20 @@ public class GameService extends AbstractService implements GameStateChangeListe
      * ends the turn for the user in the specified lobby, and sends a board update event to all players in the lobby.
      *
      * @param request the end turn request containing the session and lobby ID
-     * @throws GameException           if the user is unknown or any error occurs while ending the turn
+     * @throws SessionNotFoundException if the session is unknown
      */
     @Subscribe
-    public void onEndTurnRequest(EndTurnRequest request) throws GameException {
+    public void onEndTurnRequest(EndTurnRequest request) throws SessionNotFoundException {
         LOG.debug("[Lobby: {}] Got EndTurnRequest for current Player", request.getLobbyId());
         IUserDTO user = request.getSession()
                                .map(Session::getUser)
-                               .orElse(null);
-        if (user == null) {
-            LOG.error("[LobbyID: {}] User is unknown", request.getLobbyId());
-            throw new GameException("User is unknown");
-        }
+                               .orElseThrow(SessionNotFoundException::new);
 
         try {
             gameManagement.endTurn(request.getLobbyId(), UserMapper.toUser(user));
-        } catch (IllegalStateException e) {
+        } catch (IllegalGameStateException e) {
             LOG.error("[LobbyID: {}] Turn could not be ended", request.getLobbyId());
-            StatusResponse response = new StatusResponse(
-                    request.getLobbyId(),
-                    false,
-                    "Wenn du nicht am Zug bist, kannst du deinen Zug nicht beenden"
-            );
-
-            request.getMessageContext()
-                   .ifPresent(response::setMessageContext);
-            request.getSession()
-                     .ifPresent(response::setSession);
-            post(response);
+            sendStatusResponse(request, false, "In diesem Zustand kann der Zug nicht beendet werden");
 
             return;
         }
