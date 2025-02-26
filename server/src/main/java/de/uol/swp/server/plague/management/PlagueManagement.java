@@ -86,7 +86,7 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
 
         List<CityCard> cardsToDiscard = plagueCards.subList(0, 5);
 
-        playerManagement.discardCards(
+        playerManagement.discardPlayerCards(
                 game.getGameId(),
                 game.getCurrentPlayer()
                     .getUser()

@@ -144,7 +144,12 @@ class PlayerManagementTest {
 
         when(player.getCards()).thenReturn(cards);
 
-        playerManagement.addCard(player, card);
+        playerManagement.addCard(
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                card
+        );
 
         verify(cards, times(1)).add(card);
     }
@@ -156,7 +161,7 @@ class PlayerManagementTest {
     void discardCard_DiscardSingleCard() throws PlayerManagementException {
         ICard infectionCard = new InfectionCard(1, "test", mock(ICity.class));
 
-        playerManagement.discardCard(
+        playerManagement.discardPlayerCard(
                 game.getGameId(),
                 player.getUser()
                       .getUsername(),
@@ -176,7 +181,7 @@ class PlayerManagementTest {
         ICard card2 = new CityCard(1, "test", mock(ICity.class));
         List<ICard> cards = List.of(card1, card2);
 
-        playerManagement.discardCards(
+        playerManagement.discardPlayerCards(
                 game.getGameId(),
                 player.getUser()
                       .getUsername(),

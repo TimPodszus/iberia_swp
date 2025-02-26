@@ -5,6 +5,7 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -14,6 +15,13 @@ import java.util.List;
  * Interface for managing player-related operations.
  */
 public interface IPlayerManagement {
+
+    /**
+     * Sets the GameStateChangeListener.
+     *
+     * @param listener the new GameStateChangeListener
+     */
+    void setCardsAmountChangeListener(CardsAmountChangeListener listener);
 
     /**
      * Draws a player card for a given user in a game.
@@ -46,12 +54,13 @@ public interface IPlayerManagement {
     void setStartingPosition(String lobbyCode, CityName cityName, IPlayer player) throws PlayerManagementException;
 
     /**
-     * Adds a card to the player's hand.
+     * Adds a card to a player's hand in a specified lobby.
      *
-     * @param player the player to whom the card is being added
-     * @param card   the card to be added
+     * @param lobbyId  the ID of the lobby
+     * @param username the username of the player
+     * @param card     the card to be added
      */
-    void addCard(IPlayer player, ICard card);
+    void addCard(String lobbyId, String username, ICard card);
 
     /**
      * Discards a card for a player in a specified lobby.
@@ -61,7 +70,7 @@ public interface IPlayerManagement {
      * @param cardId    the ID of the card to be discarded
      * @throws PlayerManagementException if an error occurs while discarding the card
      */
-    void discardCard(String lobbyCode, String username, Integer cardId) throws PlayerManagementException;
+    void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws PlayerManagementException;
 
     /**
      * Discards multiple cards for a player in a specified lobby.
@@ -71,7 +80,7 @@ public interface IPlayerManagement {
      * @param cardIds   the list of IDs of the cards to be discarded
      * @throws PlayerManagementException if an error occurs while discarding the cards
      */
-    void discardCards(String lobbyCode, String username, List<Integer> cardIds) throws PlayerManagementException;
+    void discardPlayerCards(String lobbyCode, String username, List<Integer> cardIds) throws PlayerManagementException;
 
     /**
      * Retrieves a card for a player in a specified lobby.

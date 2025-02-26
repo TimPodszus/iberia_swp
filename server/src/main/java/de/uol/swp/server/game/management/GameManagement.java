@@ -484,7 +484,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                        .getName()
                                        .equals(RoleEnum.SAILOR);
         if (!playerIsSailor) {
-            playerManagement.discardCard(
+            playerManagement.discardPlayerCard(
                     game.getGameId(),
                     player.getUser()
                           .getUsername(),

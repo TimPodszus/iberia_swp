@@ -327,7 +327,7 @@ class RegionManagementTest {
         spyRegionManagement.increaseWaterTreatmentsFromRegion(lobbyId, 1, 5, cityCard, user);
 
         verify(region1, times(1)).increaseWaterTreatments(5);
-        verify(playerManagement, times(1)).discardCard(
+        verify(playerManagement, times(1)).discardPlayerCard(
                 lobbyId,
                 requestPlayer.getUser()
                              .getUsername(),
@@ -357,7 +357,7 @@ class RegionManagementTest {
         );
 
         verify(region1, never()).increaseWaterTreatments(anyInt());
-        verify(playerManagement, never()).discardCard(anyString(), any(), any());
+        verify(playerManagement, never()).discardPlayerCard(anyString(), any(), any());
         verify(playerTurnState, never()).reduceActionsRemaining(any());
     }
 
@@ -376,7 +376,7 @@ class RegionManagementTest {
         );
 
         verify(region1, never()).increaseWaterTreatments(anyInt());
-        verify(playerManagement, never()).discardCard(anyString(), any(), any());
+        verify(playerManagement, never()).discardPlayerCard(anyString(), any(), any());
         verify(playerTurnState, never()).reduceActionsRemaining(any());
     }
 

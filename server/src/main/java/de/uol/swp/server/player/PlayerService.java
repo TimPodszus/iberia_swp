@@ -9,19 +9,29 @@ import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.player.request.*;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.CardMapper;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.player.data.CardsAmountChangeListener;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+
+import java.util.List;
 
 /**
  * Service class for handling player-related operations.
  */
-public class PlayerService extends AbstractService {
+public class PlayerService extends AbstractService implements CardsAmountChangeListener {
+    public static final Logger LOG = LogManager.getLogger(PlayerService.class);
     private final IPlayerManagement playerManagement;
     private final IGameManagement gameManagement;
 
@@ -38,6 +48,8 @@ public class PlayerService extends AbstractService {
         super(bus);
         this.playerManagement = playerManagement;
         this.gameManagement = gameManagement;
+
+        playerManagement.setCardsAmountChangeListener(this);
     }
 
     /**
@@ -68,29 +80,32 @@ public class PlayerService extends AbstractService {
      * @param request the request to draw a player card
      */
     @Subscribe
-    public void onDiscardPlayerCardRequest(DiscardPlayerCardRequest request) throws PlayerManagementException {
+    public void onDiscardPlayerCardRequest(DiscardPlayerCardRequest request) {
+        LOG.debug("DiscardPlayerCardRequest received");
         IGame game = gameManagement.getGame(request.getLobbyId());
         Session session = request.getSession()
                                  .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
 
         try {
-            playerManagement.discardCard(
+            playerManagement.discardPlayerCard(
                     request.getLobbyId(),
                     session.getUser()
                            .getUsername(),
                     request.getCard()
                            .getId()
             );
-        } catch (Exception e) {
+        } catch (PlayerManagementException e) {
+            LOG.error("Error discarding a player card: {}", e.getMessage());
             StatusResponse response = new StatusResponse(
                     request.getLobbyId(),
                     false,
-                    "Error discarding a player card: {}" + e.getMessage()
+                    "Error discarding a player card: " + e.getMessage()
             );
             response.setSession(session);
             post(response);
         }
 
+        LOG.debug("DiscardPlayerCardRequest processed successfully");
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
@@ -139,5 +154,39 @@ public class PlayerService extends AbstractService {
 
         IGame game = gameManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    /**
+     * Handles the event when the amount of cards a player has changes.
+     *
+     * @param lobbyId  the ID of the lobby
+     * @param username the username of the player
+     * @param cards    the list of card DTOs
+     */
+    @Override
+    public void onCardsAmountChanged(String lobbyId, String username, List<ICardDTO> cards) {
+        IGame game = gameManagement.getGame(lobbyId);
+        IPlayer player = game.getPlayer(username);
+        List<ICard> playerCards = player.getCards();
+        if (playerCards.size() > 7) {
+            LOG.info("Player {} has exceeded the card limit", username);
+            sendDiscardPlayerCardEvent(game.getGameId(), player.getUser(), CardMapper.toMixedCardDTOList(playerCards));
+        }
+    }
+
+    /**
+     * Sends an event to discard a player's cards.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param user    the user whose cards are to be discarded
+     * @param cards   the list of card DTOs to be discarded
+     */
+    public void sendDiscardPlayerCardEvent(String lobbyId, IUser user, List<ICardDTO> cards) {
+        DiscardPlayerCardEvent event = new DiscardPlayerCardEvent(lobbyId, cards);
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow();
+        event.setSession(session);
+        bus.post(event);
+        LOG.debug("Sent DiscardPlayerCardEvent to user {}", user.getUsername());
     }
 }

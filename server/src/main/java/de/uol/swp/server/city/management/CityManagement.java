@@ -310,7 +310,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         }
 
         // 'Optional.get()' without 'isPresent()' check -> already checked in isHospitalBuildable()
-        new PlayerManagement(this).discardCard(
+        new PlayerManagement(this).discardPlayerCard(
                 lobbyId,
                 username,
                 cityCard.get()

@@ -40,6 +40,7 @@ import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.player.request.DiscardPlayerCardEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
@@ -1407,6 +1408,24 @@ public class GamePresenter extends AbstractPresenter {
 
         CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
         Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
+    }
+
+    @Subscribe
+    public void onDiscardPlayerCardEvent(DiscardPlayerCardEvent event) {
+        LOG.debug("DiscardPlayerCardEvent received");
+        if (!event.getLobbyId()
+                  .equals(this.lobbyId)) {
+            return;
+        }
+        Platform.runLater(() -> {
+            Optional<ICardDTO> result;
+            do {
+                CardDialog dialog = new CardDialog(true, false, event.getCards());
+                result = dialog.showAndWait();
+            } while (result.isEmpty());
+            LOG.debug("Sending DiscardPlayerCardRequest");
+            result.ifPresent(card -> gameService.sendDiscardPlayerCardRequest(lobbyId, card));
+        });
     }
 
     /**

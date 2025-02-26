@@ -164,7 +164,7 @@ class GameManagementTest {
                         .toString(),
                 albacete
         );
-        playerManagement.addCard(player, cityCard);
+        playerManagement.addCard(game.getGameId(), testUser.getUsername(), cityCard);
 
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 34);
         request.setSession(session);

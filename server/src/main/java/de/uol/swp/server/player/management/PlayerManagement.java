@@ -15,8 +15,10 @@ import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
+import lombok.Setter;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +27,12 @@ import java.util.Objects;
 
 public class PlayerManagement implements IPlayerManagement {
     private final ICityManagement cityManagement;
+
+    /**
+     * Listener for players cards changes.
+     */
+    @Setter
+    private CardsAmountChangeListener cardsAmountChangeListener;
 
     @Inject
     public PlayerManagement(ICityManagement cityManagement) {
@@ -84,7 +92,12 @@ public class PlayerManagement implements IPlayerManagement {
                 .add(card);
             shuffleInfectionCardsFromDrawPile(game);
         } else {
-            addCard(player, card);
+            addCard(
+                    lobbyCode,
+                    player.getUser()
+                          .getUsername(),
+                    card
+            );
         }
         if (game.getState() instanceof DrawCardState drawCardState) {
             drawCardState.increaseCardsDrawn(game);
@@ -163,16 +176,28 @@ public class PlayerManagement implements IPlayerManagement {
     }
 
     /**
-     * Adds a card to the player's hand.
-     * <p>
-     * This method adds the specified card to the list of cards held by the player.
+     * Adds a card to a player's hand in a specified lobby.
      *
-     * @param player the player to whom the card is to be added
-     * @param card   the card to be added to the player's hand
+     * @param lobbyId  the ID of the lobby
+     * @param username the username of the player
+     * @param card     the card to be added
      */
-    public void addCard(IPlayer player, ICard card) {
+    public void addCard(String lobbyId, String username, ICard card) {
+        IGame game = GameStore.getInstance()
+                              .getGame(lobbyId);
+        IPlayer player = game.getPlayer(username);
+
         player.getCards()
               .add(card);
+
+        if (player.getCards()
+                  .size() > 7 && cardsAmountChangeListener != null) {
+            cardsAmountChangeListener.onCardsAmountChanged(
+                    lobbyId,
+                    username,
+                    CardMapper.toMixedCardDTOList(player.getCards())
+            );
+        }
     }
 
     /**
@@ -183,8 +208,8 @@ public class PlayerManagement implements IPlayerManagement {
      * @param cardId    the ID of the card to be discarded
      * @throws PlayerManagementException if an error occurs while discarding the card
      */
-    public void discardCard(String lobbyCode, String username, Integer cardId) throws PlayerManagementException {
-        discardCards(lobbyCode, username, List.of(cardId));
+    public void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws PlayerManagementException {
+        discardPlayerCards(lobbyCode, username, List.of(cardId));
     }
 
     /**
@@ -195,7 +220,7 @@ public class PlayerManagement implements IPlayerManagement {
      * @param cardIds   the list of IDs of the cards to be discarded
      * @throws PlayerManagementException if an error occurs while discarding the cards
      */
-    public void discardCards(
+    public void discardPlayerCards(
             String lobbyCode,
             String username,
             List<Integer> cardIds

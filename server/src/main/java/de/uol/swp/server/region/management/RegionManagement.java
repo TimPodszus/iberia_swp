@@ -101,7 +101,7 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
                 throw new GameManagementException("Player is not the current player");
             }
             region.increaseWaterTreatments(amount);
-            playerManagement.discardCard(lobbyCode, user.getUsername(), card.getId());
+            playerManagement.discardPlayerCard(lobbyCode, user.getUsername(), card.getId());
             playerTurnState.reduceActionsRemaining(game);
             LOG.debug(
                     "Increased water treatments in region {} by {} for player {}",
