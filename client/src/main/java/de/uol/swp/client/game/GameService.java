@@ -343,4 +343,46 @@ public class GameService {
     public void sendBuildHospitalRequest(String lobbyId, int cityId) {
         eventBus.post(new BuildHospitalRequest(lobbyId, cityId));
     }
+
+    public void politicianActionTradeWithDiscardPile(IGameDTO gameDTO, String lobbyId) {
+        boolean playerHasCityCard = gameDTO.getCurrentPlayer()
+                                           .getCards()
+                                           .stream()
+                                           .anyMatch(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                    .getCurrentPosition()
+                                                                                    .getId());
+        LOG.trace("Player has city card");
+        if (playerHasCityCard) {
+            Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+            gameDTO.getCurrentPlayer()
+                   .getCards()
+                   .stream()
+                   .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                          .getCurrentPosition()
+                                                          .getId())
+                   .findFirst()
+                   .ifPresent(card -> {
+                       List<ICardDTO> cardOfCurrentCity = new ArrayList<>();
+                       cardOfCurrentCity.add(card);
+                       cardsToExchange.put(
+                               gameDTO.getCurrentPlayer()
+                                      .getUsername(), cardOfCurrentCity
+                       );
+                   });
+            cardsToExchange.put("Discard Pile", gameDTO.getPlayerCardDiscardPile());
+            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(), cardsToExchange
+            );
+            Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+            result.ifPresent(map -> {
+                LOG.debug("Card exchange result: {}", map);
+                eventBus.post(new CardsExchangeRequest(map, lobbyId));
+            });
+        } else {
+
+        }
+
+
+    }
 }

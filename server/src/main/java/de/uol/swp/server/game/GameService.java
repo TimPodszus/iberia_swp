@@ -224,43 +224,49 @@ public class GameService extends AbstractService implements GameStateChangeListe
                     "[LobbyID: {}] State mobilization is ongoing. Sending available destinations for remaining players to move",
                     lobbyId
             );
-            scheduler.schedule(() -> {
-                for (IPlayer player : remainingPlayers) {
-                    LOG.trace("[LobbyID: {}] {} has not moved yet. Sending available destinations for him",
-                            lobbyId,
-                            player.getUser()
-                                  .getUsername()
-                    );
-                    Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
-                            lobbyId,
-                            player.getUser()
-                                  .getUsername()
-                    );
-                    AvailableDestinationsResponse response = new AvailableDestinationsResponse(lobbyId,
-                            availableDestinations
-                    );
-                    Session session = authenticationService.getSession(player.getUser())
-                                                           .orElse(null);
+            scheduler.schedule(
+                    () -> {
+                        for (IPlayer player : remainingPlayers) {
+                            LOG.trace(
+                                    "[LobbyID: {}] {} has not moved yet. Sending available destinations for him",
+                                    lobbyId,
+                                    player.getUser()
+                                          .getUsername()
+                            );
+                            Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
+                                    lobbyId,
+                                    player.getUser()
+                                          .getUsername()
+                            );
+                            AvailableDestinationsResponse response = new AvailableDestinationsResponse(
+                                    lobbyId,
+                                    availableDestinations
+                            );
+                            Session session = authenticationService.getSession(player.getUser())
+                                                                   .orElse(null);
 
-                    if (session == null) {
-                        LOG.error("[LobbyID: {}] Session not found for user {}",
-                                lobbyId,
-                                player.getUser()
-                                      .getUsername()
-                        );
-                        break;
-                    }
+                            if (session == null) {
+                                LOG.error(
+                                        "[LobbyID: {}] Session not found for user {}",
+                                        lobbyId,
+                                        player.getUser()
+                                              .getUsername()
+                                );
+                                break;
+                            }
 
-                    response.setSession(session);
-                    post(response);
-                    LOG.trace("[LobbyID: {}] Sent {} available destinations for {}",
-                            lobbyId,
-                            availableDestinations.size(),
-                            player.getUser()
-                                  .getUsername()
-                    );
-                }
-            }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+                            response.setSession(session);
+                            post(response);
+                            LOG.trace(
+                                    "[LobbyID: {}] Sent {} available destinations for {}",
+                                    lobbyId,
+                                    availableDestinations.size(),
+                                    player.getUser()
+                                          .getUsername()
+                            );
+                        }
+                    }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS
+            );
         } finally {
             if (scheduler != null) {
                 scheduler.shutdown();
@@ -358,15 +364,23 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                      .filter(username -> !username.equals(currentPlayerUsername))
                                                      .findFirst()
                                                      .orElseThrow(() -> {
-                                                         LOG.error(
-                                                                 "Target player not found for username {}",
-                                                                 currentPlayerUsername
-                                                         );
+                                                         LOG.error("Target player {} not found", currentPlayerUsername);
                                                          return new GameManagementException("Target player not found");
                                                      });
 
         LOG.debug("Current player: {}, Target player: {}", currentPlayerUsername, targetPlayerUsername);
 
+        if (targetPlayerUsername.equals("Discard Pile")) {
+            bus.post(new ShareKnowledgeRequest(
+                    request.getLobbyId(), true, new ShareKnowledgeEvent(
+                    request.getLobbyId(),
+                    currentPlayerUsername,
+                    targetPlayerUsername,
+                    cardsToExchange.get(currentPlayerUsername),
+                    cardsToExchange.get(targetPlayerUsername)
+            )
+            ));
+        }
         ShareKnowledgeEvent shareKnowledgeEvent = new ShareKnowledgeEvent(
                 request.getLobbyId(),
                 currentPlayerUsername,
