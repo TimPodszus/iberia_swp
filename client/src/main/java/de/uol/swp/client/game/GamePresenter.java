@@ -205,6 +205,8 @@ public class GamePresenter extends AbstractPresenter {
 
     private double mouseY;
 
+    private boolean dragging = false;
+
     private IGameDTO gameDTO;
 
     private boolean isDismissibleDialog;
@@ -255,7 +257,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     void onMousePressedEvent(MouseEvent event) {
-        if (event.getButton() == MouseButton.MIDDLE) {
+        if (event.getButton() == MouseButton.PRIMARY) {
+            dragging = true;
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         }
@@ -268,7 +271,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     void onMouseDraggedEvent(MouseEvent event) {
-        if (event.getButton() == MouseButton.MIDDLE) {
+        if (dragging) {
             double deltaX = event.getSceneX() - mouseX;
             double deltaY = event.getSceneY() - mouseY;
 
