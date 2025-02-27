@@ -1316,7 +1316,7 @@ public class GamePresenter extends AbstractPresenter {
                                          .add("current-player");
                          } else {
                              playerButton.getStyleClass()
-                                         .remove("current-player");
+                                         .removeAll("current-player");
                          }
                      });
     }
@@ -1330,7 +1330,7 @@ public class GamePresenter extends AbstractPresenter {
         if (gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1)) instanceof Circle) {
             gameScreen.lookup(INFECTION_GRADE_ID + (infectionCounter - 1))
                       .getStyleClass()
-                      .remove("infection-grade-active");
+                      .removeAll("infection-grade-active");
         }
 
         if (gameScreen.lookup(INFECTION_GRADE_ID + infectionCounter) instanceof Circle) {
@@ -1349,7 +1349,7 @@ public class GamePresenter extends AbstractPresenter {
         if (gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1)) instanceof Circle) {
             gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1))
                       .getStyleClass()
-                      .remove("escalation-stage-active");
+                      .removeAll("escalation-stage-active");
         }
 
         if (gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage) instanceof Circle) {
@@ -1406,7 +1406,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateRemainingActions(int remainingActions) {
         if (remainingActions == 0) {
-            this.remainingActionsText.setText("Du kannst gerade keine Aktionen ausführen");
+            this.remainingActionsText.setText("Spiel nicht in Aktionsphase");
         } else {
             this.remainingActionsText.setText(Integer.toString(remainingActions));
         }
