@@ -135,8 +135,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
             for (CityName connectedCity : connection.getCityNames()) {
                 if (!connectedCity.equals(startCity.getName())) {
                     ICity city = game.getCityRepository()
-                                     .getCitiesByNames(connectedCity)
-                                     .get(0);
+                                     .getCityByName(connectedCity);
 
                     if (connection.isTrainTrack()) {
                         addDestination(availableDestinations, city.getId(), new ArrayList<>(), TransportMode.TRAIN);
@@ -222,8 +221,8 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                                                   .toList();
 
         boolean isSailor = player.getRole() != null && player.getRole()
-                                                                           .getName()
-                                                                           .equals(RoleEnum.SAILOR);
+                                                             .getName()
+                                                             .equals(RoleEnum.SAILOR);
         for (ICity city : harbourCities) {
             List<ICard> cards = isSailor ? new ArrayList<>() : getCardsWithSameColor(player, city);
             if (city.getId() != cityId && (!cards.isEmpty() || isSailor)) {
