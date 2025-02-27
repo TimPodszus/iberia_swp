@@ -34,6 +34,7 @@ public class GameDTO implements IGameDTO, Serializable {
     private int tracksLeft;
     private int currentPlayerIndex;
     private StateType state;
+    private int remainingActions;
 
     public IPlayerDTO getCurrentPlayer() {
         return players.get(currentPlayerIndex);
@@ -72,7 +73,7 @@ public class GameDTO implements IGameDTO, Serializable {
         ) && Objects.equals(playerCardDiscardPile, gameDTO.playerCardDiscardPile) && Objects.equals(
                 players,
                 gameDTO.players
-        );
+        ) && state == gameDTO.state && remainingActions == gameDTO.remainingActions;
     }
 
     @Override
@@ -91,7 +92,9 @@ public class GameDTO implements IGameDTO, Serializable {
                 escalationStage,
                 waterTreatmentsLeft,
                 tracksLeft,
-                currentPlayerIndex
+                currentPlayerIndex,
+                state,
+                remainingActions
         );
     }
 }
