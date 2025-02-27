@@ -1,6 +1,6 @@
 package de.uol.swp.common.chat.response;
 
-import de.uol.swp.common.chat.messages.AbstractChatMessage;
+import de.uol.swp.common.chat.messages.SentChatMessage;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import lombok.Getter;
 
@@ -21,7 +21,7 @@ public class GetChatResponse extends AbstractResponseMessage {
     /**
      * The list of chat messages retrieved for the specified lobby.
      */
-    private final List<AbstractChatMessage> chatMessages;
+    private final List<SentChatMessage> chatMessages;
 
     /**
      * Constructs a new GetChatResponse with the specified lobby ID and list of chat messages.
@@ -29,7 +29,7 @@ public class GetChatResponse extends AbstractResponseMessage {
      * @param lobbyId the ID of the lobby for which the chat messages are retrieved
      * @param chatMessages the list of chat messages retrieved for the specified lobby
      */
-    public GetChatResponse(String lobbyId, List<AbstractChatMessage> chatMessages) {
+    public GetChatResponse(String lobbyId, List<SentChatMessage> chatMessages) {
         this.lobbyId = lobbyId;
         this.chatMessages = chatMessages;
     }

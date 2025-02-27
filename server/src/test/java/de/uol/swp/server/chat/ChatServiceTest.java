@@ -1,6 +1,8 @@
 package de.uol.swp.server.chat;
 
-import de.uol.swp.common.chat.messages.AbstractChatMessage;
+import de.uol.swp.common.chat.messages.PlayerSentChatMessage;
+import de.uol.swp.common.chat.messages.SentChatMessage;
+import de.uol.swp.common.chat.messages.ServerSentChatMessage;
 import de.uol.swp.common.chat.request.GetChatRequest;
 import de.uol.swp.common.chat.request.SendChatRequest;
 import de.uol.swp.common.chat.response.GetChatResponse;
@@ -56,7 +58,7 @@ public class ChatServiceTest extends EventBusBasedTest {
      * @param message the AbstractChatMessage event
      */
     @Subscribe
-    public void onAbstractChatMessage(AbstractChatMessage message) {
+    public void onAbstractChatMessage(SentChatMessage message) {
         handleEvent(message);
     }
 
@@ -108,10 +110,10 @@ public class ChatServiceTest extends EventBusBasedTest {
 
         postAndWait(request);
 
-        assertInstanceOf(de.uol.swp.common.chat.messages.PlayerChatMessage.class, event);
-        assertEquals(playerChatMessage.getLobbyId(), ((de.uol.swp.common.chat.messages.PlayerChatMessage) event).getLobbyId());
-        assertEquals(playerChatMessage.getSender(), ((de.uol.swp.common.chat.messages.PlayerChatMessage) event).getSender());
-        assertEquals(playerChatMessage.getMessage(), ((de.uol.swp.common.chat.messages.PlayerChatMessage) event).getMessage());
+        assertInstanceOf(PlayerSentChatMessage.class, event);
+        assertEquals(playerChatMessage.getLobbyId(), ((PlayerSentChatMessage) event).getLobbyId());
+        assertEquals(playerChatMessage.getSender(), ((PlayerSentChatMessage) event).getSender());
+        assertEquals(playerChatMessage.getMessage(), ((PlayerSentChatMessage) event).getMessage());
     }
 
     /**
@@ -186,8 +188,8 @@ public class ChatServiceTest extends EventBusBasedTest {
 
         postAndWait(serverMessageEvent);
 
-        assertInstanceOf(de.uol.swp.common.chat.messages.ServerChatMessage.class, event);
-        assertEquals("lobbyId", ((de.uol.swp.common.chat.messages.ServerChatMessage) event).getLobbyId());
-        assertEquals("message", ((de.uol.swp.common.chat.messages.ServerChatMessage) event).getMessage());
+        assertInstanceOf(ServerSentChatMessage.class, event);
+        assertEquals("lobbyId", ((ServerSentChatMessage) event).getLobbyId());
+        assertEquals("message", ((ServerSentChatMessage) event).getMessage());
     }
 }

@@ -9,7 +9,7 @@ import java.util.Objects;
  * Extends the AbstractChatMessage class.
  */
 @Getter
-public class PlayerChatMessage extends AbstractChatMessage {
+public class PlayerSentChatMessage extends SentChatMessage {
 
     /**
      * The sender of the chat message.
@@ -23,7 +23,7 @@ public class PlayerChatMessage extends AbstractChatMessage {
      * @param sender  the sender of the message
      * @param message the content of the message
      */
-    public PlayerChatMessage(String lobbyId, String sender, String message) {
+    public PlayerSentChatMessage(String lobbyId, String sender, String message) {
         super(lobbyId, message);
         this.sender = sender;
     }
@@ -36,7 +36,7 @@ public class PlayerChatMessage extends AbstractChatMessage {
         if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        PlayerChatMessage that = (PlayerChatMessage) object;
+        PlayerSentChatMessage that = (PlayerSentChatMessage) object;
         return super.equals(that) && Objects.equals(sender, that.sender);
     }
 

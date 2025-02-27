@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 /**
  * Unit tests for the PlayerChatMessage class.
  */
-public class PlayerChatMessageTest {
+public class PlayerSentChatMessageTest {
 
     /**
      * Tests the constructor of PlayerChatMessage.

@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 /**
  * Test class for the ServerChatMessage class.
  */
-public class ServerChatMessageTest {
+public class ServerSentChatMessageTest {
 
     /**
      * Tests the constructor of the ServerChatMessage class.

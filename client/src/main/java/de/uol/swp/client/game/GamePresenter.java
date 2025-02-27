@@ -38,7 +38,6 @@ import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
 import de.uol.swp.common.region.message.response.TreatWaterEventResponse;
 import de.uol.swp.common.user.IUserDTO;
-import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -68,7 +67,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.util.Duration;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -212,32 +210,16 @@ public class GamePresenter extends AbstractPresenter {
     private boolean isDismissibleDialog;
 
     @FXML
-    private AnchorPane chatPane;
-
-    private boolean isChatOpen = false;
-
-    @FXML
     private ChatDetailPresenter chatController;
 
     /**
      * Sets the lobby ID for the game screen and the chat controller.
+     *
      * @param lobbyId the lobby ID to set
      */
     public void setLobbyId(String lobbyId) {
         this.lobbyId = lobbyId;
         this.chatController.setLobbyId(lobbyId);
-    }
-
-    @FXML
-    public void toggleChat() {
-        TranslateTransition transition = new TranslateTransition(Duration.millis(300), chatPane);
-        if (isChatOpen) {
-            transition.setToX(-300);
-        } else {
-            transition.setToX(0);
-        }
-        transition.play();
-        isChatOpen = !isChatOpen;
     }
 
     /**
@@ -1141,7 +1123,6 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
-     *
      */
     private void updatePlayerHandCards() {
         removePlayerHandCards();
@@ -1299,7 +1280,8 @@ public class GamePresenter extends AbstractPresenter {
                                                               .collect(Collectors.groupingBy(player -> player.getCurrentPosition()
                                                                                                              .getId()));
 
-        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(cityId,
+        playersByCity.forEach((cityId, playersInCity) -> playersInCity.forEach(player -> setPlayerInCity(
+                cityId,
                 playersInCity
         )));
     }

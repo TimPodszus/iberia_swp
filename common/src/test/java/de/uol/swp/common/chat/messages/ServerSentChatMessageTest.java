@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 /**
  * Unit tests for the ServerChatMessage class.
  */
-public class ServerChatMessageTest {
+public class ServerSentChatMessageTest {
 
     /**
      * Tests the constructor of ServerChatMessage.
@@ -16,8 +16,8 @@ public class ServerChatMessageTest {
      */
     @Test
     void testConstructor() {
-        ServerChatMessage serverChatMessage = new ServerChatMessage("lobbyId", "message");
-        assertEquals("lobbyId", serverChatMessage.getLobbyId());
+        ServerSentChatMessage serverSentChatMessage = new ServerSentChatMessage("lobbyId", "message");
+        assertEquals("lobbyId", serverSentChatMessage.getLobbyId());
     }
 
     /**
@@ -26,9 +26,9 @@ public class ServerChatMessageTest {
      */
     @Test
     void testEquals() {
-        ServerChatMessage serverChatMessage = new ServerChatMessage("lobbyId", "message");
-        ServerChatMessage serverChatMessage2 = new ServerChatMessage("lobbyId", "message");
-        assertEquals(serverChatMessage, serverChatMessage2);
+        ServerSentChatMessage serverSentChatMessage = new ServerSentChatMessage("lobbyId", "message");
+        ServerSentChatMessage serverSentChatMessage2 = new ServerSentChatMessage("lobbyId", "message");
+        assertEquals(serverSentChatMessage, serverSentChatMessage2);
     }
 
     /**
@@ -37,8 +37,8 @@ public class ServerChatMessageTest {
      */
     @Test
     void testEquals_SameObject() {
-        ServerChatMessage serverChatMessage = new ServerChatMessage("lobbyId", "message");
-        assertEquals(serverChatMessage, serverChatMessage);
+        ServerSentChatMessage serverSentChatMessage = new ServerSentChatMessage("lobbyId", "message");
+        assertEquals(serverSentChatMessage, serverSentChatMessage);
     }
 
     /**
@@ -47,9 +47,9 @@ public class ServerChatMessageTest {
      */
     @Test
     void testEquals_DifferentObject() {
-        ServerChatMessage serverChatMessage = new ServerChatMessage("lobbyId", "message");
+        ServerSentChatMessage serverSentChatMessage = new ServerSentChatMessage("lobbyId", "message");
         Object object = new Object();
-        assertNotEquals(serverChatMessage, object);
+        assertNotEquals(serverSentChatMessage, object);
     }
 
     /**
@@ -58,8 +58,8 @@ public class ServerChatMessageTest {
      */
     @Test
     void testHashCode() {
-        ServerChatMessage serverChatMessage = new ServerChatMessage("lobbyId", "message");
-        ServerChatMessage serverChatMessage2 = new ServerChatMessage("lobbyId", "message");
-        assertEquals(serverChatMessage.hashCode(), serverChatMessage2.hashCode());
+        ServerSentChatMessage serverSentChatMessage = new ServerSentChatMessage("lobbyId", "message");
+        ServerSentChatMessage serverSentChatMessage2 = new ServerSentChatMessage("lobbyId", "message");
+        assertEquals(serverSentChatMessage.hashCode(), serverSentChatMessage2.hashCode());
     }
 }

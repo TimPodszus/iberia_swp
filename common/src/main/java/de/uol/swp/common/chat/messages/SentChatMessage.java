@@ -6,12 +6,11 @@ import lombok.Getter;
 import java.util.Objects;
 
 @Getter
-public abstract class AbstractChatMessage extends AbstractServerMessage {
+public abstract class SentChatMessage extends AbstractServerMessage {
     String lobbyId;
-
     String message;
 
-    protected AbstractChatMessage(String lobbyId, String message) {
+    protected SentChatMessage(String lobbyId, String message) {
         this.lobbyId = lobbyId;
         this.message = message;
     }
@@ -19,7 +18,7 @@ public abstract class AbstractChatMessage extends AbstractServerMessage {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AbstractChatMessage that)) return false;
+        if (!(o instanceof SentChatMessage that)) return false;
         return super.equals(that) && Objects.equals(getLobbyId(), that.getLobbyId()) && Objects.equals(getMessage(),
                 that.getMessage()
         );

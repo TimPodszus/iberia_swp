@@ -79,26 +79,28 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     @FXML
     public void initialize() {
         changeLobbyName.setDisable(true);
-        difficultyDropdown.setItems(FXCollections.observableArrayList(DIFFICULTY_EASY,
+        difficultyDropdown.setItems(FXCollections.observableArrayList(
+                DIFFICULTY_EASY,
                 DIFFICULTY_MEDIUM,
                 DIFFICULTY_HARD
         ));
 
         difficultyDropdown.getSelectionModel()
-                .selectedIndexProperty()
-                .addListener((observableValue, number, t1) -> {
-                    int difficulty = t1.intValue() + 1;
-                    lobbyDTO = new LobbyDTO(lobbyDTO.getLobbyId(),
-                            lobbyDTO.getName(),
-                            lobbyDTO.getUsers(),
-                            lobbyDTO.getOwner(),
-                            difficulty
-                    );
-                    lobbyService.updateLobby(lobbyDTO);
-                });
+                          .selectedIndexProperty()
+                          .addListener((observableValue, number, t1) -> {
+                              int difficulty = t1.intValue() + 1;
+                              lobbyDTO = new LobbyDTO(
+                                      lobbyDTO.getLobbyId(),
+                                      lobbyDTO.getName(),
+                                      lobbyDTO.getUsers(),
+                                      lobbyDTO.getOwner(),
+                                      difficulty
+                              );
+                              lobbyService.updateLobby(lobbyDTO);
+                          });
         userTable.getColumns()
-                .get(0)
-                .setCellValueFactory(new PropertyValueFactory<>("name"));
+                 .get(0)
+                 .setCellValueFactory(new PropertyValueFactory<>("name"));
         userTable.setPlaceholder(new Label("Keine Spieler in der Lobby"));
     }
 
@@ -170,11 +172,11 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     private void setFields() {
         lobbyName.setText(lobbyDTO.getName());
         lobbyName.textProperty()
-                .addListener((observable, oldValue, newValue) -> changeLobbyName.setDisable(newValue.equals(lobbyDTO.getName())));
+                 .addListener((observable, oldValue, newValue) -> changeLobbyName.setDisable(newValue.equals(lobbyDTO.getName())));
 
         lobbyIdLabel.setText(lobbyDTO.getLobbyId());
         playerCount.setText(lobbyDTO.getUsers()
-                .size() + MAX_PLAYERS);
+                                    .size() + MAX_PLAYERS);
 
         String difficulty = switch (lobbyDTO.getDifficulty()) {
             case 3 -> DIFFICULTY_HARD;
@@ -190,22 +192,23 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     private void setUserList() {
         boolean isOwner = lobbyDTO.getOwner()
-                .equals(UserStore.getInstance()
-                        .getUser());
+                                  .equals(UserStore.getInstance()
+                                                   .getUser());
 
         List<UserListItem> userListItems = lobbyDTO.getUsers()
-                .stream()
-                .map(user -> new UserListItem(user.getUsername()))
-                .toList();
+                                                   .stream()
+                                                   .map(user -> new UserListItem(user.getUsername()))
+                                                   .toList();
         userTable.getItems()
-                .setAll(userListItems);
+                 .setAll(userListItems);
         userTable.setRowFactory(tv -> {
             TableRow<UserListItem> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (isOwner && event.getClickCount() == 2 && (!row.isEmpty())) {
-                    LOG.debug("Kicking {} from lobby",
+                    LOG.debug(
+                            "Kicking {} from lobby",
                             row.getItem()
-                                    .getName()
+                               .getName()
                     );
                     UserListItem rowData = row.getItem();
                     showConfirmKickDialog(rowData.getName());
@@ -226,7 +229,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
         alert.setHeaderText("Willst du " + username + " wirklich aus der Lobby entfernen?");
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get()
-                .getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                                        .getButtonData() == ButtonBar.ButtonData.OK_DONE) {
             lobbyService.removeUser(this.lobbyDTO.getLobbyId(), username);
         }
     }
@@ -238,11 +241,11 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     private void setAccessibility() {
         boolean isOwner = lobbyDTO.getOwner()
-                .equals(UserStore.getInstance()
-                        .getUser());
+                                  .equals(UserStore.getInstance()
+                                                   .getUser());
 
         boolean moreThanOnePlayer = lobbyDTO.getUsers()
-                .size() > 1;
+                                            .size() > 1;
         lobbyName.setDisable(!isOwner);
         startGameButton.setDisable(!isOwner || !moreThanOnePlayer);
         difficultyDropdown.setDisable(!isOwner);
@@ -276,7 +279,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * to the lobbyService to update the lobby.
      */
     public void onChangeLobbyName() {
-        lobbyDTO = new LobbyDTO(lobbyDTO.getLobbyId(),
+        lobbyDTO = new LobbyDTO(
+                lobbyDTO.getLobbyId(),
                 lobbyName.getText(),
                 lobbyDTO.getUsers(),
                 lobbyDTO.getOwner(),
