@@ -31,6 +31,10 @@ import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.GameInitializationException;
+import de.uol.swp.server.game.exceptions.GameNotFoundException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -44,6 +48,7 @@ import de.uol.swp.server.region.management.IRegionManagement;
 import de.uol.swp.server.role.*;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -102,7 +107,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testCreateAndInitializeGame() {
+    void testCreateAndInitializeGame() throws GameInitializationException {
         List<IUserDTO> testUsers = List.of(new UserDTO("test", "test"), new UserDTO("test2", "test2"));
         CreateGameRequest request = new CreateGameRequest("lobby123", 1, testUsers);
 
@@ -120,7 +125,7 @@ class GameManagementTest {
         PositioningRequest request = new PositioningRequest("lobby123", 12);
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
 
-        assertThrows(GameManagementException.class, () -> gameManagement.setPositioning(request));
+        assertThrows(GameNotFoundException.class, () -> gameManagement.setPositioning(request));
     }
 
     @Test
@@ -129,7 +134,7 @@ class GameManagementTest {
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
 
         assertThrows(
-                GameManagementException.class,
+                IllegalGameStateException.class,
                 () -> gameManagement.setPositioning(request),
                 "Expected GameManagementException"
         );
@@ -149,7 +154,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testSetPositioning_AllPlayersPositioned() throws GameManagementException {
+    void testSetPositioning_AllPlayersPositioned() throws IllegalGameStateException, GameException {
         WaitForPositioning mockState = mock(WaitForPositioning.class);
         when(mockState.getPositionedPlayersCount()).thenReturn(1);
         when(game.getState()).thenReturn(mockState);
@@ -180,7 +185,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testSetPositioningWithPlayerManagementException() throws PlayerManagementException {
+    void testSetPositioning_SessionNotFound() throws PlayerManagementException {
         WaitForPositioning mockState = mock(WaitForPositioning.class);
         when(mockState.getPositionedPlayersCount()).thenReturn(1);
         when(game.getState()).thenReturn(mockState);
@@ -194,11 +199,11 @@ class GameManagementTest {
 
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 34);
 
-        assertThrows(GameManagementException.class, () -> gameManagement.setPositioning(request));
+        assertThrows(SessionNotFoundException.class, () -> gameManagement.setPositioning(request));
     }
 
     @Test
-    void testSetPositioning_PlayerAlreadyPositioned() {
+    void testSetPositioning_PlayerAlreadyPositioned() throws PlayerManagementException {
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
         IUser testUser = new User("test", "test");
         Session session = UUIDSession.create(testUser);
@@ -209,11 +214,7 @@ class GameManagementTest {
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
 
-        GameManagementException exception = assertThrows(
-                GameManagementException.class,
-                () -> gameManagement.setPositioning(request)
-        );
-        assertEquals("Player is already positioned", exception.getMessage());
+        verify(playerManagement, never()).setStartingPosition(LOBBY_CODE, CityName.BARCELONA, player);
     }
 
     @Test
@@ -234,8 +235,8 @@ class GameManagementTest {
                                                         any(Player.class)
                                                 );
 
-        GameManagementException exception = assertThrows(
-                GameManagementException.class,
+        GameException exception = assertThrows(
+                GameException.class,
                 () -> gameManagement.setPositioning(request)
         );
 
@@ -302,7 +303,7 @@ class GameManagementTest {
         when(game.getCurrentPlayer()).thenReturn(player1);
 
         assertThrows(
-                GameManagementException.class,
+                GameException.class,
                 () -> gameManagement.movePlayer(user2, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
@@ -319,14 +320,14 @@ class GameManagementTest {
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
 
         assertThrows(
-                GameManagementException.class,
+                IllegalGameStateException.class,
                 () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
     }
 
     @Test
-    void testMoveByLand() throws GameManagementException {
+    void testMoveByLand() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
                               .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.CARRIAGE)))
@@ -364,15 +365,13 @@ class GameManagementTest {
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
 
-        assertThrows(
-                GameManagementException.class,
-                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
-                "Expected GameManagementException"
+        assertThrows(GameException.class,
+                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null), "Expected GameException"
         );
     }
 
     @Test
-    void testMoveBySea() throws GameManagementException {
+    void testMoveBySea() throws IllegalGameStateException, GameException {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
         ICard destinationCityCard = new CityCard(
@@ -418,14 +417,14 @@ class GameManagementTest {
         setupPlayerForMove(startCity, player, new Nurse(), new ArrayList<>());
 
         assertThrows(
-                GameManagementException.class,
+                GameException.class,
                 () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
                 "Expected GameManagementException"
         );
     }
 
     @Test
-    void testMoveSailorBySea() throws GameManagementException {
+    void testMoveSailorBySea() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.ALICANTE)
                               .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.SHIP)))
@@ -445,7 +444,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMoveSailorBySeaWithCityCard() throws GameManagementException {
+    void testMoveSailorBySeaWithCityCard() throws IllegalGameStateException, GameException {
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
         ICity destinationCity = cityRepository.getCityByName(CityName.ALICANTE);
         ICard destinationCityCard = new CityCard(
@@ -487,7 +486,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testTrainRide() throws GameManagementException {
+    void testTrainRide() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.VALLADOLID)
                               .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.TRAIN)))
@@ -578,7 +577,7 @@ class GameManagementTest {
     }
 
     @Test
-    void buildTrainTrack_Successful() throws GameManagementException {
+    void buildTrainTrack_Successful() throws IllegalGameStateException, GameException {
         IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
         IUser user = mock(IUser.class);
         IPlayer player = mock(IPlayer.class);
@@ -607,8 +606,8 @@ class GameManagementTest {
 
         when(game.getState()).thenReturn(new WaitForPositioning());
 
-        GameManagementException exception = assertThrows(
-                GameManagementException.class,
+        IllegalGameStateException exception = assertThrows(
+                IllegalGameStateException.class,
                 () -> gameManagement.buildTrainTrack(user, LOBBY_CODE, connection)
         );
 
@@ -625,8 +624,8 @@ class GameManagementTest {
         when(player.getUser()).thenReturn(user);
         when(game.getCurrentPlayer()).thenReturn(player);
 
-        GameManagementException exception = assertThrows(
-                GameManagementException.class,
+        GameException exception = assertThrows(
+                GameException.class,
                 () -> gameManagement.buildTrainTrack(new User("test2", "test2"), LOBBY_CODE, connection)
         );
 
@@ -653,8 +652,8 @@ class GameManagementTest {
                 false
         )));
 
-        GameManagementException exception = assertThrows(
-                GameManagementException.class,
+        GameException exception = assertThrows(
+                GameException.class,
                 () -> gameManagement.buildTrainTrack(user, LOBBY_CODE, connection)
         );
 
@@ -667,7 +666,7 @@ class GameManagementTest {
     }
 
     @Test
-    void buildTrainTrack_RailwayPersonGetsExtraBuild() throws GameManagementException {
+    void buildTrainTrack_RailwayPersonGetsExtraBuild() throws IllegalGameStateException, GameException {
         IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
         IUser user = mock(IUser.class);
         IPlayer player = mock(IPlayer.class);
@@ -694,7 +693,7 @@ class GameManagementTest {
     }
 
     @Test
-    void buildTrainTrack_RailwayPersonUsesExtraBuild() throws GameManagementException {
+    void buildTrainTrack_RailwayPersonUsesExtraBuild() throws IllegalGameStateException, GameException {
         IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
         IUser user = mock(IUser.class);
         IPlayer player = mock(IPlayer.class);
@@ -766,10 +765,9 @@ class GameManagementTest {
      * Tests the movePlayer method with a game in the event state after the OnTheMoveDayAndNightEventCard has been
      * thrown.
      *
-     * @throws GameManagementException if the movePlayer method throws an exception
      */
     @Test
-    void testMovePlayer_OnTheMoveDayAndNightEvent() throws GameManagementException {
+    void testMovePlayer_OnTheMoveDayAndNightEvent() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
                               .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
@@ -795,7 +793,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMovePlayer_StateMobilizationEvent() throws GameManagementException {
+    void testMovePlayer_StateMobilizationEvent() throws GameManagementException, IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
                               .getId(),

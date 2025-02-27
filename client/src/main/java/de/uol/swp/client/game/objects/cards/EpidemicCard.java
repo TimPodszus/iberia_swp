@@ -1,10 +1,7 @@
 package de.uol.swp.client.game.objects.cards;
 
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
+import javafx.scene.layout.VBox;
 
 /**
  * Represents an EpidemicCard in the game.
@@ -23,35 +20,20 @@ public class EpidemicCard extends AbstractCard {
         this.setPrefSize(100, 150);
         this.setStyle("-fx-background-color: f7d48e;");
 
-        // Create and style the text for the epidemic label
-        Text epidemicText = new Text("Epidemie");
-        StackPane epidemicStackPane = new StackPane();
-        epidemicStackPane.setStyle(TEXT_BACKGROUND_COLOR);
-        epidemicStackPane.getChildren()
-                         .add(epidemicText);
+        StackPane epidemicStackPane = createTextStackPane("Epidemie", 100.0, 10);
+        StackPane descriptionStackPane = createTextStackPane(
+                "Infektionsquote wird erhöht. Eine Stadt wird mit drei Seuchenwürfeln infiziert. Der " +
+                        "Infektionsablagestapel wird gemischt und oben auf den Ziehstapel gelegt.",
+                100.0,
+                10
+        );
 
-        // Set the position of the epidemic label
-        AnchorPane.setTopAnchor(epidemicStackPane, 5.0);
-        AnchorPane.setLeftAnchor(epidemicStackPane, 0.0);
-        AnchorPane.setRightAnchor(epidemicStackPane, 0.0);
+        VBox textVBox = new VBox(5);
+        textVBox.setPrefSize(100, 150);
+        textVBox.getChildren()
+                .addAll(epidemicStackPane, descriptionStackPane);
 
-        // Create and style the text for the description
-        Text descriptionText = new Text("Beschreibung");
-        descriptionText.setFont(new Font(10));
-        descriptionText.setWrappingWidth(78.0);
-        descriptionText.setTextAlignment(TextAlignment.CENTER);
-        StackPane descriptionStackPane = new StackPane();
-        descriptionStackPane.setStyle(TEXT_BACKGROUND_COLOR);
-        descriptionStackPane.getChildren()
-                            .add(descriptionText);
-
-        // Set the position of the description text
-        AnchorPane.setTopAnchor(descriptionStackPane, 25.0);
-        AnchorPane.setLeftAnchor(descriptionStackPane, 0.0);
-        AnchorPane.setRightAnchor(descriptionStackPane, 0.0);
-
-        // Add the text elements to the card
         this.getChildren()
-            .addAll(epidemicStackPane, descriptionStackPane);
+            .addAll(textVBox);
     }
 }

@@ -1,11 +1,8 @@
 package de.uol.swp.client.game.objects.cards;
 
 import de.uol.swp.common.game.RoleEnum;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
+import javafx.scene.layout.VBox;
 
 /**
  * Represents a role card in the game.
@@ -24,30 +21,15 @@ public class RoleCard extends AbstractCard {
         this.setPrefSize(100, 150);
         this.setStyle("-fx-background-color: " + role.getColorCode() + ";");
 
-        Text roleText = new Text(role.getName());
-        StackPane roleStackPane = new StackPane();
-        roleStackPane.setStyle(TEXT_BACKGROUND_COLOR);
-        roleStackPane.getChildren()
-                     .add(roleText);
+        StackPane roleStackPane = createTextStackPane(role.getName(), 100.0, 10);
+        StackPane descriptionStackPane = createTextStackPane(role.getDescription(), 100.0, 10);
 
-        AnchorPane.setTopAnchor(roleStackPane, 5.0);
-        AnchorPane.setLeftAnchor(roleStackPane, 0.0);
-        AnchorPane.setRightAnchor(roleStackPane, 0.0);
-
-        Text descriptionText = new Text(role.getDescription());
-        descriptionText.setFont(new Font(10));
-        descriptionText.setWrappingWidth(78.0);
-        descriptionText.setTextAlignment(TextAlignment.CENTER);
-        StackPane descriptionStackPane = new StackPane();
-        descriptionStackPane.setStyle(TEXT_BACKGROUND_COLOR);
-        descriptionStackPane.getChildren()
-                            .add(descriptionText);
-
-        AnchorPane.setTopAnchor(descriptionStackPane, 25.0);
-        AnchorPane.setLeftAnchor(descriptionStackPane, 0.0);
-        AnchorPane.setRightAnchor(descriptionStackPane, 0.0);
+        VBox textVBox = new VBox();
+        textVBox.setPrefSize(100, 150);
+        textVBox.getChildren()
+                .addAll(roleStackPane, descriptionStackPane);
 
         this.getChildren()
-            .addAll(roleStackPane, descriptionStackPane);
+            .addAll(textVBox);
     }
 }
