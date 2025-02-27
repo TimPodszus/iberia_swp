@@ -114,9 +114,9 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
      * Ensures that the input parameters are valid and that the city contains the plague.
      * If the player is not a country doctor, an action is deducted from their turn.
      *
-     * @param plagueToTreat   The plague to be treated.
-     * @param city            The city where the plague is treated.
-     * @param game            The current game instance.
+     * @param plagueToTreat The plague to be treated.
+     * @param city          The city where the plague is treated.
+     * @param game          The current game instance.
      * @throws PlagueManagementException If the plague is not present in the city or no cubes remain.
      * @throws IllegalArgumentException  If any of the input parameters are null.
      */
@@ -145,41 +145,42 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     /**
      * Retrieves the Infectious Diseases in the specified city.
      * Filters the infections in the city to only include those with a severity of 1 or higher.
-     * @param game    the current game instance.
-     * @param cityId  the ID of the city to retrieve infections from.
+     *
+     * @param game   the current game instance.
+     * @param cityId the ID of the city to retrieve infections from.
      * @return a list of infections in the city with a severity of 1 or higher.
      */
     @Override
     public List<IInfection> getInfectionsInCity(IGame game, int cityId) {
         ICity city = game.getCityRepository().getCity(cityId);
         return city.getInfections()
-                   .stream()
-                   .filter(infection -> infection.getSeverity() >= 1)
-                   .toList();
+                .stream()
+                .filter(infection -> infection.getSeverity() >= 1)
+                .toList();
     }
 
     @Override
     public List<ICity> getCitiesNearBy(IGame game, ICity currentCity) {
         List<IRegion> allRegions = game.getRegionRepository()
-                                       .getRegions();
+                .getRegions();
         List<IRegion> regionsNearBy = allRegions.stream()
-                                                .filter(region -> region.getSurroundingCities()
-                                                                        .contains(currentCity))
-                                                .toList();
+                .filter(region -> region.getSurroundingCities()
+                        .contains(currentCity))
+                .toList();
         return regionsNearBy.stream()
-                            .flatMap(region -> game.getRegionRepository()
-                                                   .getCitiesInAdjacentRegions(region)
-                                                   .stream())
-                            .filter(city -> city.getInfections()
-                                                .stream()
-                                                .anyMatch(infection -> infection.getSeverity() >= 1))
-                            .toList();
+                .flatMap(region -> game.getRegionRepository()
+                        .getCitiesInAdjacentRegions(region)
+                        .stream())
+                .filter(city -> city.getInfections()
+                        .stream()
+                        .anyMatch(infection -> infection.getSeverity() >= 1))
+                .toList();
     }
 
     public boolean isCubeCountNegative(IGame game, PlagueName plagueName) {
         return game.getPlagueRepository()
-                   .getPlagueByName(plagueName)
-                   .getCubesRemaining() > 0;
+                .getPlagueByName(plagueName)
+                .getCubesRemaining() > 0;
     }
 }
 
