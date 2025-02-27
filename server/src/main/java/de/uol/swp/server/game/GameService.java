@@ -26,6 +26,7 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
+import de.uol.swp.server.cards.events.FavorableTimeEvent;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -138,7 +139,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
             game = gameManagement.setPositioning(request);
         } catch (IllegalGameStateException e) {
             LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
-            sendStatusResponse(request,
+            sendStatusResponse(
+                    request,
                     false,
                     "Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand"
             );
@@ -172,7 +174,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                });
 
         try {
-            gameManagement.buildTrainTrack(UserMapper.toUser(user),
+            gameManagement.buildTrainTrack(
+                    UserMapper.toUser(user),
                     request.getLobbyId(),
                     connectionManagement.getConnection(request.getLobbyId(), request.getConnectionId())
             );
@@ -231,8 +234,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         try {
             ICard card = playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId());
-            gameManagement.movePlayer(UserMapper.toUser(user), request.getLobbyId(), destination, card
-            );
+            gameManagement.movePlayer(UserMapper.toUser(user), request.getLobbyId(), destination, card);
         } catch (IllegalGameStateException e) {
             LOG.error("[LobbyId: {}] Could not move player. Game", request.getLobbyId());
             sendStatusResponse(request, false, "Spiel ist in einem ungültigen Zustand");
@@ -284,43 +286,49 @@ public class GameService extends AbstractService implements GameStateChangeListe
                     "[LobbyID: {}] State mobilization is ongoing. Sending available destinations for remaining players to move",
                     lobbyId
             );
-            scheduler.schedule(() -> {
-                for (IPlayer player : remainingPlayers) {
-                    LOG.trace("[LobbyID: {}] {} has not moved yet. Sending available destinations for him",
-                            lobbyId,
-                            player.getUser()
-                                  .getUsername()
-                    );
-                    Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
-                            lobbyId,
-                            player.getUser()
-                                  .getUsername()
-                    );
-                    AvailableDestinationsResponse response = new AvailableDestinationsResponse(lobbyId,
-                            availableDestinations
-                    );
-                    Session session = authenticationService.getSession(player.getUser())
-                                                           .orElse(null);
+            scheduler.schedule(
+                    () -> {
+                        for (IPlayer player : remainingPlayers) {
+                            LOG.trace(
+                                    "[LobbyID: {}] {} has not moved yet. Sending available destinations for him",
+                                    lobbyId,
+                                    player.getUser()
+                                          .getUsername()
+                            );
+                            Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
+                                    lobbyId,
+                                    player.getUser()
+                                          .getUsername()
+                            );
+                            AvailableDestinationsResponse response = new AvailableDestinationsResponse(
+                                    lobbyId,
+                                    availableDestinations
+                            );
+                            Session session = authenticationService.getSession(player.getUser())
+                                                                   .orElse(null);
 
-                    if (session == null) {
-                        LOG.error("[LobbyID: {}] Session not found for user {}",
-                                lobbyId,
-                                player.getUser()
-                                      .getUsername()
-                        );
-                        break;
-                    }
+                            if (session == null) {
+                                LOG.error(
+                                        "[LobbyID: {}] Session not found for user {}",
+                                        lobbyId,
+                                        player.getUser()
+                                              .getUsername()
+                                );
+                                break;
+                            }
 
-                    response.setSession(session);
-                    post(response);
-                    LOG.trace("[LobbyID: {}] Sent {} available destinations for {}",
-                            lobbyId,
-                            availableDestinations.size(),
-                            player.getUser()
-                                  .getUsername()
-                    );
-                }
-            }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+                            response.setSession(session);
+                            post(response);
+                            LOG.trace(
+                                    "[LobbyID: {}] Sent {} available destinations for {}",
+                                    lobbyId,
+                                    availableDestinations.size(),
+                                    player.getUser()
+                                          .getUsername()
+                            );
+                        }
+                    }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS
+            );
         } finally {
             if (scheduler != null) {
                 scheduler.shutdown();
@@ -529,6 +537,37 @@ public class GameService extends AbstractService implements GameStateChangeListe
         LOG.debug("[Lobby: {}] Got AnotherDayEvent for current player {}", event.getLobbyId(), event.getUsername());
         IGame game = gameManagement.getGame(event.getLobbyId());
         gameManagement.increaseCurrentPlayerActions(game, event.getAmountOfActions());
+        game.setState(game.getPreviousState());
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
+    }
+
+    /**
+     * Handles the AnotherDayEvent.
+     *
+     * @param event the event containing the lobby ID and the username of the player to increase the actions
+     */
+    @Subscribe
+    public void onFavorableTimeEvent(FavorableTimeEvent event) {
+        LOG.debug("[Lobby: {}] Received FavorableTimeEvent", event.getLobbyId());
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        gameManagement.setFavorableTimeEventCardPlayed(true);
+        try {
+            playerManagement.getCard(
+                    event.getLobbyId(),
+                    game.getCurrentPlayer()
+                        .getUser()
+                        .getUsername(),
+                    211
+            );
+        } catch (PlayerManagementException e) {
+            LOG.error(
+                    "[Lobby: {}] Could not find FavorableTimeEventCard for player {}",
+                    event.getLobbyId(),
+                    event.getUsername()
+            );
+        }
         game.setState(game.getPreviousState());
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());

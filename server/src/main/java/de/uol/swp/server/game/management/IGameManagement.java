@@ -11,7 +11,6 @@ import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
-import de.uol.swp.server.game.exceptions.GameNotFoundException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -22,6 +21,8 @@ import de.uol.swp.server.usermanagement.IUser;
 import java.util.List;
 
 public interface IGameManagement {
+    void setFavorableTimeEventCardPlayed(boolean cardPlayed);
+
     /**
      * Creates and initializes a new game based on the provided request.
      *
@@ -35,7 +36,7 @@ public interface IGameManagement {
      * Sets the initial positioning of a player in the game based on the provided city.
      *
      * @param request The request with where the position is to be set
-     * @throws GameException if setting the positioning fails
+     * @throws GameException             if setting the positioning fails
      * @throws IllegalGameStateException if the game is in a state that does not allow positioning
      */
     IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException;
@@ -66,12 +67,10 @@ public interface IGameManagement {
      * @param city    the city to which the player will be moved
      * @param card    the card used to move the player
      *                <p>
-     * @throws GameException if moving the player fails
+     * @throws GameException             if moving the player fails
      * @throws IllegalGameStateException if the game is in an illegal state
      */
-    void movePlayer(
-            IUser user, String lobbyId, ICity city, ICard card
-    ) throws GameException, IllegalGameStateException;
+    void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameException, IllegalGameStateException;
 
     /**
      * Retrieves the game with the specified lobby code.
@@ -87,11 +86,13 @@ public interface IGameManagement {
      * @param user       the user representing the player building the train track
      * @param lobbyId    the id of the lobby in which the game is happening
      * @param connection the connection representing the train track to be built
-     * @throws GameException if building the train track fails
+     * @throws GameException             if building the train track fails
      * @throws IllegalGameStateException if the game is in a state, where building a train track is not allowed
      */
     void buildTrainTrack(
-            IUser user, String lobbyId, IConnection connection
+            IUser user,
+            String lobbyId,
+            IConnection connection
     ) throws GameException, IllegalGameStateException;
 
     /**
@@ -146,7 +147,7 @@ public interface IGameManagement {
     /**
      * Increases the number of actions the current player has in the game.
      *
-     * @param game  the game in which the current player's actions are to be increased
+     * @param game   the game in which the current player's actions are to be increased
      * @param amount the amount by which to increase the current player's actions
      */
     void increaseCurrentPlayerActions(IGame game, int amount);
