@@ -1964,5 +1964,5 @@
             </HBox>
         </children>
     </VBox>
-    <fx:include fx:id="chatPane" maxWidth="300.0" source="ChatScreen.fxml" AnchorPane.bottomAnchor="200.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="400.0" />
+    <fx:include fx:id="chat" maxWidth="300.0" source="ChatScreen.fxml" AnchorPane.bottomAnchor="250.0" AnchorPane.leftAnchor="5.0" />
 </AnchorPane>

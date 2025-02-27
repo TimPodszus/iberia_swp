@@ -16,8 +16,8 @@ public class ChatService {
         this.eventBus = eventBus;
     }
 
-    public void sendChatMessage(String lobbyId, String message, String sender) {
+    public void sendChatMessage(String lobbyId, String message) {
         LOG.debug("Sending SendChatRequest with message: {}", message);
-        eventBus.post(new SendChatRequest(lobbyId, message, sender));
+        eventBus.post(new SendChatRequest(lobbyId, message));
     }
 }

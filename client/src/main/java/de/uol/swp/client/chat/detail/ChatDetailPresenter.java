@@ -3,8 +3,8 @@ package de.uol.swp.client.chat.detail;
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
-import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.chat.messages.AbstractChatMessage;
+import de.uol.swp.common.chat.messages.PlayerChatMessage;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -61,13 +61,17 @@ public class ChatDetailPresenter extends AbstractPresenter {
             return;
         }
 
-        chatService.sendChatMessage(lobbyId, message, UserStore.getInstance().getUser().getUsername());
+        chatService.sendChatMessage(lobbyId, message);
         chatInput.clear();
     }
 
     @Subscribe
     public void onAbstractChatMessage(AbstractChatMessage chatMessage) {
-        chatArea.appendText(chatMessage.getSender() + ": " + chatMessage.getMessage() + "\n");
+        if (chatMessage instanceof PlayerChatMessage playerChatMessage) {
+            chatArea.appendText(playerChatMessage.getSender() + ": " + chatMessage.getMessage() + "\n");
+        } else {
+            chatArea.appendText("Server: " + chatMessage.getMessage() + "\n");
+        }
     }
 
 

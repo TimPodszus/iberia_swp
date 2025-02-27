@@ -2,7 +2,12 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
+import de.uol.swp.client.chat.detail.ChatDetailPresenter;
 import de.uol.swp.client.game.objects.*;
+import de.uol.swp.client.game.objects.cards.AbstractCard;
+import de.uol.swp.client.game.objects.cards.EventCard;
+import de.uol.swp.client.game.objects.cards.RoleCard;
+import de.uol.swp.client.game.objects.dialogs.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.data.CityCardDTO;
@@ -42,7 +47,6 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
@@ -66,7 +70,6 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import javafx.util.Pair;
-import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -82,7 +85,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Presenter class for the game screen.
@@ -103,7 +105,6 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
 
-    @Setter
     private String lobbyId;
 
     private IUserDTO user;
@@ -212,11 +213,20 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private AnchorPane chatPane;
-    @FXML
-    private Button chatToggleButton;
+
     private boolean isChatOpen = false;
+
     @FXML
     private ChatDetailPresenter chatController;
+
+    /**
+     * Sets the lobby ID for the game screen and the chat controller.
+     * @param lobbyId the lobby ID to set
+     */
+    public void setLobbyId(String lobbyId) {
+        this.lobbyId = lobbyId;
+        this.chatController.setLobbyId(lobbyId);
+    }
 
     @FXML
     public void toggleChat() {
@@ -229,7 +239,6 @@ public class GamePresenter extends AbstractPresenter {
         transition.play();
         isChatOpen = !isChatOpen;
     }
-
 
     /**
      * Initializes the game screen presenter.
