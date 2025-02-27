@@ -1796,7 +1796,7 @@ public class GamePresenter extends AbstractPresenter {
     @Subscribe
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
         LOG.info(
-                "AvailablePlaguesResponse empfangen! Anzahl Seuchen: {}",
+                "AvailablePlaguesResponse received! Current plague count: {}",
                 response.getAvailablePlagues()
                         .size()
         );
@@ -1805,7 +1805,7 @@ public class GamePresenter extends AbstractPresenter {
             TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
             Optional<PlagueName> result = dialog.showAndWait();
             result.ifPresent(selectedPlague -> {
-                LOG.info("Ausgewählte Seuche: {}", selectedPlague);
+                LOG.info("Selected plague: {}", selectedPlague);
                 gameService.sendTreatPlagueRequest(
                         lobbyId, cityIdToTreat,
                         selectedPlague
@@ -1831,7 +1831,7 @@ public class GamePresenter extends AbstractPresenter {
                 SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(response.getAvailableCities());
                 Optional<ICityDTO> selectedCity = dialog.showAndWait();
                 selectedCity.ifPresent(city -> {
-                    LOG.info("Spieler hat Stadt {} ausgewählt, sende AvailablePlaguesRequest", city.getName());
+                    LOG.info("Player selected city {} sending AvailablePlaguesRequest", city.getName());
                     this.cityIdToTreat = city.getId();
                     gameService.sendAvailablePlaguesRequest(lobbyId, city.getId());
                 });
