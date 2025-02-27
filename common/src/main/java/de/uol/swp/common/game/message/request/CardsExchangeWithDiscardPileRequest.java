@@ -6,7 +6,6 @@ import java.util.Map;
 
 public class CardsExchangeWithDiscardPileRequest extends CardsExchangeRequest {
 
-    boolean playerHasCityCard;
 
     /**
      * Constructs a new CardsExchangeRequest.
@@ -14,12 +13,7 @@ public class CardsExchangeWithDiscardPileRequest extends CardsExchangeRequest {
      * @param cardsToExchange the map of cards to exchange
      * @param lobbyId         the ID of the lobby
      */
-    public CardsExchangeWithDiscardPileRequest(
-            Map<String, ICardDTO> cardsToExchange,
-            String lobbyId,
-            boolean playerHasCityCard
-    ) {
+    public CardsExchangeWithDiscardPileRequest(Map<String, ICardDTO> cardsToExchange, String lobbyId) {
         super(cardsToExchange, lobbyId);
-        this.playerHasCityCard = playerHasCityCard;
     }
 }
