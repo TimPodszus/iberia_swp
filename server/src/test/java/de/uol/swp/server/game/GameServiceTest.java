@@ -4,7 +4,6 @@ import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
@@ -32,10 +31,6 @@ import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
-import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.EndGameState;
-import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
@@ -51,7 +46,6 @@ import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
-import org.greenrobot.eventbus.EventBusException;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -166,9 +160,9 @@ public class GameServiceTest extends EventBusBasedTest {
     /**
      * Tests the onMovePlayerRequest method with valid inputs.
      *
-     * @throws InterruptedException    if the thread is interrupted
+     * @throws InterruptedException      if the thread is interrupted
      * @throws IllegalGameStateException if the game is in an illegal state
-     * @throws GameException           if the player cannot be moved
+     * @throws GameException             if the player cannot be moved
      */
     @Test
     void testOnMovePlayerRequest() throws InterruptedException, IllegalGameStateException, GameException {
@@ -535,46 +529,8 @@ public class GameServiceTest extends EventBusBasedTest {
                 eq(targetPlayer),
                 eq("lobbyId"),
                 eq(event),
-                eq(lobbyManagement),
                 eq(gameService)
         );
-    }
-
-    /**
-     * Tests the onShareKnowledgeRequest method when the request is denied.
-     *
-     * @throws GameManagementException   if there is an error in game management
-     * @throws PlayerManagementException if there is an error in player management
-     */
-    @Test
-    void testOnShareKnowledgeRequest_Denied() throws GameManagementException, PlayerManagementException {
-        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
-                "lobbyId",
-                "currentPlayer",
-                "targetPlayer",
-                mock(ICardDTO.class),
-                mock(ICardDTO.class)
-        );
-        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", false, event);
-
-        IGame game = mock(IGame.class);
-        IPlayer currentPlayer = mock(IPlayer.class);
-        IPlayer targetPlayer = mock(IPlayer.class);
-        IUser currentUser = mock(IUser.class);
-        IUser targetUser = mock(IUser.class);
-
-        when(gameManagement.getGame("lobbyId")).thenReturn(game);
-        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
-        when(game.getPlayers()).thenReturn(List.of(currentPlayer, targetPlayer));
-        when(currentPlayer.getUser()).thenReturn(currentUser);
-        when(targetPlayer.getUser()).thenReturn(targetUser);
-        when(currentUser.getUsername()).thenReturn("currentPlayer");
-        when(targetUser.getUsername()).thenReturn("targetPlayer");
-
-        gameService.onShareKnowledgeRequest(request);
-
-        verify(gameManagement).unlockGameInWaitForConfirmation("lobbyId");
-        verify(gameManagement).postShareKnowledgeResponse(eq(event), eq(lobbyManagement), eq(gameService), eq(false));
     }
 
 

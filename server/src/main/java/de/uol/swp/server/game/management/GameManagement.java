@@ -9,7 +9,6 @@ import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
@@ -21,7 +20,6 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
-import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
@@ -30,7 +28,6 @@ import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -715,20 +712,16 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Handles the acceptance of a share knowledge request.
      * This method exchanges the specified cards between the current player and the target player.
      *
-     * @param currentPlayer   The player who initiated the share knowledge request
-     * @param targetPlayer    The player who accepted the share knowledge request
-     * @param lobbyId         The ID of the lobby where the game is being played
-     * @param event           The event containing details of the share knowledge request
-     * @param lobbyManagement The lobby management instance
-     * @param gameService     The game service instance
+     * @param currentPlayer The player who initiated the share knowledge request
+     * @param targetPlayer  The player who accepted the share knowledge request
+     * @param lobbyId       The ID of the lobby where the game is being played
+     * @param event         The event containing details of the share knowledge request
+     * @param gameService   The game service instance
      * @throws PlayerManagementException If there is an error during the card exchange
      */
     public void shareKnowledgeRequestAccepted(
-            IPlayer currentPlayer,
-            IPlayer targetPlayer,
-            String lobbyId,
-            ShareKnowledgeEvent event,
-            ILobbyManagement lobbyManagement,
+            IPlayer currentPlayer, IPlayer targetPlayer, String lobbyId, ShareKnowledgeEvent event,
+
             GameService gameService
     ) throws PlayerManagementException {
 
@@ -771,7 +764,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                    .getState();
         ((PlayerTurnState) gameState).reduceActionsRemaining(this.getGame(event.getLobbyId()));
         LOG.trace("ReducedActionsRemaining");
-        postShareKnowledgeResponse(event, lobbyManagement, gameService, true);
+        gameService.postShareKnowledgeResponse(event, true);
     }
 
     /**
@@ -797,31 +790,44 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
 
-    /**
-     * Posts a response to the share knowledge event.
-     *
-     * @param event           The event containing details of the share knowledge request
-     * @param lobbyManagement The lobby management instance
-     * @param gameService     The game service instance
-     * @param success         Indicates whether the share knowledge request was successful
-     */
     @Override
-    public void postShareKnowledgeResponse(
-            ShareKnowledgeEvent event,
-            ILobbyManagement lobbyManagement,
-            GameService gameService,
-            boolean success
-    ) {
-
-        gameService.sendToAllInLobby(
-                lobbyManagement.getLobby(event.getLobbyId()),
-                new KnowledgeSharedEvent(
-                        event.getLobbyId(),
-                        success,
-                        GameMapper.toDTO(this.getGame(event.getLobbyId()))
-                )
+    public void shareKnowledgeWithDiscardPile(
+            int cardToDiscardID,
+            int cardToReceiveID,
+            String lobbyId,
+            GameService gameService
+    ) throws GameManagementException, PlayerManagementException {
+        IGame game = getGame(lobbyId);
+        ICard cardToDiscard = playerManagement.getCard(
+                lobbyId,
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername(),
+                cardToDiscardID
         );
-        LOG.trace("Posted ShareKnowledgeResponse to event bus for lobby {}", event.getLobbyId());
+        ICard cardToReceive = game.getPlayerCardDiscardPile()
+                                  .stream()
+                                  .filter(card -> card.getId() == cardToReceiveID)
+                                  .findFirst()
+                                  .orElseThrow(() -> new GameManagementException("Card not found in discard pile"));
+
+        game.getCurrentPlayer()
+            .getCards()
+            .add(cardToReceive);
+        game.getPlayerCardDiscardPile()
+            .remove(cardToReceive);
+        game.getPlayerCardDiscardPile()
+            .add(cardToDiscard);
+        game.getCurrentPlayer()
+            .getCards()
+            .remove(cardToDiscard);
+        LOG.debug("Cards exchanged with discard pile");
+        IGameState gameState = game.getState();
+        ((PlayerTurnState) gameState).reduceActionsRemaining(game);
+        LOG.trace("ReducedActionsRemaining");
+
+        gameService.sendCardsExchangeWithDiscardPileResponse(lobbyId);
+
 
     }
 }

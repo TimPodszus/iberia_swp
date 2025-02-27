@@ -1051,14 +1051,7 @@ class GameManagementTest {
                 CardMapper.toDTO(targetPlayerCard)
         );
 
-        gameManagement.shareKnowledgeRequestAccepted(
-                currentPlayer,
-                targetPlayer,
-                lobbyId,
-                event,
-                lobbyManagement,
-                gameService
-        );
+        gameManagement.shareKnowledgeRequestAccepted(currentPlayer, targetPlayer, lobbyId, event, gameService);
         System.out.println("Current Player Cards: " + currentPlayer.getCards() + currentPlayerCard.getTitle());
         System.out.println("Target Player Cards: " + targetPlayer.getCards() + targetPlayerCard.getTitle());
 
