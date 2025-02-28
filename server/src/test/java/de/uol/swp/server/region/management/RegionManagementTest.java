@@ -369,4 +369,16 @@ class RegionManagementTest {
 
         assertEquals("Request player not found", exception.getMessage());
     }
+
+    @Test
+    void testIncreaseWaterTreatment() {
+        int regionId = 1;
+        IRegion region = mock(IRegion.class);
+        when(game.getRegionRepository()).thenReturn(regionRepository);
+        when(regionRepository.getRegionByID(anyInt())).thenReturn(region);
+        regionManagement.increaseWaterTreatment(regionId, game, 1);
+
+        verify(region).increaseWaterTreatments(1);
+        verify(regionRepository).getRegionByID(regionId);
+    }
 }

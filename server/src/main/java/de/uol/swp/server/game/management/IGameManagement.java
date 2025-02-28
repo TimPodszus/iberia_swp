@@ -9,6 +9,10 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.GameInitializationException;
+import de.uol.swp.server.game.exceptions.GameNotFoundException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
@@ -23,15 +27,18 @@ public interface IGameManagement {
      *
      * @param request the game creation request containing user and difficulty information
      * @return the newly created game
+     * @throws GameInitializationException if creating and initializing the game fails
      */
-    IGame createAndInitializeGame(CreateGameRequest request) throws PlayerManagementException;
+    IGame createAndInitializeGame(CreateGameRequest request) throws GameInitializationException;
 
     /**
      * Sets the initial positioning of a player in the game based on the provided city.
      *
      * @param request The request with where the position is to be set
+     * @throws GameException if setting the positioning fails
+     * @throws IllegalGameStateException if the game is in a state that does not allow positioning
      */
-    IGame setPositioning(PositioningRequest request) throws GameManagementException;
+    IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException;
 
     /**
      * Draws a player card. The specific behavior of this method should be defined.
@@ -59,9 +66,12 @@ public interface IGameManagement {
      * @param city    the city to which the player will be moved
      * @param card    the card used to move the player
      *                <p>
-     * @throws GameManagementException if moving the player fails
+     * @throws GameException if moving the player fails
+     * @throws IllegalGameStateException if the game is in an illegal state
      */
-    void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameManagementException;
+    void movePlayer(
+            IUser user, String lobbyId, ICity city, ICard card
+    ) throws GameException, IllegalGameStateException;
 
     /**
      * Retrieves the game with the specified lobby code.
@@ -77,9 +87,12 @@ public interface IGameManagement {
      * @param user       the user representing the player building the train track
      * @param lobbyId    the id of the lobby in which the game is happening
      * @param connection the connection representing the train track to be built
-     * @throws GameManagementException if building the train track fails
+     * @throws GameException if building the train track fails
+     * @throws IllegalGameStateException if the game is in a state, where building a train track is not allowed
      */
-    void buildTrainTrack(IUser user, String lobbyId, IConnection connection) throws GameManagementException;
+    void buildTrainTrack(
+            IUser user, String lobbyId, IConnection connection
+    ) throws GameException, IllegalGameStateException;
 
     /**
      * Locks the game in a wait-for-confirmation state.

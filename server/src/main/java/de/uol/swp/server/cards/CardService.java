@@ -11,7 +11,7 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.events.SecondChanceEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.cards.management.ICardManagement;
-import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;

@@ -1,5 +1,6 @@
 package de.uol.swp.common.player.request;
 
+import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

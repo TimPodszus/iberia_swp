@@ -401,7 +401,11 @@ public class SceneManager {
      */
     @Subscribe
     public void onCreateGameResponseEvent(CreateGameResponse response) throws IOException {
-        showGameScreen(response.getLobbyId());
+        if (response.isSuccess()) {
+            showGameScreen(response.getLobbyId());
+        } else {
+            showError("Error creating game: " + response.getDescription());
+        }
     }
 
     /**

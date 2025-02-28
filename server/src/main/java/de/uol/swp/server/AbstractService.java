@@ -1,12 +1,17 @@
 package de.uol.swp.server;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.game.message.AbstractGameRequest;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.Session;
+import de.uol.swp.server.chat.event.ServerMessageEvent;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.usermanagement.AuthenticationService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.*;
@@ -36,6 +41,9 @@ public class AbstractService {
      */
     @Inject
     protected AuthenticationService authenticationService;
+
+    private static final Logger LOG = LogManager.getLogger(AbstractService.class);
+
 
     /**
      * Constructor
@@ -86,7 +94,40 @@ public class AbstractService {
      */
     public void sendToAllInLobby(ILobby lobby, AbstractServerMessage message) {
         List<Session> sessions = authenticationService.getSessions(new HashSet<>(lobby.getUsers()));
+
+        LOG.info("Sending message {} to {} in Lobby", sessions.size(), lobby.getLobbyId());
+
         message.setReceiver(sessions);
         post(message);
+    }
+
+    /**
+     * Sends a status response based on the given game request.
+     *
+     * @param request     the game request containing the lobby ID and session information
+     * @param status      the status to be sent in the response (true for success, false for failure)
+     * @param description a description of the status
+     * @see AbstractGameRequest
+     * @see StatusResponse
+     * @since 2019-10-08
+     */
+    protected void sendStatusResponse(AbstractGameRequest request, boolean status, String description) {
+        StatusResponse response = new StatusResponse(request.getLobbyId(), status, description);
+        request.getSession()
+               .ifPresent(response::setSession);
+        request.getMessageContext()
+               .ifPresent(response::setMessageContext);
+        post(response);
+    }
+
+    /**
+     * Sends a message to a specific user.
+     *
+     * @param lobbyId the lobby ID
+     * @param message the message to send
+     */
+    protected void sendServerMessageEvent(String lobbyId, String message) {
+        ServerMessageEvent serverMessage = new ServerMessageEvent(lobbyId, message);
+        post(serverMessage);
     }
 }

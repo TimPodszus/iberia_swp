@@ -7,35 +7,45 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
+import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
+import de.uol.swp.common.region.message.response.TreatWaterEventResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.data.ICard;
-import de.uol.swp.server.game.GameException;
+import de.uol.swp.server.cards.events.TreatWaterEvent;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.GameMapper;
-import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.GameManagementException;
+import de.uol.swp.server.game.states.EventState;
+import de.uol.swp.server.game.states.PlaceExtraWaterTreatmentState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
+import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class RegionService extends AbstractService {
     private IRegionManagement regionManagement;
     private IPlayerManagement playerManagement;
-    private IGameManagement gameManagement;
     private ILobbyManagement lobbyManagement;
+    private static final Logger LOG = LogManager.getLogger(RegionService.class);
 
     /**
      * Constructor
@@ -48,13 +58,11 @@ public class RegionService extends AbstractService {
             EventBus bus,
             IRegionManagement regionManagement,
             IPlayerManagement playerManagement,
-            IGameManagement gameManagement,
             ILobbyManagement lobbyManagement
     ) {
         super(bus);
         this.regionManagement = regionManagement;
         this.playerManagement = playerManagement;
-        this.gameManagement = gameManagement;
         this.lobbyManagement = lobbyManagement;
     }
 
@@ -99,15 +107,19 @@ public class RegionService extends AbstractService {
         IUserDTO user = request.getSession()
                                .map(Session::getUser)
                                .orElse(null);
+        ICard card = null;
+        IGame game = regionManagement.getGame(request.getLobbyId());
         if (user == null) {
             throw new GameException("User is unknown");
         }
-        ICard card = playerManagement.getCard(
-                request.getLobbyId(),
-                user.getUsername(),
-                request.getCard()
-                       .getId()
-        );
+        if (request.getCard() != null) {
+            card = playerManagement.getCard(
+                    request.getLobbyId(),
+                    user.getUsername(),
+                    request.getCard()
+                           .getId()
+            );
+        }
         regionManagement.increaseWaterTreatmentsFromRegion(
                 request.getLobbyId(),
                 request.getRegionId(),
@@ -115,8 +127,54 @@ public class RegionService extends AbstractService {
                 card,
                 UserMapper.toUser(user)
         );
+        IGameDTO gameDTO = GameMapper.toDTO(game);
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+    }
 
-        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+    @Subscribe
+    public void onTreatWaterEvent(TreatWaterEvent event) {
+        AbstractResponseMessage response;
+        LOG.debug("[Lobby: {}] Got TreatWaterEvent", event.getLobbyId());
+        IGame game = regionManagement.getGame(event.getLobbyId());
+        IUser user = game.getPlayers()
+                         .stream()
+                         .map(IPlayer::getUser)
+                         .filter(iuser -> iuser.getUsername()
+                                               .equals(event.getUsername()))
+                         .findFirst()
+                         .orElseThrow(() -> new IllegalStateException("User not found"));
+        Optional<Session> session = authenticationService.getSession(user);
+        response = new TreatWaterEventResponse(false);
+        response.setSession(session.orElseThrow(() -> new IllegalStateException("Session not present")));
+        post(response);
+    }
+
+    @Subscribe
+    public void onWaterTreatmentEventRequest(WaterTreatmentEventRequest request) throws GameException {
+        AbstractResponseMessage response;
+        LOG.debug("[Lobby: {}] Got TreatWaterEvenRequestt", request.getLobbyId());
+        IGame game = regionManagement.getGame(request.getLobbyId());
+        IUserDTO user = request.getSession()
+                               .map(Session::getUser)
+                               .orElseThrow(() -> new GameException("User is unknown"));
+
+        if (game.getState() instanceof EventState && request.getAmount() == 1) {
+            regionManagement.increaseWaterTreatment(request.getRegionId(), game, request.getAmount());
+            game.setState(game.getPreviousState());
+            game.setState(new PlaceExtraWaterTreatmentState());
+            Optional<Session> session = authenticationService.getSession(UserMapper.toUser(user));
+            response = new TreatWaterEventResponse(true);
+            response.setSession(session.orElseThrow(() -> new IllegalStateException("Session not present")));
+            post(response);
+        } else if (request.isDismissed()) {
+            game.setState(game.getPreviousState());
+        } else {
+            regionManagement.increaseWaterTreatment(request.getRegionId(), game, request.getAmount());
+            game.setState(game.getPreviousState());
+        }
+
+        IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
