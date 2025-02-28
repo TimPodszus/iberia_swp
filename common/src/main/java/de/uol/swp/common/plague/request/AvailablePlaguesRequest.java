@@ -5,9 +5,15 @@ import lombok.Getter;
 
 import java.util.Objects;
 
+/**
+ * Request to retrieve the available plagues in a specific city within a game session.
+ */
 @Getter
 public class AvailablePlaguesRequest extends AbstractGameRequest {
 
+    /**
+     * The ID of the city for which the available plagues are requested.
+     */
     private final int cityId;
 
     public AvailablePlaguesRequest(String lobbyId, int cityId) {

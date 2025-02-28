@@ -6,10 +6,19 @@ import lombok.Getter;
 
 import java.util.Objects;
 
+/**
+ * Request to treat a plague in a specific city within a game session.
+ */
 @Getter
 public class TreatPlagueRequest extends AbstractGameRequest {
 
+    /**
+     * The ID of the city where the plague should be treated.
+     */
     private final int cityId;
+    /**
+     * The name of the plague to be treated.
+     */
     private final PlagueName plagueName;
 
     public TreatPlagueRequest(String lobbyId, int cityId, PlagueName plagueName) {

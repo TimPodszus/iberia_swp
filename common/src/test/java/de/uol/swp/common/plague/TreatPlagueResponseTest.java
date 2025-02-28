@@ -6,9 +6,11 @@ import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import java.util.List;
+
 import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class TreatPlagueResponseTest {
 
@@ -44,6 +46,7 @@ class TreatPlagueResponseTest {
         TreatPlagueResponse response4 = new TreatPlagueResponse("lobby456", true, cities1, true);
         TreatPlagueResponse response5 = new TreatPlagueResponse("lobby123", false, cities1, true);
 
+        assertEquals(response1, response1);
         assertEquals(response1, response2);
         assertNotEquals(response1, response3);
         assertNotEquals(response1, response4);

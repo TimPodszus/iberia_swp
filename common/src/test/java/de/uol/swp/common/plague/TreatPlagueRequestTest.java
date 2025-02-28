@@ -30,6 +30,7 @@ class TreatPlagueRequestTest {
         TreatPlagueRequest request4 = new TreatPlagueRequest("lobby123", 99, plague1);
         TreatPlagueRequest request5 = new TreatPlagueRequest("lobby123", 42, plague2);
 
+        assertEquals(request1, request1);
         assertEquals(request1, request2);
         assertNotEquals(request1, request3);
         assertNotEquals(request1, request4);

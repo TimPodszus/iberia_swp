@@ -21,6 +21,7 @@ class AvailablePlaguesRequestTest {
         AvailablePlaguesRequest request3 = new AvailablePlaguesRequest("lobby456", 42);
         AvailablePlaguesRequest request4 = new AvailablePlaguesRequest("lobby123", 99);
 
+        assertEquals(request1, request1);
         assertEquals(request1, request2);
         assertNotEquals(request1, request3);
         assertNotEquals(request1, request4);

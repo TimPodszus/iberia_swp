@@ -24,25 +24,29 @@ public class SelectCityToTreatDialog extends Dialog<ICityDTO> {
 
     /**
      * Constructs a new SelectCityToTreatDialog.
+     *
      * @param cities A list of cities to choose from. Each city will be displayed by its name.
      */
     public SelectCityToTreatDialog(List<ICityDTO> cities) {
-        setTitle("Select city for treatment");
-        setHeaderText("Please select a city:");
+        setTitle("Zusatzaktion der Rolle Landarzt");
+        setHeaderText("Du kannst einen zusätzlichen Würfel aus der Stadt oder\n" + "einer Stadt an einer angrenzenden Region\n" + "entfernen");
 
         for (ICityDTO city : cities) {
-            cityMap.put(city.getName().toString(), city);
+            cityMap.put(city.getName()
+                            .toString(), city);
         }
 
         cityListView = new ListView<>();
         cityListView.setItems(FXCollections.observableArrayList(cityMap.keySet()));
 
         getDialogPane().setContent(cityListView);
-        getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        getDialogPane().getButtonTypes()
+                       .addAll(ButtonType.OK, ButtonType.CANCEL);
 
         setResultConverter(dialogButton -> {
             if (dialogButton == ButtonType.OK) {
-                String cityName = cityListView.getSelectionModel().getSelectedItem();
+                String cityName = cityListView.getSelectionModel()
+                                              .getSelectedItem();
                 return cityMap.get(cityName);
             }
             return null;

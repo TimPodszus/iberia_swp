@@ -37,6 +37,7 @@ class AvailablePlaguesResponseTest {
         AvailablePlaguesResponse response4 = new AvailablePlaguesResponse("lobby456", true, plagues1, 42);
         AvailablePlaguesResponse response5 = new AvailablePlaguesResponse("lobby123", false, plagues1, 42);
 
+        assertEquals(response1, response1);
         assertEquals(response1, response2);
         assertNotEquals(response1, response3);
         assertNotEquals(response1, response4);

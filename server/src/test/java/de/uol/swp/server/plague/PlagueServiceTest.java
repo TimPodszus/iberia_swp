@@ -13,7 +13,7 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
-import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.infection.data.IInfection;
@@ -53,7 +53,7 @@ class PlagueServiceTest {
     @Mock
     private EventBus eventBus;
     @Mock
-    private Game game;
+    private IGame game;
     @Mock
     private IPlayer player;
     @Mock
@@ -97,7 +97,8 @@ class PlagueServiceTest {
         when(treatPlagueRequest.getPlagueName()).thenReturn(PlagueName.CHOLERA);
 
         when(game.getCityRepository()).thenReturn(mock(CityRepository.class));
-        when(game.getCityRepository().getCity(1)).thenReturn(city);
+        when(game.getCityRepository()
+                 .getCity(1)).thenReturn(city);
         when(city.getName()).thenReturn(CityName.ALICANTE);
         when(lobbyManagement.getLobby("lobby123")).thenReturn(lobby);
         when(game.getConnectionRepository()).thenReturn(connectionRepository);
@@ -110,7 +111,8 @@ class PlagueServiceTest {
     @Test
     void testOnResearchPlagueRequest_Success() throws PlagueManagementException {
         ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA);
-        doNothing().when(plagueManagement).researchPlague(PlagueName.CHOLERA, game);
+        doNothing().when(plagueManagement)
+                   .researchPlague(PlagueName.CHOLERA, game);
 
         plagueService.onResearchPlagueRequest(request, game);
 
@@ -122,7 +124,7 @@ class PlagueServiceTest {
     void testOnResearchPlagueRequest_Exception() throws PlagueManagementException {
         ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA);
         doThrow(new PlagueManagementException("Error")).when(plagueManagement)
-                .researchPlague(PlagueName.CHOLERA, game);
+                                                       .researchPlague(PlagueName.CHOLERA, game);
 
         assertThrows(PlagueManagementException.class, () -> plagueService.onResearchPlagueRequest(request, game));
 
@@ -150,7 +152,7 @@ class PlagueServiceTest {
     @Test
     void testOnTreatPlagueRequest_Exception() throws PlagueManagementException {
         doThrow(new PlagueManagementException("Fehler")).when(plagueManagement)
-                .treatPlague(PlagueName.CHOLERA, city, game);
+                                                        .treatPlague(PlagueName.CHOLERA, city, game);
 
         assertThrows(PlagueManagementException.class, () -> plagueService.onTreatPlagueRequest(treatPlagueRequest));
 

@@ -26,7 +26,7 @@ public class TreatPlagueDialog extends Dialog<PlagueName> {
      * Constructs a new TreatPlagueDialog.
      *
      * @param dismissible Indicates whether the dialog can be dismissed by the player.
-     * @param plagues The list of available plagues to choose from.
+     * @param plagues     The list of available plagues to choose from.
      */
     public TreatPlagueDialog(boolean dismissible, List<IInfectionDTO> plagues) {
         this.dismissible = dismissible;
@@ -53,13 +53,15 @@ public class TreatPlagueDialog extends Dialog<PlagueName> {
             PlagueName plagueName = infection.getPlagueName();
             Button plagueButton = new Button(plagueName.name());
             plagueButton.setOnAction(event -> onPlagueSelected(plagueName));
-            plagueBox.getChildren().add(plagueButton);
+            plagueBox.getChildren()
+                     .add(plagueButton);
         }
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(plagueBox);
-        super.getDialogPane().setContent(scrollPane);
+        super.getDialogPane()
+             .setContent(scrollPane);
     }
 
     /**

@@ -7,10 +7,20 @@ import lombok.Getter;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Response containing the available plagues in a specific city within a game session.
+ */
 @Getter
 public class AvailablePlaguesResponse extends AbstractGameResponse {
 
+    /**
+     * The list of available plagues in the specified city.
+     */
     private final List<IInfectionDTO> availablePlagues;
+
+    /**
+     * The ID of the city for which the available plagues are provided.
+     */
     private final int cityId;
 
     public AvailablePlaguesResponse(String lobbyId, boolean success, List<IInfectionDTO> availablePlagues, int cityId) {

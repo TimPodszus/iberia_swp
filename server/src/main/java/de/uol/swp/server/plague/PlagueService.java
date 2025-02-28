@@ -17,7 +17,6 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameMapper;
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.states.TreatExtraPlagueState;
 import de.uol.swp.server.infection.InfectionMapper;
@@ -61,13 +60,12 @@ public class PlagueService extends AbstractService {
      * If a ResearchPlagueRequest is detected, it triggers the plague research process.
      *
      * @param researchPlagueRequest The ResearchPlagueRequest found on the EventBus
-     * @see PlagueManagement#researchPlague(PlagueName, Game)
+     * @see PlagueManagement#researchPlague(PlagueName, IGame)
      * @since 2024-10-04
      */
     @Subscribe
     public void onResearchPlagueRequest(
-            ResearchPlagueRequest researchPlagueRequest,
-            Game game
+            ResearchPlagueRequest researchPlagueRequest, IGame game
     ) throws PlagueManagementException {
         PlagueName name = researchPlagueRequest.getName();
 
@@ -89,20 +87,17 @@ public class PlagueService extends AbstractService {
         LOG.debug("Received AvailablePlaguesRequest for lobbyId: {}", request.getLobbyId());
         IGame game = plagueManagement.getGame(request.getLobbyId());
 
-        List<IInfectionDTO> infectionsInCity = InfectionMapper.toDTOList(plagueManagement.getInfectionsInCity(
-                game,
+        List<IInfectionDTO> infectionsInCity = InfectionMapper.toDTOList(plagueManagement.getInfectionsInCity(game,
                 request.getCityId()
         ));
-        LOG.debug(
-                "Found {} infections in city {}",
+        LOG.debug("Found {} infections in city {}",
                 infectionsInCity.size(),
                 game.getCurrentPlayer()
                     .getCurrentPosition()
                     .getName()
         );
 
-        AvailablePlaguesResponse availablePlaguesResponse = new AvailablePlaguesResponse(
-                request.getLobbyId(),
+        AvailablePlaguesResponse availablePlaguesResponse = new AvailablePlaguesResponse(request.getLobbyId(),
                 true,
                 infectionsInCity,
                 request.getCityId()
@@ -112,8 +107,7 @@ public class PlagueService extends AbstractService {
         request.getMessageContext()
                .ifPresent(availablePlaguesResponse::setMessageContext);
 
-        LOG.debug(
-                "Sending AvailablePlaguesResponse with {} plagues and role: {}",
+        LOG.debug("Sending AvailablePlaguesResponse with {} plagues and role: {}",
                 infectionsInCity.size(),
                 game.getCurrentPlayer()
                     .getRole()
@@ -134,14 +128,14 @@ public class PlagueService extends AbstractService {
             TreatPlagueRequest request
     ) throws PlagueManagementException {
         AbstractResponseMessage response;
-        LOG.debug(
-                "Received TreatPlagueRequest for lobbyId: {}, cityId: {}, plagueName: {}",
+        LOG.debug("Received TreatPlagueRequest for lobbyId: {}, cityId: {}, plagueName: {}",
                 request.getLobbyId(),
                 request.getCityId(),
                 request.getPlagueName()
         );
         IGame game = plagueManagement.getGame(request.getLobbyId());
-        ICity city = game.getCityRepository().getCity(request.getCityId());
+        ICity city = game.getCityRepository()
+                         .getCity(request.getCityId());
 
         LOG.debug("Removing one plague cube of type {} from city {}", request.getPlagueName(), city.getName());
         plagueManagement.treatPlague(request.getPlagueName(), city, game);
@@ -153,13 +147,12 @@ public class PlagueService extends AbstractService {
         if (game.getCurrentPlayer()
                 .getRole() instanceof CountryDoctor && !(game.getPreviousState() instanceof TreatExtraPlagueState)) {
             game.setState(new TreatExtraPlagueState());
-            response = new TreatPlagueResponse(
-                    request.getLobbyId(),
+            response = new TreatPlagueResponse(request.getLobbyId(),
                     true,
                     CityMapper.toDTOList(plagueManagement.getCitiesNearBy(game, city)),
                     true
             );
-        }else{
+        } else {
             game.setState(game.getPreviousState());
             response = new StatusResponse(request.getLobbyId(), true, "Plague treated successfully");
         }
