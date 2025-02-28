@@ -2,10 +2,12 @@ package de.uol.swp.server.cards;
 
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.cards.events.SecondChanceEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
+import de.uol.swp.server.cards.management.CardNotPlayableException;
 import de.uol.swp.server.cards.management.ICardManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -68,6 +70,16 @@ public class CardServiceTest extends EventBusBasedTest {
     }
 
     /**
+     * Handles StatusResponse.
+     *
+     * @param event the StatusResponse to handle
+     */
+    @Subscribe
+    public void onStatusResponse(StatusResponse event) {
+        super.handleEvent(event);
+    }
+
+    /**
      * Sets up the test environment.
      */
     @BeforeEach
@@ -81,7 +93,7 @@ public class CardServiceTest extends EventBusBasedTest {
      * @throws InterruptedException if the thread is interrupted
      */
     @Test
-    void testOnPlayCardRequest() throws InterruptedException {
+    void testOnPlayCardRequest() throws InterruptedException, CardNotPlayableException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
 
@@ -97,6 +109,32 @@ public class CardServiceTest extends EventBusBasedTest {
         postAndWait(request);
 
         assertInstanceOf(BoardUpdateEvent.class, event, "Expected BoardUpdateEvent");
+        verify(cardManagement, atLeastOnce()).playCard("1234", "testuser", 1);
+    }
+
+    /**
+     * Tests the onPlayCardRequest method with a valid session.
+     *
+     * @throws InterruptedException if the thread is interrupted
+     */
+    @Test
+    void testOnPlayCardRequest_withWrongCard() throws InterruptedException, CardNotPlayableException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+
+        ILobby lobby = new Lobby("1234", "testLobby", new ArrayList<>(List.of(user)), user, 2);
+        when(lobbyManagement.getLobby("1234")).thenReturn(lobby);
+
+        IGame game = new Game(2, "1234");
+        when(cardManagement.getGame("1234")).thenReturn(game);
+        doThrow(new CardNotPlayableException()).when(cardManagement).playCard("1234", "testuser", 1);
+
+        PlayCardRequest request = new PlayCardRequest("1234", 1);
+        request.setSession(session);
+
+        postAndWait(request);
+
+        assertInstanceOf(StatusResponse.class, event, "Expected StatusResponse");
         verify(cardManagement, atLeastOnce()).playCard("1234", "testuser", 1);
     }
 

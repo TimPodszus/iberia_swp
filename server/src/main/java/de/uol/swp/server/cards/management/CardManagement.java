@@ -26,7 +26,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
     private static final Logger LOG = LogManager.getLogger(CardManagement.class);
 
     @Override
-    public void playCard(String lobbyId, String username, int cardId) {
+    public void playCard(String lobbyId, String username, int cardId) throws CardNotPlayableException {
         IGame game = super.getGame(lobbyId);
         if (isCardPlayable(game, cardId, username)) {
             ICard card = game.getPlayer(username)
@@ -36,6 +36,8 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
             if (card instanceof EventCard eventCard) {
                 playEventCard(game, username, eventCard);
             }
+        } else {
+            throw new CardNotPlayableException();
         }
     }
 

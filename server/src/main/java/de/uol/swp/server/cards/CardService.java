@@ -10,6 +10,7 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.events.SecondChanceEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
+import de.uol.swp.server.cards.management.CardNotPlayableException;
 import de.uol.swp.server.cards.management.ICardManagement;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.GameMapper;
@@ -68,7 +69,13 @@ public class CardService extends AbstractService {
                                })
                                .getUser();
 
-        cardManagement.playCard(request.getLobbyId(), user.getUsername(), request.getCardId());
+        try {
+            cardManagement.playCard(request.getLobbyId(), user.getUsername(), request.getCardId());
+        } catch (CardNotPlayableException e) {
+            sendStatusResponse(request, false, "Die Eventkarte kann nicht gespielt werden");
+
+            return;
+        }
 
         LOG.info("[LobbyId: {}] Played the card. Sending BoardUpdateEvent", request.getLobbyId());
         IGameDTO game = GameMapper.toDTO(cardManagement.getGame(request.getLobbyId()));

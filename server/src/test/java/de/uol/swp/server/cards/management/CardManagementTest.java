@@ -60,7 +60,7 @@ public class CardManagementTest {
      * Tests the playCard method for a regular card.
      */
     @Test
-    void testPlayCard() {
+    void testPlayCard() throws CardNotPlayableException {
         IUser user = new User("user", "password");
         IPlayer player = new Player(user);
         when(game.getPlayer("user")).thenReturn(player);
@@ -84,7 +84,7 @@ public class CardManagementTest {
      * Tests the playCard method for an event card.
      */
     @Test
-    void testPlayEventCard() {
+    void testPlayEventCard() throws CardNotPlayableException {
         IUser user = new User("user", "password");
         IPlayer player = new Player(user);
         when(game.getPlayer("user")).thenReturn(player);
@@ -115,9 +115,7 @@ public class CardManagementTest {
         when(card.getId()).thenReturn(1);
         player.setCards(new ArrayList<>(List.of(card)));
 
-        cardManagement.playCard("1", "user", 1);
-
-        verify(game, never()).setState(any(EventState.class));
+        assertThrows(CardNotPlayableException.class, () -> cardManagement.playCard("1", "user", 1));
     }
 
 
@@ -131,16 +129,14 @@ public class CardManagementTest {
         when(game.getPlayer("user")).thenReturn(player);
         player.setCards(new ArrayList<>(List.of()));
 
-        cardManagement.playCard("1", "user", 1);
-
-        verify(game, never()).setState(any());
+        assertThrows(CardNotPlayableException.class, () -> cardManagement.playCard("1", "user", 1));
     }
 
     /**
      * Tests the playCard method for a card that is not an event card.
      */
     @Test
-    void testPlayEventCardWithStateMobilization() {
+    void testPlayEventCardWithStateMobilization() throws CardNotPlayableException {
         IUser user = new User("user", "password");
         IPlayer player = new Player(user);
         when(game.getPlayer("user")).thenReturn(player);
@@ -167,7 +163,7 @@ public class CardManagementTest {
      * Tests the playCard method for a card that is not an event card.
      */
     @Test
-    void testPlayEventCardWithAnotherDay() {
+    void testPlayEventCardWithAnotherDay() throws CardNotPlayableException {
         IUser user = new User("user", "password");
         IPlayer player = new Player(user);
         when(game.getPlayer("user")).thenReturn(player);
@@ -204,15 +200,7 @@ public class CardManagementTest {
         when(card.getId()).thenReturn(1);
         player.setCards(new ArrayList<>(List.of(card)));
 
-        cardManagement.playCard("1", "user", 1);
-
-        assertEquals(
-                1,
-                player.getCards()
-                      .size()
-        );
-        verify(card, never()).execute("1", "user");
-        verify(game, never()).setState(any(EventState.class));
+        assertThrows(CardNotPlayableException.class, () -> cardManagement.playCard("1", "user", 1));
     }
 
     @Test

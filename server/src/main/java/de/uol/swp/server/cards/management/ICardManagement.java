@@ -13,8 +13,9 @@ public interface ICardManagement {
      * @param lobbyId  the ID of the lobby where the card is played
      * @param username the username of the player playing the card
      * @param cardId   the ID of the card being played
+     * @throws CardNotPlayableException if the card is not playable
      */
-    void playCard(String lobbyId, String username, int cardId);
+    void playCard(String lobbyId, String username, int cardId) throws CardNotPlayableException;
 
     /**
      * Retrieves the game associated with the specified lobby.
