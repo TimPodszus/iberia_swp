@@ -44,25 +44,17 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Shape;
-import javafx.scene.shape.StrokeType;
+import javafx.scene.shape.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
@@ -75,13 +67,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -1479,6 +1465,8 @@ public class GamePresenter extends AbstractPresenter {
         treatWaterButton.setDisable(true);
         treatInfectionButton.setDisable(true);
         shareKnowledgeButton.setDisable(true);
+        roleButtonOne.setDisable(true);
+        roleButtonTwo.setDisable(true);
     }
 
     /**
@@ -1514,6 +1502,12 @@ public class GamePresenter extends AbstractPresenter {
                     break;
                 case TREAT_WATER:
                     treatWaterButton.setDisable(false);
+                    break;
+                case ROLE_ACTION_ONE:
+                    roleButtonOne.setDisable(false);
+                    break;
+                case ROLE_ACTION_TWO:
+                    roleButtonTwo.setDisable(false);
                     break;
             }
         }
