@@ -14,9 +14,13 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.CardRepository;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
@@ -220,7 +224,7 @@ public class GameServiceTest extends EventBusBasedTest {
     /**
      * Tests the onMovePlayerRequest method with a not logged-in player to take with.
      *
-     * @throws GameManagementException if there is an error in game management
+     * @throws GameException if there is an error in game management
      */
     @Test
     void testOnMovePlayerRequestWithNotLoggedInPlayerToTakeWith() throws IllegalGameStateException, GameException {
@@ -284,12 +288,10 @@ public class GameServiceTest extends EventBusBasedTest {
     /**
      * Tests the onMovePlayerRequest method when a PlayerManagementException is thrown.
      *
-     * @throws InterruptedException      if the thread is interrupted
-     * @throws IllegalGameStateException if the game is in an illegal state
-     * @throws GameException             if there is an error in the game logic
+     * @throws InterruptedException if the thread is interrupted
      */
     @Test
-    void testOnMovePlayerRequest_PlayerManagementException() throws InterruptedException, IllegalGameStateException, GameException, PlayerManagementException {
+    void testOnMovePlayerRequest_PlayerManagementException() throws InterruptedException, PlayerManagementException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
@@ -361,7 +363,7 @@ public class GameServiceTest extends EventBusBasedTest {
     /**
      * Tests setting player positioning when the lobby is not found.
      *
-     * @throws GameManagementException if there is an error in game management
+     * @throws GameException if there is an error in game management
      */
     @Test
     void testOnPositionRequest_LobbyNotFound() throws IllegalGameStateException, GameException {
@@ -380,7 +382,7 @@ public class GameServiceTest extends EventBusBasedTest {
     /**
      * Tests setting player positioning when the game is null.
      *
-     * @throws GameManagementException if there is an error in game management
+     * @throws GameException if there is an error in game management
      */
     @Test
     void testOnPositionRequest_GameIsNull() throws IllegalGameStateException, GameException {
@@ -456,7 +458,7 @@ public class GameServiceTest extends EventBusBasedTest {
     /**
      * Tests create game when the game is null.
      *
-     * @throws PlayerManagementException if there is an error in player management
+     * @throws GameInitializationException if there is an error in player management
      */
     @Test
     void testOnCreateGameRequest_GameIsNull() throws GameInitializationException {
@@ -724,5 +726,27 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, times(2)).getGame("lobbycode");
         verify(lobbyManagement, times(1)).getLobby("lobbycode");
         verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+    }
+
+    @Test
+    void testOnCardsExchangeWithDiscardPileRequest() throws GameManagementException, PlayerManagementException {
+        Map<String, ICardDTO> map = new HashMap<>();
+        IPlayer player = new Player(new User("testuser", "testpassword"));
+        ICard playerCard = new CityCard(1, "playerCard", mock(City.class));
+        ICard discardPileCard = new CityCard(2, "discardPileCard", mock(City.class));
+        List<ICard> playerCards = new ArrayList<>();
+        playerCards.add(playerCard);
+        player.setCards(playerCards);
+        map.put("testuser", CardMapper.toDTO(playerCard));
+        map.put("Discard Pile", CardMapper.toDTO(discardPileCard));
+        String lobbyId = "lobbyCode";
+        CardsExchangeWithDiscardPileRequest request = new CardsExchangeWithDiscardPileRequest(map, lobbyId);
+
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(gameManagement.getGame("lobbyCode")).thenReturn(game);
+
+        gameService.onCardsExchangeWithDiscardPileRequest(request);
+
+        verify(gameManagement).shareKnowledgeWithDiscardPile(1, 2, lobbyId, gameService);
     }
 }
