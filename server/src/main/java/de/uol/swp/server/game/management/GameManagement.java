@@ -385,7 +385,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void endTurn(String lobbyId, IUser user) throws IllegalStateException {
+    public void endTurn(String lobbyId, IUser user) throws IllegalGameStateException {
         IGame game = getGame(lobbyId);
         if (game.getCurrentPlayer()
                 .getUser()
@@ -393,7 +393,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             LOG.info("[LobbyID: {}] Ending turn for player {}", lobbyId, user.getUsername());
             game.setState(new DrawCardState());
         } else {
-            throw new IllegalStateException("Player is not allowed to end turn");
+            throw new IllegalGameStateException("Player is not allowed to end turn");
         }
     }
 

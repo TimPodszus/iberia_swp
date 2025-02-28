@@ -133,7 +133,7 @@ public class GameService {
      */
     @Subscribe
     public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
-        LOG.debug("Received ShareKnowledgeEvent: {}", event);
+        LOG.debug("Received ShareKnowledgeEvent");
         Platform.runLater(() -> {
             boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
                                                                                               .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()

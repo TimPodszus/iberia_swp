@@ -155,7 +155,7 @@ public interface IGameManagement {
      *
      * @param lobbyId the ID of the lobby in which the game is happening
      * @param user the user representing the player whose turn is to be ended
-     * @throws IllegalStateException if the turn cannot be ended due to the current game state
+     * @throws IllegalGameStateException if the turn cannot be ended due to the current game state
      */
     void endTurn(String lobbyId, IUser user) throws IllegalGameStateException;
 }
