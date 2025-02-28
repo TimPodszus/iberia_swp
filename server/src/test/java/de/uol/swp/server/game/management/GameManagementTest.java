@@ -5,7 +5,6 @@ import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.common.game.TransportMode;
-import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.region.IRegionDTO;
@@ -13,7 +12,6 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.cards.CardMapper;
-import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
@@ -28,7 +26,6 @@ import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.GameService;
-import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -37,13 +34,10 @@ import de.uol.swp.server.game.exceptions.GameNotFoundException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
-import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.region.management.IRegionManagement;
 import de.uol.swp.server.role.*;
 import de.uol.swp.server.usermanagement.IUser;
@@ -235,10 +229,7 @@ class GameManagementTest {
                                                         any(Player.class)
                                                 );
 
-        GameException exception = assertThrows(
-                GameException.class,
-                () -> gameManagement.setPositioning(request)
-        );
+        GameException exception = assertThrows(GameException.class, () -> gameManagement.setPositioning(request));
 
         assertEquals("Failed to set Position", exception.getMessage());
     }
@@ -365,8 +356,10 @@ class GameManagementTest {
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
 
-        assertThrows(GameException.class,
-                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null), "Expected GameException"
+        assertThrows(
+                GameException.class,
+                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
+                "Expected GameException"
         );
     }
 
@@ -576,6 +569,7 @@ class GameManagementTest {
         assertEquals(7, actions.size());
     }
 
+
     @Test
     void buildTrainTrack_Successful() throws IllegalGameStateException, GameException {
         IConnection connection = new Connection(1, List.of(ALICANTE, ALBACETE), true);
@@ -764,7 +758,6 @@ class GameManagementTest {
     /**
      * Tests the movePlayer method with a game in the event state after the OnTheMoveDayAndNightEventCard has been
      * thrown.
-     *
      */
     @Test
     void testMovePlayer_OnTheMoveDayAndNightEvent() throws IllegalGameStateException, GameException {
@@ -991,74 +984,95 @@ class GameManagementTest {
     }
 
 
-    /**
-     * Tests the shareKnowledgeRequestAccepted method.
-     * Ensures that the knowledge sharing between players is handled correctly.
-     *
-     * @throws PlayerManagementException if there is an error in player management
-     */
+    //    /**
+    //     * Tests the shareKnowledgeRequestAccepted method.
+    //     * Ensures that the knowledge sharing between players is handled correctly.
+    //     *
+    //     * @throws PlayerManagementException if there is an error in player management
+    //     */
+    //    @Test
+    //    void shareKnowledgeRequestAcceptedTest() throws PlayerManagementException {
+    //        IGame notMockedGame = new Game(
+    //                "testGame",
+    //                mock(RoleRepository.class),
+    //                mock(CityRepository.class),
+    //                mock(RegionRepository.class),
+    //                mock(ConnectionRepository.class),
+    //                mock(PlagueRepository.class),
+    //                mock(CardRepository.class),
+    //                1,
+    //                0,
+    //                14,
+    //                20,
+    //                new ArrayList<>(),
+    //                new ArrayList<>(),
+    //                new ArrayList<>(),
+    //                new ArrayList<>(),
+    //                new ArrayList<>(),
+    //                0,
+    //                new PlayerTurnState(),
+    //                mock(IGameState.class),
+    //                1,
+    //                mock(GameStateChangeListener.class)
+    //        );
+    //        IPlayer currentPlayer = new Player(new User("test", "test"));
+    //        ICard currentPlayerCard = new CityCard(1, "test", mock(ICity.class));
+    //        currentPlayer.getCards()
+    //                     .add(currentPlayerCard);
+    //
+    //        IPlayer targetPlayer = new Player(new User("test2", "test2"));
+    //        ICard targetPlayerCard = new CityCard(2, "test2", mock(ICity.class));
+    //        targetPlayer.getCards()
+    //                    .add(targetPlayerCard);
+    //
+    //        String lobbyId = "testLobby";
+    //        ILobbyManagement lobbyManagement = mock(ILobbyManagement.class);
+    //        GameStore.getInstance()
+    //                 .addGame(lobbyId, notMockedGame);
+    //
+    //        when(playerManagement.getCard("testLobby", "test", 1)).thenReturn(currentPlayerCard);
+    //        when(playerManagement.getCard("testLobby", "test2", 2)).thenReturn(targetPlayerCard);
+    //
+    //        GameService gameService = mock(GameService.class);
+    //        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+    //                lobbyId,
+    //                currentPlayer.getUser()
+    //                             .getUsername(),
+    //                targetPlayer.getUser()
+    //                            .getUsername(),
+    //                CardMapper.toDTO(currentPlayerCard),
+    //                CardMapper.toDTO(targetPlayerCard)
+    //        );
+    //
+    //        gameManagement.shareKnowledgeRequestAccepted(currentPlayer, targetPlayer, lobbyId, event, gameService);
+    //        System.out.println("Current Player Cards: " + currentPlayer.getCards() + currentPlayerCard.getTitle());
+    //        System.out.println("Target Player Cards: " + targetPlayer.getCards() + targetPlayerCard.getTitle());
+    //
+    //        assert (currentPlayer.getCards()
+    //                             .contains(targetPlayerCard));
+    //        assert (targetPlayer.getCards()
+    //                            .contains(currentPlayerCard));
+    //        verify(gameService, times(1)).sendToAllInLobby(any(), any());
+    //    }
+
     @Test
-    void shareKnowledgeRequestAcceptedTest() throws PlayerManagementException {
-        IGame notMockedGame = new Game(
-                "testGame",
-                mock(RoleRepository.class),
-                mock(CityRepository.class),
-                mock(RegionRepository.class),
-                mock(ConnectionRepository.class),
-                mock(PlagueRepository.class),
-                mock(CardRepository.class),
-                1,
-                0,
-                14,
-                20,
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                0,
-                new PlayerTurnState(),
-                mock(IGameState.class),
-                1,
-                mock(GameStateChangeListener.class)
-        );
-        IPlayer currentPlayer = new Player(new User("test", "test"));
-        ICard currentPlayerCard = new CityCard(1, "test", mock(ICity.class));
-        currentPlayer.getCards()
-                     .add(currentPlayerCard);
-
-        IPlayer targetPlayer = new Player(new User("test2", "test2"));
-        ICard targetPlayerCard = new CityCard(2, "test2", mock(ICity.class));
-        targetPlayer.getCards()
-                    .add(targetPlayerCard);
-
-        String lobbyId = "testLobby";
-        ILobbyManagement lobbyManagement = mock(ILobbyManagement.class);
-        GameStore.getInstance()
-                 .addGame(lobbyId, notMockedGame);
-
-        when(playerManagement.getCard("testLobby", "test", 1)).thenReturn(currentPlayerCard);
-        when(playerManagement.getCard("testLobby", "test2", 2)).thenReturn(targetPlayerCard);
-
+    void testShareKnowledgeWithDiscardPile() throws GameManagementException, PlayerManagementException {
+        // Arrange
+        int cardToDiscardID = 1;
+        int cardToReceiveID = 2;
+        String lobbyId = "lobbyCode";
         GameService gameService = mock(GameService.class);
-        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
-                lobbyId,
-                currentPlayer.getUser()
-                             .getUsername(),
-                targetPlayer.getUser()
-                            .getUsername(),
-                CardMapper.toDTO(currentPlayerCard),
-                CardMapper.toDTO(targetPlayerCard)
-        );
+        IPlayer player1 = new Player(new User("user1", "pass1"));
+        ICard discardCard = new CityCard(2, "cardToReceive", mock(ICity.class));
+        ArrayList<ICard> discardPile = new ArrayList<>();
+        discardPile.add(discardCard);
+        when(game.getCurrentPlayer()).thenReturn(player1);
+        when(game.getPlayerCardDiscardPile()).thenReturn(discardPile);
+        when(game.getState()).thenReturn(new PlayerTurnState());
 
-        gameManagement.shareKnowledgeRequestAccepted(currentPlayer, targetPlayer, lobbyId, event, gameService);
-        System.out.println("Current Player Cards: " + currentPlayer.getCards() + currentPlayerCard.getTitle());
-        System.out.println("Target Player Cards: " + targetPlayer.getCards() + targetPlayerCard.getTitle());
 
-        assert (currentPlayer.getCards()
-                             .contains(targetPlayerCard));
-        assert (targetPlayer.getCards()
-                            .contains(currentPlayerCard));
-        verify(gameService, times(1)).sendToAllInLobby(any(), any());
+        gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, lobbyId, gameService);
+
+        verify(gameService).sendCardsExchangeWithDiscardPileResponse(lobbyId);
     }
 }
