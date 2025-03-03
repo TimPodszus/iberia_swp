@@ -2,10 +2,8 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
-import de.uol.swp.client.game.objects.GameFigure;
-import de.uol.swp.client.game.objects.HospitalSymbol;
-import de.uol.swp.client.game.objects.PlagueCube;
-import de.uol.swp.client.game.objects.PlayerButton;
+import de.uol.swp.client.chat.detail.ChatDetailPresenter;
+import de.uol.swp.client.game.objects.*;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.EventCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
@@ -46,23 +44,30 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.*;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Shape;
+import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Pair;
-import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -70,7 +75,13 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -92,7 +103,6 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
 
-    @Setter
     private String lobbyId;
 
     private IUserDTO user;
@@ -149,6 +159,9 @@ public class GamePresenter extends AbstractPresenter {
     private Text infectionCardDrawPileCounter;
 
     @FXML
+    private VBox itemsVBox;
+
+    @FXML
     private HBox playerCardsHBox;
 
     @FXML
@@ -156,6 +169,9 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private HBox playerButtons;
+
+    @FXML
+    private Text remainingActionsText;
 
     @FXML
     private ToggleButton buildTrainTracksButton;
@@ -189,9 +205,24 @@ public class GamePresenter extends AbstractPresenter {
 
     private double mouseY;
 
+    private boolean dragging = false;
+
     private IGameDTO gameDTO;
 
     private boolean isDismissibleDialog;
+
+    @FXML
+    private ChatDetailPresenter chatController;
+
+    /**
+     * Sets the lobby ID for the game screen and the chat controller.
+     *
+     * @param lobbyId the lobby ID to set
+     */
+    public void setLobbyId(String lobbyId) {
+        this.lobbyId = lobbyId;
+        this.chatController.setLobbyId(lobbyId);
+    }
 
     /**
      * Initializes the game screen presenter.
@@ -226,7 +257,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     void onMousePressedEvent(MouseEvent event) {
-        if (event.getButton() == MouseButton.MIDDLE) {
+        if (event.getButton() == MouseButton.PRIMARY) {
+            dragging = true;
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         }
@@ -239,7 +271,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     void onMouseDraggedEvent(MouseEvent event) {
-        if (event.getButton() == MouseButton.MIDDLE) {
+        if (dragging) {
             double deltaX = event.getSceneX() - mouseX;
             double deltaY = event.getSceneY() - mouseY;
 
@@ -415,6 +447,7 @@ public class GamePresenter extends AbstractPresenter {
         Node source = (Node) event.getSource();
         int connectionId = Integer.parseInt(source.getId()
                                                   .replaceAll("\\D+", ""));
+        LOG.debug("Connection {} clicked", connectionId);
 
         if (!source.getStyleClass()
                    .contains(CONNECTION_HIGHLIGHTED_CLASS)) {
@@ -448,6 +481,8 @@ public class GamePresenter extends AbstractPresenter {
         Node source = (Node) event.getSource();
         regionId = Integer.parseInt(source.getId()
                                           .replaceAll("\\D+", ""));
+        LOG.debug("Region {} clicked", regionId);
+
         if (gameDTO.getState()
                    .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
                                                                  .contains(REGION_HIGHLIGHTED_CLASS)) {
@@ -486,6 +521,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onPlayerCardPileClickedEvent(MouseEvent event) {
+        LOG.debug("Player card pile clicked");
         gameService.drawPlayerCard(lobbyId);
     }
 
@@ -497,6 +533,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onInfectionCardDrawPileClickedEvent(MouseEvent event) {
+        LOG.debug("Infection card draw pile clicked");
         gameService.drawInfectionCard(lobbyId);
     }
 
@@ -673,6 +710,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onOptionsClickedEvent(ActionEvent event) {
+        LOG.debug("Options button clicked");
         eventBus.post(new ShowOptionsViewEvent());
     }
 
@@ -950,37 +988,13 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Adds a player hand card to the player's hand.
-     *
-     * @param card the card to be added to the player's hand
-     */
-    public void addPlayerHandCard(AbstractCard card) {
-        Pane cardSlot = new Pane();
-        cardSlot.getStyleClass()
-                .add("pile");
-        cardSlot.getChildren()
-                .add(card);
-        HBox.setMargin(cardSlot, new Insets(5.0, 5.0, 5.0, 5.0));
-
-        playerCardsHBox.getChildren()
-                       .add(
-                               playerCardsHBox.getChildren()
-                                              .size() - 1, cardSlot
-                       );
-    }
-
-    /**
      * Removes all player hand cards except the role card.
      * Iterates through the children of `playerCardsHBox` and removes nodes that are instances of `Pane`,
      * have the style class "pile", and do not have the ID "roleCard".
      */
     public void removePlayerHandCards() {
         playerCardsHBox.getChildren()
-                       .removeIf(node -> node instanceof Pane && node.getStyleClass()
-                                                                     .contains("pile") && !Objects.equals(
-                               node.getId(),
-                               "roleCard"
-                       ));
+                       .removeIf(AbstractCard.class::isInstance);
     }
 
     /**
@@ -1081,16 +1095,17 @@ public class GamePresenter extends AbstractPresenter {
         updatePlayerCardDiscardPile(gameDTO.getPlayerCardDiscardPile());
         updatePlayerCardDrawPile(gameDTO.getPlayerCardDrawPile());
         updatePlayerHandCards();
+        updateInfectionCounter(gameDTO.getInfectionCounter());
+        updateEscalationStage(gameDTO.getEscalationStage());
+        updateHospitals(gameDTO.getCities());
+        updateResearchedPlagues(gameDTO.getPlagues());
+        updateItems(gameDTO);
+        updateRemainingActions(gameDTO.getRemainingActions());
 
         if (!gameDTO.getState()
                     .equals(StateType.START_STATE)) {
             updatePlayersInCities(gameDTO.getPlayers());
         }
-
-        updateInfectionCounter(gameDTO.getInfectionCounter());
-        updateEscalationStage(gameDTO.getEscalationStage());
-        updateHospitals(gameDTO.getCities());
-        updateResearchedPlagues(gameDTO.getPlagues());
 
         disableActionButtons();
         if (gameDTO.getState()
@@ -1122,12 +1137,14 @@ public class GamePresenter extends AbstractPresenter {
             if (abstractCard instanceof EventCard eventCard && (state.equals(StateType.PLAYER_TURN_STATE) || state.equals(
                     StateType.DRAW_CARD_STATE) || state.equals(StateType.INFECTION_STATE))) {
                 abstractCard.setOnMouseClicked(event -> {
+                    LOG.debug("Event card {} clicked", eventCard.getCardId());
                     if (event.getButton() == MouseButton.PRIMARY) {
                         gameService.sendPlayCardRequest(lobbyId, eventCard.getCardId());
                     }
                 });
             }
-            addPlayerHandCard(abstractCard);
+            playerCardsHBox.getChildren()
+                           .add(abstractCard);
         }
     }
 
@@ -1349,6 +1366,59 @@ public class GamePresenter extends AbstractPresenter {
             gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage)
                       .getStyleClass()
                       .add("escalation-stage-active");
+        }
+    }
+
+    /**
+     * Updates the items displayed in the items VBox.
+     * Removes existing ItemCounter instances and adds new ones based on the current game state.
+     *
+     * @param game the game data transfer object containing the latest game state
+     */
+    private void updateItems(IGameDTO game) {
+        this.itemsVBox.getChildren()
+                      .removeIf(ItemCounter.class::isInstance);
+        for (IPlagueDTO plague : game.getPlagues()) {
+            switch (plague.getName()) {
+                case CHOLERA -> this.itemsVBox.getChildren()
+                                              .add(new ItemCounter(
+                                                      plague.getCubesRemaining(),
+                                                      ImageEnum.BLUE_PLAGUE_CUBE
+                                              ));
+                case TYPHUS -> this.itemsVBox.getChildren()
+                                             .add(new ItemCounter(
+                                                     plague.getCubesRemaining(),
+                                                     ImageEnum.RED_PLAGUE_CUBE
+                                             ));
+                case YELLOW_FEVER -> this.itemsVBox.getChildren()
+                                                   .add(new ItemCounter(
+                                                           plague.getCubesRemaining(),
+                                                           ImageEnum.YELLOW_PLAGUE_CUBE
+                                                   ));
+                case MALARIA -> this.itemsVBox.getChildren()
+                                              .add(new ItemCounter(
+                                                      plague.getCubesRemaining(),
+                                                      ImageEnum.BLACK_PLAGUE_CUBE
+                                              ));
+                default -> throw new IllegalStateException("Unexpected value: " + plague.getName());
+            }
+        }
+        this.itemsVBox.getChildren()
+                      .add(new ItemCounter(game.getWaterTreatmentsLeft(), ImageEnum.WATER_TREATMENT_MARKER));
+        this.itemsVBox.getChildren()
+                      .add(new ItemCounter(game.getTracksLeft(), ImageEnum.TRAIN_TRACK));
+    }
+
+    /**
+     * Updates the remaining actions text for the current player.
+     *
+     * @param remainingActions the number of actions remaining for the current player
+     */
+    private void updateRemainingActions(int remainingActions) {
+        if (remainingActions == 0) {
+            this.remainingActionsText.setText("Du kannst gerade keine Aktionen ausführen");
+        } else {
+            this.remainingActionsText.setText(Integer.toString(remainingActions));
         }
     }
 

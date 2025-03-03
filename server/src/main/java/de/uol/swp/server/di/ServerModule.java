@@ -3,6 +3,10 @@ package de.uol.swp.server.di;
 import com.google.inject.AbstractModule;
 import de.uol.swp.server.cards.management.CardManagement;
 import de.uol.swp.server.cards.management.ICardManagement;
+import de.uol.swp.server.chat.management.ChatManagement;
+import de.uol.swp.server.chat.management.IChatManagement;
+import de.uol.swp.server.chat.store.ChatStore;
+import de.uol.swp.server.chat.store.IChatStore;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.management.ConnectionManagement;
@@ -38,6 +42,8 @@ public class ServerModule extends AbstractModule {
     private final EventBus bus = EventBus.getDefault();
     private final UserStore store = new DatabaseBasedUserStore();
 
+    private final IChatStore chatStore = new ChatStore();
+
 
     @Override
     protected void configure() {
@@ -55,5 +61,7 @@ public class ServerModule extends AbstractModule {
         bind(ServerUserService.class).to(UserManagement.class);
         bind(ICardManagement.class).to(CardManagement.class);
         bind(IPlagueManagement.class).to(PlagueManagement.class);
+        bind(IChatManagement.class).to(ChatManagement.class);
+        bind(IChatStore.class).toInstance(chatStore);
     }
 }

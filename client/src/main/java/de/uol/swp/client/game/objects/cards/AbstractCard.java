@@ -40,6 +40,7 @@ public class AbstractCard extends Pane {
             .add(Objects.requireNonNull(getClass().getResource(STYLESHEET_PATH))
                         .toExternalForm());
         this.unselect();
+        this.setMouseTransparent(false);
     }
 
     /**
