@@ -73,4 +73,10 @@ public interface ICity {
      * @param infections the list of infections to set
      */
     void setInfections(List<IInfection> infections);
+
+    boolean hasPlague(PlagueName plagueToTreat);
+
+    int getPlagueCubes(PlagueName plagueToTreat);
+
+    void removePlagueCubes(PlagueName plagueToTreat, int count);
 }
