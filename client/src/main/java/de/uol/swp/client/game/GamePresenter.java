@@ -2,6 +2,7 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
+import de.uol.swp.client.chat.detail.ChatDetailPresenter;
 import de.uol.swp.client.game.objects.*;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.EventCard;
@@ -45,23 +46,30 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.*;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Shape;
+import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Pair;
-import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
@@ -69,7 +77,13 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -91,7 +105,6 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
 
-    @Setter
     private String lobbyId;
 
     private IUserDTO user;
@@ -196,9 +209,24 @@ public class GamePresenter extends AbstractPresenter {
 
     private double mouseY;
 
+    private boolean dragging = false;
+
     private IGameDTO gameDTO;
 
     private boolean isDismissibleDialog;
+
+    @FXML
+    private ChatDetailPresenter chatController;
+
+    /**
+     * Sets the lobby ID for the game screen and the chat controller.
+     *
+     * @param lobbyId the lobby ID to set
+     */
+    public void setLobbyId(String lobbyId) {
+        this.lobbyId = lobbyId;
+        this.chatController.setLobbyId(lobbyId);
+    }
 
     /**
      * Initializes the game screen presenter.
@@ -233,7 +261,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     void onMousePressedEvent(MouseEvent event) {
-        if (event.getButton() == MouseButton.MIDDLE) {
+        if (event.getButton() == MouseButton.PRIMARY) {
+            dragging = true;
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         }
@@ -246,7 +275,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     void onMouseDraggedEvent(MouseEvent event) {
-        if (event.getButton() == MouseButton.MIDDLE) {
+        if (dragging) {
             double deltaX = event.getSceneX() - mouseX;
             double deltaY = event.getSceneY() - mouseY;
 

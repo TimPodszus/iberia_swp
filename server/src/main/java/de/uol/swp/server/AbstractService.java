@@ -7,8 +7,11 @@ import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
 import de.uol.swp.common.message.ServerMessage;
 import de.uol.swp.common.user.Session;
+import de.uol.swp.server.chat.event.ServerMessageEvent;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.usermanagement.AuthenticationService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.*;
@@ -38,6 +41,9 @@ public class AbstractService {
      */
     @Inject
     protected AuthenticationService authenticationService;
+
+    private static final Logger LOG = LogManager.getLogger(AbstractService.class);
+
 
     /**
      * Constructor
@@ -88,6 +94,9 @@ public class AbstractService {
      */
     public void sendToAllInLobby(ILobby lobby, AbstractServerMessage message) {
         List<Session> sessions = authenticationService.getSessions(new HashSet<>(lobby.getUsers()));
+
+        LOG.info("Sending message {} to {} in Lobby", sessions.size(), lobby.getLobbyId());
+
         message.setReceiver(sessions);
         post(message);
     }
@@ -109,5 +118,16 @@ public class AbstractService {
         request.getMessageContext()
                .ifPresent(response::setMessageContext);
         post(response);
+    }
+
+    /**
+     * Sends a message to a specific user.
+     *
+     * @param lobbyId the lobby ID
+     * @param message the message to send
+     */
+    protected void sendServerMessageEvent(String lobbyId, String message) {
+        ServerMessageEvent serverMessage = new ServerMessageEvent(lobbyId, message);
+        post(serverMessage);
     }
 }
