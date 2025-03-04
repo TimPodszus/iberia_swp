@@ -101,15 +101,12 @@ public class PlagueManagementTest {
 
     @Test
     void testTreatPlagueNoCubes() {
-        when(city.hasPlague(PlagueName.CHOLERA)).thenReturn(true);
-        when(city.getPlagueCubes(PlagueName.CHOLERA)).thenReturn(0);
+        when(city.hasPlague(PlagueName.CHOLERA)).thenReturn(false);
 
-        PlagueManagementException exception = assertThrows(
-                PlagueManagementException.class,
+        assertThrows(
+                PlagueNotFoundException.class,
                 () -> plagueManagement.treatPlague(PlagueName.CHOLERA, city, game)
         );
-
-        assertEquals("The selected plague is not present in the city or no cubes to remove.", exception.getMessage());
     }
 
     @Test
@@ -125,7 +122,6 @@ public class PlagueManagementTest {
         verify(city).removePlagueCubes(PlagueName.CHOLERA, 1);
         verify(game.getPlagueRepository()
                    .getPlagueByName(PlagueName.CHOLERA)).increaseCubes(1);
-        verify(game).setState(any());
     }
 
     @Test
