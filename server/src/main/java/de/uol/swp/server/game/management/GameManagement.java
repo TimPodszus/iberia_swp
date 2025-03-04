@@ -80,6 +80,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @return The newly created game
      */
     public IGame createAndInitializeGame(CreateGameRequest request) throws GameInitializationException {
+        LOG.debug("[LobbyID: {}] Creating and initializing game", request.getLobbyId());
         IGame game = new Game(request.getDifficulty(), request.getLobbyId());
         GameStore.getInstance()
                  .addGame(request.getLobbyId(), game);
@@ -171,11 +172,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private void assignRoles(IGame game) {
         List<Role> allRoles = RoleRepository.getAllRoles();
         Collections.shuffle(allRoles);
-        for (int i = 0; i < game.getPlayers()
-                                .size(); i++) {
-            game.getPlayers()
-                .get(i)
-                .setRole(allRoles.get(i));
+        for (IPlayer player : game.getPlayers()) {
+            player.setRole(allRoles.remove(0));
         }
     }
 
@@ -188,9 +186,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     private void initiateInfections(IGame game) {
         int infectionAmount = 3;
-        for (int i = 1; i <= 9; i++) {
+        for (int city = 1; city <= 9; city++) {
             cityManagement.infectCityWithOwnPlague(game, drawInfectionCard(game), infectionAmount);
-            if (i % 3 == 0) {
+            if (city % 3 == 0) {
                 infectionAmount--;
             }
         }
@@ -205,29 +203,23 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      */
     public IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
         IGame game = getGame(request.getLobbyId());
-        IGameState gameState = game.getState();
 
-        if (!(gameState instanceof WaitForPositioning)) {
+        if (!(game.getState() instanceof WaitForPositioning waitForPositioningState)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows setting positioning", game.getGameId());
             throw new IllegalGameStateException("Game is not in a state that allows setting positioning");
         }
 
         List<IPlayer> players = game.getPlayers();
-        IPlayer requestPlayer = null;
-        for (IPlayer player : players) {
-            if (player.getUser()
-                      .getUsername()
-                      .equals(request.getSession()
-                                     .orElseThrow(() -> new SessionNotFoundException("Session not found"))
-                                     .getUser()
-                                     .getUsername())) {
-                requestPlayer = player;
-                break;
-            }
-        }
+        IUser user = UserMapper.toUser(request.getSession()
+                                              .orElseThrow(SessionNotFoundException::new)
+                                              .getUser());
+        IPlayer requestPlayer = players.stream()
+                               .filter(player -> player.getUser()
+                                                       .equals(user))
+                               .findFirst()
+                               .orElseThrow(() -> new GameException("Player not found"));
 
         try {
-            assert requestPlayer != null;
             if (requestPlayer.getCurrentPosition() != null) {
                 return game;
             }
@@ -237,11 +229,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getCityNameById(request.getCityId()),
                     requestPlayer
             );
-            ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
+            waitForPositioningState.setPositionedPlayersCount(waitForPositioningState.getPositionedPlayersCount() + 1);
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
         }
-        if (((WaitForPositioning) gameState).getPositionedPlayersCount() == game.getPlayers()
+        if (waitForPositioningState.getPositionedPlayersCount() == game.getPlayers()
                                                                                 .size()) {
             game.setState(new PlayerTurnState());
             game.setCurrentPlayerIndex(0);

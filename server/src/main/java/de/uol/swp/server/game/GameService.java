@@ -106,7 +106,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
     @Subscribe
     public void onCreateGameRequest(CreateGameRequest request) {
         LOG.debug("Got CreateGameRequest for lobby {}", request.getLobbyId());
-        IGame game = null;
+        IGame game;
         try {
             game = gameManagement.createAndInitializeGame(request);
         } catch (GameInitializationException e) {
@@ -115,12 +115,10 @@ public class GameService extends AbstractService implements GameStateChangeListe
             return;
         }
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        if (game != null) {
-            game.setGameStateChangeListener(this);
-            LOG.debug("Game created for lobby {}", request.getLobbyId());
-            post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
-            sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-        }
+        game.setGameStateChangeListener(this);
+        LOG.debug("Game created for lobby {}", request.getLobbyId());
+        post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
+        sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
     /**
@@ -231,19 +229,21 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         try {
             ICard card = playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId());
-            gameManagement.movePlayer(UserMapper.toUser(user), request.getLobbyId(), destination, card
-            );
+            gameManagement.movePlayer(UserMapper.toUser(user), request.getLobbyId(), destination, card);
         } catch (IllegalGameStateException e) {
             LOG.error("[LobbyId: {}] Could not move player. Game", request.getLobbyId());
             sendStatusResponse(request, false, "Spiel ist in einem ungültigen Zustand");
+
             return;
         } catch (PlayerManagementException e) {
             LOG.error("[LobbyId: {}] Could not get card to discard for moving by boat", request.getLobbyId());
             sendStatusResponse(request, false, "Karte zum abwerfen konnte nicht gefunden werden");
+
             return;
         } catch (GameException e) {
             LOG.error("[LobbyId: {}] Could not move player", request.getLobbyId());
             sendStatusResponse(request, false, "Spieler konnte nicht bewegt werden");
+
             return;
         }
 
