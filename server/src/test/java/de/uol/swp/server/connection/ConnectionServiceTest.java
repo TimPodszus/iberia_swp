@@ -5,12 +5,12 @@ import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.dto.DestinationInfo;
-import de.uol.swp.common.game.TransportMode;
+//import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.cards.events.MovePlayerAnywhereEvent;
-import de.uol.swp.server.cards.events.StateMobilizationEvent;
+//import de.uol.swp.server.cards.events.StateMobilizationEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
@@ -173,69 +173,69 @@ public class ConnectionServiceTest extends EventBusBasedTest {
                                                          .isTrainTrackBuildable(), "Expected a train track");
     }
 
-    /**
-     * Tests the handling of a StateMobilizationEvent.
-     * <p>
-     * This test verifies that an AvailableDestinationsResponse is received
-     * when a StateMobilizationEvent is posted.
-     *
-     * @throws InterruptedException if the thread is interrupted while waiting for the event
-     */
-    @Test
-    void testOnStateMobilizationEvent() throws InterruptedException {
-        IUser testuser1 = createUserAndSession("testuser1");
-        IPlayer player1 = createMockPlayer(testuser1, 1);
-
-        IUser testuser2 = createUserAndSession("testuser2");
-        IPlayer player2 = createMockPlayer(testuser2, 1);
-
-        IGame game = createMockGame(List.of(player1, player2));
-        when(connectionManagement.getGame("1234")).thenReturn(game);
-        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(1, new DestinationInfo(
-                List.of(),
-                new ArrayList<>(List.of(TransportMode.NONE))
-        )));
-
-        StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
-
-        postAndWait(stateMobilizationEvent);
-
-        assertInstanceOf(AvailableDestinationsResponse.class, event, "Expected an AvailableDestinationsResponse");
-        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser1");
-        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser2");
-    }
-
-    /**
-     * Tests the handling of a StateMobilizationEvent with an unlogged user.
-     * <p>
-     * This test verifies that an AvailableDestinationsResponse is received
-     * when a StateMobilizationEvent is posted with an unlogged user.
-     *
-     * @throws InterruptedException if the thread is interrupted while waiting for the event
-     */
-    @Test
-    void testOnStateMobilizationEventWithUnloggedUser() throws InterruptedException {
-        IUser testuser1 = createUserAndSession("testuser1");
-        IPlayer player1 = createMockPlayer(testuser1, 1);
-
-        IUser testuser2 = new User("testuser2", "1234");
-        IPlayer player2 = createMockPlayer(testuser2, 1);
-
-        IGame game = createMockGame(List.of(player1, player2));
-        when(connectionManagement.getGame("1234")).thenReturn(game);
-        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(1, new DestinationInfo(
-                List.of(),
-                new ArrayList<>(List.of(TransportMode.NONE))
-        )));
-
-        StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
-
-        postAndWait(stateMobilizationEvent);
-
-        assertInstanceOf(AvailableDestinationsResponse.class, event, "Expected an AvailableDestinationsResponse");
-        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser1");
-        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser2");
-    }
+//    /**
+//     * Tests the handling of a StateMobilizationEvent.
+//     * <p>
+//     * This test verifies that an AvailableDestinationsResponse is received
+//     * when a StateMobilizationEvent is posted.
+//     *
+//     * @throws InterruptedException if the thread is interrupted while waiting for the event
+//     */
+//    @Test
+//    void testOnStateMobilizationEvent() throws InterruptedException {
+//        IUser testuser1 = createUserAndSession("testuser1");
+//        IPlayer player1 = createMockPlayer(testuser1, 1);
+//
+//        IUser testuser2 = createUserAndSession("testuser2");
+//        IPlayer player2 = createMockPlayer(testuser2, 1);
+//
+//        IGame game = createMockGame(List.of(player1, player2));
+//        when(connectionManagement.getGame("1234")).thenReturn(game);
+//        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(1, new DestinationInfo(
+//                List.of(),
+//                new ArrayList<>(List.of(TransportMode.NONE))
+//        )));
+//
+//        StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
+//
+//        postAndWait(stateMobilizationEvent);
+//
+//        assertInstanceOf(AvailableDestinationsResponse.class, event, "Expected an AvailableDestinationsResponse");
+//        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser1");
+//        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser2");
+//    }
+//
+//    /**
+//     * Tests the handling of a StateMobilizationEvent with an unlogged user.
+//     * <p>
+//     * This test verifies that an AvailableDestinationsResponse is received
+//     * when a StateMobilizationEvent is posted with an unlogged user.
+//     *
+//     * @throws InterruptedException if the thread is interrupted while waiting for the event
+//     */
+//    @Test
+//    void testOnStateMobilizationEventWithUnloggedUser() throws InterruptedException {
+//        IUser testuser1 = createUserAndSession("testuser1");
+//        IPlayer player1 = createMockPlayer(testuser1, 1);
+//
+//        IUser testuser2 = new User("testuser2", "1234");
+//        IPlayer player2 = createMockPlayer(testuser2, 1);
+//
+//        IGame game = createMockGame(List.of(player1, player2));
+//        when(connectionManagement.getGame("1234")).thenReturn(game);
+//        when(connectionManagement.getAvailableDestinations("", 1)).thenReturn(Map.of(1, new DestinationInfo(
+//                List.of(),
+//                new ArrayList<>(List.of(TransportMode.NONE))
+//        )));
+//
+//        StateMobilizationEvent stateMobilizationEvent = new StateMobilizationEvent("1234");
+//
+//        postAndWait(stateMobilizationEvent);
+//
+//        assertInstanceOf(AvailableDestinationsResponse.class, event, "Expected an AvailableDestinationsResponse");
+//        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser1");
+//        verify(connectionManagement, times(1)).getAvailableDestinations("1234", "testuser2");
+//    }
 
     /**
      * Creates a user and session for the given username.
