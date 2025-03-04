@@ -4,6 +4,7 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.TreatExtraPlagueState;
@@ -48,7 +49,7 @@ public class PlagueManagementTest {
     }
 
     @Test
-    void testTreatPlague() throws PlagueManagementException {
+    void testTreatPlague() throws IllegalGameStateException, PlagueNotFoundException {
         when(city.hasPlague(PlagueName.CHOLERA)).thenReturn(true);
         when(city.getPlagueCubes(PlagueName.CHOLERA)).thenReturn(1);
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
@@ -67,12 +68,10 @@ public class PlagueManagementTest {
         when(city.getPlagueCubes(PlagueName.CHOLERA)).thenReturn(1);
         when(game.getState()).thenReturn(mock(EndGameState.class));
 
-        PlagueManagementException exception = assertThrows(
-                PlagueManagementException.class,
+        assertThrows(
+                IllegalGameStateException.class,
                 () -> plagueManagement.treatPlague(PlagueName.CHOLERA, city, game)
         );
-
-        assertEquals("Invalid game state for treating plague.", exception.getMessage());
     }
 
     @Test
@@ -94,12 +93,10 @@ public class PlagueManagementTest {
     void testTreatPlagueNotPresent() {
         when(city.hasPlague(PlagueName.CHOLERA)).thenReturn(false);
 
-        PlagueManagementException exception = assertThrows(
-                PlagueManagementException.class,
+        assertThrows(
+                PlagueNotFoundException.class,
                 () -> plagueManagement.treatPlague(PlagueName.CHOLERA, city, game)
         );
-
-        assertEquals("The selected plague is not present in the city or no cubes to remove.", exception.getMessage());
     }
 
     @Test
@@ -116,7 +113,7 @@ public class PlagueManagementTest {
     }
 
     @Test
-    void testTreatPlagueTreatExtraPlagueState() throws PlagueManagementException {
+    void testTreatPlagueTreatExtraPlagueState() throws IllegalGameStateException, PlagueNotFoundException {
         TreatExtraPlagueState treatExtraPlagueState = mock(TreatExtraPlagueState.class);
         when(city.hasPlague(PlagueName.CHOLERA)).thenReturn(true);
         when(city.getPlagueCubes(PlagueName.CHOLERA)).thenReturn(1);

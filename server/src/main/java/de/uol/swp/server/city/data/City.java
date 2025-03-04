@@ -114,7 +114,7 @@ public class City implements ICity {
     public boolean hasPlague(PlagueName plagueName) {
         boolean hasPlague = false;
         for (IInfection infection : infections) {
-            hasPlague = infection.getPlagueName().equals(plagueName);
+            hasPlague = infection.getPlagueName().equals(plagueName) && infection.getSeverity() > 0;
             if(hasPlague) {
                 break;
             }

@@ -1,10 +1,10 @@
 package de.uol.swp.server.plague;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.plague.PlagueResearchedMessage;
@@ -18,6 +18,8 @@ import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.TreatExtraPlagueState;
 import de.uol.swp.server.infection.InfectionMapper;
 import de.uol.swp.server.lobby.data.ILobby;
@@ -25,6 +27,7 @@ import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
+import de.uol.swp.server.plague.management.PlagueNotFoundException;
 import de.uol.swp.server.role.CountryDoctor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -124,9 +127,7 @@ public class PlagueService extends AbstractService {
      * @throws PlagueManagementException if there is an issue treating the plague.
      */
     @Subscribe
-    public void onTreatPlagueRequest(
-            TreatPlagueRequest request
-    ) throws PlagueManagementException {
+    public void onTreatPlagueRequest(TreatPlagueRequest request) {
         AbstractResponseMessage response;
         LOG.debug("Received TreatPlagueRequest for lobbyId: {}, cityId: {}, plagueName: {}",
                 request.getLobbyId(),
@@ -138,28 +139,43 @@ public class PlagueService extends AbstractService {
                          .getCity(request.getCityId());
 
         LOG.debug("Removing one plague cube of type {} from city {}", request.getPlagueName(), city.getName());
-        plagueManagement.treatPlague(request.getPlagueName(), city, game);
+        try {
+            plagueManagement.treatPlague(request.getPlagueName(), city, game);
+        } catch (IllegalGameStateException e) {
+            LOG.error("Game is in an illegal state for treating plague");
+            sendStatusResponse(request, false, "In dem Zustand des Spiels kann die Seuche nicht behandelt werden.");
+
+            return;
+        } catch (PlagueNotFoundException e) {
+            LOG.error("Plague {} not found", request.getPlagueName());
+            sendStatusResponse(request, false, "Die Seuche wurde nicht gefunden.");
+
+            return;
+        }
+
+        if (game.getCurrentPlayer()
+                .getRole() instanceof CountryDoctor && (game.getState() instanceof PlayerTurnState)) {
+            List<ICityDTO> citiesNearBy = CityMapper.toDTOList(plagueManagement.getCitiesNearBy(game, city));
+            if (!citiesNearBy.isEmpty()) {
+                game.setState(new TreatExtraPlagueState());
+
+                response = new TreatPlagueResponse(request.getLobbyId(), true, citiesNearBy, true);
+                request.getSession()
+                       .ifPresent(response::setSession);
+                request.getMessageContext()
+                       .ifPresent(response::setMessageContext);
+                post(response);
+
+                return;
+            }
+        } else {
+            if (game.getState() instanceof TreatExtraPlagueState) {
+                game.setState(game.getPreviousState());
+            }
+        }
 
         IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
-
-        if (game.getCurrentPlayer()
-                .getRole() instanceof CountryDoctor && !(game.getPreviousState() instanceof TreatExtraPlagueState)) {
-            game.setState(new TreatExtraPlagueState());
-            response = new TreatPlagueResponse(request.getLobbyId(),
-                    true,
-                    CityMapper.toDTOList(plagueManagement.getCitiesNearBy(game, city)),
-                    true
-            );
-        } else {
-            game.setState(game.getPreviousState());
-            response = new StatusResponse(request.getLobbyId(), true, "Plague treated successfully");
-        }
-        request.getSession()
-               .ifPresent(response::setSession);
-        request.getMessageContext()
-               .ifPresent(response::setMessageContext);
-        post(response);
     }
 }

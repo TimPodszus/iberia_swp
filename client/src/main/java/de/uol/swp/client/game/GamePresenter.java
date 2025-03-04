@@ -741,7 +741,6 @@ public class GamePresenter extends AbstractPresenter {
         buildHospitalButton.setToggleGroup(toggleGroup);
         researchPlagueButton.setToggleGroup(toggleGroup);
         treatWaterButton.setToggleGroup(toggleGroup);
-        treatInfectionButton.setToggleGroup(toggleGroup);
 
         toggleGroup.selectedToggleProperty()
                    .addListener((observable, oldToggle, newToggle) -> {
@@ -817,28 +816,30 @@ public class GamePresenter extends AbstractPresenter {
             }
         }
 
-        PlagueCube plagueCube = new PlagueCube(plagueName);
+        if (cubes > 0) {
+            PlagueCube plagueCube = new PlagueCube(plagueName);
 
-        HBox.setMargin(plagueCube, new Insets(1.0, 1.0, 1.0, 1.0));
+            HBox.setMargin(plagueCube, new Insets(1.0, 1.0, 1.0, 1.0));
 
-        Text text = new Text(String.valueOf(cubes));
-        text.setFont(new Font(8.0));
-        text.setStrokeType(StrokeType.OUTSIDE);
-        text.setStrokeWidth(0.0);
+            Text text = new Text(String.valueOf(cubes));
+            text.setFont(new Font(8.0));
+            text.setStrokeType(StrokeType.OUTSIDE);
+            text.setStrokeWidth(0.0);
 
-        plagueHBox.getChildren()
-                  .addAll(plagueCube, text);
-        plagueHBox.setUserData(plagueName);
-        if (cubes == 3) {
-            plagueHBox.getStyleClass()
-                      .add("plague-cubes-display-warning");
-        } else {
-            plagueHBox.getStyleClass()
-                      .add("plague-cubes-display");
+            plagueHBox.getChildren()
+                      .addAll(plagueCube, text);
+            plagueHBox.setUserData(plagueName);
+            if (cubes == 3) {
+                plagueHBox.getStyleClass()
+                          .add("plague-cubes-display-warning");
+            } else {
+                plagueHBox.getStyleClass()
+                          .add("plague-cubes-display");
+            }
+
+            plagueDisplayVBox.getChildren()
+                             .add(plagueHBox);
         }
-
-        plagueDisplayVBox.getChildren()
-                         .add(plagueHBox);
     }
 
     /**
@@ -1147,9 +1148,7 @@ public class GamePresenter extends AbstractPresenter {
         for (IInfectionDTO infection : infections) {
             PlagueName plagueName = infection.getPlagueName();
             int severity = infection.getSeverity();
-            if (severity != 0) {
-                setPlagueCubesToCity(city.getId(), plagueName, severity);
-            }
+            setPlagueCubesToCity(city.getId(), plagueName, severity);
         }
     }
 
@@ -1782,7 +1781,6 @@ public class GamePresenter extends AbstractPresenter {
 
                 treatInfectionButton.setSelected(false);
             });
-
         });
     }
 

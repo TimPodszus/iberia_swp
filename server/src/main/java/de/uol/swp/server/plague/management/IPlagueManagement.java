@@ -3,6 +3,7 @@ package de.uol.swp.server.plague.management;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.infection.data.IInfection;
 
 import java.util.List;
@@ -23,9 +24,10 @@ public interface IPlagueManagement {
      * @param plagueToTreat the plague to be treated
      * @param city          the city where the plague should be treated
      * @param game          the current game instance
-     * @throws PlagueManagementException if the plague cannot be treated due to game conditions
+     * @throws PlagueNotFoundException if the plague cannot be treated due to game conditions
+     * @throws IllegalGameStateException if the game is in an illegal state
      */
-    void treatPlague(PlagueName plagueToTreat, ICity city, IGame game) throws PlagueManagementException;
+    void treatPlague(PlagueName plagueToTreat, ICity city, IGame game) throws IllegalGameStateException, PlagueNotFoundException;
 
     /**
      * Retrieves the game instance associated with the given lobby ID.

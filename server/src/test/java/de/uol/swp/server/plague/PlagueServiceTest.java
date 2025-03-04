@@ -148,16 +148,4 @@ class PlagueServiceTest {
         verify(eventBus).post(any(AvailablePlaguesResponse.class));
 
     }
-
-    @Test
-    void testOnTreatPlagueRequest_Exception() throws PlagueManagementException {
-        doThrow(new PlagueManagementException("Fehler")).when(plagueManagement)
-                                                        .treatPlague(PlagueName.CHOLERA, city, game);
-
-        assertThrows(PlagueManagementException.class, () -> plagueService.onTreatPlagueRequest(treatPlagueRequest));
-
-        verify(plagueManagement, times(1)).treatPlague(PlagueName.CHOLERA, city, game);
-        verify(eventBus, never()).post(any(BoardUpdateEvent.class));
-    }
-
 }

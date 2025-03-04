@@ -6,6 +6,7 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.TreatExtraPlagueState;
@@ -93,12 +94,12 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     }
 
     @Override
-    public void treatPlague(PlagueName plagueToTreat, ICity city, IGame game) throws PlagueManagementException {
+    public void treatPlague(PlagueName plagueToTreat, ICity city, IGame game) throws IllegalGameStateException, PlagueNotFoundException {
         if (plagueToTreat == null || city == null) {
             throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");
         }
-        if (!city.hasPlague(plagueToTreat) || city.getPlagueCubes(plagueToTreat) == 0) {
-            throw new PlagueManagementException("The selected plague is not present in the city or no cubes to remove.");
+        if (!city.hasPlague(plagueToTreat)) {
+            throw new PlagueNotFoundException("The selected plague is not present in the city or no cubes to remove.");
         }
 
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
@@ -112,9 +113,8 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
             game.getPlagueRepository()
                 .getPlagueByName(plagueToTreat)
                 .increaseCubes(1);
-            game.setState(game.getPreviousState());
         } else {
-            throw new PlagueManagementException("Invalid game state for treating plague.");
+            throw new IllegalGameStateException("Invalid game state for treating plague.");
         }
     }
 

@@ -112,7 +112,7 @@ public class GameDTOTest {
     void testEqualsWithOtherClass() {
         IGameDTO gameDTO = createTestGameDTO("testGameEqualsWithOtherClass");
 
-        assertNotEquals(new Object(), gameDTO);
+        assertNotEquals(gameDTO, new Object());
     }
 
     @Test
