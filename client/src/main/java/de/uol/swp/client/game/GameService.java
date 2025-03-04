@@ -8,9 +8,12 @@ import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.city.request.BuildHospitalRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
+import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
+import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
+import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
@@ -355,6 +358,27 @@ public class GameService {
      */
     public void sendBuildHospitalRequest(String lobbyId, int cityId) {
         eventBus.post(new BuildHospitalRequest(lobbyId, cityId));
+    }
+
+    /**
+     * Sends a request to retrieve the list of available plagues in a specified city.
+     *
+     * @param lobbyID The unique identifier of the game lobby.
+     * @param cityID  The ID of the city for which available plagues should be fetched.
+     */
+    public void sendAvailablePlaguesRequest(String lobbyID, int cityID) {
+        eventBus.post(new AvailablePlaguesRequest(lobbyID, cityID));
+    }
+
+    /**
+     * Sends a request to treat a specific plague in a given city.
+     *
+     * @param lobbyID        The unique identifier of the game lobby.
+     * @param cityID         The ID of the city where the plague treatment is performed.
+     * @param selectedPlague The plague that should be treated.
+     */
+    public void sendTreatPlagueRequest(String lobbyID, int cityID, PlagueName selectedPlague) {
+        eventBus.post(new TreatPlagueRequest(lobbyID, cityID, selectedPlague));
     }
 
     public void politicianActionTradeWithDiscardPile(IGameDTO gameDTO, String lobbyId) {

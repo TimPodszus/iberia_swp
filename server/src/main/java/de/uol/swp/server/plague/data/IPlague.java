@@ -41,4 +41,11 @@ public interface IPlague {
      * @param researched the researched status to set
      */
     void setResearched(boolean researched);
+
+    /**
+     * Increases the number of cubes remaining for the plague by the specified amount.
+     *
+     * @param amount the amount by which to increase the number of cubes
+     */
+    void increaseCubes(int amount);
 }
