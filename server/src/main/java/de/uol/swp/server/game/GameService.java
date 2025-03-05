@@ -19,6 +19,7 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -99,7 +100,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
     @Subscribe
     public void onCreateGameRequest(CreateGameRequest request) {
         LOG.debug("Got CreateGameRequest for lobby {}", request.getLobbyId());
-        IGame game = null;
+        IGame game;
         try {
             game = gameManagement.createAndInitializeGame(request);
         } catch (GameInitializationException e) {
@@ -125,7 +126,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
      */
     @Subscribe
     public void onPositionRequest(PositioningRequest request) {
-        IGame game = null;
+        IGame game;
 
         try {
             game = gameManagement.setPositioning(request);
@@ -526,7 +527,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
     }
 
     @Subscribe
-    public void onCardsExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request) throws GameManagementException, PlayerManagementException {
+    public void onCardsExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request)  {
+        try{
         LOG.info("Received CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
         int cardToDiscardID = request.getCardsToExchange()
                                      .get(gameManagement.getGame(request.getLobbyId())
@@ -538,8 +540,17 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                      .get("Discard Pile")
                                      .getId();
 
-
-        gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, request.getLobbyId(), this);
+        sendServerMessageEvent(request.getLobbyId(),
+                "Spieler" + gameManagement.getGame(request.getLobbyId()).getCurrentPlayer().getUser().getUsername() + "hat eine Karte mit dem Ablagestapel getauscht");
+        gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, request.getLobbyId(), this);}
+        catch(CardNotFoundException exception){
+            LOG.error("Card not found");
+            sendStatusResponse(request, false, "Karte nicht gefunden");
+        }
+        catch (PlayerManagementException exception){
+            LOG.error("Player not found");
+            sendStatusResponse(request, false, "Spieler nicht gefunden");
+        }
 
     }
 
@@ -564,12 +575,17 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
     }
 
-    public void sendCardsExchangeWithDiscardPileResponse(String lobbyId) {
-        sendToAllInLobby(
-                lobbyManagement.getLobby(lobbyId),
-                new BoardUpdateEvent(lobbyId, GameMapper.toDTO(gameManagement.getGame(lobbyId)))
-        );
-    }
+/**
+ * Sends a board update event to all players in the lobby after a card exchange with the discard pile.
+ *
+ * @param lobbyId the ID of the lobby
+ */
+public void sendBoardUpdateAfterCardExchangeWithDiscardPile(String lobbyId) {
+    sendToAllInLobby(
+            lobbyManagement.getLobby(lobbyId),
+            new BoardUpdateEvent(lobbyId, GameMapper.toDTO(gameManagement.getGame(lobbyId)))
+    );
+}
 
     /**
      * Handles the end turn request from a player. This method retrieves the user from the session,

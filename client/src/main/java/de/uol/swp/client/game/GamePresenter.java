@@ -688,8 +688,6 @@ public class GamePresenter extends AbstractPresenter {
                    .getName()
                    .equals(RoleEnum.POLITICIAN)) {
             gameService.politicianActionTradeWithDiscardPile(this.gameDTO, lobbyId);
-
-
         }
 
     }

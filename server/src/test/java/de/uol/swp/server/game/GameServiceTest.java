@@ -19,6 +19,7 @@ import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
@@ -734,7 +735,7 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnCardsExchangeWithDiscardPileRequest() throws GameManagementException, PlayerManagementException {
+    void testOnCardsExchangeWithDiscardPileRequest() throws PlayerManagementException, CardNotFoundException {
         Map<String, ICardDTO> map = new HashMap<>();
         IPlayer player = new Player(new User("testuser", "testpassword"));
         ICard playerCard = new CityCard(1, "playerCard", mock(City.class));
@@ -776,7 +777,7 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnEndTurnRequest_sessionNotFound() throws IllegalGameStateException, InterruptedException {
+    void testOnEndTurnRequest_sessionNotFound()  {
         EndTurnRequest endTurnRequest = new EndTurnRequest("lobbyId");
         assertThrows(SessionNotFoundException.class, () -> gameService.onEndTurnRequest(endTurnRequest));
     }
@@ -799,5 +800,18 @@ public class GameServiceTest extends EventBusBasedTest {
 
         assertInstanceOf(StatusResponse.class, event);
         assertFalse(((StatusResponse) event).isSuccess());
+    }
+    @Test
+    void testSendBoardUpdateAfterCardExchangeWithDiscardPile() {
+        String lobbyId = "testLobbyId";
+        IGame game = new Game(2, lobbyId);
+        ILobby lobby = mock(ILobby.class);
+
+        when(gameManagement.getGame(lobbyId)).thenReturn(game);
+        when(lobbyManagement.getLobby(lobbyId)).thenReturn(lobby);
+
+        gameService.sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
+
+        verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 }

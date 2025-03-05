@@ -16,6 +16,7 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.data.IConnection;
@@ -303,10 +304,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isWaterTreatmentPlaceable(lobbyCode, user)) {
             actions.add(GameActions.TREAT_WATER);
         }
-        if (roleActionOneAvailable(lobbyCode, user)) {
+        if (roleActionOneAvailable(lobbyCode)) {
             actions.add(GameActions.ROLE_ACTION_ONE);
         }
-        if (roleActionTwoAvailable(lobbyCode, user)) {
+        if (roleActionTwoAvailable(lobbyCode)) {
             actions.add(GameActions.ROLE_ACTION_TWO);
         }
         if (isEndTurnPossible(lobbyCode, user)) {
@@ -316,7 +317,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
 
-    private boolean roleActionOneAvailable(String lobbyCode, IUser user) {
+    private boolean roleActionOneAvailable(String lobbyCode) {
         if (getGame(lobbyCode).getCurrentPlayer()
                               .getRole()
                               .getName()
@@ -329,7 +330,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return false;
     }
 
-    private boolean roleActionTwoAvailable(String lobbyCode, IUser user) {
+    private boolean roleActionTwoAvailable(String lobbyCode) {
         if (getGame(lobbyCode).getCurrentPlayer()
                               .getRole()
                               .getName()
@@ -448,23 +449,20 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IPlayer player = getPlayerForMove(game, user);
 
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
-        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId()) && (availableDestinations.get(
-                                                                                                                         city.getId())
-                                                                                                                 .getTransportModes()
-                                                                                                                 .contains(
-                                                                                                                         TransportMode.CARRIAGE) || availableDestinations.get(
-                                                                                                                                                                                 city.getId())
-                                                                                                                                                                         .getTransportModes()
-                                                                                                                                                                         .contains(
-                                                                                                                                                                                 TransportMode.TRAIN) || availableDestinations.get(
-                                                                                                                                                                                                                                      city.getId())
-                                                                                                                                                                                                                              .getTransportModes()
-                                                                                                                                                                                                                              .contains(
-                                                                                                                                                                                                                                      TransportMode.NONE));
-        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId()) && availableDestinations.get(city.getId())
-                                                                                                               .getTransportModes()
-                                                                                                               .contains(
-                                                                                                                       TransportMode.SHIP);
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
+                && (availableDestinations.get(city.getId())
+                                         .getTransportModes()
+                                         .contains(TransportMode.CARRIAGE) ||
+                availableDestinations.get(city.getId())
+                                     .getTransportModes()
+                                     .contains(TransportMode.TRAIN) ||
+                availableDestinations.get(city.getId())
+                                     .getTransportModes()
+                                     .contains(TransportMode.NONE));
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
+                && availableDestinations.get(city.getId())
+                                        .getTransportModes()
+                                        .contains(TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error(
@@ -479,9 +477,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getDisplayName()
             );
             throw new GameException("There is no available connection between " + player.getCurrentPosition()
-                                                                                                  .getName()
-                                                                                                  .getDisplayName() + " and " + city.getName()
-                                                                                                                                    .getDisplayName());
+                                                                                        .getName()
+                                                                                        .getDisplayName() + " and " + city.getName()
+                                                                                                                          .getDisplayName());
         }
 
         if (citiesConnectedByLand) {
@@ -490,6 +488,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             movePlayerBySea(game, player, city, card);
         }
     }
+
+
 
     /**
      * Validates if the game states allows moving players.
@@ -835,7 +835,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             int cardToReceiveID,
             String lobbyId,
             GameService gameService
-    ) throws GameManagementException, PlayerManagementException {
+    ) throws CardNotFoundException, PlayerManagementException {
         IGame game = getGame(lobbyId);
         ICard cardToDiscard = playerManagement.getCard(
                 lobbyId,
@@ -848,7 +848,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                   .stream()
                                   .filter(card -> card.getId() == cardToReceiveID)
                                   .findFirst()
-                                  .orElseThrow(() -> new GameManagementException("Card not found in discard pile"));
+                                  .orElseThrow(() -> new CardNotFoundException("Card not found in discard pile"));
 
         game.getCurrentPlayer()
             .getCards()
@@ -865,7 +865,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         ((PlayerTurnState) gameState).reduceActionsRemaining(game);
         LOG.trace("ReducedActionsRemaining");
 
-        gameService.sendCardsExchangeWithDiscardPileResponse(lobbyId);
+        gameService.sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
 
 
     }

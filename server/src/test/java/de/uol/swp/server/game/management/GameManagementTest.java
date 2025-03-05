@@ -17,6 +17,7 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
@@ -1057,7 +1058,7 @@ class GameManagementTest {
     //    }
 
     @Test
-    void testShareKnowledgeWithDiscardPile() throws GameManagementException, PlayerManagementException {
+    void testShareKnowledgeWithDiscardPile() throws PlayerManagementException, CardNotFoundException {
         // Arrange
         int cardToDiscardID = 1;
         int cardToReceiveID = 2;
@@ -1074,7 +1075,7 @@ class GameManagementTest {
 
         gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, lobbyId, gameService);
 
-        verify(gameService).sendCardsExchangeWithDiscardPileResponse(lobbyId);
+        verify(gameService).sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
     }
 
     @Test
