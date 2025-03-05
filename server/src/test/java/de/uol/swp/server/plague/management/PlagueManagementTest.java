@@ -1,7 +1,11 @@
 package de.uol.swp.server.plague.management;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
@@ -20,6 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -100,16 +105,6 @@ public class PlagueManagementTest {
     }
 
     @Test
-    void testTreatPlagueNoCubes() {
-        when(city.hasPlague(PlagueName.CHOLERA)).thenReturn(false);
-
-        assertThrows(
-                PlagueNotFoundException.class,
-                () -> plagueManagement.treatPlague(PlagueName.CHOLERA, city, game)
-        );
-    }
-
-    @Test
     void testTreatPlagueTreatExtraPlagueState() throws IllegalGameStateException, PlagueNotFoundException {
         TreatExtraPlagueState treatExtraPlagueState = mock(TreatExtraPlagueState.class);
         when(city.hasPlague(PlagueName.CHOLERA)).thenReturn(true);
@@ -160,11 +155,37 @@ public class PlagueManagementTest {
     }
 
     @Test
-    void testIsCubeCountNegative() {
-        when(game.getPlagueRepository()
-                 .getPlagueByName(PlagueName.CHOLERA)).thenReturn(plague);
-        when(plague.getCubesRemaining()).thenReturn(5);
+    void testCanResearchPlagueSuccess() {
+        when(city.isHospitalBuilt()).thenReturn(true);
+        when(city.getPlagueName()).thenReturn(PlagueName.CHOLERA);
 
-        assertTrue(plagueManagement.isCubeCountNegative(game, PlagueName.CHOLERA));
+        List<ICard> cards = new ArrayList<>();
+        cards.add(new CityCard(1, "Porto", new City(1, PlagueName.CHOLERA, CityName.PORTO, -136, true)));
+        cards.add(new CityCard(2, "Coimbra",new City(2, PlagueName.CHOLERA, CityName.COIMBRA, -45, false)));
+        cards.add(new CityCard(3, "Lisboa", new City(3, PlagueName.CHOLERA, CityName.LISBOA, -1000, true)));
+        cards.add(new CityCard(4, "Albufeira", new City(4, PlagueName.CHOLERA, CityName.ALBUFEIRA, 750, true)));
+        cards.add(new CityCard(5, "Evora", new City(5, PlagueName.CHOLERA, CityName.EVORA, -59, false)));
+        cards.add(new CityCard(6, "Caceres", new City(6, PlagueName.CHOLERA, CityName.CACERES, -34, false)));
+
+        when(game.getCurrentPlayer().getCards()).thenReturn(cards);
+        when(game.getCurrentPlayer().getCurrentPosition().getPlagueName()).thenReturn(PlagueName.CHOLERA);
+        boolean result = plagueManagement.canResearchPlague(game);
+
+        assertTrue(result);
     }
+
+    @Test
+    void testCantResearchPlague() {
+        when(city.isHospitalBuilt()).thenReturn(true);
+        when(city.getPlagueName()).thenReturn(null);
+
+        List<ICard> cards = new ArrayList<>();
+        when(game.getCurrentPlayer().getCards()).thenReturn(cards);
+        when(game.getCurrentPlayer().getCurrentPosition().getPlagueName()).thenReturn(PlagueName.CHOLERA);
+        boolean result = plagueManagement.canResearchPlague(game);
+
+        assertFalse(result);
+    }
+
+
 }

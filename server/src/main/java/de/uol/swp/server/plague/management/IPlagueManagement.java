@@ -17,10 +17,13 @@ public interface IPlagueManagement {
      */
     void researchPlague(IGame game) throws PlagueManagementException;
 
+    /**
+     * Determines whether a plague can be researched in the given game.
+     *
+     * @param game The current game instance where the research should be evaluated.
+     * @return {@code true} if a plague can be researched, otherwise {@code false}.
+     */
     boolean canResearchPlague(IGame game);
-    IGame getGame(String lobbyId);
-    void researchPlague(PlagueName plagueToResearch, IGame game) throws PlagueManagementException;
-
     /**
      * Treats a plague in a specified city within the game.
      *

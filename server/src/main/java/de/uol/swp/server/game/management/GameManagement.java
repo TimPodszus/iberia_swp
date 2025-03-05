@@ -311,7 +311,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isKnowledgeShareable(lobbyId)) {
             actions.add(GameActions.SHARE_KNOWLEDGE);
         }
-        if (isInfectionTreatable(lobbyCode)) {
+        if (isInfectionTreatable(lobbyId)) {
             actions.add(GameActions.TREAT_INFECTION);
         }
         if (isPlagueResearchable(lobbyId)) {

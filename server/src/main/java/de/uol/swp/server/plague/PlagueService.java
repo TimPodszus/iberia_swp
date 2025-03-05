@@ -1,29 +1,20 @@
 package de.uol.swp.server.plague;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.response.StatusResponse;
-import de.uol.swp.common.plague.ResearchPlagueRequest;
-import de.uol.swp.common.user.Session;
-import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
-import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import de.uol.swp.common.plague.response.TreatPlagueResponse;
+import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.game.GameMapper;
-import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.lobby.data.ILobby;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameMapper;
@@ -37,8 +28,6 @@ import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import de.uol.swp.server.plague.management.PlagueNotFoundException;
 import de.uol.swp.server.role.CountryDoctor;
 import org.apache.logging.log4j.LogManager;
@@ -83,7 +72,8 @@ public class PlagueService extends AbstractService {
     ) throws PlagueManagementException {
         LOG.debug("ResearchPlagueRequest received");
         AbstractGameResponse response;
-        Session session = request.getSession().orElse(null);
+        Session session = request.getSession()
+                                 .orElse(null);
         IGame game = plagueManagement.getGame(request.getLobbyId());
         try {
             plagueManagement.researchPlague(game);

@@ -6,7 +6,6 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -38,15 +37,6 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         this.playerManagement = playerManagement;
     }
 
-    /**
-     * Researches the specified plague in the current game. This method checks if the player has the required cards,
-     * if they are in a city with a hospital built, and if the hospital is in a city affected by the plague to be researched.
-     * Once the plague is researched, it is marked as such and the appropriate game state transitions occur.
-     *
-     * @param game the current game instance where the plague research is being performed.
-     * @throws PlagueManagementException if the plague to be researched is not specified, if the player does not have enough cards,
-     *                                   if the plague has already been researched, or if the city does not have a suitable hospital.
-     */
     @Override
     public void researchPlague(IGame game) throws PlagueManagementException {
         PlagueName plagueToResearch = getPlagueToResearch(game);
@@ -95,7 +85,7 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         allPlaguesResearched(game);
     }
 
-    private PlagueName getPlagueToResearch(IGame game) {
+    protected PlagueName getPlagueToResearch(IGame game) {
         Map<PlagueName, List<CityCard>> cardsByPlague = game.getCurrentPlayer()
                 .getCards()
                 .stream()
@@ -190,12 +180,6 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
                                                 .stream()
                                                 .anyMatch(infection -> infection.getSeverity() >= 1))
                             .toList();
-    }
-
-    public boolean isCubeCountNegative(IGame game, PlagueName plagueName) {
-        return game.getPlagueRepository()
-                   .getPlagueByName(plagueName)
-                   .getCubesRemaining() > 0;
     }
 }
 

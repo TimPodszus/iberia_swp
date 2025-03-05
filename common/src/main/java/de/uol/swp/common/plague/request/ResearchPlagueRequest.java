@@ -1,4 +1,4 @@
-package de.uol.swp.common.plague;
+package de.uol.swp.common.plague.request;
 
 import de.uol.swp.common.game.message.AbstractGameRequest;
 
