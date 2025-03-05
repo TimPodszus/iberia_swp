@@ -167,8 +167,7 @@ public class PlayerManagement implements IPlayerManagement {
         }
         if (validRequest || cityCardCount == 0) {
             ICity city = game.getCityRepository()
-                             .getCitiesByNames(cityName)
-                             .get(0);
+                             .getCityByName(cityName);
             player.setCurrentPosition(city);
         } else {
             throw new PlayerManagementException(
