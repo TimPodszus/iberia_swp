@@ -126,7 +126,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             game.getPlayers()
                 .add(player);
             int cardsToDraw = switch (users.size()) {
-                case 2 -> 0;
+                case 2 -> 4;
                 case 3 -> 3;
                 default -> 2;
             };
@@ -136,14 +136,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             int currentPlayerIndex = game.getCurrentPlayerIndex();
             int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;
             game.setCurrentPlayerIndex(nextPlayerIndex);
-            List<ICard> cards = new ArrayList<>();
-            cards.add(new CityCard(1, "Porto", new City(1, PlagueName.CHOLERA, CityName.PORTO, -136, true)));
-            cards.add(new CityCard(2, "Coimbra",new City(2, PlagueName.CHOLERA, CityName.COIMBRA, -45, false)));
-            cards.add(new CityCard(3, "Lisboa", new City(3, PlagueName.CHOLERA, CityName.LISBOA, -1000, true)));
-            cards.add(new CityCard(4, "Albufeira", new City(4, PlagueName.CHOLERA, CityName.ALBUFEIRA, 750, true)));
-            cards.add(new CityCard(5, "Evora", new City(5, PlagueName.CHOLERA, CityName.EVORA, -59, false)));
-            cards.add(new CityCard(6, "Caceres", new City(6, PlagueName.CHOLERA, CityName.CACERES, -34, false)));
-            player.setCards(cards);
         }
     }
 
