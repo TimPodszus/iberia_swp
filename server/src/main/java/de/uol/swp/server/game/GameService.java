@@ -139,7 +139,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
             game = gameManagement.setPositioning(request);
         } catch (IllegalGameStateException e) {
             LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
-            sendStatusResponse(request,
+            sendStatusResponse(
+                    request,
                     false,
                     "Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand"
             );
@@ -558,7 +559,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                     game.getCurrentPlayer()
                         .getUser()
                         .getUsername(),
-                    211
+                    212
             );
         } catch (PlayerManagementException e) {
             LOG.error(
