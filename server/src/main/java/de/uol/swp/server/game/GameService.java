@@ -407,18 +407,10 @@ public class GameService extends AbstractService implements GameStateChangeListe
         LOG.info("Received CardsExchangeRequest for lobby {}", request.getLobbyId());
         IGame game = gameManagement.getGame(request.getLobbyId());
         gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
-        Map<String, ICardDTO> cardsToExchange = request.getCardsToExchange();
         String currentPlayerUsername = game.getCurrentPlayer()
                                            .getUser()
                                            .getUsername();
-        String targetPlayerUsername = cardsToExchange.keySet()
-                                                     .stream()
-                                                     .filter(username -> !username.equals(currentPlayerUsername))
-                                                     .findFirst()
-                                                     .orElseThrow(() -> {
-                                                         LOG.error("Target player {} not found", currentPlayerUsername);
-                                                         return new GameManagementException("Target player not found");
-                                                     });
+        String targetPlayerUsername = request.getPlayerToTrade();
 
         LOG.debug("Current player: {}, Target player: {}", currentPlayerUsername, targetPlayerUsername);
 
@@ -426,8 +418,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 request.getLobbyId(),
                 currentPlayerUsername,
                 targetPlayerUsername,
-                cardsToExchange.get(currentPlayerUsername),
-                cardsToExchange.get(targetPlayerUsername)
         );
 
         IUser user = lobbyManagement.getLobby(request.getLobbyId())
