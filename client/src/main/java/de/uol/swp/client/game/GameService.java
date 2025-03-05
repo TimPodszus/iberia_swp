@@ -13,8 +13,8 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
+import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
-import de.uol.swp.common.plague.ResearchPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
@@ -142,8 +142,7 @@ public class GameService {
             ShareKnowledgeRequest request = new ShareKnowledgeRequest(event.getLobbyId(), accepted, event);
             request.setMessageContext(event.getMessageContext()
                                            .orElse(null));
-            LOG.trace(
-                    "Posting ShareKnowledgeRequest: {} with MessageContext {} ",
+            LOG.trace("Posting ShareKnowledgeRequest: {} with MessageContext {} ",
                     request,
                     request.getMessageContext()
             );
@@ -234,23 +233,19 @@ public class GameService {
                                                                                                             .getId())
                                                                      .findFirst()
                                                                      .orElseThrow());
-                cardsToExchange.put(
-                        gameDTO.getCurrentPlayer()
-                               .getUsername(),
+                cardsToExchange.put(gameDTO.getCurrentPlayer()
+                                           .getUsername(),
                         gameDTO.getCurrentPlayer()
                                .getCards()
                 );
                 cardsToExchange.put(playerWithCityCard.getUsername(), playerWithCityCardOnlyCityCard);
-                LOG.debug(
-                        "Player {} can select cards now from the following list {}",
+                LOG.debug("Player {} can select cards now from the following list {}",
                         gameDTO.getCurrentPlayer()
                                .getUsername(),
                         cardsToExchange
                 );
-                CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
-                        gameDTO.getCurrentPlayer()
-                               .getUsername(), cardsToExchange
-                );
+                CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(gameDTO.getCurrentPlayer()
+                                                                                      .getUsername(), cardsToExchange);
                 Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
                 result.ifPresent(map -> {
                     LOG.debug("Card exchange result: {}", map);
@@ -288,15 +283,11 @@ public class GameService {
                     cardsToExchange.put(playerDTO.getUsername(), playerDTO.getCards());
                 }
             }
-            cardsToExchange.put(
-                    gameDTO.getCurrentPlayer()
-                           .getUsername(), cardOfCurrentCity
-            );
+            cardsToExchange.put(gameDTO.getCurrentPlayer()
+                                       .getUsername(), cardOfCurrentCity);
             LOG.debug("Players in the same city: {}", playersInSameCity);
-            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
-                    gameDTO.getCurrentPlayer()
-                           .getUsername(), cardsToExchange
-            );
+            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(gameDTO.getCurrentPlayer()
+                                                                                  .getUsername(), cardsToExchange);
             Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
             result.ifPresent(map -> {
                 LOG.debug("Card exchange result: {}", map);
@@ -342,9 +333,9 @@ public class GameService {
     /**
      * Sends a request to perform water treatment in the specified region.
      *
-     * @param lobbyId the ID of the lobby
-     * @param regionId the ID of the region where the water treatment is to be performed
-     * @param amount the amount of water treatments to be performed
+     * @param lobbyId   the ID of the lobby
+     * @param regionId  the ID of the region where the water treatment is to be performed
+     * @param amount    the amount of water treatments to be performed
      * @param dismissed whether the event was dismissed
      */
     public void sendTreatWaterEventRequest(String lobbyId, int regionId, int amount, boolean dismissed) {
