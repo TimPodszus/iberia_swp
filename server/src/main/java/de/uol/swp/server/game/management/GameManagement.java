@@ -320,9 +320,18 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isWaterTreatmentPlaceable(lobbyId, user)) {
             actions.add(GameActions.TREAT_WATER);
         }
+        if (isEndTurnPossible(lobbyId, user)) {
+            actions.add(GameActions.END_TURN);
+        }
         return actions;
     }
 
+    /**
+     * Checks if train tracks can be built in the specified lobby.
+     *
+     * @param lobbyId the code of the lobby
+     * @return true if train tracks can be built, false otherwise
+     */
     private boolean areTrainTracksBuildable(String lobbyId) {
         IGame game = super.getGame(lobbyId);
         return game.getTracksLeft() >= 0;
@@ -376,6 +385,33 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             availableRegions = regionManagement.getAvailableRegions(UserMapper.toDTO(user), lobbyCode);
         }
         return !availableRegions.isEmpty();
+    }
+
+    /**
+     * Checks if the current player can end their turn in the specified lobby.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param user      the user for whom the check is performed
+     * @return true if the current player can end their turn, false otherwise
+     */
+    private boolean isEndTurnPossible(String lobbyCode, IUser user) {
+        IGame game = getGame(lobbyCode);
+        return game.getCurrentPlayer()
+                   .getUser()
+                   .equals(user) && game.getState() instanceof PlayerTurnState;
+    }
+
+    @Override
+    public void endTurn(String lobbyId, IUser user) throws IllegalGameStateException {
+        IGame game = getGame(lobbyId);
+        if (game.getCurrentPlayer()
+                .getUser()
+                .equals(user) && game.getState() instanceof PlayerTurnState) {
+            LOG.info("[LobbyID: {}] Ending turn for player {}", lobbyId, user.getUsername());
+            game.setState(new DrawCardState());
+        } else {
+            throw new IllegalGameStateException("Player is not allowed to end turn");
+        }
     }
 
     @Override

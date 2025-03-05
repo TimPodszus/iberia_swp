@@ -134,7 +134,7 @@ public class GameService {
      */
     @Subscribe
     public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
-        LOG.debug("Received ShareKnowledgeEvent: " + event);
+        LOG.debug("Received ShareKnowledgeEvent");
         Platform.runLater(() -> {
             boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
                                                                                               .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()
@@ -142,7 +142,8 @@ public class GameService {
             ShareKnowledgeRequest request = new ShareKnowledgeRequest(event.getLobbyId(), accepted, event);
             request.setMessageContext(event.getMessageContext()
                                            .orElse(null));
-            LOG.trace("Posting ShareKnowledgeRequest: {} with MessageContext {} ",
+            LOG.trace(
+                    "Posting ShareKnowledgeRequest: {} with MessageContext {} ",
                     request,
                     request.getMessageContext()
             );
@@ -233,19 +234,23 @@ public class GameService {
                                                                                                             .getId())
                                                                      .findFirst()
                                                                      .orElseThrow());
-                cardsToExchange.put(gameDTO.getCurrentPlayer()
-                                           .getUsername(),
+                cardsToExchange.put(
+                        gameDTO.getCurrentPlayer()
+                               .getUsername(),
                         gameDTO.getCurrentPlayer()
                                .getCards()
                 );
                 cardsToExchange.put(playerWithCityCard.getUsername(), playerWithCityCardOnlyCityCard);
-                LOG.debug("Player {} can select cards now from the following list {}",
+                LOG.debug(
+                        "Player {} can select cards now from the following list {}",
                         gameDTO.getCurrentPlayer()
                                .getUsername(),
                         cardsToExchange
                 );
-                CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(gameDTO.getCurrentPlayer()
-                                                                                      .getUsername(), cardsToExchange);
+                CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                        gameDTO.getCurrentPlayer()
+                               .getUsername(), cardsToExchange
+                );
                 Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
                 result.ifPresent(map -> {
                     LOG.debug("Card exchange result: {}", map);
@@ -283,11 +288,15 @@ public class GameService {
                     cardsToExchange.put(playerDTO.getUsername(), playerDTO.getCards());
                 }
             }
-            cardsToExchange.put(gameDTO.getCurrentPlayer()
-                                       .getUsername(), cardOfCurrentCity);
+            cardsToExchange.put(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(), cardOfCurrentCity
+            );
             LOG.debug("Players in the same city: {}", playersInSameCity);
-            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(gameDTO.getCurrentPlayer()
-                                                                                  .getUsername(), cardsToExchange);
+            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(), cardsToExchange
+            );
             Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
             result.ifPresent(map -> {
                 LOG.debug("Card exchange result: {}", map);
@@ -333,9 +342,9 @@ public class GameService {
     /**
      * Sends a request to perform water treatment in the specified region.
      *
-     * @param lobbyId   the ID of the lobby
-     * @param regionId  the ID of the region where the water treatment is to be performed
-     * @param amount    the amount of water treatments to be performed
+     * @param lobbyId the ID of the lobby
+     * @param regionId the ID of the region where the water treatment is to be performed
+     * @param amount the amount of water treatments to be performed
      * @param dismissed whether the event was dismissed
      */
     public void sendTreatWaterEventRequest(String lobbyId, int regionId, int amount, boolean dismissed) {
@@ -381,5 +390,14 @@ public class GameService {
     public void sendResearchPlagueRequest(String lobbyId) {
         LOG.debug("Sending ResearchPlagueRequest with Id {}", lobbyId);
         eventBus.post(new ResearchPlagueRequest(lobbyId));
+    }
+
+    /**
+     * Sends a request to end the turn in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby where the turn is to be ended
+     */
+    public void sendEndTurnRequest(String lobbyId) {
+        eventBus.post(new EndTurnRequest(lobbyId));
     }
 }
