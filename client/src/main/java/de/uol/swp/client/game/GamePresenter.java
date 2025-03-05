@@ -624,9 +624,10 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onResearchPlague(ActionEvent event) {
         LOG.debug("Research plague action triggered");
-        if (gameDTO.getState()
-                .equals(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
-                gameService.sendResearchPlagueRequest(gameDTO.getGameId());
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
+                gameService.sendResearchPlagueRequest(lobbyId);
+                researchPlagueButton.setSelected(false);
             }
     }
 
