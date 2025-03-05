@@ -1976,12 +1976,12 @@
                     <VBox alignment="CENTER" layoutX="179.0" layoutY="17.0" spacing="10.0"/>
                 </children>
             </HBox>
-            <ToggleButton fx:id="endTurnButton" mnemonicParsing="false" onAction="#onEndTurn" prefHeight="30.0"
-                          prefWidth="350.0" styleClass="end-turn-button" text="Zug beenden">
+            <Button fx:id="endTurnButton" mnemonicParsing="false" onAction="#onEndTurn" prefHeight="30.0"
+               prefWidth="350.0" styleClass="end-turn-button" text="Zug beenden">
                 <VBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                 </VBox.margin>
-            </ToggleButton>
+            </Button>
         </children>
     </VBox>
     <VBox layoutX="310.0" layoutY="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="320.0">
