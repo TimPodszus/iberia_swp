@@ -2,6 +2,7 @@ package de.uol.swp.server.region;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.region.data.Region;
 import lombok.Getter;
@@ -284,9 +285,9 @@ public class RegionRepository {
      */
     public IRegion getRegionByID(int id) {
         return regions.stream()
-                      .filter(region -> region.getId() == id)
-                      .findFirst()
-                      .orElseThrow();
+                .filter(region -> region.getId() == id)
+                .findFirst()
+                .orElseThrow();
     }
 
     /**
@@ -297,10 +298,14 @@ public class RegionRepository {
      */
     public List<IRegion> getRegionsByCityName(CityName cityName) {
         return regions.stream()
-                      .filter(region -> region.getSurroundingCities()
-                                              .stream()
-                                              .anyMatch(city -> city.getName()
-                                                                    .equals(cityName)))
-                      .toList();
+                .filter(region -> region.getSurroundingCities()
+                        .stream()
+                        .anyMatch(city -> city.getName()
+                                .equals(cityName)))
+                .toList();
+    }
+
+    public List<ICity> getCitiesInAdjacentRegions(IRegion region) {
+        return new ArrayList<>(region.getSurroundingCities());
     }
 }
