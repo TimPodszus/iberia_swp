@@ -25,6 +25,7 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
@@ -39,8 +40,6 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
     public static final Logger LOG = LogManager.getLogger(PlayerService.class);
     private final IPlayerManagement playerManagement;
     private final IGameManagement gameManagement;
-
-    private static final String SESSION_NOT_PRESENT = "Session not present";
 
     /**
      * Constructs a new PlayerService.
@@ -66,7 +65,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
     public void onDrawPlayerCardRequest(DrawPlayerCardRequest request) {
         AbstractResponseMessage response;
         Session session = request.getSession()
-                                 .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
+                                 .orElseThrow(SessionNotFoundException::new);
         try {
             ICardDTO card = playerManagement.drawPlayerCard(request.getLobbyId(), UserMapper.toUser(session.getUser()));
             response = new DrawPlayerCardResponse(request.getLobbyId(), true, "Card drawn successfully", card);
@@ -88,7 +87,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
     public void onDrawInfectionCardRequest(DrawInfectionCardRequest request) {
         AbstractResponseMessage response;
         Session session = request.getSession()
-                                 .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
+                                 .orElseThrow(SessionNotFoundException::new);
         IGame game = gameManagement.getGame(request.getLobbyId());
         if (!game.getCurrentPlayer()
                  .getUser()
@@ -112,7 +111,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
     public void onShareRideRequest(ShareRideRequest request) throws PlayerManagementException {
         if (request.isConfirmed()) {
             Session session = request.getSession()
-                                     .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
+                                     .orElseThrow(SessionNotFoundException::new);
             playerManagement.setPlayerLocation(
                     request.getLobbyId(),
                     session.getUser()
@@ -136,7 +135,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         LOG.debug("DiscardPlayerCardRequest received");
         IGame game = gameManagement.getGame(request.getLobbyId());
         Session session = request.getSession()
-                                 .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
+                                 .orElseThrow(SessionNotFoundException::new);
 
         try {
             playerManagement.discardPlayerCard(
