@@ -1,4 +1,4 @@
-package de.uol.swp.common.plague;
+package de.uol.swp.common.plague.dto;
 
 import de.uol.swp.common.game.PlagueName;
 import lombok.AllArgsConstructor;
