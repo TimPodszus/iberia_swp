@@ -17,6 +17,8 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -157,6 +159,8 @@ class PlayerManagementTest {
     @Test
     void discardCard_DiscardSingleCard() {
         ICard infectionCard = new InfectionCard(1, "test", mock(ICity.class));
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
 
         playerManagement.discardCard(game.getGameId(), player, infectionCard);
 
@@ -172,6 +176,8 @@ class PlayerManagementTest {
         ICard card1 = new InfectionCard(1, "test", mock(ICity.class));
         ICard card2 = new CityCard(1, "test", mock(ICity.class));
         List<ICard> cards = List.of(card1, card2);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
 
         playerManagement.discardCards(game.getGameId(), player, cards);
 
@@ -255,7 +261,7 @@ class PlayerManagementTest {
     }
 
     @Test
-    void testGetCardsToSort() throws PlayerManagementException {
+    void testGetCardsToSort() throws GameException, IllegalGameStateException {
         ICard card = mock(ICard.class);
         game.setState(new PlayerTurnState());
         game.getPlayerCardDrawPile().add(card);
@@ -273,7 +279,7 @@ class PlayerManagementTest {
     }
 
     @Test
-    void testSortCards() {
+    void testSortCards() throws GameException{
         ICard card1 = mock(ICard.class);
         ICard card2 = mock(ICard.class);
         ICard card3 = mock(ICard.class);
@@ -334,6 +340,8 @@ class PlayerManagementTest {
         ICard card = mock(ICard.class);
         List<ICard> mockCards = mock(List.class);
         when(player.getCards()).thenReturn(mockCards);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
 
         playerManagement.discardCard(game.getGameId(), player, card);
 
@@ -368,8 +376,8 @@ class PlayerManagementTest {
         doReturn(game).when(spyPlayerManagement).getGame("lobbyId");
         doReturn(player).when(spyPlayerManagement).getPlayerByUser(user, game);
 
-        IllegalStateException thrown = assertThrows(
-                IllegalStateException.class,
+        GameException thrown = assertThrows(
+                GameException.class,
                 () -> spyPlayerManagement.sortCards("lobbyId", user, cards),
                 "Expected sortCards() to throw, but it did not"
         );
@@ -389,8 +397,8 @@ class PlayerManagementTest {
         doReturn(game).when(spyPlayerManagement).getGame("lobbyId");
         doReturn(player).when(spyPlayerManagement).getPlayerByUser(user, game);
 
-        PlayerManagementException thrown = assertThrows(
-                PlayerManagementException.class,
+        GameException thrown = assertThrows(
+                GameException.class,
                 () -> spyPlayerManagement.getCardsToSort("lobbyId", user),
                 "Expected getCardsToSort() to throw, but it did not"
         );
@@ -410,8 +418,8 @@ class PlayerManagementTest {
         doReturn(game).when(spyPlayerManagement).getGame("lobbyId");
         doReturn(player).when(spyPlayerManagement).getPlayerByUser(user, game);
 
-        IllegalStateException thrown = assertThrows(
-                IllegalStateException.class,
+        IllegalGameStateException thrown = assertThrows(
+                IllegalGameStateException.class,
                 () -> spyPlayerManagement.getCardsToSort("lobbyId", user),
                 "Expected getCardsToSort() to throw, but it did not"
         );

@@ -1,6 +1,5 @@
-package de.uol.swp.common.player.request;
+package de.uol.swp.common.player.message.request;
 
-import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

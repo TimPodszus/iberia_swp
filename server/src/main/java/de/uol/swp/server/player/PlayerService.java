@@ -17,6 +17,8 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -139,7 +141,7 @@ public class PlayerService extends AbstractService {
                                                                     .orElse(null)))
             );
             response = new CardsToSortResponse(request.getLobbyId(), true, "Karten wurden erfolgreich ermittelt", cards);
-        } catch (PlayerManagementException | IllegalStateException e) {
+        } catch (GameException | IllegalGameStateException e) {
             response = new StatusResponse(request.getLobbyId(), false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
         }
         response.setSession(session.orElse(null));
@@ -152,7 +154,7 @@ public class PlayerService extends AbstractService {
      * @param request the request to sort cards
      */
     @Subscribe
-    public void onSortedCardsRequest(SortedCardsRequest request) {
+    public void onSortedCardsRequest(SortedCardsRequest request) throws GameException {
         AbstractResponseMessage response;
         Optional<Session> session = request.getSession();
         IGame game = playerManagement.getGame(request.getLobbyId());

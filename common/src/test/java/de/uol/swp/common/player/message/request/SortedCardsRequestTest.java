@@ -1,7 +1,6 @@
-package de.uol.swp.common.player.request;
+package de.uol.swp.common.player.message.request;
 
 import de.uol.swp.common.cards.data.ICardDTO;
-import de.uol.swp.common.player.message.request.SortedCardsRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

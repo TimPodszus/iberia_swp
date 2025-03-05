@@ -5,6 +5,8 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -108,10 +110,10 @@ public interface IPlayerManagement {
      * @param lobbyId the ID of the lobby
      * @param user    the user for whom the cards are to be sorted
      * @return the list of cards to be sorted
-     * @throws PlayerManagementException if an error occurs while retrieving the cards
-     * @throws IllegalStateException     if the player is not in the correct state to sort cards
+     * @throws GameException if an error occurs while retrieving the cards
+     * @throws IllegalGameStateException     if the player is not in the correct state to sort cards
      */
-    List<ICardDTO> getCardsToSort(String lobbyId, IUser user) throws PlayerManagementException, IllegalStateException;
+    List<ICardDTO> getCardsToSort(String lobbyId, IUser user) throws GameException, IllegalGameStateException;
 
     /**
      * Retrieves the game with the specified lobby code.
@@ -138,5 +140,5 @@ public interface IPlayerManagement {
      * @param cards   the list of cards to be sorted
      * @throws IllegalStateException if the player is not in the correct state to sort cards
      */
-    void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws IllegalStateException;
+    void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws GameException;
 }

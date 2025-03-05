@@ -1,7 +1,6 @@
-package de.uol.swp.common.player.response;
+package de.uol.swp.common.player.message.response;
 
 import de.uol.swp.common.cards.data.ICardDTO;
-import de.uol.swp.common.player.message.response.DrawPlayerCardResponse;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,5 +56,14 @@ class DrawPlayerCardResponseTest {
         DrawPlayerCardResponse response = new DrawPlayerCardResponse("lobby123", true, "description", card);
 
         assertEquals(response, response);
+    }
+
+    @Test
+    void testNotEqualsDifferentSuperClass() {
+        ICardDTO card = mock(ICardDTO.class);
+        DrawPlayerCardResponse response1 = new DrawPlayerCardResponse("lobby123", true, "description", card);
+        DrawPlayerCardResponse response2 = new DrawPlayerCardResponse("lobby456", true, "description", card);
+
+        assertNotEquals(response1, response2);
     }
 }

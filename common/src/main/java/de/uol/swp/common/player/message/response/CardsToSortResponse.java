@@ -2,8 +2,8 @@ package de.uol.swp.common.player.message.response;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
-import lombok.Getter;
 
+import lombok.Getter;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,16 +17,14 @@ public class CardsToSortResponse extends AbstractGameResponse {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object object) {
+        if (this == object) {
             return true;
         }
-        if (!(o instanceof CardsToSortResponse that)) {
+        if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
+        CardsToSortResponse that = (CardsToSortResponse) object;
         return Objects.equals(cards, that.cards);
     }
 

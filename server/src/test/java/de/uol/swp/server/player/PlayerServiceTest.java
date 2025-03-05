@@ -16,6 +16,8 @@ import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.lobby.data.ILobby;
@@ -199,7 +201,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onGetCardsToSortRequest_Success() throws PlayerManagementException, InterruptedException {
+    void onGetCardsToSortRequest_Success() throws GameException, IllegalGameStateException, InterruptedException {
         GetCardsToSortRequest request = mock(GetCardsToSortRequest.class);
         Session session = mock(Session.class);
         IUser user = new User("testUser", "testPassword");
@@ -217,7 +219,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onSortedCardsRequest_Success() throws InterruptedException {
+    void onSortedCardsRequest_Success() throws GameException, InterruptedException {
         SortedCardsRequest request = mock(SortedCardsRequest.class);
         Session session = mock(Session.class);
         when(authenticationService.getSession(any())).thenReturn(Optional.ofNullable(session));
@@ -240,7 +242,8 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onGetCardsToSortRequest_IllegalStateException() throws PlayerManagementException, InterruptedException {
+    void onGetCardsToSortRequest_IllegalStateException() throws GameException, IllegalGameStateException,
+            InterruptedException {
         GetCardsToSortRequest request = mock(GetCardsToSortRequest.class);
         Session session = mock(Session.class);
         IUser user = new User("testUser", "testPassword");
@@ -248,7 +251,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
         when(request.getLobbyId()).thenReturn("validGameId");
         when(request.getSession()).thenReturn(Optional.of(session));
         when(session.getUser()).thenReturn(UserMapper.toDTO(user));
-        when(playerManagement.getCardsToSort("validGameId", user)).thenThrow(new IllegalStateException("Test exception"));
+        when(playerManagement.getCardsToSort("validGameId", user)).thenThrow(new IllegalGameStateException("Test exception"));
 
         postAndWait(request);
 
@@ -257,7 +260,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onSortedCardsRequest_IllegalStateException() throws InterruptedException {
+    void onSortedCardsRequest_IllegalStateException() throws GameException, InterruptedException {
         SortedCardsRequest request = mock(SortedCardsRequest.class);
         Session session = mock(Session.class);
         IUser user = new User("testUser", "testPassword");
