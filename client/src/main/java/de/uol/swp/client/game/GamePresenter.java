@@ -388,11 +388,6 @@ public class GamePresenter extends AbstractPresenter {
 
             if (!this.getPlayersInCity()
                      .isEmpty()) {
-                if ((checkPlayersTransportMode(cityId,
-                RoleEnum role = gameDTO.getCurrentPlayer()
-                                       .getRole()
-                                       .getName();
-
                 if ((checkPlayersTransportMode(
                         cityId,
                         TransportMode.SHIP
@@ -430,11 +425,13 @@ public class GamePresenter extends AbstractPresenter {
      */
     private boolean cardDiscardNeeded(int cityId, RoleEnum role) {
         LOG.debug("Checking if discarding a card is needed for moving to city {}", cityId);
-        return role != RoleEnum.SAILOR
-                && checkPlayersTransportMode(cityId, TransportMode.SHIP)
-                && !checkPlayersTransportMode(cityId, TransportMode.TRAIN)
-                && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE)
-                && !checkPlayersTransportMode(cityId, TransportMode.NONE);
+        return role != RoleEnum.SAILOR && checkPlayersTransportMode(
+                cityId,
+                TransportMode.SHIP
+        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
+                cityId,
+                TransportMode.CARRIAGE
+        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
     }
 
     /**
