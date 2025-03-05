@@ -7,14 +7,6 @@ import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.event.EndGameEvent;
-import de.uol.swp.common.game.message.event.ShareRideEvent;
-import de.uol.swp.common.game.message.event.StartGameEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
@@ -23,8 +15,8 @@ import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
@@ -152,6 +144,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null && lobby != null) {
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+            sendServerMessageEvent(game.getGameId(),
+                    "Spieler wurde auf die Stadt mit folgender Id positioniert: " + request.getCityId()
+            );
         }
     }
 
@@ -192,8 +187,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGame game = gameManagement.getGame(request.getLobbyId());
         if (game.getState() instanceof BuildExtraTrainTrackState state) {
             List<IConnection> connections = state.getConnections();
-            BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(
-                    request.getLobbyId(),
+            BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(request.getLobbyId(),
                     true,
                     ConnectionMapper.toDTOList(connections)
             );
@@ -209,6 +203,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(request.getLobbyId(), "Es wurde eine Zugstrecke zwischen der Connection mit " +
+                "folgender Id gebaut: " + request.getConnectionId());
     }
 
     /**
@@ -231,8 +227,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         try {
             ICard card = playerManagement.getCard(request.getLobbyId(), user.getUsername(), request.getCardId());
-            gameManagement.movePlayer(UserMapper.toUser(user), request.getLobbyId(), destination, card
-            );
+            gameManagement.movePlayer(UserMapper.toUser(user), request.getLobbyId(), destination, card);
         } catch (IllegalGameStateException e) {
             LOG.error("[LobbyId: {}] Could not move player. Game", request.getLobbyId());
             sendStatusResponse(request, false, "Spiel ist in einem ungültigen Zustand");
@@ -250,8 +245,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         if (!request.getUsername()
                     .isEmpty()) {
             this.sendShareRideEvent(request, destination);
-            LOG.debug(
-                    "[LobbyID: {}] Send share ride event and asked {} if he wants to be picked up",
+            LOG.debug("[LobbyID: {}] Send share ride event and asked {} if he wants to be picked up",
                     request.getLobbyId(),
                     request.getUsername()
             );
@@ -345,8 +339,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         IUser user = UserMapper.toUser(session.getUser());
         List<GameActions> actions = gameManagement.getAvailableActions(request.getLobbyId(), user);
-        AvailableActionsResponse response = new AvailableActionsResponse(
-                request.getLobbyId(),
+        AvailableActionsResponse response = new AvailableActionsResponse(request.getLobbyId(),
                 true,
                 "Retrieving all available actions was successful",
                 actions
@@ -373,8 +366,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                   .equals(request.getUsername()))
                                     .findFirst()
                                     .orElseThrow(() -> {
-                                        LOG.error(
-                                                "[LobbyID: {}] User could not be found in lobby",
+                                        LOG.error("[LobbyID: {}] User could not be found in lobby",
                                                 request.getLobbyId()
                                         );
                                         return new SessionNotFoundException("User not found");
@@ -425,8 +417,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         LOG.debug("Current player: {}, Target player: {}", currentPlayerUsername, targetPlayerUsername);
 
-        ShareKnowledgeEvent shareKnowledgeEvent = new ShareKnowledgeEvent(
-                request.getLobbyId(),
+        ShareKnowledgeEvent shareKnowledgeEvent = new ShareKnowledgeEvent(request.getLobbyId(),
                 currentPlayerUsername,
                 targetPlayerUsername,
                 cardsToExchange.get(currentPlayerUsername),
@@ -440,8 +431,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                   .equals(targetPlayerUsername))
                                     .findFirst()
                                     .orElseThrow(() -> {
-                                        LOG.error(
-                                                "Target player not found in lobby for username {}",
+                                        LOG.error("Target player not found in lobby for username {}",
                                                 targetPlayerUsername
                                         );
                                         return new GameManagementException("Target player not found");
@@ -484,16 +474,14 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                                      .equals(event.getTargetPlayer()))
                                              .findFirst()
                                              .orElseThrow(() -> {
-                                                 LOG.error(
-                                                         "Target player not found for username {}",
+                                                 LOG.error("Target player not found for username {}",
                                                          event.getTargetPlayer()
                                                  );
                                                  return new GameManagementException("Target player not found");
                                              });
 
         if (request.isAccepted()) {
-            gameManagement.shareKnowledgeRequestAccepted(
-                    currentPlayer,
+            gameManagement.shareKnowledgeRequestAccepted(currentPlayer,
                     targetPlayer,
                     event.getLobbyId(),
                     event,

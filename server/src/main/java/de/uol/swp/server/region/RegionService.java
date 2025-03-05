@@ -177,5 +177,7 @@ public class RegionService extends AbstractService {
         IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(request.getLobbyId(),
+                "Ein Wasseraufbereitungsmarker wurde in der Region mit der Id " + request.getRegionId()+ " platziert");
     }
 }

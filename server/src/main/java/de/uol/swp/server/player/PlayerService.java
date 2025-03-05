@@ -60,6 +60,7 @@ public class PlayerService extends AbstractService {
         post(response);
         IGame game = gameManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        sendServerMessageEvent(request.getLobbyId(), "Spielerkarte wurde erfolgreich gezogen.");
     }
 
     /**
@@ -83,6 +84,7 @@ public class PlayerService extends AbstractService {
         }
         gameManagement.drawInfectionCard(game);
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        sendServerMessageEvent(request.getLobbyId(), "Infektionskarte erfolgreich gezogen.");
     }
 
     /**
