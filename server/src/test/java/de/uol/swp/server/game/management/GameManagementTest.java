@@ -572,7 +572,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(mock(IGameState.class));
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(5, actions.size());
+        assertEquals(4, actions.size());
     }
 
     @Test

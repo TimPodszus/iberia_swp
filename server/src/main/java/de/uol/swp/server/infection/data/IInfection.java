@@ -24,4 +24,11 @@ public interface IInfection {
      * @return the plague associated with the infection
      */
     PlagueName getPlagueName();
+
+    /**
+     * Decreases the severity of the infection by the specified amount.
+     *
+     * @param amount the amount by which to decrease the severity
+     */
+    void decreaseSeverity(int amount);
 }

@@ -6,6 +6,8 @@ import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.connection.ConnectionMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.plague.PlagueMapper;
 import de.uol.swp.server.player.PlayerMapper;
 import de.uol.swp.server.region.RegionMapper;
@@ -23,6 +25,14 @@ public class GameMapper {
      * @return the converted IGameDTO object
      */
     public static IGameDTO toDTO(IGame game) {
+        int actionsRemaining;
+        IGameState state = game.getState();
+        if (state instanceof PlayerTurnState playerTurnState) {
+            actionsRemaining = playerTurnState.getActionsRemaining();
+        } else {
+            actionsRemaining = 0;
+        }
+
         return new GameDTO(
                 game.getGameId(),
                 CityMapper.toDTOList(game.getCityRepository()
@@ -43,7 +53,8 @@ public class GameMapper {
                 game.getWaterTreatmentsLeft(),
                 game.getTracksLeft(),
                 game.getCurrentPlayerIndex(),
-                game.getState().getStateType()
+                state.getStateType(),
+                actionsRemaining
         );
     }
 }

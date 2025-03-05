@@ -3,6 +3,10 @@ package de.uol.swp.server.di;
 import com.google.inject.AbstractModule;
 import de.uol.swp.server.cards.management.CardManagement;
 import de.uol.swp.server.cards.management.ICardManagement;
+import de.uol.swp.server.chat.management.ChatManagement;
+import de.uol.swp.server.chat.management.IChatManagement;
+import de.uol.swp.server.chat.store.ChatStore;
+import de.uol.swp.server.chat.store.IChatStore;
 import de.uol.swp.server.city.management.CityManagement;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.management.ConnectionManagement;
@@ -13,6 +17,8 @@ import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.infection.management.InfectionManagement;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.lobby.management.LobbyManagement;
+import de.uol.swp.server.plague.management.IPlagueManagement;
+import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.management.IRegionManagement;
@@ -36,6 +42,8 @@ public class ServerModule extends AbstractModule {
     private final EventBus bus = EventBus.getDefault();
     private final UserStore store = new DatabaseBasedUserStore();
 
+    private final IChatStore chatStore = new ChatStore();
+
 
     @Override
     protected void configure() {
@@ -48,9 +56,12 @@ public class ServerModule extends AbstractModule {
         bind(IPlayerManagement.class).to(PlayerManagement.class);
         bind(IInfectionManagement.class).to(InfectionManagement.class);
         bind(IRegionManagement.class).to(RegionManagement.class);
+        bind(IPlagueManagement.class).to(PlagueManagement.class);
         bind(IInfectionManagement.class).to(InfectionManagement.class);
         bind(IRegionManagement.class).to(RegionManagement.class);
         bind(ServerUserService.class).to(UserManagement.class);
         bind(ICardManagement.class).to(CardManagement.class);
+        bind(IChatManagement.class).to(ChatManagement.class);
+        bind(IChatStore.class).toInstance(chatStore);
     }
 }
