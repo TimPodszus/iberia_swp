@@ -80,8 +80,13 @@ public class PlagueService extends AbstractService {
             response = new StatusResponse(request.getLobbyId(), true, "Plage wurde erforscht");
         } catch (PlagueManagementException e) {
             LOG.error("Error while researching plague", e);
-            response = new StatusResponse(request.getLobbyId(), false, e.getMessage());
+            response = new StatusResponse(request.getLobbyId(), false, "Fehler beim Erforschen der Seuche");
+        } catch (IllegalGameStateException e) {
+            LOG.error("Game is in an illegal state for researching plague");
+            response = new StatusResponse(request.getLobbyId(), false, "In dem Zustand des Spiels kann die Seuche " +
+                    "nicht erforscht werden.");
         }
+
 
         response.setSession(session);
         post(response);

@@ -12,6 +12,7 @@ import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.infection.data.IInfection;
@@ -107,7 +108,7 @@ class PlagueServiceTest {
     }
 
     @Test
-    void testOnResearchPlagueRequest_Success() throws PlagueManagementException {
+    void testOnResearchPlagueRequest_Success() throws PlagueManagementException, IllegalGameStateException {
         ResearchPlagueRequest request = new ResearchPlagueRequest("lobby123");
         doNothing().when(plagueManagement)
                    .researchPlague(game);
@@ -119,7 +120,7 @@ class PlagueServiceTest {
     }
 
     @Test
-    void testOnResearchPlagueRequest_Exception() throws PlagueManagementException {
+    void testOnResearchPlagueRequest_Exception() throws PlagueManagementException, IllegalGameStateException {
         ResearchPlagueRequest request = new ResearchPlagueRequest("lobby123");
         doThrow(new PlagueManagementException("Error")).when(plagueManagement)
                                                        .researchPlague(game);
