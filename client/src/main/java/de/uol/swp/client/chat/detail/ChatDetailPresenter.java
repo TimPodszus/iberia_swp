@@ -4,10 +4,12 @@ import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.common.chat.messages.PlayerSentChatMessage;
 import de.uol.swp.common.chat.messages.SentChatMessage;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +23,10 @@ public class ChatDetailPresenter extends AbstractPresenter {
     private static final Logger LOG = LogManager.getLogger(ChatDetailPresenter.class);
 
     @FXML
-    private TextArea chatArea;
+    private VBox chatContainer;
+
+    @FXML
+    private ScrollPane chatScrollPane;
 
     @FXML
     private TextField chatInput;
@@ -34,6 +39,9 @@ public class ChatDetailPresenter extends AbstractPresenter {
 
     @Setter
     private String lobbyId;
+    @Setter
+    private String currentUsername;
+
 
     /**
      * Handles the action of sending a chat message.
@@ -60,10 +68,17 @@ public class ChatDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAbstractChatMessage(SentChatMessage chatMessage) {
-        if (chatMessage instanceof PlayerSentChatMessage playerSentChatMessage) {
-            chatArea.appendText(playerSentChatMessage.getSender() + ": " + chatMessage.getMessage() + "\n");
-        } else {
-            chatArea.appendText("Server: " + chatMessage.getMessage() + "\n");
-        }
+        Platform.runLater(() -> {
+            if (chatMessage instanceof PlayerSentChatMessage playerMessage) {
+                if (playerMessage.getSender().equals(currentUsername)) {
+                    chatContainer.getChildren().add(new CurrentPlayerMessage(playerMessage.getMessage()));
+                } else {
+                    chatContainer.getChildren().add(new PlayerMessage(playerMessage.getSender(), playerMessage.getMessage()));
+                }
+            } else {
+                chatContainer.getChildren().add(new ServerMessage(chatMessage.getMessage()));
+            }
+            chatScrollPane.setVvalue(1.0);
+        });
     }
 }
