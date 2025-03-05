@@ -131,9 +131,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             for (int i = 0; i < cardsToDraw; i++) {
                 playerManagement.drawPlayerCard(game.getGameId(), player);
             }
-            int currentPlayerIndex = game.getCurrentPlayerIndex();
-            int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;
-            game.setCurrentPlayerIndex(nextPlayerIndex);
+            game.incrementCurrentPlayerIndex();
         }
     }
 
@@ -270,11 +268,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1),
                         1
                 );
-                game.setState(new PlayerTurnState());
-                int currentPlayerIndex = game.getCurrentPlayerIndex();
-                int nextPlayerIndex = currentPlayerIndex == game.getPlayers()
-                                                                .size() - 1 ? 0 : currentPlayerIndex + 1;
-                game.setCurrentPlayerIndex(nextPlayerIndex);
+                game.incrementCurrentPlayerIndex();
             }
             cityManagement.infectCityWithOwnPlague(game, infectionCardDrawPile.remove(0), 1);
             return null;

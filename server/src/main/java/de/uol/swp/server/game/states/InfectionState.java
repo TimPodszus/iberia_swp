@@ -14,6 +14,7 @@ import lombok.Getter;
 @Getter
 public class InfectionState implements IGameState {
     private int infectedCities = 0;
+
     public StateType getStateType() {
         return StateType.INFECTION_STATE;
     }
@@ -26,10 +27,7 @@ public class InfectionState implements IGameState {
             default -> 2;
         };
         if (citiesToInfect == infectedCities) {
-            game.setState(new PlayerTurnState());
-            int currentPlayerIndex = game.getCurrentPlayerIndex();
-            int nextPlayerIndex = currentPlayerIndex == game.getPlayers().size() - 1 ? 0 : currentPlayerIndex + 1;
-            game.setCurrentPlayerIndex(nextPlayerIndex);
+            game.incrementCurrentPlayerIndex();
         }
     }
 }

@@ -10,6 +10,7 @@ import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.GameStateChangeListener;
 import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
@@ -257,5 +258,10 @@ public class Game implements IGame {
             }
         }
         return null;
+    }
+
+    public void incrementCurrentPlayerIndex() {
+        setState(new PlayerTurnState());
+        setCurrentPlayerIndex(currentPlayerIndex == getPlayers().size() - 1 ? 0 : currentPlayerIndex + 1);
     }
 }

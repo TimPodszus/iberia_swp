@@ -173,6 +173,11 @@ public interface IGame {
     void setCurrentPlayerIndex(int count);
 
     /**
+     * Increments the current player index and sets the current state to playerTurnState.
+     */
+    void incrementCurrentPlayerIndex();
+
+    /**
      * Gets the current player index.
      *
      * @return the current player index
