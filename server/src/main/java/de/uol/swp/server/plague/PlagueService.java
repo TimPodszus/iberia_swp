@@ -69,7 +69,7 @@ public class PlagueService extends AbstractService {
     @Subscribe
     public void onResearchPlagueRequest(
             ResearchPlagueRequest request
-    ) throws PlagueManagementException {
+    ) {
         LOG.debug("ResearchPlagueRequest received");
         AbstractGameResponse response;
         Session session = request.getSession()
@@ -144,7 +144,6 @@ public class PlagueService extends AbstractService {
      * Removes one instance of the specified plague from the city and sends a response.
      *
      * @param request The request containing the lobby ID, city ID, plague name, and doctor role.
-     * @throws PlagueManagementException if there is an issue treating the plague.
      */
     @Subscribe
     public void onTreatPlagueRequest(TreatPlagueRequest request) {
