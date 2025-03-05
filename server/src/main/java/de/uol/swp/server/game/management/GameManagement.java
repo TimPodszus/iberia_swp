@@ -36,6 +36,7 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
+import de.uol.swp.server.role.Nurse;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -115,7 +116,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      */
     void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
         for (IUser user : users) {
-            Player player = new Player(user);
+            Player player = new Player(user, game.getGameId());
 
             game.getPlayers()
                 .add(player);
@@ -174,7 +175,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                 .size(); i++) {
             game.getPlayers()
                 .get(i)
-                .setRole(allRoles.get(i));
+                .setRole(new Nurse());
         }
     }
 
@@ -202,13 +203,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param request The request with where the position is to be set
      */
-    public IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
+    public void setPositioning(PositioningRequest request) throws GameException, IllegalStateException {
         IGame game = getGame(request.getLobbyId());
         IGameState gameState = game.getState();
 
         if (!(gameState instanceof WaitForPositioning)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows setting positioning", game.getGameId());
-            throw new IllegalGameStateException("Game is not in a state that allows setting positioning");
+            throw new IllegalStateException("Game is not in a state that allows setting positioning");
         }
 
         List<IPlayer> players = game.getPlayers();
@@ -228,7 +229,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         try {
             assert requestPlayer != null;
             if (requestPlayer.getCurrentPosition() != null) {
-                return game;
+                return;
             }
             playerManagement.setStartingPosition(
                     game.getGameId(),
@@ -245,7 +246,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             game.setState(new PlayerTurnState());
             game.setCurrentPlayerIndex(0);
         }
-        return game;
     }
 
     /**

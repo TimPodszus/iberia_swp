@@ -2,8 +2,10 @@ package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
@@ -101,4 +103,30 @@ public interface IPlayerManagement {
      * Draws a player card from the DiscardPile. The specific behavior of this method should be defined.
      */
     InfectionCard drawBottomInfectionCard(IGame game) throws IllegalStateException;
+
+    /**
+     * Determines the regions for a nurse player.
+     *
+     * @param player the player whose regions are being determined
+     * @param oldPosition the old position of the player
+     * @return the list of regions for the player
+     */
+    List<IRegionDTO> determineRegionsForNurse(IPlayer player, ICity oldPosition, ICity newPosition);
+
+    /**
+     * Places a prevention marker in a region.
+     *
+     * @param lobbyId  the ID of the lobby
+     * @param regionId the ID of the region
+     */
+     void placePreventionMarker(String lobbyId, int regionId);
+
+    /**
+     * Retrieves a player from a lobby.
+     * @param game the game
+     * @param playerName the name of the player
+     * @return the player
+     * @throws PlayerManagementException if an error occurs while retrieving the player
+     */
+     IPlayer getPlayer(IGame game, String playerName) throws PlayerManagementException;
 }

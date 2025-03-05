@@ -14,7 +14,6 @@ import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.AvailableActionsRequest;
 import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
@@ -120,38 +119,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
             LOG.debug("Game created for lobby {}", request.getLobbyId());
             post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
             sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-        }
-    }
-
-    /**
-     * Handles incoming requests to set a players position. This method initializes the position
-     * through the GameManagement class, checks if the positioning was successful,
-     * and sends an appropriate status response to the requester.
-     *
-     * @param request the game PositioningRequest containing necessary initialization parameters
-     */
-    @Subscribe
-    public void onPositionRequest(PositioningRequest request) {
-        IGame game = null;
-
-        try {
-            game = gameManagement.setPositioning(request);
-        } catch (IllegalGameStateException e) {
-            LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
-            sendStatusResponse(request,
-                    false,
-                    "Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand"
-            );
-            return;
-        } catch (GameException e) {
-            LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
-            sendStatusResponse(request, false, "Position konnte nicht gesetzt werden");
-            return;
-        }
-
-        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        if (game != null && lobby != null) {
-            sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
     }
 

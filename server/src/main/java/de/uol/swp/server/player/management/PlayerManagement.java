@@ -3,6 +3,8 @@ package de.uol.swp.server.player.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.region.IRegionDTO;
+import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.*;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
@@ -11,11 +13,11 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.EndGameState;
-import de.uol.swp.server.game.states.StartState;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.region.RegionMapper;
+import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.Collections;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.Objects;
 
 
-public class PlayerManagement implements IPlayerManagement {
+public class PlayerManagement extends AbstractManagement implements IPlayerManagement {
     private final ICityManagement cityManagement;
 
     @Inject
@@ -244,7 +246,7 @@ public class PlayerManagement implements IPlayerManagement {
      * @return the player with the specified username
      * @throws PlayerManagementException if the player is not found
      */
-    private IPlayer getPlayer(IGame game, String playerName) throws PlayerManagementException {
+    public IPlayer getPlayer(IGame game, String playerName) throws PlayerManagementException {
         return game.getPlayers()
                    .stream()
                    .filter(p -> p.getUser()
@@ -300,5 +302,27 @@ public class PlayerManagement implements IPlayerManagement {
         }
 
         return infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1);
+    }
+
+    public List<IRegionDTO> determineRegionsForNurse(IPlayer player, ICity oldPosition, ICity newPosition) throws IllegalStateException {
+        IGame game = getGame(player.getGameId());
+        removePreventionMarker(game, oldPosition);
+        return RegionMapper.toDTOList(game.getRegionRepository().getRegionsByCityName(newPosition.getName()));
+    }
+
+    public void placePreventionMarker(String lobbyId, int regionId) {
+        IGame game = getGame(lobbyId);
+        IRegion region = game.getRegionRepository()
+                             .getRegionByID(regionId);
+        region.setPreventionMarker(true);
+    }
+
+    private void removePreventionMarker(IGame game, ICity oldPosition) {
+        if(oldPosition == null) {
+            return;
+        }
+        List<IRegion> regions = game.getRegionRepository()
+                                    .getRegionsByCityName(oldPosition.getName());
+        regions.forEach(region -> region.setPreventionMarker(false));
     }
 }

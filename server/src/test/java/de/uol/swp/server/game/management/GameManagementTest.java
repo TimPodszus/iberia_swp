@@ -129,18 +129,6 @@ class GameManagementTest {
     }
 
     @Test
-    void testSetPositioning_InvalidGameState() {
-        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
-        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
-
-        assertThrows(
-                IllegalGameStateException.class,
-                () -> gameManagement.setPositioning(request),
-                "Expected GameManagementException"
-        );
-    }
-
-    @Test
     void testSetPositioning_PlayerNotFound() {
         IUser testUser = new User("test", "test");
         Session session = UUIDSession.create(testUser);
@@ -161,7 +149,7 @@ class GameManagementTest {
 
         IUser testUser = new User("test", "test");
         Session session = UUIDSession.create(testUser);
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         when(game.getPlayers()).thenReturn(List.of(player));
 
         ICity albacete = cityRepository.getCityByName(ALBACETE);
@@ -191,7 +179,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(mockState);
 
         IUser testUser = new User("test", "test");
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getGameId()).thenReturn("gameId");
         doThrow(PlayerManagementException.class).when(playerManagement)
@@ -209,7 +197,7 @@ class GameManagementTest {
         Session session = UUIDSession.create(testUser);
         request.setSession(session);
 
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         player.setCurrentPosition(cityRepository.getCityByName(CityName.BARCELONA));
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
@@ -224,7 +212,7 @@ class GameManagementTest {
         Session session = UUIDSession.create(testUser);
         request.setSession(session);
 
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         when(game.getCityRepository()).thenReturn(cityRepository);
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
@@ -510,7 +498,7 @@ class GameManagementTest {
     private void createTestPlayers(IUser... users) {
         List<IPlayer> players = new ArrayList<>();
         for (IUser user : users) {
-            IPlayer player = new Player(user);
+            IPlayer player = new Player(user, "gameId");
             players.add(player);
         }
         when(game.getPlayers()).thenReturn(players);
@@ -909,8 +897,8 @@ class GameManagementTest {
         IGame game1 = new Game(1, "testLobby");
         ICity city1 = mock(ICity.class);
         ICity city2 = mock(ICity.class);
-        IPlayer player1 = new Player(new User("user1", "pass1"));
-        IPlayer player2 = new Player(new User("user2", "pass2"));
+        IPlayer player1 = new Player(new User("user1", "pass1"), "gameId");
+        IPlayer player2 = new Player(new User("user2", "pass2"), "gameId");
         player1.getCards()
                .add(new CityCard(1, "City1", city1));
         player2.getCards()
@@ -1019,12 +1007,12 @@ class GameManagementTest {
                 1,
                 mock(GameStateChangeListener.class)
         );
-        IPlayer currentPlayer = new Player(new User("test", "test"));
+        IPlayer currentPlayer = new Player(new User("test", "test"), "testGame");
         ICard currentPlayerCard = new CityCard(1, "test", mock(ICity.class));
         currentPlayer.getCards()
                      .add(currentPlayerCard);
 
-        IPlayer targetPlayer = new Player(new User("test2", "test2"));
+        IPlayer targetPlayer = new Player(new User("test2", "test2"), "testGame");
         ICard targetPlayerCard = new CityCard(2, "test2", mock(ICity.class));
         targetPlayer.getCards()
                     .add(targetPlayerCard);

@@ -15,6 +15,7 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -53,6 +54,9 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     private PlayerService playerService;
 
+    @Mock
+    private ILobbyManagement lobbyManagement;
+
     @Subscribe
     public void onBoardUpdateEvent(BoardUpdateEvent event) {
         super.handleEvent(event);
@@ -67,7 +71,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        playerService = new PlayerService(super.getBus(), playerManagement, gameManagement);
+        playerService = new PlayerService(super.getBus(), playerManagement, gameManagement, lobbyManagement);
         IUser user = new User("testUser", "testPassword");
 
         when(request.getLobbyId()).thenReturn("validGameId");
@@ -139,7 +143,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
         Session session = mock(Session.class);
         InfectionCard infectionCard = mock(InfectionCard.class);
         IUser user = new User("testUser", "testPassword");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "validGameId");
         when(request.getLobbyId()).thenReturn("validGameId");
         when(request.getSession()).thenReturn(Optional.of(session));
         when(session.getUser()).thenReturn(UserMapper.toDTO(user));
@@ -162,7 +166,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
         Session session = mock(Session.class);
         IUser user = new User("testUser", "testPassword");
         IUser user1 = new User("testUser1", "testPassword1");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "validGameId");
         game.getPlayers()
             .add(player);
         player.setRole(new Sailor());

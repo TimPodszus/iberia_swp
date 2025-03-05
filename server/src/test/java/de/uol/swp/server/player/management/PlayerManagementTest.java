@@ -189,7 +189,7 @@ class PlayerManagementTest {
         when(cityManagement.getCity(game.getGameId(), 1)).thenReturn(city);
 
         IUser testUser = new User("testUser", "testPassword");
-        IPlayer testPlayer = new Player(testUser);
+        IPlayer testPlayer = new Player(testUser, game.getGameId());
         game.getPlayers()
             .add(testPlayer);
         GameStore.getInstance()

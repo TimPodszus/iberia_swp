@@ -18,6 +18,7 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.player.message.request.PlacePreventionMarkerRequest;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
@@ -358,5 +359,9 @@ public class GameService {
      */
     public void sendBuildHospitalRequest(String lobbyId, int cityId) {
         eventBus.post(new BuildHospitalRequest(lobbyId, cityId));
+    }
+
+    public void sendPlacePreventionMarkerRequest(String lobbyId, int regionId) {
+        eventBus.post(new PlacePreventionMarkerRequest(lobbyId, regionId));
     }
 }

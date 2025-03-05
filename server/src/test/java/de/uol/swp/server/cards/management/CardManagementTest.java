@@ -57,7 +57,7 @@ public class CardManagementTest {
     @Test
     void testPlayCard() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
 
         ICard card = mock(CityCard.class);
@@ -80,7 +80,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCard() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
 
         EventCard card = mock(EventCard.class);
@@ -105,7 +105,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCardWithWrongId() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         player.setCards(new ArrayList<>(List.of()));
 
@@ -120,7 +120,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCardWithStateMobilization() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayers()).thenReturn(List.of(player));
 
@@ -147,7 +147,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCardWithAnotherDay() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(new PlayerTurnState());
@@ -173,7 +173,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCardWithAnotherDayNotInPlayerTurnState() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(EventState.class));
@@ -198,7 +198,7 @@ public class CardManagementTest {
         TreatWaterEventCard card = mock(TreatWaterEventCard.class);
         when(card.getId()).thenReturn(1);
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         player.getCards().add(card);
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
         when(game.getPlayer("user")).thenReturn(player);
@@ -214,7 +214,7 @@ public class CardManagementTest {
         TreatWaterEventCard card = mock(TreatWaterEventCard.class);
         when(card.getId()).thenReturn(1);
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         player.getCards().add(card);
         when(game.getState()).thenReturn(mock(DrawCardState.class));
         when(game.getPlayer("user")).thenReturn(player);

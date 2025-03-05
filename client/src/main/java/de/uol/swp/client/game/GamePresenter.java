@@ -39,6 +39,7 @@ import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.player.message.response.RegionsForPreventionMarkerResponse;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
@@ -461,24 +462,9 @@ public class GamePresenter extends AbstractPresenter {
                                                                     .equals(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
                                                                                                                                    .contains(
                                                                                                                                            REGION_HIGHLIGHTED_CLASS)) {
-            Platform.runLater(() -> {
-                TreatWaterEventDialog dialog = new TreatWaterEventDialog(
-                        isDismissibleDialog,
-                        gameDTO.getWaterTreatmentsLeft(),
-                        gameDTO.getState()
-                );
-                dialog.showAndWaitForResult()
-                      .thenAccept(selectedValue -> {
-                          if (selectedValue != null) {
-                              LOG.debug("Player has selected {} water treatments", selectedValue);
-                              gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
-                          } else {
-                              LOG.debug("Player has not selected any water treatments");
-                              gameService.sendTreatWaterEventRequest(lobbyId, regionId, 0, true);
-                          }
-                      });
-            });
-            resetRegionStyle();
+            handleTreatWaterEvent();
+        } else if(gameDTO.getState().equals(StateType.PLACE_PREVENTION_MARKER_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
+            gameService.sendPlacePreventionMarkerRequest(lobbyId, regionId);
         }
     }
 
@@ -1647,6 +1633,35 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
+     * Handles the TreatWaterEvent.
+     * <p>
+     * This method is called when a TreatWaterEvent is received. It displays a dialog
+     * asking the user how many water treatments they want to use. If the user confirms,
+     * a treat water event request is sent with the selected value. If the user cancels,
+     * a treat water event request is sent with 0 water treatments.
+     */
+    private void handleTreatWaterEvent() {
+        Platform.runLater(() -> {
+            TreatWaterEventDialog dialog = new TreatWaterEventDialog(
+                    isDismissibleDialog,
+                    gameDTO.getWaterTreatmentsLeft(),
+                    gameDTO.getState()
+            );
+            dialog.showAndWaitForResult()
+                  .thenAccept(selectedValue -> {
+                      if (selectedValue != null) {
+                          LOG.debug("Player has selected {} water treatments", selectedValue);
+                          gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
+                      } else {
+                          LOG.debug("Player has not selected any water treatments");
+                          gameService.sendTreatWaterEventRequest(lobbyId, regionId, 0, true);
+                      }
+                  });
+        });
+        resetRegionStyle();
+    }
+
+    /**
      * Handles the ShareRideEvent.
      * <p>
      * This method is called when a ShareRideEvent is received. It displays a confirmation dialog
@@ -1725,6 +1740,15 @@ public class GamePresenter extends AbstractPresenter {
         List<IRegionDTO> regions = gameDTO.getRegions();
         isDismissibleDialog = eventResponse.isDismissible();
         for (IRegionDTO region : regions) {
+            Node stackPane = mapPane.lookup(REGION_ID + region.getId());
+            stackPane.getStyleClass()
+                     .add(REGION_HIGHLIGHTED_CLASS);
+        }
+    }
+
+    @Subscribe
+    public void onRegionsForPreventionMarkerResponse(RegionsForPreventionMarkerResponse response){
+        for (IRegionDTO region : response.getRegions()) {
             Node stackPane = mapPane.lookup(REGION_ID + region.getId());
             stackPane.getStyleClass()
                      .add(REGION_HIGHLIGHTED_CLASS);

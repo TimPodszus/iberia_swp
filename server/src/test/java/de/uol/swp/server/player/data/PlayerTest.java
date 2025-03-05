@@ -32,7 +32,7 @@ class PlayerTest {
         mockRole = mock(IRole.class);
         mockCity = mock(ICity.class);
         mockCards = new ArrayList<>();
-        player = new Player(mockUser);
+        player = new Player(mockUser, "gameId");
     }
 
     @Test

@@ -3,29 +3,47 @@ package de.uol.swp.server.player;
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardResponse;
+import de.uol.swp.common.player.message.request.PlacePreventionMarkerRequest;
+import de.uol.swp.common.player.message.response.RegionsForPreventionMarkerResponse;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.PlacePreventionMarkerState;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.UserMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+
+import java.util.List;
 
 /**
  * Service class for handling player-related operations.
  */
-public class PlayerService extends AbstractService {
+public class PlayerService extends AbstractService implements PositionChangeListener {
+    static final Logger LOG = LogManager.getLogger(PlayerService.class);
+
     private final IPlayerManagement playerManagement;
     private final IGameManagement gameManagement;
+    private final ILobbyManagement lobbyManagement;
+
 
     /**
      * Constructs a new PlayerService.
@@ -34,10 +52,49 @@ public class PlayerService extends AbstractService {
      * @param playerManagement the player management instance for player operations
      */
     @Inject
-    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement) {
+    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement,
+                         ILobbyManagement lobbyManagement
+    ) {
         super(bus);
         this.playerManagement = playerManagement;
         this.gameManagement = gameManagement;
+
+        this.lobbyManagement = lobbyManagement;
+    }
+
+    /**
+     * Handles incoming requests to set a players position. This method initializes the position
+     * through the GameManagement class, checks if the positioning was successful,
+     * and sends an appropriate status response to the requester.
+     *
+     * @param request the game PositioningRequest containing necessary initialization parameters
+     */
+    @Subscribe
+    public void onPositionRequest(PositioningRequest request) {
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        Session session = request.getSession()
+                                 .orElseThrow(() -> new IllegalStateException("Session not present"));
+
+        try {
+            IPlayer player = playerManagement.getPlayer(game, session.getUser().getUsername());
+            player.setPositionChangeListener(this);
+            gameManagement.setPositioning(request);
+        } catch (IllegalStateException | PlayerManagementException e) {
+            LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
+            sendStatusResponse(request,
+                    false,
+                    "Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand"
+            );
+            return;
+        } catch (GameException e) {
+            LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
+            sendStatusResponse(request, false, "Position konnte nicht gesetzt werden");
+            return;
+        }
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        if (game != null && lobby != null) {
+            sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        }
     }
 
     /**
@@ -107,5 +164,30 @@ public class PlayerService extends AbstractService {
 
         IGame game = gameManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    @Subscribe
+    public void onPlacePreventionMarkerRequest(PlacePreventionMarkerRequest request) {
+        playerManagement.placePreventionMarker(request.getLobbyId(), request.getRegionId());
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        game.setState(game.getPreviousState());
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    @Override
+    public void onPositionChanged(IPlayer player, ICity oldPosition, ICity newPosition) {
+        Session session = authenticationService.getSession(player.getUser())
+                                               .orElseThrow(() -> new IllegalStateException("Session not present"));
+        List<IRegionDTO> regions = playerManagement.determineRegionsForNurse(player, oldPosition, newPosition);
+        IGame game = gameManagement.getGame(player.getGameId());
+        game.setState(new PlacePreventionMarkerState());
+        RegionsForPreventionMarkerResponse response = new RegionsForPreventionMarkerResponse(
+                player.getGameId(),
+                true,
+                regions
+        );
+        response.setSession(session);
+        post(response);
     }
 }
