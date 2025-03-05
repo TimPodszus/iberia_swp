@@ -7,7 +7,6 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
-import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -39,7 +38,10 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     }
 
     @Override
-    public void researchPlague(PlagueName plagueToResearch, IGame game) throws PlagueManagementException, GameException {
+    public void researchPlague(
+            PlagueName plagueToResearch,
+            IGame game
+    ) throws PlagueManagementException, GameException {
         if (plagueToResearch == null) {
             throw new PlagueManagementException("The plague to be researched was not specified");
         }
@@ -110,7 +112,11 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     }
 
     @Override
-    public void treatPlague(PlagueName plagueToTreat, ICity city, IGame game) throws IllegalGameStateException, PlagueNotFoundException {
+    public void treatPlague(
+            PlagueName plagueToTreat,
+            ICity city,
+            IGame game
+    ) throws IllegalGameStateException, PlagueNotFoundException {
         if (plagueToTreat == null || city == null) {
             throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");
         }

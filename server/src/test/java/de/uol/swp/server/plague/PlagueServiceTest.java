@@ -3,7 +3,6 @@ package de.uol.swp.server.plague;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.ResearchPlagueRequest;
@@ -20,8 +19,6 @@ import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.PlagueRepository;
-import de.uol.swp.common.plague.ResearchPlagueRequest;
-import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
@@ -41,7 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
