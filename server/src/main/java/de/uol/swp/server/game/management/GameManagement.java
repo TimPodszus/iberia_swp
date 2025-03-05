@@ -323,11 +323,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return game.getTracksLeft() >= 0;
     }
 
-    private boolean isHospitalBuildable() {
-        //TODO: Implement logic in #85
-        return true;
-    }
-
     /**
      * Checks if knowledge can be shared in the current game state.
      *
