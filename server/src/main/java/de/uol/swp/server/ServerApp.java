@@ -16,6 +16,7 @@ import de.uol.swp.server.lobby.LobbyService;
 import de.uol.swp.server.plague.PlagueService;
 import de.uol.swp.server.region.RegionService;
 import de.uol.swp.server.player.PlayerService;
+import de.uol.swp.server.plague.PlagueService;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.management.UserManagement;
 import de.uol.swp.server.usermanagement.UserService;
@@ -82,6 +83,7 @@ class ServerApp {
         injector.getInstance(LobbyService.class);
         injector.getInstance(GameService.class);
         injector.getInstance(ConnectionService.class);
+        injector.getInstance(PlagueService.class);
         injector.getInstance(PlayerService.class);
         injector.getInstance(CardService.class);
         injector.getInstance(RegionService.class);

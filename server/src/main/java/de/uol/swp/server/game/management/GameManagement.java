@@ -39,6 +39,7 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
+import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -310,7 +311,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isKnowledgeShareable(lobbyId)) {
             actions.add(GameActions.SHARE_KNOWLEDGE);
         }
-        if (isInfectionTreatable()) {
+        if (isInfectionTreatable(lobbyCode)) {
             actions.add(GameActions.TREAT_INFECTION);
         }
         if (isPlagueResearchable(lobbyId)) {
@@ -356,9 +357,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                                    .getId() == currentCityId));
     }
 
-    private boolean isInfectionTreatable() {
-        //TODO: Implement logic in #88
-        return true;
+    private boolean isInfectionTreatable(String lobbyCode) {
+        ICity city = getGame(lobbyCode).getCurrentPlayer().getCurrentPosition();
+        return city.getInfections()
+                   .stream()
+                   .anyMatch(infection -> infection.getSeverity() > 0);
     }
 
     private boolean isPlagueResearchable(String lobbyId) {
