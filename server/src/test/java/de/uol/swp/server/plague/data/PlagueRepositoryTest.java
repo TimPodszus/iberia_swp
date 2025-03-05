@@ -1,15 +1,12 @@
-package de.uol.swp.server.plague;
+package de.uol.swp.server.plague.data;
 
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.server.plague.data.IPlague;
-import de.uol.swp.server.plague.data.PlagueRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for the {@link PlagueRepository}.
@@ -78,5 +75,24 @@ class PlagueRepositoryTest {
         List<IPlague> plagues = plagueRepository.getPlagues();
         assertTrue(plagues.stream()
                           .anyMatch(p -> p.getName() == PlagueName.TYPHUS));
+    }
+
+    /**
+     * Tests whether the {@link PlagueRepository#getPlagueByName(PlagueName)} method returns the correct plague.
+     */
+    @Test
+    void testGetPlagueByName() {
+        IPlague plague = plagueRepository.getPlagueByName(PlagueName.CHOLERA);
+        assertNotNull(plague);
+        assertEquals(PlagueName.CHOLERA, plague.getName());
+    }
+
+    /**
+     * Tests whether the {@link PlagueRepository#getPlagueByName(PlagueName)} method returns null for a non-existent plague.
+     */
+    @Test
+    void testGetPlagueByNameNotFound() {
+        IPlague plague = plagueRepository.getPlagueByName(null);
+        assertNull(plague);
     }
 }

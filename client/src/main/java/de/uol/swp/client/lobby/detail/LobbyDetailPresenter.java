@@ -2,6 +2,7 @@ package de.uol.swp.client.lobby.detail;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
+import de.uol.swp.client.chat.detail.ChatDetailPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
@@ -12,7 +13,15 @@ import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -61,13 +70,17 @@ public class LobbyDetailPresenter extends AbstractPresenter {
     @FXML
     public TableView<UserListItem> userTable;
 
+    @FXML
+    private ChatDetailPresenter chatController;
+
     /**
      * Initializes the Lobby Screen.
      */
     @FXML
     public void initialize() {
         changeLobbyName.setDisable(true);
-        difficultyDropdown.setItems(FXCollections.observableArrayList(DIFFICULTY_EASY,
+        difficultyDropdown.setItems(FXCollections.observableArrayList(
+                DIFFICULTY_EASY,
                 DIFFICULTY_MEDIUM,
                 DIFFICULTY_HARD
         ));
@@ -76,7 +89,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
                           .selectedIndexProperty()
                           .addListener((observableValue, number, t1) -> {
                               int difficulty = t1.intValue() + 1;
-                              lobbyDTO = new LobbyDTO(lobbyDTO.getLobbyId(),
+                              lobbyDTO = new LobbyDTO(
+                                      lobbyDTO.getLobbyId(),
                                       lobbyDTO.getName(),
                                       lobbyDTO.getUsers(),
                                       lobbyDTO.getOwner(),
@@ -143,6 +157,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * Initializes the screen with the lobby data.
      */
     private void initializeScreen() {
+        chatController.setLobbyId(lobbyDTO.getLobbyId());
+
         Platform.runLater(() -> {
             setFields();
             setUserList();
@@ -189,7 +205,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
             TableRow<UserListItem> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (isOwner && event.getClickCount() == 2 && (!row.isEmpty())) {
-                    LOG.debug("Kicking {} from lobby",
+                    LOG.debug(
+                            "Kicking {} from lobby",
                             row.getItem()
                                .getName()
                     );
@@ -262,7 +279,8 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * to the lobbyService to update the lobby.
      */
     public void onChangeLobbyName() {
-        lobbyDTO = new LobbyDTO(lobbyDTO.getLobbyId(),
+        lobbyDTO = new LobbyDTO(
+                lobbyDTO.getLobbyId(),
                 lobbyName.getText(),
                 lobbyDTO.getUsers(),
                 lobbyDTO.getOwner(),
