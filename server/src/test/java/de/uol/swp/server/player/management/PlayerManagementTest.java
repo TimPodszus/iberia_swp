@@ -374,7 +374,7 @@ class PlayerManagementTest {
                 "Expected sortCards() to throw, but it did not"
         );
 
-        assertTrue(thrown.getMessage().contains("Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie"));
+        assertTrue(thrown.getMessage().contains("It is not your turn or your role is not scientist of the royal academy"));
     }
 
     @Test
@@ -395,7 +395,7 @@ class PlayerManagementTest {
                 "Expected getCardsToSort() to throw, but it did not"
         );
 
-        assertTrue(thrown.getMessage().contains("Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie"));
+        assertTrue(thrown.getMessage().contains("It is not your turn or your role is not scientist of the royal academy"));
     }
 
     @Test
@@ -416,6 +416,6 @@ class PlayerManagementTest {
                 "Expected getCardsToSort() to throw, but it did not"
         );
 
-        assertTrue(thrown.getMessage().contains("Das Spiel befindet sich nicht im Zug-Status"));
+        assertTrue(thrown.getMessage().contains("The game´s current state is not playerturnstate"));
     }
 }
