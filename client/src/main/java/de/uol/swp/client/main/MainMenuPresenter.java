@@ -5,7 +5,7 @@ import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
-import de.uol.swp.common.exception.UnsopportedMethodExeption;
+import de.uol.swp.common.exception.UnsupportedMethodException;
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.response.LoginSuccessfulResponse;
@@ -88,7 +88,7 @@ public class MainMenuPresenter extends AbstractPresenter {
      * @param event The ActionEvent created by pressing the rules button
      */
     @FXML
-    void onRulesButtonPressed(ActionEvent event) throws UnsopportedMethodExeption {
+    void onRulesButtonPressed(ActionEvent event) throws UnsupportedMethodException {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop()
                                                    .isSupported(Desktop.Action.BROWSE)) {
             try {
@@ -98,7 +98,7 @@ public class MainMenuPresenter extends AbstractPresenter {
                 e.printStackTrace();
             }
         } else {
-            throw new UnsopportedMethodExeption("Desktop browsing not supported.");
+            throw new UnsupportedMethodException("Desktop browsing not supported.");
         }
     }
 
