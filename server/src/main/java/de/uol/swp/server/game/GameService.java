@@ -418,6 +418,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 request.getLobbyId(),
                 currentPlayerUsername,
                 targetPlayerUsername,
+                request.getCity()
         );
 
         IUser user = lobbyManagement.getLobby(request.getLobbyId())

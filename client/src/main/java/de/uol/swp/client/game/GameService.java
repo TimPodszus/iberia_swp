@@ -134,7 +134,7 @@ public class GameService {
      */
     @Subscribe
     public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
-        LOG.debug("Received ShareKnowledgeEvent: " + event);
+        LOG.debug("Received ShareKnowledgeEvent: {} " , event);
         Platform.runLater(() -> {
             boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
                                                                                               .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()
@@ -205,42 +205,50 @@ public class GameService {
      * @param gameDTO the game data transfer object containing game state information
      * @param lobbyId the ID of the lobby where the request is to be sent
      */
-    public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
-        LOG.debug("Share knowledge button is selected");
-        int currentCityId = gameDTO.getCurrentPlayer().getCurrentPosition().getId();
-        List<IPlayerDTO> playersInSameCity = gameDTO.getPlayers()
-                                                    .stream()
-                                                    .filter(playerDTO -> playerDTO.getCurrentPosition()
-                                                                                  .getId() == gameDTO.getCurrentPlayer()
-                                                                                                     .getCurrentPosition()
-                                                                                                     .getId())
-                                                    .toList();
-        if (gameDTO.getCurrentPlayer()
-                   .getCards()
-                   .stream()
-                   .allMatch(card -> card.getId() != currentCityId)) {
-            LOG.debug("Current player doesnt have the current city card");
-            String playerWithCityCard = playersInSameCity.stream()
-                .filter(playerDTO -> playerDTO.getCards().stream().anyMatch(iCardDTO -> iCardDTO.getId() == currentCityId))
-                .map(IPlayerDTO::getUsername)
-                 .findFirst()
-                 .orElseThrow(() -> new NoSuchElementException("No player with the city card found"));
+public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
+    LOG.debug("Share knowledge button is selected");
+    int currentCityId = gameDTO.getCurrentPlayer().getCurrentPosition().getId();
+    List<IPlayerDTO> playersInSameCity = gameDTO.getPlayers().stream()
+        .filter(player -> player.getCurrentPosition().getId() == currentCityId)
+        .toList();
 
-            eventBus.post(new CardsExchangeRequest(currentCityId, playerWithCityCard,lobbyId));
+    boolean currentPlayerHasCityCard = gameDTO.getCurrentPlayer().getCards().stream()
+        .anyMatch(card -> card.getId() == currentCityId);
 
-        } else {
-            LOG.debug("Current Player has currentCity Card");
-            PlayerSelectionDialog dialog = new PlayerSelectionDialog(playersInSameCity);
-            Optional<String> result = dialog.showAndWait();
-            result.ifPresentOrElse(
-                    selectedPlayer -> {
-                        LOG.debug("Selected player: {}", selectedPlayer);
-                        eventBus.post(new CardsExchangeRequest(currentCityId, selectedPlayer, lobbyId));
-                    },
-                    () -> LOG.debug("No player selected")
+    if (!currentPlayerHasCityCard) {
+        LOG.debug("Current player doesn't have the current city card");
+        String playerWithCityCard = playersInSameCity.stream()
+            .filter(player -> player.getCards().stream().anyMatch(card -> card.getId() == currentCityId))
+            .map(IPlayerDTO::getUsername)
+            .findFirst()
+            .orElseThrow(() -> new NoSuchElementException("No player with the city card found"));
+
+        gameDTO.getPlayer(playerWithCityCard).getCards().stream()
+            .filter(card -> card.getId() == currentCityId)
+            .findFirst()
+            .ifPresentOrElse(
+                card -> eventBus.post(new GiveCardRequest(card, gameDTO.getCurrentPlayer().getUsername(), lobbyId, true)),
+                () -> LOG.error("No card found")
             );
-        }
+    } else {
+        LOG.debug("Current player has the current city card");
+        PlayerSelectionDialog dialog = new PlayerSelectionDialog(playersInSameCity);
+        dialog.showAndWait().ifPresentOrElse(
+            selectedPlayer -> {
+                LOG.debug("Selected player: {}", selectedPlayer);
+                gameDTO.getCurrentPlayer().getCards().stream()
+                    .filter(card -> card.getId() == currentCityId)
+                    .findFirst()
+                    .ifPresentOrElse(
+                        card -> eventBus.post(new GiveCardRequest(card, selectedPlayer, lobbyId, true)),
+                        () -> LOG.error("No card found")
+                    );
+            },
+            () -> LOG.debug("No player selected")
+        );
     }
+}
+
 
 
     /**
@@ -373,4 +381,4 @@ public class GameService {
             eventBus.post(new CardsExchangeWithDiscardPileRequest(map, lobbyId));
         });
     }
-}
+    }
