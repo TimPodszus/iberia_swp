@@ -9,6 +9,7 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.infection.management.InfectionManagement;
@@ -218,7 +219,7 @@ public class CityManagementTest {
     }
 
     @Test
-    void testBuildHospitalSucceeds() {
+    void testBuildHospitalSucceeds() throws GameException {
         IUser user = new User("username", "password");
         IPlayer player = new Player(user);
         player.setCurrentPosition(game.getCityRepository()

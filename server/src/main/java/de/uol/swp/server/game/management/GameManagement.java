@@ -323,11 +323,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return game.getTracksLeft() >= 0;
     }
 
-    private boolean isHospitalBuildable() {
-        //TODO: Implement logic in #85
-        return true;
-    }
-
     /**
      * Checks if knowledge can be shared in the current game state.
      *
@@ -402,7 +397,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     @Override
     public void movePlayer(
-            IUser user, String lobbyId, ICity city, ICard card
+            IUser user,
+            String lobbyId,
+            ICity city,
+            ICard card
     ) throws GameException, IllegalGameStateException {
         IGame game = super.getGame(lobbyId);
 
@@ -414,17 +412,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
         boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
                 && (availableDestinations.get(city.getId())
-                                         .getTransportModes()
+                                                                                                                 .getTransportModes()
                                          .contains(TransportMode.CARRIAGE) ||
                     availableDestinations.get(city.getId())
-                                         .getTransportModes()
+                                                                                                                                                                         .getTransportModes()
                                          .contains(TransportMode.TRAIN) ||
                     availableDestinations.get(city.getId())
-                                         .getTransportModes()
+                                                                                                                                                                                                                              .getTransportModes()
                                          .contains(TransportMode.NONE));
         boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
                 && availableDestinations.get(city.getId())
-                                        .getTransportModes()
+                                                                                                               .getTransportModes()
                                         .contains(TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
@@ -440,9 +438,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getDisplayName()
             );
             throw new GameException("There is no available connection between " + player.getCurrentPosition()
-                                                                                                  .getName()
-                                                                                                  .getDisplayName() + " and " + city.getName()
-                                                                                                                                    .getDisplayName());
+                                                                                        .getName()
+                                                                                        .getDisplayName() + " and " + city.getName()
+                                                                                                                          .getDisplayName());
         }
 
         if (citiesConnectedByLand) {
@@ -534,12 +532,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param city   the destination harbour city
      * @param card   the card used for the move
      */
-    private void movePlayerBySea(IGame game, IPlayer player, ICity city, ICard card) {
+    private void movePlayerBySea(IGame game, IPlayer player, ICity city, ICard card) throws GameException {
         boolean playerIsSailor = player.getRole()
                                        .getName()
                                        .equals(RoleEnum.SAILOR);
         if (!playerIsSailor) {
-            playerManagement.discardCard(game.getGameId(), player, card);
+            playerManagement.discardPlayerCard(
+                    game.getGameId(),
+                    player.getUser()
+                          .getUsername(),
+                    card.getId()
+            );
         }
 
         LOG.debug(
@@ -599,7 +602,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     @Override
     public void buildTrainTrack(
-            IUser user, String lobbyId, IConnection connection
+            IUser user,
+            String lobbyId,
+            IConnection connection
     ) throws IllegalGameStateException, GameException {
         IGame game = super.getGame(lobbyId);
 
@@ -628,8 +633,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                               .get(1)
             );
             throw new GameException("Connection between " + connection.getCityNames()
-                                                                                .get(0) + " and " + connection.getCityNames()
-                                                                                                              .get(1) + " is not buildable");
+                                                                      .get(0) + " and " + connection.getCityNames()
+                                                                                                    .get(1) + " is not buildable");
         }
 
         game.getConnectionRepository()
@@ -657,8 +662,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                               .filter(name -> !name.equals(player.getCurrentPosition()
                                                                                  .getName()))
                                               .findFirst()
-                                              .orElseThrow(() -> new GameException(
-                                                      "Error while building train track"));
+                                              .orElseThrow(() -> new GameException("Error while building train track"));
 
                 game.setState(new BuildExtraTrainTrackState(connectionManagement.getBuildableTrainTracks(
                         lobbyId,
