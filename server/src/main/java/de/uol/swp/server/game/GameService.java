@@ -561,6 +561,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         .getUsername(),
                     212
             );
+            // TODO: Discard Card -> Implement when Discard Card PR is merged
         } catch (PlayerManagementException e) {
             LOG.error(
                     "[Lobby: {}] Could not find FavorableTimeEventCard for player {}",
