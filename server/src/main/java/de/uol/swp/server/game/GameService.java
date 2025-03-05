@@ -139,8 +139,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
             game = gameManagement.setPositioning(request);
         } catch (IllegalGameStateException e) {
             LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
-            sendStatusResponse(
-                    request,
+            sendStatusResponse(request,
                     false,
                     "Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand"
             );
@@ -572,5 +571,33 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
+    }
+
+    /**
+     * Handles the end turn request from a player. This method retrieves the user from the session,
+     * ends the turn for the user in the specified lobby, and sends a board update event to all players in the lobby.
+     *
+     * @param request the end turn request containing the session and lobby ID
+     * @throws SessionNotFoundException if the session is unknown
+     */
+    @Subscribe
+    public void onEndTurnRequest(EndTurnRequest request) throws SessionNotFoundException {
+        LOG.debug("[Lobby: {}] Got EndTurnRequest for current Player", request.getLobbyId());
+        IUserDTO user = request.getSession()
+                               .map(Session::getUser)
+                               .orElseThrow(SessionNotFoundException::new);
+
+        try {
+            gameManagement.endTurn(request.getLobbyId(), UserMapper.toUser(user));
+        } catch (IllegalGameStateException e) {
+            LOG.error("[LobbyID: {}] Turn could not be ended", request.getLobbyId());
+            sendStatusResponse(request, false, "In diesem Zustand kann der Zug nicht beendet werden");
+
+            return;
+        }
+
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 }

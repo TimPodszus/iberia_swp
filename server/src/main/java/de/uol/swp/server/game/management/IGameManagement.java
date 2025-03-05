@@ -151,5 +151,14 @@ public interface IGameManagement {
      * @param amount the amount by which to increase the current player's actions
      */
     void increaseCurrentPlayerActions(IGame game, int amount);
+
+    /**
+     * Ends the turn for the current player in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby in which the game is happening
+     * @param user the user representing the player whose turn is to be ended
+     * @throws IllegalGameStateException if the turn cannot be ended due to the current game state
+     */
+    void endTurn(String lobbyId, IUser user) throws IllegalGameStateException;
 }
 

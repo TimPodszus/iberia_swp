@@ -36,6 +36,7 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
+import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -306,7 +307,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isKnowledgeShareable(lobbyCode)) {
             actions.add(GameActions.SHARE_KNOWLEDGE);
         }
-        if (isInfectionTreatable()) {
+        if (isInfectionTreatable(lobbyCode)) {
             actions.add(GameActions.TREAT_INFECTION);
         }
         if (isPlagueResearchable()) {
@@ -315,9 +316,18 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isWaterTreatmentPlaceable(lobbyCode, user)) {
             actions.add(GameActions.TREAT_WATER);
         }
+        if (isEndTurnPossible(lobbyCode, user)) {
+            actions.add(GameActions.END_TURN);
+        }
         return actions;
     }
 
+    /**
+     * Checks if train tracks can be built in the specified lobby.
+     *
+     * @param lobbyCode the code of the lobby
+     * @return true if train tracks can be built, false otherwise
+     */
     private boolean areTrainTracksBuildable(String lobbyCode) {
         IGame game = super.getGame(lobbyCode);
         return game.getTracksLeft() >= 0;
@@ -352,9 +362,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                                    .getId() == currentCityId));
     }
 
-    private boolean isInfectionTreatable() {
-        //TODO: Implement logic in #88
-        return true;
+    private boolean isInfectionTreatable(String lobbyCode) {
+        ICity city = getGame(lobbyCode).getCurrentPlayer().getCurrentPosition();
+        return city.getInfections()
+                   .stream()
+                   .anyMatch(infection -> infection.getSeverity() > 0);
     }
 
     private boolean isPlagueResearchable() {
@@ -369,6 +381,33 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             availableRegions = regionManagement.getAvailableRegions(UserMapper.toDTO(user), lobbyCode);
         }
         return !availableRegions.isEmpty();
+    }
+
+    /**
+     * Checks if the current player can end their turn in the specified lobby.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param user      the user for whom the check is performed
+     * @return true if the current player can end their turn, false otherwise
+     */
+    private boolean isEndTurnPossible(String lobbyCode, IUser user) {
+        IGame game = getGame(lobbyCode);
+        return game.getCurrentPlayer()
+                   .getUser()
+                   .equals(user) && game.getState() instanceof PlayerTurnState;
+    }
+
+    @Override
+    public void endTurn(String lobbyId, IUser user) throws IllegalGameStateException {
+        IGame game = getGame(lobbyId);
+        if (game.getCurrentPlayer()
+                .getUser()
+                .equals(user) && game.getState() instanceof PlayerTurnState) {
+            LOG.info("[LobbyID: {}] Ending turn for player {}", lobbyId, user.getUsername());
+            game.setState(new DrawCardState());
+        } else {
+            throw new IllegalGameStateException("Player is not allowed to end turn");
+        }
     }
 
     @Override

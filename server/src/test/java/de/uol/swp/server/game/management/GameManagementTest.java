@@ -568,8 +568,9 @@ class GameManagementTest {
         when(game.getPlayers()).thenReturn(List.of(player));
         when(player.getCards()).thenReturn(List.of(cityCard));
         when(cityCard.getCity()).thenReturn(city);
+        when(player.getUser()).thenReturn(user);
 
-        when(game.getState()).thenReturn(mock(IGameState.class));
+        when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
         assertEquals(5, actions.size());
@@ -792,7 +793,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMovePlayer_StateMobilizationEvent() throws GameManagementException, IllegalGameStateException, GameException {
+    void testMovePlayer_StateMobilizationEvent() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
                 new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE))),
@@ -1064,5 +1065,29 @@ class GameManagementTest {
         assert (targetPlayer.getCards()
                             .contains(currentPlayerCard));
         verify(gameService, times(1)).sendToAllInLobby(any(), any());
+    }
+
+    @Test
+    void testEndTurn() throws IllegalGameStateException {
+        IPlayer player = mock(IPlayer.class);
+        IUser user = new User("test", "test");
+        when(player.getUser()).thenReturn(user);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getState()).thenReturn(new PlayerTurnState());
+
+        gameManagement.endTurn(game.getGameId(), user);
+
+        verify(game).setState(any(DrawCardState.class));
+    }
+
+    @Test
+    void testEndTurn_IllegalGameStateException() {
+        IPlayer player = mock(IPlayer.class);
+        IUser user = new User("test", "test");
+        when(player.getUser()).thenReturn(user);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getState()).thenReturn(new DrawCardState());
+
+        assertThrows(IllegalGameStateException.class, () -> gameManagement.endTurn(game.getGameId(), user));
     }
 }
