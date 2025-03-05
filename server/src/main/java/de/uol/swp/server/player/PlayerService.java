@@ -80,41 +80,6 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
     }
 
     /**
-     * Handles the DrawPlayerCardRequest event.
-     *
-     * @param request the request to draw a player card
-     */
-    @Subscribe
-    public void onDiscardPlayerCardRequest(DiscardPlayerCardRequest request) {
-        LOG.debug("DiscardPlayerCardRequest received");
-        IGame game = gameManagement.getGame(request.getLobbyId());
-        Session session = request.getSession()
-                                 .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
-
-        try {
-            playerManagement.discardPlayerCard(
-                    request.getLobbyId(),
-                    session.getUser()
-                           .getUsername(),
-                    request.getCard()
-                           .getId()
-            );
-        } catch (GameException e) {
-            LOG.error("Error discarding a player card: {}", e.getMessage());
-            StatusResponse response = new StatusResponse(
-                    request.getLobbyId(),
-                    false,
-                    "Error discarding a player card: " + e.getMessage()
-            );
-            response.setSession(session);
-            post(response);
-        }
-
-        LOG.debug("DiscardPlayerCardRequest processed successfully");
-        post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-    }
-
-    /**
      * Handles the DrawInfectionCardRequest event.
      *
      * @param request the request to draw an infection card
@@ -159,6 +124,41 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
 
         IGame game = gameManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    /**
+     * Handles the DrawPlayerCardRequest event.
+     *
+     * @param request the request to draw a player card
+     */
+    @Subscribe
+    public void onDiscardPlayerCardRequest(DiscardPlayerCardRequest request) {
+        LOG.debug("DiscardPlayerCardRequest received");
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        Session session = request.getSession()
+                                 .orElseThrow(() -> new IllegalStateException(SESSION_NOT_PRESENT));
+
+        try {
+            playerManagement.discardPlayerCard(
+                    request.getLobbyId(),
+                    session.getUser()
+                           .getUsername(),
+                    request.getCard()
+                           .getId()
+            );
+
+            LOG.debug("DiscardPlayerCardRequest processed successfully");
+            post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        } catch (GameException e) {
+            LOG.error("Error discarding a player card: {}", e.getMessage());
+            StatusResponse response = new StatusResponse(
+                    request.getLobbyId(),
+                    false,
+                    "Error discarding a player card: " + e.getMessage()
+            );
+            response.setSession(session);
+            post(response);
+        }
     }
 
     /**
