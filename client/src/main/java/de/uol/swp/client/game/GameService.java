@@ -22,6 +22,9 @@ import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
+import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
+import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
@@ -137,7 +140,7 @@ public class GameService {
      */
     @Subscribe
     public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
-        LOG.debug("Received ShareKnowledgeEvent: {}", event);
+        LOG.debug("Received ShareKnowledgeEvent");
         Platform.runLater(() -> {
             boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
                                                                                               .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()
@@ -393,5 +396,14 @@ public class GameService {
      */
     public void sendDiscardPlayerCardRequest(String lobbyId, ICardDTO card) {
         eventBus.post(new DiscardPlayerCardRequest(lobbyId, card));
+    }
+
+    /**
+     * Sends a request to end the turn in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby where the turn is to be ended
+     */
+    public void sendEndTurnRequest(String lobbyId) {
+        eventBus.post(new EndTurnRequest(lobbyId));
     }
 }

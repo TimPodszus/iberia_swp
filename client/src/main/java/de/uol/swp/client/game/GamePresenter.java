@@ -201,7 +201,7 @@ public class GamePresenter extends AbstractPresenter {
     private Button shareKnowledgeButton;
 
     @FXML
-    private ToggleButton endTurnButton;
+    private Button endTurnButton;
 
     @FXML
     private ToggleButton roleButtonOne;
@@ -363,7 +363,11 @@ public class GamePresenter extends AbstractPresenter {
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
             LOG.trace("Player wants to move to city {}", cityId);
-            if (cardDiscardNeeded(cityId)) {
+            RoleEnum role = gameDTO.getCurrentPlayer()
+                                   .getRole()
+                                   .getName();
+
+            if (cardDiscardNeeded(cityId, role)) {
                 LOG.debug("Card discard needed for moving to city {}", cityId);
                 CardDialog cardDialog = new CardDialog(
                         true,
@@ -384,6 +388,7 @@ public class GamePresenter extends AbstractPresenter {
 
             if (!this.getPlayersInCity()
                      .isEmpty()) {
+                if ((checkPlayersTransportMode(cityId,
                 RoleEnum role = gameDTO.getCurrentPlayer()
                                        .getRole()
                                        .getName();
@@ -423,11 +428,13 @@ public class GamePresenter extends AbstractPresenter {
      * @param cityId the ID of the city to check
      * @return true if a card discard is needed, false otherwise
      */
-    private boolean cardDiscardNeeded(int cityId) {
+    private boolean cardDiscardNeeded(int cityId, RoleEnum role) {
         LOG.debug("Checking if discarding a card is needed for moving to city {}", cityId);
-        return !availableDestinations.get(cityId)
-                                     .getCardsUsableForMove()
-                                     .isEmpty();
+        return role != RoleEnum.SAILOR
+                && checkPlayersTransportMode(cityId, TransportMode.SHIP)
+                && !checkPlayersTransportMode(cityId, TransportMode.TRAIN)
+                && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE)
+                && !checkPlayersTransportMode(cityId, TransportMode.NONE);
     }
 
     /**
@@ -714,10 +721,17 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Handles the end turn action.
+     * Sends an end turn request to the game service if the current game state is PLAYER_TURN_STATE.
+     *
+     * @param event the action event triggered by the end turn button
+     */
     @FXML
     private void onEndTurn(ActionEvent event) {
-        if (endTurnButton.isSelected()) {
-            //TODO
+        if (gameDTO.getState()
+                   .equals(StateType.PLAYER_TURN_STATE)) {
+            gameService.sendEndTurnRequest(lobbyId);
         }
     }
 
@@ -1252,6 +1266,9 @@ public class GamePresenter extends AbstractPresenter {
         if (!playerCardDiscardPileList.isEmpty()) {
             AbstractCard card = getCard(playerCardDiscardPileList);
             setPlayerCardDiscardPile(card);
+        } else {
+            playerCardDiscardPile.getChildren()
+                                 .removeAll();
         }
     }
 
@@ -1490,6 +1507,7 @@ public class GamePresenter extends AbstractPresenter {
         treatWaterButton.setDisable(true);
         treatInfectionButton.setDisable(true);
         shareKnowledgeButton.setDisable(true);
+        endTurnButton.setDisable(true);
     }
 
     /**
@@ -1525,6 +1543,9 @@ public class GamePresenter extends AbstractPresenter {
                     break;
                 case TREAT_WATER:
                     treatWaterButton.setDisable(false);
+                    break;
+                case END_TURN:
+                    endTurnButton.setDisable(false);
                     break;
             }
         }

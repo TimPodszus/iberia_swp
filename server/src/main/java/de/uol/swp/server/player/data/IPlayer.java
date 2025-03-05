@@ -51,6 +51,13 @@ public interface IPlayer {
     void setCards(List<ICard> cards);
 
     /**
+     * Adds a card to the player's hand.
+     *
+     * @param card the card to add
+     */
+    void addCard(ICard card);
+
+    /**
      * Gets the user associated with the player.
      *
      * @return the user
