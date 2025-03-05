@@ -380,10 +380,6 @@ public class GamePresenter extends AbstractPresenter {
 
             if (!this.getPlayersInCity()
                      .isEmpty()) {
-                RoleEnum role = gameDTO.getCurrentPlayer()
-                                       .getRole()
-                                       .getName();
-
                 if ((checkPlayersTransportMode(cityId,
                         TransportMode.SHIP
                 ) && role == RoleEnum.SAILOR) || (checkPlayersTransportMode(cityId,
