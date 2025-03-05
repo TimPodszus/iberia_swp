@@ -338,10 +338,10 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                 playerTurnState.reduceActionsRemaining(game);
             } else {
                 throw new PlayerManagementException(
-                        "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
+                        "It is not your turn or your role is not scientist of the royal academy");
             }
         } else {
-            throw new IllegalStateException("Das Spiel befindet sich nicht im Zug-Status");
+            throw new IllegalStateException("The game´s current state is not playerturnstate");
         }
         return CardMapper.toMixedCardDTOList(cards);
     }
@@ -369,13 +369,13 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                                  .stream()
                                  .filter(c -> Objects.equals(c.getId(), cardDTO.getId()))
                                  .findFirst()
-                                 .orElseThrow(() -> new IllegalStateException("Karte nicht gefunden"));
+                                 .orElseThrow(() -> new IllegalStateException("Card not found"));
                 playerCardDrawPile.remove(card);
                 playerCardDrawPile.add(0, card);
             }
         } else {
             throw new IllegalStateException(
-                    "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
+                    "It is not your turn or your role is not scientist of the royal academy");
         }
     }
 

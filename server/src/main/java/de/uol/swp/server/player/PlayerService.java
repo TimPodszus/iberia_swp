@@ -138,9 +138,9 @@ public class PlayerService extends AbstractService {
                     UserMapper.toUser(Objects.requireNonNull(session.map(Session::getUser)
                                                                     .orElse(null)))
             );
-            response = new CardsToSortResponse(request.getLobbyId(), true, "Cards retrieved successfully", cards);
+            response = new CardsToSortResponse(request.getLobbyId(), true, "Karten wurden erfolgreich ermittelt", cards);
         } catch (PlayerManagementException | IllegalStateException e) {
-            response = new StatusResponse(request.getLobbyId(), false, e.getMessage());
+            response = new StatusResponse(request.getLobbyId(), false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
         }
         response.setSession(session.orElse(null));
         post(response);
@@ -168,7 +168,7 @@ public class PlayerService extends AbstractService {
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
             response = new StatusResponse(request.getLobbyId(), true, "Karten wurden erfolgreich sortiert");
         } catch (IllegalStateException e) {
-            response = new StatusResponse(request.getLobbyId(), false, e.getMessage());
+            response = new StatusResponse(request.getLobbyId(), false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
         }
         response.setSession(session.orElse(null));
         post(response);
