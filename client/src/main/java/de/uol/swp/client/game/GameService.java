@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.cards.request.GetCardRequest;
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.city.request.BuildHospitalRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
@@ -402,5 +403,15 @@ public class GameService {
      */
     public void sendEndTurnRequest(String lobbyId) {
         eventBus.post(new EndTurnRequest(lobbyId));
+    }
+
+    /**
+     * Sends a request to get a card from the card stack.
+     *
+     * @param lobbyId the ID of the lobby where the card is to be drawn
+     * @param cardId  the ID of the card to be drawn
+     */
+    public void sendGetCardRequest(String lobbyId, int cardId) {
+        eventBus.post(new GetCardRequest(lobbyId, cardId));
     }
 }
