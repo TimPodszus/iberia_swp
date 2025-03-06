@@ -12,6 +12,7 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.data.eventcards.ForTheGoodCauseEventCard;
 import de.uol.swp.server.cards.events.ForTheGoodCauseEvent;
 import de.uol.swp.server.cards.events.SecondChanceEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
@@ -116,9 +117,7 @@ public class CardService extends AbstractService {
             cardManagement.returnLastPlayedCard(event.getLobbyId(), user.getUsername());
 
             StatusResponse response = new StatusResponse(
-                    event.getLobbyId(),
-                    false,
-                    "CityCard not found in discard pile"
+                    event.getLobbyId(), false, "Stadtkarte konnte nicht im Ablagestapel gefunden werden"
             );
             response.setSession(session);
             post(response);
@@ -134,6 +133,7 @@ public class CardService extends AbstractService {
     /**
      * Handles the ForTheGoodCauseEvent by retrieving event cards from the player's discard pile,
      * converting them to DTOs, and creating a CardSelectionEvent to send to the user.
+     * The event card ForTheGoodCause is excluded from the list of cards, to prevent the user from getting into a loop.
      *
      * @param event the ForTheGoodCauseEvent containing the lobby ID and username
      */
@@ -144,6 +144,9 @@ public class CardService extends AbstractService {
 
         List<ICardDTO> cardDtos = new ArrayList<>();
         for (EventCard eventCard : cards) {
+            if (eventCard instanceof ForTheGoodCauseEventCard) {
+                break;
+            }
             cardDtos.add(CardMapper.toDTO(eventCard));
         }
         CardSelectionEvent cardSelectionEvent = new CardSelectionEvent(event.getLobbyId(), cardDtos);
@@ -157,6 +160,10 @@ public class CardService extends AbstractService {
         cardSelectionEvent.setReceiver(List.of(session));
         post(cardSelectionEvent);
         LOG.info("[LobbyId: {}] Sent CardSelectionEvent to user", event.getLobbyId());
+        sendServerMessageEvent(
+                event.getLobbyId(),
+                user.getUsername() + " hat die Ereigniskarte 'Zum guten Zweck' gespielt und darf sich eine Ereigniskarte aus dem Ablagestapel aussuchen."
+        );
     }
 
     /**

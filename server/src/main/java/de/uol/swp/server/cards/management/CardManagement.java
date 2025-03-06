@@ -215,6 +215,10 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
 
         game.getPlayer(username)
             .addCard(card);
-        LOG.info("[LobbyId: {}] Card from player discard pile added to player's hand", lobbyId);
+        game.setState(game.getPreviousState());
+        LOG.info(
+                "[LobbyId: {}] Card from player discard pile added to player's hand. Eventcard is handled, game will resume in last active state",
+                lobbyId
+        );
     }
 }
