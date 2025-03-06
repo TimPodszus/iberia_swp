@@ -20,6 +20,7 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
+import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
@@ -383,6 +384,16 @@ public class GameService {
      */
     public void sendTreatPlagueRequest(String lobbyID, int cityID, PlagueName selectedPlague) {
         eventBus.post(new TreatPlagueRequest(lobbyID, cityID, selectedPlague));
+    }
+
+    /**
+     * Posts a request to research a plague for the given game lobby.
+     *
+     * @param lobbyId The game lobby's unique identifier.
+     */
+    public void sendResearchPlagueRequest(String lobbyId) {
+        LOG.debug("Sending ResearchPlagueRequest with Id {}", lobbyId);
+        eventBus.post(new ResearchPlagueRequest(lobbyId));
     }
 
     /**

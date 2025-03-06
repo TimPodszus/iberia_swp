@@ -639,13 +639,13 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onResearchPlague(ActionEvent event) {
-        if (researchPlagueButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
-        } else {
-
-        }
+        LOG.debug("Research plague action triggered");
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
+                gameService.sendResearchPlagueRequest(lobbyId);
+                researchPlagueButton.setSelected(false);
+            }
     }
-
 
     /**
      * Handles place water treatment action.
@@ -1156,6 +1156,7 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
+     *
      */
     private void updatePlayerHandCards() {
         removePlayerHandCards();
