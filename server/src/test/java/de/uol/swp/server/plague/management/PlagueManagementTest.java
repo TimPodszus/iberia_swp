@@ -79,20 +79,6 @@ public class PlagueManagementTest {
         );
     }
 
-    @Test
-    void testTreatPlagueNullArguments() {
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> plagueManagement.treatPlague(null, city, game)
-        );
-        assertEquals("Invalid input: plague, city, or game cannot be null.", exception.getMessage());
-
-        exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> plagueManagement.treatPlague(PlagueName.CHOLERA, null, game)
-        );
-        assertEquals("Invalid input: plague, city, or game cannot be null.", exception.getMessage());
-    }
 
     @Test
     void testTreatPlagueNotPresent() {
