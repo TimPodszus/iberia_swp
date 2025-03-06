@@ -1950,4 +1950,21 @@ public class GamePresenter extends AbstractPresenter {
             alert.showAndWait();
         });
     }
+
+    @Subscribe
+    public void onCardSelectionEvent(CardSelectionEvent event) {
+        if (!event.getLobbyId()
+                  .equals(lobbyId)) {
+            return;
+        }
+        LOG.debug("[LobbyId: {}] Received CardSelectionEvent", event.getLobbyId());
+        Platform.runLater(() -> {
+            CardDialog dialog = new CardDialog(true, false, event.getCards());
+            Optional<ICardDTO> result = dialog.showAndWait();
+            result.ifPresent(card -> {
+                LOG.debug("[LobbyId: {}] Player selected card {}", lobbyId, card.getId());
+                gameService.sendGetCardRequest(lobbyId, card.getId());
+            });
+        });
+    }
 }
