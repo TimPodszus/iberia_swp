@@ -7,10 +7,6 @@ import de.uol.swp.client.game.objects.*;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.EventCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
-import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
-import de.uol.swp.client.game.objects.dialogs.CardSelectionWaterTreatmentDialog;
-import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
-import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
 import de.uol.swp.client.game.objects.dialogs.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
@@ -414,10 +410,13 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.CARRIAGE
-        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
+                TransportMode.TRAIN
+        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
+                cityId,
+                TransportMode.NONE
+        );
     }
 
     /**
@@ -654,31 +653,29 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private void onRoleButtonOne(ActionEvent event) {
-        if (roleButtonOne.isSelected()) {
-            LOG.debug("Role button one is selected");
-            if (gameDTO.getCurrentPlayer()
-                       .getRole()
-                       .getName()
-                       .equals(RoleEnum.POLITICIAN)) {
-                LOG.debug("Current player is a politician");
-                Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
-                List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
-                                                              .getCards()
-                                                              .stream()
-                                                              .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                                                     .getCurrentPosition()
-                                                                                                     .getId())
-                                                              .toList();
-                cardsToExchange.put(
-                        gameDTO.getCurrentPlayer()
-                               .getUsername(), currentPlayerCityCard
-                );
-                for (IPlayerDTO player : gameDTO.getPlayers()) {
-                    if (!player.getUsername()
-                               .equals(gameDTO.getCurrentPlayer()
-                                              .getUsername())) {
-                        cardsToExchange.put(player.getUsername(), player.getCards());
-                    }
+        LOG.debug("Role button one is selected");
+        if (gameDTO.getCurrentPlayer()
+                   .getRole()
+                   .getName()
+                   .equals(RoleEnum.POLITICIAN)) {
+            LOG.debug("Current player is a politician");
+            Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+            List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
+                                                          .getCards()
+                                                          .stream()
+                                                          .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                                 .getCurrentPosition()
+                                                                                                 .getId())
+                                                          .collect(Collectors.toList());
+            cardsToExchange.put(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(), currentPlayerCityCard
+            );
+            for (IPlayerDTO player : gameDTO.getPlayers()) {
+                if (!player.getUsername()
+                           .equals(gameDTO.getCurrentPlayer()
+                                          .getUsername())) {
+                    cardsToExchange.put(player.getUsername(), player.getCards());
                 }
                 LOG.debug("Cards to exchange: {}", cardsToExchange);
                 Platform.runLater(() -> {
@@ -693,8 +690,8 @@ public class GamePresenter extends AbstractPresenter {
                     });
                 });
             }
-        }
 
+        }
     }
 
 
