@@ -5,10 +5,19 @@ import lombok.Getter;
 
 import java.util.Objects;
 
+/**
+ * Request to draw a player card.
+ */
 @Getter
 public class DrawPlayerCardRequest extends AbstractGameRequest {
-    public DrawPlayerCardRequest(String lobbyCode) {
-        super(lobbyCode);
+
+    /**
+     * Constructs a new DrawPlayerCardRequest.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    public DrawPlayerCardRequest(String lobbyId) {
+        super(lobbyId);
     }
 
     @Override

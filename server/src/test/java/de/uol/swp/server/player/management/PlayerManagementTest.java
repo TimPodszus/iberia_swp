@@ -19,6 +19,7 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -144,25 +145,44 @@ class PlayerManagementTest {
      */
     @Test
     void addCard_AddsCardToPlayer() {
-        ICard card = mock(ICard.class);
-        List<ICard> mockCards = mock(List.class);
-        when(player.getCards()).thenReturn(mockCards);
+        ICard card = new CityCard(1, "test", mock(ICity.class));
+        List<ICard> cards = new ArrayList<>(List.of(card));
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+        game.getPlayers()
+            .add(player);
+        when(player.getCards()).thenReturn(cards);
 
-        playerManagement.addCard(player, card);
+        playerManagement.addCard(
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                card
+        );
 
-        verify(mockCards, times(1)).add(card);
+        assertTrue(cards.contains(card));
     }
 
     /**
      * Tests that discardCard discards a single card from the player's hand.
      */
     @Test
-    void discardCard_DiscardSingleCard() {
+    void discardCard_DiscardSingleCard() throws GameException {
         ICard infectionCard = new InfectionCard(1, "test", mock(ICity.class));
+        ArrayList<ICard> cards = new ArrayList<ICard>();
+        cards.add(infectionCard);
         when(player.getUser()).thenReturn(user);
         when(user.getUsername()).thenReturn("testUser");
+        when(player.getCards()).thenReturn(cards);
+        game.getPlayers()
+            .add(player);
 
-        playerManagement.discardCard(game.getGameId(), player, infectionCard);
+        playerManagement.discardPlayerCard(
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                infectionCard.getId()
+        );
 
         assertTrue(game.getPlayerCardDiscardPile()
                        .contains(infectionCard));
@@ -172,14 +192,27 @@ class PlayerManagementTest {
      * Tests that discardCards discards multiple cards from the player's hand.
      */
     @Test
-    void discardCards_DiscardMultipleCards() {
+    void discardCards_DiscardMultipleCards() throws GameException {
         ICard card1 = new InfectionCard(1, "test", mock(ICity.class));
         ICard card2 = new CityCard(1, "test", mock(ICity.class));
-        List<ICard> cards = List.of(card1, card2);
+        ArrayList<ICard> cards = new ArrayList<ICard>();
+        cards.add(card1);
+        cards.add(card2);
+
         when(player.getUser()).thenReturn(user);
         when(user.getUsername()).thenReturn("testUser");
+        when(player.getCards()).thenReturn(cards);
+        game.getPlayers()
+            .add(player);
 
-        playerManagement.discardCards(game.getGameId(), player, cards);
+        playerManagement.discardPlayerCards(
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                cards.stream()
+                     .map(ICard::getId)
+                     .toList()
+        );
 
         assertTrue(game.getPlayerCardDiscardPile()
                        .contains(card1));
@@ -242,22 +275,40 @@ class PlayerManagementTest {
     @Test
     void testDrawBottomInfectionCard() {
         CityRepository cityRepository = new CityRepository();
-        InfectionCard infectionCard1 = new InfectionCard(1, "InfectionCard1", cityRepository.getCityByName(CityName.BARCELONA));
-        InfectionCard infectionCard2 = new InfectionCard(2, "InfectionCard2", cityRepository.getCityByName(CityName.ALICANTE));
-        game.getInfectionCardDrawPile().add(infectionCard1);
-        game.getInfectionCardDrawPile().add(infectionCard2);
+        InfectionCard infectionCard1 = new InfectionCard(
+                1,
+                "InfectionCard1",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        InfectionCard infectionCard2 = new InfectionCard(
+                2,
+                "InfectionCard2",
+                cityRepository.getCityByName(CityName.ALICANTE)
+        );
+        game.getInfectionCardDrawPile()
+            .add(infectionCard1);
+        game.getInfectionCardDrawPile()
+            .add(infectionCard2);
 
         InfectionCard drawnCard = playerManagement.drawBottomInfectionCard(game);
 
-        assertEquals(infectionCard2, drawnCard, "Expected the last infection card to be drawn from the bottom of the draw pile");
+        assertEquals(
+                infectionCard2,
+                drawnCard,
+                "Expected the last infection card to be drawn from the bottom of the draw pile"
+        );
     }
 
     @Test
     void testDrawBottomInfectionCardWithEmptyDiscardPile() {
-        game.getInfectionCardDrawPile().clear();
+        game.getInfectionCardDrawPile()
+            .clear();
 
-        assertThrows(IllegalStateException.class, () -> playerManagement.drawBottomInfectionCard(game), "Expected " +
-                "IllegalStateException when the discard pile is empty");
+        assertThrows(
+                IllegalStateException.class,
+                () -> playerManagement.drawBottomInfectionCard(game),
+                "Expected " + "IllegalStateException when the discard pile is empty"
+        );
     }
 
     @Test

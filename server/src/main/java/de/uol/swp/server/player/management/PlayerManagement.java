@@ -19,11 +19,13 @@ import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.StartState;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.role.ScientistAtTheRoyalAcademy;
 import de.uol.swp.server.usermanagement.IUser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +36,12 @@ import java.util.Objects;
 public class PlayerManagement extends AbstractManagement implements IPlayerManagement{
     static final Logger LOG = LogManager.getLogger(PlayerManagement.class);
     private final ICityManagement cityManagement;
+
+    /**
+     * Listener for players cards changes.
+     */
+    @Setter
+    private CardsAmountChangeListener cardsAmountChangeListener;
 
     @Inject
     public PlayerManagement(ICityManagement cityManagement) {
@@ -94,7 +102,12 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
             shuffleInfectionCardsFromDrawPile(game);
             LOG.debug("[LobbyID: {}] Epidemic card drawn. Infection counter increased to {}", lobbyCode, game.getInfectionCounter());
         } else {
-            addCard(player, card);
+            addCard(
+                    lobbyCode,
+                    player.getUser()
+                          .getUsername(),
+                    card
+            );
         }
         if (game.getState() instanceof DrawCardState drawCardState) {
             drawCardState.increaseCardsDrawn(game);
@@ -166,8 +179,7 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
         }
         if (validRequest || cityCardCount == 0) {
             ICity city = game.getCityRepository()
-                             .getCitiesByNames(cityName)
-                             .get(0);
+                             .getCityByName(cityName);
             player.setCurrentPosition(city);
         } else {
             throw new PlayerManagementException(
@@ -176,52 +188,68 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
     }
 
     /**
-     * Adds a card to the player's hand.
-     * <p>
-     * This method adds the specified card to the list of cards held by the player.
+     * Adds a card to a player's hand in a specified lobby.
      *
-     * @param player the player to whom the card is to be added
-     * @param card   the card to be added to the player's hand
+     * @param lobbyId  the ID of the lobby
+     * @param username the username of the player
+     * @param card     the card to be added
      */
-    public void addCard(IPlayer player, ICard card) {
+    public void addCard(String lobbyId, String username, ICard card) {
+        IGame game = GameStore.getInstance()
+                              .getGame(lobbyId);
+        IPlayer player = game.getPlayer(username);
+
         player.getCards()
               .add(card);
+
+        if (player.getCards()
+                  .size() > 7 && cardsAmountChangeListener != null) {
+            cardsAmountChangeListener.onCardsAmountChanged(
+                    lobbyId,
+                    username,
+                    CardMapper.toMixedCardDTOList(player.getCards())
+            );
+        }
     }
 
     /**
-     * Discards a single card from the player's hand.
-     * <p>
-     * This method removes the specified card from the player's hand and adds it to the player card discard pile in the game.
+     * Discards a card for a player in a specified lobby.
      *
-     * @param lobbyCode the code of the lobby in which the game is happening
-     * @param player    the player from whose hand the card is to be discarded
-     * @param card      the card to be discarded
+     * @param lobbyCode the code of the lobby
+     * @param username  the username of the player
+     * @param cardId    the ID of the card to be discarded
+     * @throws GameException if an error occurs while discarding the card
      */
-    public void discardCard(String lobbyCode, IPlayer player, ICard card) {
-        discardCards(lobbyCode, player, List.of(card));
+    public void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws GameException {
+        discardPlayerCards(lobbyCode, username, List.of(cardId));
         LOG.debug("[LobbyID: {}] Player {} discarded card {}", lobbyCode, player.getUser().getUsername(), card.getId());
     }
 
     /**
-     * Discards multiple cards from the player's hand.
-     * <p>
-     * This method removes the specified cards from the player's hand and adds them to the player card discard pile in the game.
+     * Discards multiple cards for a player in a specified lobby.
      *
-     * @param lobbyCode the code of the lobby in which the game is happening
-     * @param player    the player from whose hand the cards are to be discarded
-     * @param cards     the list of cards to be discarded
+     * @param lobbyCode the code of the lobby
+     * @param username  the username of the player
+     * @param cardIds   the list of IDs of the cards to be discarded
+     * @throws GameException if an error occurs while discarding the cards
      */
-    public void discardCards(String lobbyCode, IPlayer player, List<? extends ICard> cards) {
+    public void discardPlayerCards(String lobbyCode, String username, List<Integer> cardIds) throws GameException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyCode);
+        IPlayer player = game.getPlayer(username);
 
-        for (ICard card : cards) {
+        for (Integer cardId : cardIds) {
+            ICard card = player.getCards()
+                               .stream()
+                               .filter(c -> Objects.equals(c.getId(), cardId))
+                               .findFirst()
+                               .orElseThrow(() -> new GameException("Card not found"));
+
             player.getCards()
                   .remove(card);
+            game.getPlayerCardDiscardPile()
+                .add(card);
         }
-        game.getPlayerCardDiscardPile()
-            .addAll(cards);
-        LOG.debug("[LobbyID: {}] Player {} discarded {} cards", lobbyCode, player.getUser().getUsername(), cards.size());
     }
 
     /**

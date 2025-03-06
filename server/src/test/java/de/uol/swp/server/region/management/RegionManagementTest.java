@@ -8,6 +8,7 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -312,7 +313,7 @@ class RegionManagementTest {
     }
 
     @Test
-    void testIncreaseWaterTreatmentsFromRegion_Success() throws RegionManagementException, GameManagementException {
+    void testIncreaseWaterTreatmentsFromRegion_Success() throws RegionManagementException, GameManagementException, GameException {
         String lobbyId = "testLobbyId";
         RegionManagement spyRegionManagement = spy(regionManagement);
         doReturn(game).when(spyRegionManagement)
@@ -326,12 +327,17 @@ class RegionManagementTest {
         spyRegionManagement.increaseWaterTreatmentsFromRegion(lobbyId, 1, 5, cityCard, user);
 
         verify(region1, times(1)).increaseWaterTreatments(5);
-        verify(playerManagement, times(1)).discardCard(lobbyId, requestPlayer, cityCard);
+        verify(playerManagement, times(1)).discardPlayerCard(
+                lobbyId,
+                requestPlayer.getUser()
+                             .getUsername(),
+                cityCard.getId()
+        );
         verify(playerTurnState, times(1)).reduceActionsRemaining(game);
     }
 
     @Test
-    void testIncreaseWaterTreatmentsFromRegion_PlayerNotCurrent() {
+    void testIncreaseWaterTreatmentsFromRegion_PlayerNotCurrent() throws GameException {
         String lobbyId = "testLobbyId";
         RegionManagement spyRegionManagement = spy(regionManagement);
         doReturn(game).when(spyRegionManagement)
@@ -351,12 +357,12 @@ class RegionManagementTest {
         );
 
         verify(region1, never()).increaseWaterTreatments(anyInt());
-        verify(playerManagement, never()).discardCard(anyString(), any(), any());
+        verify(playerManagement, never()).discardPlayerCard(anyString(), any(), any());
         verify(playerTurnState, never()).reduceActionsRemaining(any());
     }
 
     @Test
-    void testIncreaseWaterTreatmentsFromRegion_NotPlayerTurnState() throws RegionManagementException {
+    void testIncreaseWaterTreatmentsFromRegion_NotPlayerTurnState() throws RegionManagementException, GameException {
         String lobbyId = "testLobbyId";
         RegionManagement spyRegionManagement = spy(regionManagement);
         doReturn(game).when(spyRegionManagement)
@@ -370,7 +376,7 @@ class RegionManagementTest {
         );
 
         verify(region1, never()).increaseWaterTreatments(anyInt());
-        verify(playerManagement, never()).discardCard(anyString(), any(), any());
+        verify(playerManagement, never()).discardPlayerCard(anyString(), any(), any());
         verify(playerTurnState, never()).reduceActionsRemaining(any());
     }
 

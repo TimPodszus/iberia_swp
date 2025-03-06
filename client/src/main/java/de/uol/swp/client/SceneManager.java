@@ -404,7 +404,7 @@ public class SceneManager {
         if (response.isSuccess()) {
             showGameScreen(response.getLobbyId());
         } else {
-            showError("Error creating game: " + response.getDescription());
+            showError(response.getDescription());
         }
     }
 
@@ -503,7 +503,7 @@ public class SceneManager {
      * @since 2019-09-03
      */
     public void showServerError(String e) {
-        showError("Server returned an error:\n", e);
+        showError("Server hat einen Fehler zurückgegeben:\n", e);
     }
 
     /**
@@ -513,7 +513,7 @@ public class SceneManager {
      * @since 2019-09-03
      */
     public void showError(String e) {
-        showError("Error:\n", e);
+        showError("Fehler:\n", e);
     }
 
     /**
@@ -546,7 +546,7 @@ public class SceneManager {
      */
     public void showLoginErrorScreen() {
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Error logging in to server");
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Fehler bei der Anmeldung");
             // based on: https://stackoverflow.com/questions/28417140/styling-default-javafx-dialogs/28421229#28421229
             DialogPane pane = alert.getDialogPane();
             pane.getStylesheets()

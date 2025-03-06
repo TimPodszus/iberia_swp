@@ -8,6 +8,13 @@ import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.city.request.BuildHospitalRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
+import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.player.message.request.DiscardPlayerCardRequest;
+import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
+import de.uol.swp.common.player.message.request.MovePlayerRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.player.message.request.*;
@@ -19,9 +26,6 @@ import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
-import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
-import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
@@ -137,7 +141,7 @@ public class GameService {
      */
     @Subscribe
     public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
-        LOG.debug("Received ShareKnowledgeEvent: " + event);
+        LOG.debug("Received ShareKnowledgeEvent");
         Platform.runLater(() -> {
             boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
                                                                                               .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()
@@ -345,9 +349,9 @@ public class GameService {
     /**
      * Sends a request to perform water treatment in the specified region.
      *
-     * @param lobbyId the ID of the lobby
-     * @param regionId the ID of the region where the water treatment is to be performed
-     * @param amount the amount of water treatments to be performed
+     * @param lobbyId   the ID of the lobby
+     * @param regionId  the ID of the region where the water treatment is to be performed
+     * @param amount    the amount of water treatments to be performed
      * @param dismissed whether the event was dismissed
      */
     public void sendTreatWaterEventRequest(String lobbyId, int regionId, int amount, boolean dismissed) {
@@ -402,5 +406,24 @@ public class GameService {
      */
     public void sendTreatPlagueRequest(String lobbyID, int cityID, PlagueName selectedPlague) {
         eventBus.post(new TreatPlagueRequest(lobbyID, cityID, selectedPlague));
+    }
+
+    /**
+     * Sends a request to discard a player card in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby where the card is to be discarded
+     * @param card    the card to be discarded
+     */
+    public void sendDiscardPlayerCardRequest(String lobbyId, ICardDTO card) {
+        eventBus.post(new DiscardPlayerCardRequest(lobbyId, card));
+    }
+
+    /**
+     * Sends a request to end the turn in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby where the turn is to be ended
+     */
+    public void sendEndTurnRequest(String lobbyId) {
+        eventBus.post(new EndTurnRequest(lobbyId));
     }
 }

@@ -153,6 +153,11 @@ public class GameServiceTest extends EventBusBasedTest {
         super.handleEvent(event);
     }
 
+    @Subscribe
+    public void onEndTurnRequest(EndTurnRequest event) {
+        super.handleEvent(event);
+    }
+
     /**
      * Sets up the test environment.
      */
@@ -763,5 +768,51 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, times(2)).getGame("lobbycode");
         verify(lobbyManagement, times(1)).getLobby("lobbycode");
         verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+    }
+
+    @Test
+    void testOnEndTurnRequest() throws IllegalGameStateException, InterruptedException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+
+        EndTurnRequest endTurnRequest = new EndTurnRequest("lobbyId");
+        endTurnRequest.setSession(session);
+
+        IGame game = new Game(2, "lobbyId");
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+        game.setState(new PlayerTurnState());
+
+        postAndWait(endTurnRequest);
+
+        verify(gameManagement, times(1)).endTurn("lobbyId", user);
+        assertInstanceOf(BoardUpdateEvent.class, event);
+    }
+
+    @Test
+    void testOnEndTurnRequest_sessionNotFound() throws IllegalGameStateException, InterruptedException {
+        EndTurnRequest endTurnRequest = new EndTurnRequest("lobbyId");
+        assertThrows(SessionNotFoundException.class, () -> gameService.onEndTurnRequest(endTurnRequest));
+    }
+
+    @Test
+    void testOnEndTurnRequest_illegalGameStateException() throws IllegalGameStateException, InterruptedException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+
+        EndTurnRequest endTurnRequest = new EndTurnRequest("lobbyId");
+        endTurnRequest.setSession(session);
+
+        IGame game = new Game(2, "lobbyId");
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+        doThrow(IllegalGameStateException.class).when(gameManagement).endTurn("lobbyId", user);
+
+        postAndWait(endTurnRequest);
+
+        assertInstanceOf(StatusResponse.class, event);
+        assertFalse(((StatusResponse) event).isSuccess());
     }
 }

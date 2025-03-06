@@ -100,11 +100,7 @@ public class RegionServiceTest extends EventBusBasedTest {
         when(availableRegionsRequest.getSession()).thenReturn(java.util.Optional.of(session));
         when(session.getUser()).thenReturn(null);
 
-        EventBusException exception = assertThrows(
-                EventBusException.class, () -> {
-                    postAndWait(availableRegionsRequest);
-                }
-        );
+        EventBusException exception = assertThrows(EventBusException.class, () -> postAndWait(availableRegionsRequest));
 
         Throwable cause = exception.getCause();
         assertInstanceOf(GameException.class, cause);
@@ -138,9 +134,8 @@ public class RegionServiceTest extends EventBusBasedTest {
         when(session.getUser()).thenReturn(null);
 
         EventBusException exception = assertThrows(
-                EventBusException.class, () -> {
-                    postAndWait(waterTreatmentRegionRequest);
-                }
+                EventBusException.class,
+                () -> postAndWait(waterTreatmentRegionRequest)
         );
 
         Throwable cause = exception.getCause();
@@ -184,11 +179,7 @@ public class RegionServiceTest extends EventBusBasedTest {
         when(waterTreatmentRequest.getSession()).thenReturn(java.util.Optional.of(session));
         when(session.getUser()).thenReturn(null);
 
-        EventBusException exception = assertThrows(
-                EventBusException.class, () -> {
-                    postAndWait(waterTreatmentRequest);
-                }
-        );
+        EventBusException exception = assertThrows(EventBusException.class, () -> postAndWait(waterTreatmentRequest));
 
         Throwable cause = exception.getCause();
         assertInstanceOf(GameException.class, cause);
@@ -196,7 +187,7 @@ public class RegionServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnSendWaterTreatmentRequest_Success() throws PlayerManagementException, GameManagementException, InterruptedException {
+    void testOnSendWaterTreatmentRequest_Success() throws PlayerManagementException, GameManagementException, InterruptedException, GameException {
         WaterTreatmentRequest waterTreatmentRequest = mock(WaterTreatmentRequest.class);
         Session session = mock(Session.class);
         IUserDTO userDTO = mock(IUserDTO.class);

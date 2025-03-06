@@ -24,6 +24,12 @@ public class Player implements IPlayer {
     private List<ICard> cards = new ArrayList<>();
     private final IUser user;
 
+
+    @Override
+    public void addCard(ICard card) {
+        cards.add(card);
+    }
+
     @Override
     public ICard playCard(int cardId) {
         for (ICard card : cards) {
