@@ -5,14 +5,12 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
-import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
-import de.uol.swp.server.cards.data.eventcards.EventCard;
-import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
-import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
+import de.uol.swp.server.cards.data.eventcards.*;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.InfectionState;
@@ -343,5 +341,40 @@ public class CardManagementTest {
 
         assertEquals(100, allCards.size());
         assertEquals(48, cityCards.size());
+    }
+
+    @Test
+    void testGetCardForPlayer() throws IllegalGameStateException, CardNotFoundException {
+        IPlayer player = mock(Player.class);
+        when(game.getPlayer("user")).thenReturn(player);
+        EventCard card = new StateMobilizationEventCard(2);
+        when(game.getPlayerCardDiscardPile()).thenReturn(new ArrayList<>(List.of(card)));
+        EventState eventState = new EventState(new ForTheGoodCauseEventCard(1));
+        when(game.getState()).thenReturn(eventState);
+
+        cardManagement.getCardForPlayer("1", "user", 2);
+
+        verify(player).addCard(card);
+        assertTrue(game.getPlayerCardDiscardPile()
+                       .isEmpty());
+    }
+
+    @Test
+    void testGetCardForPlayer_WrongState() {
+        when(game.getState()).thenReturn(new PlayerTurnState());
+
+        assertThrows(IllegalGameStateException.class, () -> cardManagement.getCardForPlayer("1", "user", 2));
+    }
+
+    @Test
+    void testGetCardForPlayer_CardNotFound() {
+        IPlayer player = mock(Player.class);
+        when(game.getPlayer("user")).thenReturn(player);
+        EventCard card = new StateMobilizationEventCard(2);
+        when(game.getPlayerCardDiscardPile()).thenReturn(new ArrayList<>(List.of(card)));
+        EventState eventState = new EventState(new ForTheGoodCauseEventCard(1));
+        when(game.getState()).thenReturn(eventState);
+
+        assertThrows(CardNotFoundException.class, () -> cardManagement.getCardForPlayer("1", "user", 3));
     }
 }

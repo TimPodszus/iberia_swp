@@ -3,12 +3,10 @@ package de.uol.swp.server.cards.management;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
-import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
-import de.uol.swp.server.cards.data.eventcards.EventCard;
-import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
-import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
+import de.uol.swp.server.cards.data.eventcards.*;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.InfectionState;
@@ -184,5 +182,32 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
             }
         }
         return cards;
+    }
+
+    @Override
+    public void getCardForPlayer(
+            String lobbyId, String username, int cardId
+    ) throws IllegalGameStateException, CardNotFoundException {
+        IGame game = super.getGame(lobbyId);
+
+        if (!(game.getState() instanceof EventState eventState && eventState.getEventCard() instanceof ForTheGoodCauseEventCard)) {
+            LOG.error("[LobbyId: {}] Game is not in correct state to get card for player", lobbyId);
+            throw new IllegalGameStateException("Game is not in correct state to get card for player");
+        }
+
+        List<EventCard> cards = this.getCardsFromPlayerDiscardPile(lobbyId, EventCard.class);
+        ICard card = cards.stream()
+                          .filter(eventCard -> eventCard.getId() == cardId)
+                          .findFirst()
+                          .orElseThrow(() -> {
+                              LOG.error("[LobbyId: {}] Card not found in player card discard pile", lobbyId);
+                              return new CardNotFoundException("Card not found in player card discard pile");
+                          });
+        
+        game.getPlayerCardDiscardPile()
+            .remove(card);
+
+        game.getPlayer(username)
+            .addCard(card);
     }
 }
