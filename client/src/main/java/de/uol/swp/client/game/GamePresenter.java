@@ -31,8 +31,6 @@ import de.uol.swp.common.game.message.event.ShareRideEvent;
 import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
-import de.uol.swp.common.game.message.response.CardExchangeResponse;
-import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.dto.IPlagueDTO;
@@ -1546,35 +1544,6 @@ public class GamePresenter extends AbstractPresenter {
                     break;
             }
         }
-    }
-
-    /**
-     * Event handler for the CardSelectionResponse.
-     * This method is called when a CardSelectionResponse is received.
-     * It displays a dialog for the user to select a card.
-     *
-     * @param response the CardSelectionResponse containing the cards to be selected
-     */
-    @Subscribe
-    public void onCardSelectionResponse(CardSelectionResponse response) {
-        if (!response.getLobbyId()
-                     .equals(this.lobbyId)) {
-            return;
-        }
-
-        CardDialog dialog = new CardDialog(true, response.isDismissible(), response.getCards());
-        Optional<ICardDTO> result = dialog.showAndWait();
-    }
-
-    @Subscribe
-    public void onCardExchangeResponse(CardExchangeResponse response) {
-        if (!response.getLobbyId()
-                     .equals(this.lobbyId)) {
-            return;
-        }
-
-        CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
-        Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
     }
 
     @Subscribe
