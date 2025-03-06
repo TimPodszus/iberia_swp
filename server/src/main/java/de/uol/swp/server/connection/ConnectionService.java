@@ -108,16 +108,26 @@ public class ConnectionService extends AbstractService {
                 event.getLobbyId()
         );
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(
-                event.getLobbyId(),
-                availableDestinations
-        );
-        response.setSession(session);
-        post(response);
-        LOG.debug("[Lobby: {}] Sent AvailableDestinationsResponse for player {}",
-                event.getLobbyId(),
-                event.getUsername()
-        );
+        ScheduledExecutorService scheduler = null;
+        try {
+            // Warning is wrong, scheduler is shutdown in finally block. A close method does not exist.
+            scheduler = Executors.newScheduledThreadPool(1);
+            scheduler.schedule(() -> {
+                AvailableDestinationsResponse response = new AvailableDestinationsResponse(event.getLobbyId(),
+                        availableDestinations
+                );
+                response.setSession(session);
+                post(response);
+            }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+            LOG.debug("[Lobby: {}] Sent AvailableDestinationsResponse for player {}",
+                    event.getLobbyId(),
+                    event.getUsername()
+            );
+        } finally {
+            if (scheduler != null) {
+                scheduler.shutdown();
+            }
+        }
     }
 
     /**

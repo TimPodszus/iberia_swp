@@ -35,6 +35,9 @@ import de.uol.swp.server.game.exceptions.GameNotFoundException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.plague.data.PlagueRepository;
+import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
@@ -76,6 +79,9 @@ class GameManagementTest {
 
     @Mock
     private IConnectionManagement connectionManagement;
+
+    @Mock
+    private IPlagueManagement plagueManagement;
 
     @InjectMocks
     private GameManagement gameManagement;
