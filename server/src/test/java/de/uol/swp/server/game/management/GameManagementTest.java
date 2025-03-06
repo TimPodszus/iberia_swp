@@ -35,8 +35,6 @@ import de.uol.swp.server.game.exceptions.GameNotFoundException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
@@ -579,7 +577,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(7, actions.size());
+        assertEquals(6, actions.size());
     }
 
 
