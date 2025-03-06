@@ -189,7 +189,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         DiscardPlayerCardEvent event = new DiscardPlayerCardEvent(lobbyId, cards);
         Session session = authenticationService.getSession(user)
                                                .orElseThrow();
-        event.setSession(session);
+        event.setReceiver(List.of(session));
         bus.post(event);
         LOG.debug("Sent DiscardPlayerCardEvent to user {}", user.getUsername());
     }

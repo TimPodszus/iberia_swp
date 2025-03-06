@@ -36,7 +36,6 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -358,7 +357,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     private boolean isInfectionTreatable(String lobbyCode) {
-        ICity city = getGame(lobbyCode).getCurrentPlayer().getCurrentPosition();
+        ICity city = getGame(lobbyCode).getCurrentPlayer()
+                                       .getCurrentPosition();
         return city.getInfections()
                    .stream()
                    .anyMatch(infection -> infection.getSeverity() > 0);
