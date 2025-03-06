@@ -123,6 +123,14 @@ public class PlagueManagementTest {
     }
 
     @Test
+    void testTreatPlagueNullInput() {
+        assertThrows(IllegalArgumentException.class,
+                () -> plagueManagement.treatPlague(null, city, game),
+                "Expected IllegalArgumentException when plagueToTreat is null"
+        );
+    }
+
+    @Test
     void testGetInfectionsInCity() {
         IInfection infection = mock(IInfection.class);
         when(infection.getSeverity()).thenReturn(2);
