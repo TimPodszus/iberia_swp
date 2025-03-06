@@ -1938,7 +1938,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onGameResponse(AbstractGameResponse response) {
-        if (!response.getLobbyId().equals(lobbyId) && response.isSuccess()) {
+        if (!response.getLobbyId()
+                     .equals(lobbyId) || response.isSuccess()) {
             return;
         }
 
