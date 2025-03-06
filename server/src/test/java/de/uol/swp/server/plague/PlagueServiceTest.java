@@ -16,6 +16,7 @@ import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -119,7 +120,7 @@ class PlagueServiceTest {
     }
 
     @Test
-    void testOnResearchPlagueRequest() throws PlagueManagementException, IllegalGameStateException {
+    void testOnResearchPlagueRequest() throws PlagueManagementException, IllegalGameStateException, GameException {
         when(researchPlagueRequest.getLobbyId()).thenReturn("lobby123");
         when(researchPlagueRequest.getSession()).thenReturn(Optional.of(session));
         when(plagueManagement.getGame(researchPlagueRequest.getLobbyId())).thenReturn(game);
@@ -130,7 +131,7 @@ class PlagueServiceTest {
     }
 
     @Test
-    void testOnResearchPlagueRequest_PlagueManagementException() throws PlagueManagementException, IllegalGameStateException {
+    void testOnResearchPlagueRequest_PlagueManagementException() throws PlagueManagementException, IllegalGameStateException, GameException {
         when(researchPlagueRequest.getLobbyId()).thenReturn("lobby123");
         when(researchPlagueRequest.getSession()).thenReturn(Optional.of(session));
         when(plagueManagement.getGame(researchPlagueRequest.getLobbyId())).thenReturn(game);
@@ -143,7 +144,7 @@ class PlagueServiceTest {
     }
 
     @Test
-    void testOnResearchPlagueRequest_IllegalGameStateException() throws PlagueManagementException, IllegalGameStateException {
+    void testOnResearchPlagueRequest_IllegalGameStateException() throws PlagueManagementException, IllegalGameStateException, GameException {
         when(researchPlagueRequest.getLobbyId()).thenReturn("lobby123");
         when(researchPlagueRequest.getSession()).thenReturn(Optional.of(session));
         when(plagueManagement.getGame(researchPlagueRequest.getLobbyId())).thenReturn(game);
