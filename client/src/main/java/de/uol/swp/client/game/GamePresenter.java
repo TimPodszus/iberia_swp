@@ -25,10 +25,7 @@ import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.*;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.event.EndGameEvent;
-import de.uol.swp.common.game.message.event.ShareRideEvent;
-import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
@@ -1777,6 +1774,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         LOG.debug("Received ShareKnowledgeResponse");
         if (response.wasSuccessful()) {
             LOG.info("Knowledge shared");
@@ -1810,6 +1812,10 @@ public class GamePresenter extends AbstractPresenter {
 
     @Subscribe
     public void onTreatWaterEventResponse(TreatWaterEventResponse eventResponse) {
+        if(!eventResponse.getLobbyId().equals(lobbyId)) {
+            return;
+        }
+
         List<IRegionDTO> regions = gameDTO.getRegions();
         isDismissibleDialog = eventResponse.isDismissible();
         for (IRegionDTO region : regions) {
@@ -1827,6 +1833,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
+        if(!response.getLobbyId().equals(lobbyId)) {
+            return;
+        }
+
         LOG.info(
                 "AvailablePlaguesResponse received! Current plague count: {}",
                 response.getAvailablePlagues()
@@ -1853,6 +1863,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onTreatPlagueResponse(TreatPlagueResponse response) {
+        if(!response.getLobbyId().equals(lobbyId)) {
+            return;
+        }
+
         LOG.info("TreatPlagueResponse received from Lobby: {}", response.getLobbyId());
         if (response.isCountryDoctor()) {
             Platform.runLater(() -> {
@@ -1924,7 +1938,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onGameResponse(AbstractGameResponse response) {
-        if (response.isSuccess()) {
+        if (!response.getLobbyId().equals(lobbyId) && response.isSuccess()) {
             return;
         }
 

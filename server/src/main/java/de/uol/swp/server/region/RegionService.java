@@ -145,7 +145,7 @@ public class RegionService extends AbstractService {
                          .findFirst()
                          .orElseThrow(() -> new IllegalStateException("User not found"));
         Optional<Session> session = authenticationService.getSession(user);
-        response = new TreatWaterEventResponse(false);
+        response = new TreatWaterEventResponse(event.getLobbyId(), false);
         response.setSession(session.orElseThrow(() -> new IllegalStateException("Session not present")));
         post(response);
     }
@@ -164,7 +164,7 @@ public class RegionService extends AbstractService {
             game.setState(game.getPreviousState());
             game.setState(new PlaceExtraWaterTreatmentState());
             Optional<Session> session = authenticationService.getSession(UserMapper.toUser(user));
-            response = new TreatWaterEventResponse(true);
+            response = new TreatWaterEventResponse(request.getLobbyId(), true);
             response.setSession(session.orElseThrow(() -> new IllegalStateException("Session not present")));
             post(response);
         } else if (request.isDismissed()) {
