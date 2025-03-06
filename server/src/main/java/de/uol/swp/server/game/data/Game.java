@@ -167,6 +167,7 @@ public class Game implements IGame {
         initializeGame(difficulty);
     }
 
+    @Override
     public void initializeGame(int difficulty) {
         createInfectionCards();
         createPlayerCards();
@@ -197,10 +198,17 @@ public class Game implements IGame {
                       .forEach(playerCardDrawPile::add);
     }
 
+    /**
+     * Creates an epidemic card with the given ID.
+     *
+     * @param id the ID of the epidemic card
+     * @return the newly created epidemic card
+     */
     public EpidemicCard createEpidemicCard(int id) {
         return new EpidemicCard(id, "Epidemiekarte", "");
     }
 
+    @Override
     public void gameStartShuffle(int numSubDecks) {
         if (numSubDecks <= 0) {
             throw new IllegalArgumentException("Number of sub-decks must be greater than zero.");

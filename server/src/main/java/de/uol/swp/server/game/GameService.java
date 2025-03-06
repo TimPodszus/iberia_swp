@@ -117,11 +117,11 @@ public class GameService extends AbstractService implements GameStateChangeListe
         }
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null) {
-            game.setGameStateChangeListener(this);
-            LOG.debug("Game created for lobby {}", request.getLobbyId());
-            post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
-            sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-        }
+        game.setGameStateChangeListener(this);
+        LOG.debug("Game created for lobby {}", request.getLobbyId());
+        post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
+        sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
     }
 
     /**
