@@ -169,4 +169,17 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
         LOG.debug("[LobbyId: {}] Setting game in EventState", game.getGameId());
         game.setState(new EventState(eventCard));
     }
+
+    @Override
+    public <T extends ICard> List<T> getCardsFromPlayerDiscardPile(String lobbyId, Class<T> type) {
+        IGame game = super.getGame(lobbyId);
+        List<ICard> playerCardDiscardPile = game.getPlayerCardDiscardPile();
+        List<T> cards = new ArrayList<>();
+        for (ICard discardedCard : playerCardDiscardPile) {
+            if (type.isInstance(discardedCard)) {
+                cards.add(type.cast(discardedCard));
+            }
+        }
+        return cards;
+    }
 }

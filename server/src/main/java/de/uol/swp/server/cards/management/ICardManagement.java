@@ -1,6 +1,9 @@
 package de.uol.swp.server.cards.management;
 
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.game.data.IGame;
+
+import java.util.List;
 
 /**
  * Interface for managing card-related actions in the game.
@@ -60,4 +63,12 @@ public interface ICardManagement {
      */
     boolean isStateCorrect(IGame game);
 
+    /**
+     * Retrieves the cards from the player's discard pile in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param type    the type of card to retrieve
+     * @return a list of cards from the player's discard pile with the given type or every card, when type is null
+     */
+    <T extends ICard> List<T> getCardsFromPlayerDiscardPile(String lobbyId, Class<T> type);
 }
