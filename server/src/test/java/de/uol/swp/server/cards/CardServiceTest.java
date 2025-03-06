@@ -2,9 +2,13 @@ package de.uol.swp.server.cards;
 
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.CardSelectionEvent;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
+import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.events.ForTheGoodCauseEvent;
 import de.uol.swp.server.cards.events.SecondChanceEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.cards.management.CardNotPlayableException;
@@ -19,6 +23,7 @@ import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import de.uol.swp.server.usermanagement.management.ServerUserService;
 import de.uol.swp.server.usermanagement.management.UserManagement;
 import org.greenrobot.eventbus.Subscribe;
@@ -76,6 +81,16 @@ public class CardServiceTest extends EventBusBasedTest {
      */
     @Subscribe
     public void onStatusResponse(StatusResponse event) {
+        super.handleEvent(event);
+    }
+
+    /**
+     * Handles CardSelectionEvent
+     *
+     * @param event the CardSelectionEvent to handle
+     */
+    @Subscribe
+    public void onCardSelectionEvent(CardSelectionEvent event) {
         super.handleEvent(event);
     }
 
@@ -144,7 +159,7 @@ public class CardServiceTest extends EventBusBasedTest {
     @Test
     void testOnPlayCardRequestWithMissingSession() {
         PlayCardRequest request = new PlayCardRequest("1234", 1);
-        assertThrows(GameException.class, () -> cardService.onPlayCardRequest(request));
+        assertThrows(SessionNotFoundException.class, () -> cardService.onPlayCardRequest(request));
     }
 
     @Test
@@ -172,7 +187,7 @@ public class CardServiceTest extends EventBusBasedTest {
     @Test
     void testOnSecondChanceEvent_withMissingSession()  {
         SecondChanceEvent event = new SecondChanceEvent("1234", "testuser");
-        assertThrows(GameException.class, () -> cardService.onSecondChanceEvent(event));
+        assertThrows(SessionNotFoundException.class, () -> cardService.onSecondChanceEvent(event));
     }
 
     @Test
@@ -198,5 +213,41 @@ public class CardServiceTest extends EventBusBasedTest {
 
         assertInstanceOf(BoardUpdateEvent.class, this.event, "Expected BoardUpdateEvent");
         verify(cardManagement, atLeastOnce()).returnLastPlayedCard("1234", "testuser");
+    }
+
+    /**
+     * Tests the onForTheGoodCauseEvent method.
+     *
+     * @throws InterruptedException if the thread is interrupted
+     */
+    @Test
+    void testOnForTheGoodCauseEvent() throws InterruptedException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(userManagement.getUser("testuser")).thenReturn(user);
+        when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
+
+        EventCard eventCard = new AnotherDayEventCard(1);
+        when(cardManagement.getCardsFromPlayerDiscardPile("lobbyId", EventCard.class)).thenReturn(List.of(eventCard));
+
+        ForTheGoodCauseEvent forTheGoodCauseEvent = new ForTheGoodCauseEvent("lobbyId", "testuser");
+        postAndWait(forTheGoodCauseEvent);
+
+        assertInstanceOf(CardSelectionEvent.class, this.event, "Expected CardSelectionEvent");
+    }
+
+    /**
+     * Tests the onForTheGoodCauseEvent method when the session is not found.
+     */
+    @Test
+    void testOnForTheGoodCauseEvent_SessionNotFound() {
+        IUser user = new User("testuser", "testpassword");
+        when(userManagement.getUser("testuser")).thenReturn(user);
+        when(authenticationService.getSession(user)).thenReturn(Optional.empty());
+
+        when(cardManagement.getCardsFromPlayerDiscardPile("lobbyId", EventCard.class)).thenReturn(List.of());
+        ForTheGoodCauseEvent forTheGoodCauseEvent = new ForTheGoodCauseEvent("lobbyId", "testuser");
+
+        assertThrows(SessionNotFoundException.class, () -> cardService.onForTheGoodCauseEvent(forTheGoodCauseEvent));
     }
 }

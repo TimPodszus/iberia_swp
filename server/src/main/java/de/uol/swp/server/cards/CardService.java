@@ -1,9 +1,11 @@
 package de.uol.swp.server.cards;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.CardSelectionEvent;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -26,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CardService extends AbstractService {
@@ -127,10 +130,30 @@ public class CardService extends AbstractService {
         sendToAllInLobby(lobby, boardUpdateEvent);
     }
 
+    /**
+     * Handles the ForTheGoodCauseEvent by retrieving event cards from the player's discard pile,
+     * converting them to DTOs, and creating a CardSelectionEvent to send to the user.
+     *
+     * @param event the ForTheGoodCauseEvent containing the lobby ID and username
+     */
     @Subscribe
     public void onForTheGoodCauseEvent(ForTheGoodCauseEvent event) {
         LOG.debug("[LobbyId: {}] Received ForTheGoodCauseEvent", event.getLobbyId());
         List<EventCard> cards = cardManagement.getCardsFromPlayerDiscardPile(event.getLobbyId(), EventCard.class);
 
+        List<ICardDTO> cardDtos = new ArrayList<>();
+        for (EventCard eventCard : cards) {
+            cardDtos.add(CardMapper.toDTO(eventCard));
+        }
+        CardSelectionEvent cardSelectionEvent = new CardSelectionEvent(event.getLobbyId(), cardDtos);
+
+        IUser user = userManagement.getUser(event.getUsername());
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow(() -> {
+                                                   LOG.error("[LobbyId: {}] Session not found", event.getLobbyId());
+                                                   return new SessionNotFoundException();
+                                               });
+        cardSelectionEvent.setReceiver(List.of(session));
+        post(cardSelectionEvent);
     }
 }
