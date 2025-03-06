@@ -2,14 +2,13 @@ package de.uol.swp.server.game.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
@@ -17,11 +16,11 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
-import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
@@ -309,10 +308,49 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (isWaterTreatmentPlaceable(lobbyId, user)) {
             actions.add(GameActions.TREAT_WATER);
         }
+        if (roleActionOneAvailable(lobbyId)) {
+            actions.add(GameActions.ROLE_ACTION_ONE);
+        }
+        if (roleActionTwoAvailable(lobbyId)) {
+            actions.add(GameActions.ROLE_ACTION_TWO);
+        }
         if (isEndTurnPossible(lobbyId, user)) {
             actions.add(GameActions.END_TURN);
         }
         return actions;
+    }
+
+
+    private boolean roleActionOneAvailable(String lobbyCode) {
+        if (getGame(lobbyCode).getCurrentPlayer()
+                              .getRole()
+                              .getName()
+                              .equals(RoleEnum.POLITICIAN)) {
+            return getGame(lobbyCode).getCurrentPlayer()
+                                     .getCards()
+                                     .stream()
+                                     .anyMatch(card -> card instanceof CityCard);
+        }
+        return false;
+    }
+
+    private boolean roleActionTwoAvailable(String lobbyCode) {
+        if (getGame(lobbyCode).getCurrentPlayer()
+                              .getRole()
+                              .getName()
+                              .equals(RoleEnum.POLITICIAN)) {
+            boolean playerHasCurrentCityCard = getGame(lobbyCode).getCurrentPlayer()
+                                                                 .getCards()
+                                                                 .stream()
+                                                                 .anyMatch(card -> card instanceof CityCard);
+
+            boolean currentCityCardIsOnDiscardPile = getGame(lobbyCode).getPlayerCardDiscardPile()
+                                                                       .stream()
+                                                                       .anyMatch(card -> card instanceof CityCard);
+
+            return playerHasCurrentCityCard || currentCityCardIsOnDiscardPile;
+        }
+        return false;
     }
 
     /**
@@ -452,6 +490,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             movePlayerBySea(game, player, city, card);
         }
     }
+
+
 
     /**
      * Validates if the game states allows moving players.
@@ -719,20 +759,16 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Handles the acceptance of a share knowledge request.
      * This method exchanges the specified cards between the current player and the target player.
      *
-     * @param currentPlayer   The player who initiated the share knowledge request
-     * @param targetPlayer    The player who accepted the share knowledge request
-     * @param lobbyId         The ID of the lobby where the game is being played
-     * @param event           The event containing details of the share knowledge request
-     * @param lobbyManagement The lobby management instance
-     * @param gameService     The game service instance
+     * @param currentPlayer The player who initiated the share knowledge request
+     * @param targetPlayer  The player who accepted the share knowledge request
+     * @param lobbyId       The ID of the lobby where the game is being played
+     * @param event         The event containing details of the share knowledge request
+     * @param gameService   The game service instance
      * @throws PlayerManagementException If there is an error during the card exchange
      */
     public void shareKnowledgeRequestAccepted(
-            IPlayer currentPlayer,
-            IPlayer targetPlayer,
-            String lobbyId,
-            ShareKnowledgeEvent event,
-            ILobbyManagement lobbyManagement,
+            IPlayer currentPlayer, IPlayer targetPlayer, String lobbyId, ShareKnowledgeEvent event,
+
             GameService gameService
     ) throws PlayerManagementException {
 
@@ -775,7 +811,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                    .getState();
         ((PlayerTurnState) gameState).reduceActionsRemaining(this.getGame(event.getLobbyId()));
         LOG.trace("ReducedActionsRemaining");
-        postShareKnowledgeResponse(event, lobbyManagement, gameService, true);
+        gameService.postShareKnowledgeResponse(event, true);
     }
 
     /**
@@ -801,31 +837,44 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
 
-    /**
-     * Posts a response to the share knowledge event.
-     *
-     * @param event           The event containing details of the share knowledge request
-     * @param lobbyManagement The lobby management instance
-     * @param gameService     The game service instance
-     * @param success         Indicates whether the share knowledge request was successful
-     */
     @Override
-    public void postShareKnowledgeResponse(
-            ShareKnowledgeEvent event,
-            ILobbyManagement lobbyManagement,
-            GameService gameService,
-            boolean success
-    ) {
-
-        gameService.sendToAllInLobby(
-                lobbyManagement.getLobby(event.getLobbyId()),
-                new KnowledgeSharedEvent(
-                        event.getLobbyId(),
-                        success,
-                        GameMapper.toDTO(this.getGame(event.getLobbyId()))
-                )
+    public void shareKnowledgeWithDiscardPile(
+            int cardToDiscardID,
+            int cardToReceiveID,
+            String lobbyId,
+            GameService gameService
+    ) throws CardNotFoundException, PlayerManagementException {
+        IGame game = getGame(lobbyId);
+        ICard cardToDiscard = playerManagement.getCard(
+                lobbyId,
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername(),
+                cardToDiscardID
         );
-        LOG.trace("Posted ShareKnowledgeResponse to event bus for lobby {}", event.getLobbyId());
+        ICard cardToReceive = game.getPlayerCardDiscardPile()
+                                  .stream()
+                                  .filter(card -> card.getId() == cardToReceiveID)
+                                  .findFirst()
+                                  .orElseThrow(() -> new CardNotFoundException("Card not found in discard pile"));
+
+        game.getCurrentPlayer()
+            .getCards()
+            .add(cardToReceive);
+        game.getPlayerCardDiscardPile()
+            .remove(cardToReceive);
+        game.getPlayerCardDiscardPile()
+            .add(cardToDiscard);
+        game.getCurrentPlayer()
+            .getCards()
+            .remove(cardToDiscard);
+        LOG.debug("Cards exchanged with discard pile");
+        IGameState gameState = game.getState();
+        ((PlayerTurnState) gameState).reduceActionsRemaining(game);
+        LOG.trace("ReducedActionsRemaining");
+
+        gameService.sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
+
 
     }
 }

@@ -1,8 +1,6 @@
 package de.uol.swp.server.usermanagement.store;
 
 import de.uol.swp.server.usermanagement.IUser;
-
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -38,9 +36,7 @@ public interface UserStore {
      *
      * @param username username of the new user
      * @param password password the user wants to use
-     *
      * @return The User without password information
-     *
      * @since 2019-08-13
      */
     IUser createUser(String username, String password);
@@ -52,27 +48,12 @@ public interface UserStore {
      *
      * @param username username of the user to be modified
      * @param password new password
-     * @return The User without password information
      * @since 2019-08-13
      */
     IUser updateUser(String username, String password);
+}
 
 
 
-    /**
-     * Remove user from store
-     *
-     * @param username the username of the user to remove
-     * @since 2019-10-10
-     */
-    void removeUser(String username);
-
-
-    /**
-     * Retrieves the list of all users.
-     * @return A list of all users without password information
-     * @since 2019-08-13
-     */
-    List<IUser> getAllUsers();}
 
 
