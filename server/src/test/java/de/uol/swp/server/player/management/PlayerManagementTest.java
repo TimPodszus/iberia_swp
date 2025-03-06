@@ -19,7 +19,6 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
-import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -169,7 +168,7 @@ class PlayerManagementTest {
     @Test
     void discardCard_DiscardSingleCard() throws GameException {
         ICard infectionCard = new InfectionCard(1, "test", mock(ICity.class));
-        ArrayList<ICard> cards = new ArrayList<ICard>();
+        ArrayList<ICard> cards = new ArrayList<>();
         cards.add(infectionCard);
         when(player.getUser()).thenReturn(user);
         when(user.getUsername()).thenReturn("testUser");
@@ -195,7 +194,7 @@ class PlayerManagementTest {
     void discardCards_DiscardMultipleCards() throws GameException {
         ICard card1 = new InfectionCard(1, "test", mock(ICity.class));
         ICard card2 = new CityCard(1, "test", mock(ICity.class));
-        ArrayList<ICard> cards = new ArrayList<ICard>();
+        ArrayList<ICard> cards = new ArrayList<>();
         cards.add(card1);
         cards.add(card2);
 
@@ -384,20 +383,6 @@ class PlayerManagementTest {
        game.getPlayers().clear();
 
         assertThrows(PlayerManagementException.class, () -> playerManagement.setPlayerLocation(game.getGameId(), "nonExistentPlayer", 1));
-    }
-
-    @Test
-    void testDiscardCard_RemovesCardFromPlayerHand() {
-        ICard card = mock(ICard.class);
-        List<ICard> mockCards = mock(List.class);
-        when(player.getCards()).thenReturn(mockCards);
-        when(player.getUser()).thenReturn(user);
-        when(user.getUsername()).thenReturn("testUser");
-
-        playerManagement.discardCard(game.getGameId(), player, card);
-
-        verify(mockCards, times(1)).remove(card);
-        assertTrue(game.getPlayerCardDiscardPile().contains(card));
     }
 
     @Test

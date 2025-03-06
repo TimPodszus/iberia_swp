@@ -222,7 +222,7 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      */
     public void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws GameException {
         discardPlayerCards(lobbyCode, username, List.of(cardId));
-        LOG.debug("[LobbyID: {}] Player {} discarded card {}", lobbyCode, player.getUser().getUsername(), card.getId());
+        LOG.debug("[LobbyID: {}] Player {} discarded card {}", lobbyCode, username, cardId);
     }
 
     /**
@@ -234,8 +234,7 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @throws GameException if an error occurs while discarding the cards
      */
     public void discardPlayerCards(String lobbyCode, String username, List<Integer> cardIds) throws GameException {
-        IGame game = GameStore.getInstance()
-                              .getGame(lobbyCode);
+        IGame game = getGame(lobbyCode);
         IPlayer player = game.getPlayer(username);
 
         for (Integer cardId : cardIds) {
