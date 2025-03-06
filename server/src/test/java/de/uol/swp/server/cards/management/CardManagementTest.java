@@ -343,6 +343,12 @@ public class CardManagementTest {
         assertEquals(48, cityCards.size());
     }
 
+    /**
+     * Tests the getCardForPlayer method.
+     *
+     * @throws IllegalGameStateException if the game is not in the correct state
+     * @throws CardNotFoundException     if the card is not found
+     */
     @Test
     void testGetCardForPlayer() throws IllegalGameStateException, CardNotFoundException {
         IPlayer player = mock(Player.class);
@@ -359,6 +365,9 @@ public class CardManagementTest {
                        .isEmpty());
     }
 
+    /**
+     * Tests the getCardForPlayer method when the game is not in the correct state.
+     */
     @Test
     void testGetCardForPlayer_WrongState() {
         when(game.getState()).thenReturn(new PlayerTurnState());
@@ -366,6 +375,9 @@ public class CardManagementTest {
         assertThrows(IllegalGameStateException.class, () -> cardManagement.getCardForPlayer("1", "user", 2));
     }
 
+    /**
+     * Tests the getCardForPlayer method when the card is not found.
+     */
     @Test
     void testGetCardForPlayer_CardNotFound() {
         IPlayer player = mock(Player.class);
