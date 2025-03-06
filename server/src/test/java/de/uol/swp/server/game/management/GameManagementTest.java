@@ -171,7 +171,12 @@ class GameManagementTest {
                         .toString(),
                 albacete
         );
-        playerManagement.addCard(player, cityCard);
+        playerManagement.addCard(
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                cityCard
+        );
 
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 34);
         request.setSession(session);
@@ -235,10 +240,7 @@ class GameManagementTest {
                                                         any(Player.class)
                                                 );
 
-        GameException exception = assertThrows(
-                GameException.class,
-                () -> gameManagement.setPositioning(request)
-        );
+        GameException exception = assertThrows(GameException.class, () -> gameManagement.setPositioning(request));
 
         assertEquals("Failed to set Position", exception.getMessage());
     }
@@ -329,8 +331,8 @@ class GameManagementTest {
     @Test
     void testMoveByLand() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
-                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.CARRIAGE)))
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
+                              .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.CARRIAGE)))
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
@@ -365,8 +367,10 @@ class GameManagementTest {
                              .get(0);
         setupPlayerForMove(startCity, player, new Sailor(), new ArrayList<>());
 
-        assertThrows(GameException.class,
-                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null), "Expected GameException"
+        assertThrows(
+                GameException.class,
+                () -> gameManagement.movePlayer(user, "lobbyCode", destinationCity, null),
+                "Expected GameException"
         );
     }
 
@@ -382,9 +386,9 @@ class GameManagementTest {
         );
 
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.ALICANTE).getId(),
-                new DestinationInfo(CardMapper.toMixedCardDTOList(
-                        List.of(destinationCityCard)),
+                cityRepository.getCityByName(CityName.ALICANTE)
+                              .getId(), new DestinationInfo(
+                        CardMapper.toMixedCardDTOList(List.of(destinationCityCard)),
                         new ArrayList<>(List.of(TransportMode.SHIP))
                 )
         );
@@ -426,8 +430,8 @@ class GameManagementTest {
     @Test
     void testMoveSailorBySea() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.ALICANTE).getId(),
-                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.SHIP)))
+                cityRepository.getCityByName(CityName.ALICANTE)
+                              .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.SHIP)))
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
@@ -455,9 +459,9 @@ class GameManagementTest {
         );
 
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.ALICANTE).getId(),
-                new DestinationInfo(CardMapper.toMixedCardDTOList(
-                        List.of(destinationCityCard)),
+                cityRepository.getCityByName(CityName.ALICANTE)
+                              .getId(), new DestinationInfo(
+                        CardMapper.toMixedCardDTOList(List.of(destinationCityCard)),
                         new ArrayList<>(List.of(TransportMode.SHIP))
                 )
         );
@@ -488,8 +492,8 @@ class GameManagementTest {
     @Test
     void testTrainRide() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.VALLADOLID).getId(),
-                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.TRAIN)))
+                cityRepository.getCityByName(CityName.VALLADOLID)
+                              .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.TRAIN)))
         );
         when(connectionManagement.getAvailableDestinations(LOBBY_CODE, "user1")).thenReturn(availableDestinations);
 
@@ -568,8 +572,9 @@ class GameManagementTest {
         when(game.getPlayers()).thenReturn(List.of(player));
         when(player.getCards()).thenReturn(List.of(cityCard));
         when(cityCard.getCity()).thenReturn(city);
+        when(player.getUser()).thenReturn(user);
 
-        when(game.getState()).thenReturn(mock(IGameState.class));
+        when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
         assertEquals(5, actions.size());
@@ -763,13 +768,12 @@ class GameManagementTest {
     /**
      * Tests the movePlayer method with a game in the event state after the OnTheMoveDayAndNightEventCard has been
      * thrown.
-     *
      */
     @Test
     void testMovePlayer_OnTheMoveDayAndNightEvent() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
-                new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
+                              .getId(), new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
         );
         when(connectionManagement.getAllDestinations(LOBBY_CODE)).thenReturn(availableDestinations);
         ICity startCity = cityRepository.getCityByName(CityName.BARCELONA);
@@ -792,11 +796,13 @@ class GameManagementTest {
     }
 
     @Test
-    void testMovePlayer_StateMobilizationEvent() throws GameManagementException, IllegalGameStateException, GameException {
+    void testMovePlayer_StateMobilizationEvent() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
-                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA).getId(),
+                cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
+                              .getId(),
                 new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE))),
-                cityRepository.getCityByName(CityName.BARCELONA).getId(),
+                cityRepository.getCityByName(CityName.BARCELONA)
+                              .getId(),
                 new DestinationInfo(List.of(), new ArrayList<>(List.of(TransportMode.NONE)))
         );
         when(connectionManagement.getAvailableDestinations(anyString(), anyString())).thenReturn(availableDestinations);
@@ -1064,5 +1070,29 @@ class GameManagementTest {
         assert (targetPlayer.getCards()
                             .contains(currentPlayerCard));
         verify(gameService, times(1)).sendToAllInLobby(any(), any());
+    }
+
+    @Test
+    void testEndTurn() throws IllegalGameStateException {
+        IPlayer player = mock(IPlayer.class);
+        IUser user = new User("test", "test");
+        when(player.getUser()).thenReturn(user);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getState()).thenReturn(new PlayerTurnState());
+
+        gameManagement.endTurn(game.getGameId(), user);
+
+        verify(game).setState(any(DrawCardState.class));
+    }
+
+    @Test
+    void testEndTurn_IllegalGameStateException() {
+        IPlayer player = mock(IPlayer.class);
+        IUser user = new User("test", "test");
+        when(player.getUser()).thenReturn(user);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getState()).thenReturn(new DrawCardState());
+
+        assertThrows(IllegalGameStateException.class, () -> gameManagement.endTurn(game.getGameId(), user));
     }
 }

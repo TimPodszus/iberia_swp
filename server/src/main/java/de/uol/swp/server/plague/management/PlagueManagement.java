@@ -2,12 +2,19 @@ package de.uol.swp.server.plague.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.TreatExtraPlagueState;
+import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.management.IPlayerManagement;
+import de.uol.swp.server.region.data.IRegion;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +25,7 @@ import java.util.stream.Collectors;
  * This includes researching plagues by fulfilling specific conditions such as having the required cards,
  * being in the correct city, and having a hospital built in that city.
  */
-public class PlagueManagement implements IPlagueManagement {
+public class PlagueManagement extends AbstractManagement implements IPlagueManagement {
     private final IPlayerManagement playerManagement;
 
     /**
@@ -30,18 +37,11 @@ public class PlagueManagement implements IPlagueManagement {
         this.playerManagement = playerManagement;
     }
 
-    /**
-     * Researches the specified plague in the current game. This method checks if the player has the required cards,
-     * if they are in a city with a hospital built, and if the hospital is in a city affected by the plague to be researched.
-     * Once the plague is researched, it is marked as such and the appropriate game state transitions occur.
-     *
-     * @param plagueToResearch the plague to be researched. Must not be null.
-     * @param game             the current game instance where the plague research is being performed.
-     * @throws PlagueManagementException if the plague to be researched is not specified, if the player does not have enough cards,
-     *                                   if the plague has already been researched, or if the city does not have a suitable hospital.
-     */
     @Override
-    public void researchPlague(PlagueName plagueToResearch, Game game) throws PlagueManagementException {
+    public void researchPlague(
+            PlagueName plagueToResearch,
+            IGame game
+    ) throws PlagueManagementException, GameException {
         if (plagueToResearch == null) {
             throw new PlagueManagementException("The plague to be researched was not specified");
         }
@@ -81,7 +81,15 @@ public class PlagueManagement implements IPlagueManagement {
 
         List<CityCard> cardsToDiscard = plagueCards.subList(0, 5);
 
-        playerManagement.discardCards(game.getGameId(), game.getCurrentPlayer(), cardsToDiscard);
+        playerManagement.discardPlayerCards(
+                game.getGameId(),
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername(),
+                List.copyOf(cardsToDiscard.stream()
+                                          .map(CityCard::getId)
+                                          .toList())
+        );
 
         plague.setResearched(true);
         allPlaguesResearched(game);
@@ -93,7 +101,7 @@ public class PlagueManagement implements IPlagueManagement {
      *
      * @param game the current game instance
      */
-    public void allPlaguesResearched(Game game) {
+    public void allPlaguesResearched(IGame game) {
         boolean allResearched = game.getPlagueRepository()
                                     .getPlagues()
                                     .stream()
@@ -101,6 +109,69 @@ public class PlagueManagement implements IPlagueManagement {
         if (allResearched) {
             game.setState(new EndGameState(true));
         }
+    }
+
+    @Override
+    public void treatPlague(
+            PlagueName plagueToTreat,
+            ICity city,
+            IGame game
+    ) throws IllegalGameStateException, PlagueNotFoundException {
+        if (plagueToTreat == null || city == null) {
+            throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");
+        }
+        if (!city.hasPlague(plagueToTreat)) {
+            throw new PlagueNotFoundException("The selected plague is not present in the city or no cubes to remove.");
+        }
+
+        if (game.getState() instanceof PlayerTurnState playerTurnState) {
+            city.removePlagueCubes(plagueToTreat, 1);
+            game.getPlagueRepository()
+                .getPlagueByName(plagueToTreat)
+                .increaseCubes(1);
+            playerTurnState.reduceActionsRemaining(game);
+        } else if (game.getState() instanceof TreatExtraPlagueState) {
+            city.removePlagueCubes(plagueToTreat, 1);
+            game.getPlagueRepository()
+                .getPlagueByName(plagueToTreat)
+                .increaseCubes(1);
+        } else {
+            throw new IllegalGameStateException("Invalid game state for treating plague.");
+        }
+    }
+
+    @Override
+    public List<IInfection> getInfectionsInCity(IGame game, int cityId) {
+        ICity city = game.getCityRepository()
+                         .getCity(cityId);
+        return city.getInfections()
+                   .stream()
+                   .filter(infection -> infection.getSeverity() >= 1)
+                   .toList();
+    }
+
+    @Override
+    public List<ICity> getCitiesNearBy(IGame game, ICity currentCity) {
+        List<IRegion> allRegions = game.getRegionRepository()
+                                       .getRegions();
+        List<IRegion> regionsNearBy = allRegions.stream()
+                                                .filter(region -> region.getSurroundingCities()
+                                                                        .contains(currentCity))
+                                                .toList();
+        return regionsNearBy.stream()
+                            .flatMap(region -> game.getRegionRepository()
+                                                   .getCitiesInAdjacentRegions(region)
+                                                   .stream())
+                            .filter(city -> city.getInfections()
+                                                .stream()
+                                                .anyMatch(infection -> infection.getSeverity() >= 1))
+                            .toList();
+    }
+
+    public boolean isCubeCountNegative(IGame game, PlagueName plagueName) {
+        return game.getPlagueRepository()
+                   .getPlagueByName(plagueName)
+                   .getCubesRemaining() > 0;
     }
 }
 

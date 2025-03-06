@@ -5,7 +5,7 @@ import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.common.game.StateType;
-import de.uol.swp.common.plague.IPlagueDTO;
+import de.uol.swp.common.plague.dto.IPlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
 
@@ -142,4 +142,11 @@ public interface IGameDTO {
      * @return the player with the specified username or null if no player with the specified username exists
      */
     IPlayerDTO getPlayer(String username);
+
+    /**
+     * Gets the number of actions remaining for the current player.
+     *
+     * @return the number of actions remaining
+     */
+    int getRemainingActions();
 }

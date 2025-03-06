@@ -95,4 +95,12 @@ class PlayerTest {
 
         assertNull(result);
     }
+
+    @Test
+    void testAddCard() {
+        ICard card = mock(ICard.class);
+        player.addCard(card);
+
+        assertTrue(player.getCards().contains(card));
+    }
 }

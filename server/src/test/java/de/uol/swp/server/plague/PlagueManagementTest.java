@@ -5,6 +5,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.plague.data.Plague;
@@ -13,6 +14,7 @@ import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -54,11 +56,12 @@ class PlagueManagementTest {
     public void setup() {
         MockitoAnnotations.openMocks(this);
 
-        List<ICard> playerCards = List.of(mockCityCard(PlagueName.CHOLERA),
-                mockCityCard(PlagueName.CHOLERA),
-                mockCityCard(PlagueName.CHOLERA),
-                mockCityCard(PlagueName.CHOLERA),
-                mockCityCard(PlagueName.CHOLERA)
+        List<ICard> playerCards = List.of(
+                mockCityCard(),
+                mockCityCard(),
+                mockCityCard(),
+                mockCityCard(),
+                mockCityCard()
         );
 
         when(game.getCurrentPlayer()).thenReturn(currentPlayer);
@@ -75,7 +78,8 @@ class PlagueManagementTest {
      */
     @Test
     void researchPlagueIsNullThrowsPlagueManagementException() {
-        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
+        PlagueManagementException exception = assertThrows(
+                PlagueManagementException.class,
                 () -> plagueManagement.researchPlague(null, game)
         );
         assertEquals("The plague to be researched was not specified", exception.getMessage());
@@ -89,7 +93,8 @@ class PlagueManagementTest {
     void researchPlagueAlreadyResearchedThrowsPlagueManagementException() {
         when(plague.isResearched()).thenReturn(true);
 
-        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
+        PlagueManagementException exception = assertThrows(
+                PlagueManagementException.class,
                 () -> plagueManagement.researchPlague(PlagueName.CHOLERA, game)
         );
 
@@ -104,7 +109,8 @@ class PlagueManagementTest {
     void notEnoughCardsToResearchPlagueThrowsPlagueManagementException() {
         when(currentPlayer.getCards()).thenReturn(new ArrayList<>());
 
-        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
+        PlagueManagementException exception = assertThrows(
+                PlagueManagementException.class,
                 () -> plagueManagement.researchPlague(PlagueName.CHOLERA, game)
         );
 
@@ -121,7 +127,8 @@ class PlagueManagementTest {
         when(currentCity.isHospitalBuilt()).thenReturn(false);
         when(currentCity.getPlagueName()).thenReturn(PlagueName.CHOLERA);
 
-        PlagueManagementException exception = assertThrows(PlagueManagementException.class,
+        PlagueManagementException exception = assertThrows(
+                PlagueManagementException.class,
                 () -> plagueManagement.researchPlague(PlagueName.CHOLERA, game)
         );
 
@@ -134,12 +141,18 @@ class PlagueManagementTest {
      * and the game state is updated accordingly.
      */
     @Test
-    void researchPlagueSuccessful() throws PlagueManagementException {
+    void researchPlagueSuccessful() throws PlagueManagementException, GameException {
+        IUser user = mock(IUser.class);
+
         when(plague.isResearched()).thenReturn(false);
 
         when(currentPlayer.getCurrentPosition()).thenReturn(currentCity);
         when(currentCity.isHospitalBuilt()).thenReturn(true);
         when(currentCity.getPlagueName()).thenReturn(PlagueName.CHOLERA);
+        doNothing().when(playerManagement)
+                   .discardPlayerCards(any(String.class), any(String.class), anyList());
+        when(currentPlayer.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
 
         plagueManagement.researchPlague(PlagueName.CHOLERA, game);
 
@@ -149,14 +162,13 @@ class PlagueManagementTest {
     /**
      * Helper method to mock a CityCard and associate it with a specific plague.
      *
-     * @param plagueName the name of the plague to associate with the CityCard.
      * @return a mock CityCard associated with the specified plague.
      */
-    private CityCard mockCityCard(PlagueName plagueName) {
+    private CityCard mockCityCard() {
         CityCard cityCard = mock(CityCard.class);
         City city = mock(City.class);
 
-        when(city.getPlagueName()).thenReturn(plagueName);
+        when(city.getPlagueName()).thenReturn(PlagueName.CHOLERA);
         when(cityCard.getCity()).thenReturn(city);
 
         return cityCard;

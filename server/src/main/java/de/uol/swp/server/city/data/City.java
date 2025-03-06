@@ -89,4 +89,52 @@ public class City implements ICity {
     public int hashCode() {
         return plagueName.hashCode() + name.hashCode() + foundationDate + (harbourCity ? 1 : 0) + (hospitalBuilt ? 1 : 0);
     }
+
+    /**
+     * Removes a specified number of plague cubes from the infections of the given plague.
+     *
+     * @param plagueName the name of the plague from which cubes should be removed.
+     * @param amount the number of plague cubes to remove.
+     * @throws IllegalArgumentException if there are not enough plague cubes to remove.
+     */
+    public void removePlagueCubes(PlagueName plagueName, int amount) {
+        for (IInfection infection : infections) {
+            if (infection.getPlagueName().equals(plagueName)) {
+                infection.decreaseSeverity(amount);
+            }
+        }
+    }
+
+    /**
+     * Checks if a plague with the specified name exists in the current infections.
+     *
+     * @param plagueName the name of the plague to check.
+     * @return {@code true} if the plague exists, {@code false} otherwise.
+     */
+    public boolean hasPlague(PlagueName plagueName) {
+        boolean hasPlague = false;
+        for (IInfection infection : infections) {
+            hasPlague = infection.getPlagueName().equals(plagueName) && infection.getSeverity() > 0;
+            if(hasPlague) {
+                break;
+            }
+        }
+        return hasPlague;
+    }
+
+    /**
+     * Retrieves the number of plague cubes for a specific plague.
+     *
+     * @param plagueName the name of the plague for which to get the cube count.
+     * @return the number of cubes associated with the specified plague. If the plague is not found, returns 0.
+     */
+    public int getPlagueCubes(PlagueName plagueName) {
+        int plagueCubes = 0;
+        for (IInfection infection : infections) {
+            if (infection.getPlagueName().equals(plagueName)) {
+                plagueCubes = infection.getSeverity();
+            }
+        }
+        return plagueCubes;
+    }
 }
