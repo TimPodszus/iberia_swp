@@ -82,7 +82,8 @@ public class CardService extends AbstractService {
         BoardUpdateEvent event = new BoardUpdateEvent(request.getLobbyId(), game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, event);
-        sendServerMessageEvent(request.getLobbyId(), user.getUsername() + " hat eine Karte gespielt.");
+        sendServerMessageEvent(request.getLobbyId(),
+                user.getUsername() + " hat eine Eventkarte gespielt, die das Spielgeschehen drastisch verändern könnte.");
     }
 
     /**
@@ -121,6 +122,7 @@ public class CardService extends AbstractService {
         BoardUpdateEvent boardUpdateEvent = new BoardUpdateEvent(event.getLobbyId(), game);
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
         sendToAllInLobby(lobby, boardUpdateEvent);
-        sendServerMessageEvent(event.getLobbyId(), user.getUsername() + "hat die Eventkarte zweite Chance ausgespielt");
+        sendServerMessageEvent(event.getLobbyId(), user.getUsername() + "hat die Eventkarte zweite Chance ausgespielt" +
+                ".");
     }
 }

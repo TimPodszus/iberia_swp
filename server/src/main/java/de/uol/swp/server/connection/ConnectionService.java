@@ -160,6 +160,11 @@ public class ConnectionService extends AbstractService {
         LOG.debug("[Lobby: {}] Got StateMobilizationEvent. Sending available destinations to every user",
                 event.getLobbyId()
         );
+        sendServerMessageEvent(
+                event.getLobbyId(),
+                "Die Karte staatliche Mobilmachung wurde gespielt! Jeder Spieler darf sich einmal kostenlos bewegen."
+        );
+
         IGame game = connectionManagement.getGame(event.getLobbyId());
         ScheduledExecutorService scheduler = null;
         try {

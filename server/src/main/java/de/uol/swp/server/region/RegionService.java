@@ -18,9 +18,9 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.TreatWaterEvent;
-import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.PlaceExtraWaterTreatmentState;
@@ -91,8 +91,7 @@ public class RegionService extends AbstractService {
         if (user == null) {
             throw new GameException("User is unknown");
         }
-        List<CityCardDTO> cityCards = regionManagement.getPossibleCityCardsToDiscard(
-                user,
+        List<CityCardDTO> cityCards = regionManagement.getPossibleCityCardsToDiscard(user,
                 request.getRegionId(),
                 request.getLobbyId()
         );
@@ -113,15 +112,13 @@ public class RegionService extends AbstractService {
             throw new GameException("User is unknown");
         }
         if (request.getCard() != null) {
-            card = playerManagement.getCard(
-                    request.getLobbyId(),
+            card = playerManagement.getCard(request.getLobbyId(),
                     user.getUsername(),
                     request.getCard()
                            .getId()
             );
         }
-        regionManagement.increaseWaterTreatmentsFromRegion(
-                request.getLobbyId(),
+        regionManagement.increaseWaterTreatmentsFromRegion(request.getLobbyId(),
                 request.getRegionId(),
                 request.getAmount(),
                 card,
@@ -130,6 +127,10 @@ public class RegionService extends AbstractService {
         IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(game.getGameId(),
+                game.getCurrentPlayer().getUser().getUsername()+ " hat " + request.getAmount() + " " +
+                        "Wasseraufbereitungsmarker in der Region " + game.getRegionRepository().getRegionByID(request.getRegionId())+
+                        " platziert.");
     }
 
     @Subscribe
@@ -178,6 +179,9 @@ public class RegionService extends AbstractService {
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
         sendServerMessageEvent(request.getLobbyId(),
-                "Ein Wasseraufbereitungsmarker wurde in der Region mit der Id " + request.getRegionId()+ " platziert");
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername() + " hat erfolgreich Wasseraufbereitung in einer Region " + "durchgeführt, um die Ausbruchswahrscheinlichkeit in den anliegenden Städten zu verringern"
+        );
     }
 }

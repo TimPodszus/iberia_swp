@@ -2,9 +2,9 @@ package de.uol.swp.server.game.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -36,7 +36,6 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -231,13 +230,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             if (requestPlayer.getCurrentPosition() != null) {
                 return game;
             }
-            playerManagement.setStartingPosition(
-                    game.getGameId(),
+            playerManagement.setStartingPosition(game.getGameId(),
                     game.getCityRepository()
                         .getCityNameById(request.getCityId()),
                     requestPlayer
             );
             ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
+            sendServerMessageEvent(game.getGameId(),
+                    game.getCurrentPlayer()
+                        .getUser()
+                        .getUsername() + " hat seine Startposition festgelegt."
+            );
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
         }
@@ -245,6 +248,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                                                 .size()) {
             game.setState(new PlayerTurnState());
             game.setCurrentPlayerIndex(0);
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    "Alle Spieler haben ihre Startpositionen festgelegt. Der erste Spieler ist nun am Zug und kann Aktionen ausführen."
+            );
         }
         return game;
     }
@@ -353,7 +360,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     private boolean isInfectionTreatable(String lobbyCode) {
-        ICity city = getGame(lobbyCode).getCurrentPlayer().getCurrentPosition();
+        ICity city = getGame(lobbyCode).getCurrentPlayer()
+                                       .getCurrentPosition();
         return city.getInfections()
                    .stream()
                    .anyMatch(infection -> infection.getSeverity() > 0);
@@ -394,6 +402,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 .getUser()
                 .equals(user) && game.getState() instanceof PlayerTurnState) {
             LOG.info("[LobbyID: {}] Ending turn for player {}", lobbyId, user.getUsername());
+            sendServerMessageEvent(
+                    lobbyId,
+                    user.getUsername() + " hat seinen Zug beendet. Als nächstes müssen Karten vom Stapel gezogen " +
+                            "werden."
+            );
             game.setState(new DrawCardState());
         } else {
             throw new IllegalGameStateException("Player is not allowed to end turn");
@@ -412,24 +425,26 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IPlayer player = getPlayerForMove(game, user);
 
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
-        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
-                && (availableDestinations.get(city.getId())
-                                         .getTransportModes()
-                                         .contains(TransportMode.CARRIAGE) ||
-                    availableDestinations.get(city.getId())
-                                         .getTransportModes()
-                                         .contains(TransportMode.TRAIN) ||
-                    availableDestinations.get(city.getId())
-                                         .getTransportModes()
-                                         .contains(TransportMode.NONE));
-        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
-                && availableDestinations.get(city.getId())
-                                        .getTransportModes()
-                                        .contains(TransportMode.SHIP);
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId()) && (availableDestinations.get(
+                                                                                                                         city.getId())
+                                                                                                                 .getTransportModes()
+                                                                                                                 .contains(
+                                                                                                                         TransportMode.CARRIAGE) || availableDestinations.get(
+                                                                                                                                                                                 city.getId())
+                                                                                                                                                                         .getTransportModes()
+                                                                                                                                                                         .contains(
+                                                                                                                                                                                 TransportMode.TRAIN) || availableDestinations.get(
+                                                                                                                                                                                                                                      city.getId())
+                                                                                                                                                                                                                              .getTransportModes()
+                                                                                                                                                                                                                              .contains(
+                                                                                                                                                                                                                                      TransportMode.NONE));
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId()) && availableDestinations.get(city.getId())
+                                                                                                               .getTransportModes()
+                                                                                                               .contains(
+                                                                                                                       TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
-            LOG.error(
-                    "[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
+            LOG.error("[LobbyID: {}] Failed to move {}. There is no available connection between {} and {}",
                     lobbyId,
                     player.getUser()
                           .getUsername(),
@@ -440,15 +455,20 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getDisplayName()
             );
             throw new GameException("There is no available connection between " + player.getCurrentPosition()
-                                                                                                  .getName()
-                                                                                                  .getDisplayName() + " and " + city.getName()
-                                                                                                                                    .getDisplayName());
+                                                                                        .getName()
+                                                                                        .getDisplayName() + " and " + city.getName()
+                                                                                                                          .getDisplayName());
         }
 
         if (citiesConnectedByLand) {
             movePlayerByLand(game, player, city);
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " hat sich mit der Kutsche oder dem Zug " +
+                    "nach "
+                    + city.getName().getDisplayName() + " bewegt.");
         } else {
             movePlayerBySea(game, player, city, card);
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " ist mit dem Schiff nach "
+                    + city.getName().getDisplayName() + " gereist.");
         }
     }
 
@@ -499,8 +519,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (game.getState() instanceof EventState eventState && eventState.getEventCard() instanceof OnTheMoveDayAndNightEventCard) {
             return connectionManagement.getAllDestinations(game.getGameId());
         }
-        return connectionManagement.getAvailableDestinations(
-                game.getGameId(),
+        return connectionManagement.getAvailableDestinations(game.getGameId(),
                 player.getUser()
                       .getUsername()
         );
@@ -514,8 +533,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param city   the destination city
      */
     private void movePlayerByLand(IGame game, IPlayer player, ICity city) {
-        LOG.debug(
-                "[LobbyID: {}] Moving {} to city {}",
+        LOG.debug("[LobbyID: {}] Moving {} to city {}",
                 game.getGameId(),
                 player.getUser()
                       .getUsername(),
@@ -542,8 +560,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             playerManagement.discardCard(game.getGameId(), player, card);
         }
 
-        LOG.debug(
-                "[LobbyID: {}] {} sails to {}",
+        LOG.debug("[LobbyID: {}] {} sails to {}",
                 game.getGameId(),
                 player.getUser()
                       .getUsername(),
@@ -564,8 +581,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param city   the destination city
      */
     private void setPlayerPosition(IGame game, IPlayer player, ICity city) {
-        LOG.debug(
-                "[LobbyId: {}] Setting {}'s position to {}",
+        LOG.debug("[LobbyId: {}] Setting {}'s position to {}",
                 game.getGameId(),
                 player.getUser()
                       .getUsername(),
@@ -584,8 +600,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 stateMobilizationEventCard.playerMoved(player);
                 if (!stateMobilizationEventCard.getPlayersToMove()
                                                .isEmpty()) {
-                    LOG.debug(
-                            "[LobbyId: {}] Decreased players to move. {} players left to move.",
+                    LOG.debug("[LobbyId: {}] Decreased players to move. {} players left to move.",
                             game.getGameId(),
                             stateMobilizationEventCard.getPlayersToMove()
                     );
@@ -619,8 +634,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         List<IConnection> buildableTrainTracks = getBuildableTrainTracks(lobbyId, game, player);
 
         if (!buildableTrainTracks.contains(connection)) {
-            LOG.error(
-                    "[LobbyID: {}] Failed to build train track. Connection between {} and {} is not buildable",
+            LOG.error("[LobbyID: {}] Failed to build train track. Connection between {} and {} is not buildable",
                     lobbyId,
                     connection.getCityNames()
                               .get(0),
@@ -628,8 +642,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                               .get(1)
             );
             throw new GameException("Connection between " + connection.getCityNames()
-                                                                                .get(0) + " and " + connection.getCityNames()
-                                                                                                              .get(1) + " is not buildable");
+                                                                      .get(0) + " and " + connection.getCityNames()
+                                                                                                    .get(1) + " is not buildable");
         }
 
         game.getConnectionRepository()
@@ -637,8 +651,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             .buildTrainTracks(true);
         game.setTracksLeft(game.getTracksLeft() - 1);
         ((PlayerTurnState) gameState).reduceActionsRemaining(game);
-        LOG.debug(
-                "[LobbyID: {}] {} builds train track between {} and {}",
+        LOG.debug("[LobbyID: {}] {} builds train track between {} and {}",
                 lobbyId,
                 player.getUser()
                       .getUsername(),
@@ -657,11 +670,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                               .filter(name -> !name.equals(player.getCurrentPosition()
                                                                                  .getName()))
                                               .findFirst()
-                                              .orElseThrow(() -> new GameException(
-                                                      "Error while building train track"));
+                                              .orElseThrow(() -> new GameException("Error while building train track"));
 
-                game.setState(new BuildExtraTrainTrackState(connectionManagement.getBuildableTrainTracks(
-                        lobbyId,
+                game.setState(new BuildExtraTrainTrackState(connectionManagement.getBuildableTrainTracks(lobbyId,
                         cityName.getId()
                 )));
             } else {
@@ -686,8 +697,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (game.getState() instanceof BuildExtraTrainTrackState state) {
             buildableTrainTracks = state.getConnections();
         } else {
-            buildableTrainTracks = connectionManagement.getBuildableTrainTracks(
-                    lobbyId,
+            buildableTrainTracks = connectionManagement.getBuildableTrainTracks(lobbyId,
                     player.getCurrentPosition()
                           .getId()
             );
@@ -729,20 +739,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             GameService gameService
     ) throws PlayerManagementException {
 
-        LOG.info(
-                "Share knowledge request accepted by target player {}",
+        LOG.info("Share knowledge request accepted by target player {}",
                 targetPlayer.getUser()
                             .getUsername()
         );
-        ICard targetPlayerCard = playerManagement.getCard(
-                event.getLobbyId(),
+        ICard targetPlayerCard = playerManagement.getCard(event.getLobbyId(),
                 targetPlayer.getUser()
                             .getUsername(),
                 event.getTargetPlayerCard()
                      .getId()
         );
-        ICard currentPlayerCard = playerManagement.getCard(
-                event.getLobbyId(),
+        ICard currentPlayerCard = playerManagement.getCard(event.getLobbyId(),
                 currentPlayer.getUser()
                              .getUsername(),
                 event.getCurrentPlayerCard()
@@ -757,8 +764,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         targetPlayer.getCards()
                     .add(currentPlayerCard);
 
-        LOG.debug(
-                "Cards exchanged between {} and {}",
+        LOG.debug("Cards exchanged between {} and {}",
                 currentPlayer.getUser()
                              .getUsername(),
                 targetPlayer.getUser()
@@ -804,16 +810,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      */
     @Override
     public void postShareKnowledgeResponse(
-            ShareKnowledgeEvent event,
-            ILobbyManagement lobbyManagement,
-            GameService gameService,
-            boolean success
+            ShareKnowledgeEvent event, ILobbyManagement lobbyManagement, GameService gameService, boolean success
     ) {
 
-        gameService.sendToAllInLobby(
-                lobbyManagement.getLobby(event.getLobbyId()),
-                new KnowledgeSharedEvent(
-                        event.getLobbyId(),
+        gameService.sendToAllInLobby(lobbyManagement.getLobby(event.getLobbyId()),
+                new KnowledgeSharedEvent(event.getLobbyId(),
                         success,
                         GameMapper.toDTO(this.getGame(event.getLobbyId()))
                 )

@@ -77,6 +77,10 @@ public class LobbyService extends AbstractService {
                           .ifPresent(response::setMessageContext);
         post(response);
         LOG.debug("[LobbyId: {}] Sent lobby created response", createdLobby.getLobbyId());
+        sendServerMessageEvent(
+                createdLobby.getLobbyId(),
+                "Die Lobby mit dem Namen " + createdLobby.getName() + " wurde erfolgreich durch den Spieler " + createdLobby.getOwner().getUsername() + " erstellt. Viel Spaß!"
+        );
     }
 
     /**
@@ -103,6 +107,10 @@ public class LobbyService extends AbstractService {
         lobbyManagement.joinLobby(request.getLobbyId(), UserMapper.toUser(user));
         LOG.info("[LobbyId: {}] User joined lobby", request.getLobbyId());
         sendToAllInLobby(lobby, new UserJoinedLobbyMessage(lobby.getLobbyId(), user));
+        sendServerMessageEvent(
+                lobby.getLobbyId(),
+                user.getUsername() + " ist der Lobby " + lobby.getName() + " beigetreten. Willkommen!"
+        );
     }
 
     /**
@@ -134,6 +142,10 @@ public class LobbyService extends AbstractService {
                .ifPresent(response::setMessageContext);
         post(response);
         LOG.debug("[LobbyId: {}] Sent user left lobby message", request.getLobbyId());
+        sendServerMessageEvent(
+                lobby.getLobbyId(),
+                user.getUsername() + " hat die Lobby " + lobby.getName() + " verlassen. Danke fürs mitspielen!"
+        );
     }
 
     /**

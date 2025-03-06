@@ -60,7 +60,11 @@ public class PlayerService extends AbstractService {
         post(response);
         IGame game = gameManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-        sendServerMessageEvent(request.getLobbyId(), "Spielerkarte wurde erfolgreich gezogen.");
+        sendServerMessageEvent(request.getLobbyId(),
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername() + " hat erfolgreich eine Spielerkarte gezogen."
+        );
     }
 
     /**
@@ -84,7 +88,11 @@ public class PlayerService extends AbstractService {
         }
         gameManagement.drawInfectionCard(game);
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-        sendServerMessageEvent(request.getLobbyId(), "Infektionskarte erfolgreich gezogen.");
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                "Der Spieler " + session.getUser()
+                                        .getUsername() + " hat eine Infektionskarte gezogen. " + "Die Infektionsrate steigt und eine Stadt wird infiziert. Achtet auf mögliche Epidemien!"
+        );
     }
 
     /**
@@ -109,5 +117,12 @@ public class PlayerService extends AbstractService {
 
         IGame game = gameManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                "Der Spieler " + game.getCurrentPlayer()
+                                     .getUser()
+                                     .getUsername() + "will jemanden mit nach " + game.getCityRepository()
+                                                                                      .getCity(request.getCityId()) + "nehmen."
+        );
     }
 }

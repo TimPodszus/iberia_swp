@@ -90,6 +90,10 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
                                     .allMatch(IPlague::isResearched);
         if (allResearched) {
             game.setState(new EndGameState(true));
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    "Herzlichen Glückwunsch! Alle Plagen wurden erforscht. Ihr habt das Spiel gewonnen! 🎉"
+            );
         }
     }
 

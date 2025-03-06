@@ -237,7 +237,12 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                 .getPlagueByName(plague.getName())
                 .getCubesRemaining() < 0) {
             game.setState(new EndGameState(false));
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    "Das Spiel ist beendet! Es sind nicht genügend Würfel übrig – Ihr habt verloren. ✂️"
+            );
         }
+
     }
 
     /**
@@ -259,6 +264,10 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             game.setEscalationStage(game.getEscalationStage() + 1);
             if (game.getEscalationStage() == 8) {
                 game.setState(new EndGameState(false));
+                sendServerMessageEvent(
+                        game.getGameId(),
+                        "Eine Eskalation zu viel. Das Spiel ist hiermit beendet. Ihr habt verloren. ✂️"
+                );
                 return;
             }
             CityName currentCity = citiesToProcess.poll();
