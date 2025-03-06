@@ -5,6 +5,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.game.data.Game;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -115,7 +116,7 @@ class PlagueManagementTest {
      * and the game state is updated accordingly.
      */
     @Test
-    void researchPlagueSuccessful() throws PlagueManagementException, IllegalGameStateException {
+    void researchPlagueSuccessful() throws PlagueManagementException, IllegalGameStateException, GameException {
         when(plague.isResearched()).thenReturn(false);
 
         when(currentPlayer.getCurrentPosition()).thenReturn(currentCity);

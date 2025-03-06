@@ -19,6 +19,7 @@ import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.TreatExtraPlagueState;
@@ -85,6 +86,8 @@ public class PlagueService extends AbstractService {
             LOG.error("Game is in an illegal state for researching plague");
             response = new StatusResponse(request.getLobbyId(), false, "In dem Zustand des Spiels kann die Seuche " +
                     "nicht erforscht werden.");
+        } catch (GameException e) {
+            throw new RuntimeException(e);
         }
 
 

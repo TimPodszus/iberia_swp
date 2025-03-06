@@ -42,7 +42,7 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     }
 
     @Override
-    public void researchPlague(IGame game) throws PlagueManagementException, IllegalGameStateException {
+    public void researchPlague(IGame game) throws PlagueManagementException, IllegalGameStateException, GameException {
         LOG.debug("Starting plague research in game {}", game.getGameId());
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             PlagueName plagueToResearch = getPlagueToResearch(game);
@@ -87,14 +87,25 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
 
             if (!currentCity.isHospitalBuilt() || !currentCity.getPlagueName()
                                                               .equals(plagueToResearch)) {
-                LOG.warn("No suitable hospital in {} for researching plague {}", currentCity.getName(), plagueToResearch);
+                LOG.warn(
+                        "No suitable hospital in {} for researching plague {}",
+                        currentCity.getName(),
+                        plagueToResearch
+                );
                 throw new PlagueManagementException("No suitable hospital in the current city to research the plague");
             }
 
             List<CityCard> cardsToDiscard = plagueCards.subList(0, 5);
 
-            playerManagement.discardCards(game.getGameId(), game.getCurrentPlayer(), cardsToDiscard);
-
+            playerManagement.discardPlayerCards(
+                    game.getGameId(),
+                    game.getCurrentPlayer()
+                        .getUser()
+                        .getUsername(),
+                    List.copyOf(cardsToDiscard.stream()
+                                              .map(CityCard::getId)
+                                              .toList())
+            );
             plague.setResearched(true);
             allPlaguesResearched(game);
 
@@ -167,11 +178,14 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
 
     @Override
     public void treatPlague(
-            PlagueName plagueToTreat,
-            ICity city,
-            IGame game
+            PlagueName plagueToTreat, ICity city, IGame game
     ) throws IllegalGameStateException, PlagueNotFoundException {
-        LOG.debug("Attempting to treat plague {} in city {} for game {}", plagueToTreat, city.getName(), game.getGameId());
+        LOG.debug(
+                "Attempting to treat plague {} in city {} for game {}",
+                plagueToTreat,
+                city.getName(),
+                game.getGameId()
+        );
         if (plagueToTreat == null || city == null) {
             LOG.error("Invalid input: plague, city, or game cannot be null.");
             throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");
@@ -195,7 +209,12 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
                 .getPlagueByName(plagueToTreat)
                 .increaseCubes(1);
         } else {
-            LOG.error("Invalid game state {} for treating a plague.", game.getState().getClass().getSimpleName());
+            LOG.error(
+                    "Invalid game state {} for treating a plague.",
+                    game.getState()
+                        .getClass()
+                        .getSimpleName()
+            );
             throw new IllegalGameStateException("Invalid game state for treating plague.");
         }
     }
