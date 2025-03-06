@@ -6,6 +6,7 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;

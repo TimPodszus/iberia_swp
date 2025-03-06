@@ -7,6 +7,7 @@ import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.infection.data.IInfection;
 
 import java.util.List;
+import de.uol.swp.server.game.exceptions.GameException;
 
 public interface IPlagueManagement {
     /**

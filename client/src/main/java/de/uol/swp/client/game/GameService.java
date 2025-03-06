@@ -8,6 +8,13 @@ import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.city.request.BuildHospitalRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
+import de.uol.swp.common.game.message.request.ShareRideRequest;
+import de.uol.swp.common.player.message.request.DiscardPlayerCardRequest;
+import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
+import de.uol.swp.common.player.message.request.MovePlayerRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.AvailableActionsRequest;
+import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
@@ -16,9 +23,6 @@ import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
-import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
-import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
@@ -342,9 +346,9 @@ public class GameService {
     /**
      * Sends a request to perform water treatment in the specified region.
      *
-     * @param lobbyId the ID of the lobby
-     * @param regionId the ID of the region where the water treatment is to be performed
-     * @param amount the amount of water treatments to be performed
+     * @param lobbyId   the ID of the lobby
+     * @param regionId  the ID of the region where the water treatment is to be performed
+     * @param amount    the amount of water treatments to be performed
      * @param dismissed whether the event was dismissed
      */
     public void sendTreatWaterEventRequest(String lobbyId, int regionId, int amount, boolean dismissed) {
@@ -390,6 +394,16 @@ public class GameService {
     public void sendResearchPlagueRequest(String lobbyId) {
         LOG.debug("Sending ResearchPlagueRequest with Id {}", lobbyId);
         eventBus.post(new ResearchPlagueRequest(lobbyId));
+    }
+
+    /**
+     * Sends a request to discard a player card in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby where the card is to be discarded
+     * @param card    the card to be discarded
+     */
+    public void sendDiscardPlayerCardRequest(String lobbyId, ICardDTO card) {
+        eventBus.post(new DiscardPlayerCardRequest(lobbyId, card));
     }
 
     /**
