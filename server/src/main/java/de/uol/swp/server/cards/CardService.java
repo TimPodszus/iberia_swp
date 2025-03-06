@@ -2,6 +2,7 @@ package de.uol.swp.server.cards;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.cards.request.GetCardRequest;
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
@@ -10,7 +11,6 @@ import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.EventCard;
 import de.uol.swp.server.cards.events.ForTheGoodCauseEvent;
 import de.uol.swp.server.cards.events.SecondChanceEvent;
@@ -18,6 +18,7 @@ import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.cards.management.CardNotPlayableException;
 import de.uol.swp.server.cards.management.ICardManagement;
 import de.uol.swp.server.game.GameMapper;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.usermanagement.IUser;
@@ -155,5 +156,41 @@ public class CardService extends AbstractService {
                                                });
         cardSelectionEvent.setReceiver(List.of(session));
         post(cardSelectionEvent);
+    }
+
+    /**
+     * Handles the GetCardRequest by retrieving the card with the specified ID from the discard pile
+     *
+     * @param request the GetCardRequest containing the lobby ID, card ID, and session
+     */
+    @Subscribe
+    public void onGetCardRequest(GetCardRequest request) {
+        Session session = request.getSession()
+                                 .orElseThrow(() -> {
+                                     LOG.error("[LobbyId: {}] Session missing in GetCardRequest", request.getLobbyId());
+                                     return new SessionNotFoundException("Session missing in GetCardRequest");
+                                 });
+
+        try {
+            cardManagement.getCardForPlayer(
+                    request.getLobbyId(),
+                    session.getUser()
+                           .getUsername(),
+                    request.getCardId()
+            );
+        } catch (CardNotFoundException e) {
+            sendStatusResponse(request, false, "Karte konnte im Ablagestapel nicht gefunden werden");
+
+            return;
+        } catch (IllegalGameStateException e) {
+            sendStatusResponse(request, false, "Spiel ist nicht im korrekten Zustand");
+
+            return;
+        }
+
+        IGameDTO game = GameMapper.toDTO(cardManagement.getGame(request.getLobbyId()));
+        BoardUpdateEvent event = new BoardUpdateEvent(request.getLobbyId(), game);
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, event);
     }
 }
