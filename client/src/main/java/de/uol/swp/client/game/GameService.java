@@ -413,5 +413,6 @@ public class GameService {
      */
     public void sendGetCardRequest(String lobbyId, int cardId) {
         eventBus.post(new GetCardRequest(lobbyId, cardId));
+        LOG.info("[Lobby: {}] Sent GetCardRequest", lobbyId);
     }
 }

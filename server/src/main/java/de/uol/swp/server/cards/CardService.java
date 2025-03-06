@@ -156,6 +156,7 @@ public class CardService extends AbstractService {
                                                });
         cardSelectionEvent.setReceiver(List.of(session));
         post(cardSelectionEvent);
+        LOG.info("[LobbyId: {}] Sent CardSelectionEvent to user", event.getLobbyId());
     }
 
     /**
@@ -165,6 +166,7 @@ public class CardService extends AbstractService {
      */
     @Subscribe
     public void onGetCardRequest(GetCardRequest request) {
+        LOG.debug("[LobbyId: {}] Received GetCardRequest", request.getLobbyId());
         Session session = request.getSession()
                                  .orElseThrow(() -> {
                                      LOG.error("[LobbyId: {}] Session missing in GetCardRequest", request.getLobbyId());
@@ -192,5 +194,6 @@ public class CardService extends AbstractService {
         BoardUpdateEvent event = new BoardUpdateEvent(request.getLobbyId(), game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, event);
+        LOG.info("[LobbyId: {}] Got card for player. Sending BoardUpdateEvent", request.getLobbyId());
     }
 }

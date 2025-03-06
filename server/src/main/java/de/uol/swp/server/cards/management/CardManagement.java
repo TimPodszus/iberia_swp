@@ -173,6 +173,11 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
 
     @Override
     public <T extends ICard> List<T> getCardsFromPlayerDiscardPile(String lobbyId, Class<T> type) {
+        LOG.debug(
+                "[LobbyId: {}] Getting cards with type {} from player card discard pile",
+                lobbyId,
+                type.getSimpleName()
+        );
         IGame game = super.getGame(lobbyId);
         List<ICard> playerCardDiscardPile = game.getPlayerCardDiscardPile();
         List<T> cards = new ArrayList<>();
@@ -181,6 +186,7 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
                 cards.add(type.cast(discardedCard));
             }
         }
+        LOG.info("[LobbyId: {}] Returning cards with specified type from player card discard pile", lobbyId);
         return cards;
     }
 
@@ -189,12 +195,12 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
             String lobbyId, String username, int cardId
     ) throws IllegalGameStateException, CardNotFoundException {
         IGame game = super.getGame(lobbyId);
-
         if (!(game.getState() instanceof EventState eventState && eventState.getEventCard() instanceof ForTheGoodCauseEventCard)) {
             LOG.error("[LobbyId: {}] Game is not in correct state to get card for player", lobbyId);
             throw new IllegalGameStateException("Game is not in correct state to get card for player");
         }
 
+        LOG.debug("[LobbyId: {}] Getting card {} for {}", lobbyId, cardId, username);
         List<EventCard> cards = this.getCardsFromPlayerDiscardPile(lobbyId, EventCard.class);
         ICard card = cards.stream()
                           .filter(eventCard -> eventCard.getId() == cardId)
@@ -203,11 +209,12 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
                               LOG.error("[LobbyId: {}] Card not found in player card discard pile", lobbyId);
                               return new CardNotFoundException("Card not found in player card discard pile");
                           });
-        
+
         game.getPlayerCardDiscardPile()
             .remove(card);
 
         game.getPlayer(username)
             .addCard(card);
+        LOG.info("[LobbyId: {}] Card from player discard pile added to player's hand", lobbyId);
     }
 }
