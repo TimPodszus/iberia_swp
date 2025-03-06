@@ -1,18 +1,26 @@
 package de.uol.swp.client.chat.detail;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 
 public class CurrentPlayerMessage extends HBox {
 
     public CurrentPlayerMessage(String message) {
+        Label youLabel = new Label("[Du]");
+        youLabel.getStyleClass()
+                .add("chat-username");
+        youLabel.setAlignment(Pos.TOP_CENTER);
+        youLabel.setMinWidth(USE_PREF_SIZE);
+        youLabel.setMaxWidth(100);
+
         Label messageLabel = new Label(message);
-        Label youLabel = new Label("Du: ");
+        HBox.setHgrow(messageLabel, Priority.ALWAYS);
+        messageLabel.setAlignment(Pos.TOP_RIGHT);
+        messageLabel.setWrapText(true);
 
-        youLabel.getStyleClass().add("chat-username");
-        messageLabel.getStyleClass().add("chat-message");
-
+        this.setAlignment(Pos.TOP_RIGHT);
         this.getChildren().addAll(messageLabel, youLabel);
-        this.getStyleClass().add("chat-bubble-right");
     }
 }

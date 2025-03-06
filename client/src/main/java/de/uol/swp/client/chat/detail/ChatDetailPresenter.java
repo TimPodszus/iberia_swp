@@ -68,6 +68,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAbstractChatMessage(SentChatMessage chatMessage) {
+        LOG.debug("[LobbyId: {}] Received chat message", lobbyId);
         Platform.runLater(() -> {
             if (chatMessage instanceof PlayerSentChatMessage playerMessage) {
                 if (playerMessage.getSender().equals(currentUsername)) {

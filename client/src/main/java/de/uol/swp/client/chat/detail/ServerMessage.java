@@ -2,18 +2,18 @@ package de.uol.swp.client.chat.detail;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 
 public class ServerMessage extends HBox {
 
     public ServerMessage(String message) {
         Label messageLabel = new Label(message);
-        messageLabel.getStyleClass().add("server-message");
 
         this.getChildren().add(messageLabel);
-        this.getStyleClass().add("chat-server-bubble");
+        HBox.setHgrow(messageLabel, Priority.ALWAYS);
 
         this.setMaxWidth(Double.MAX_VALUE);
-        this.setAlignment(javafx.geometry.Pos.CENTER);
+        messageLabel.setAlignment(javafx.geometry.Pos.CENTER);
     }
 }
 
