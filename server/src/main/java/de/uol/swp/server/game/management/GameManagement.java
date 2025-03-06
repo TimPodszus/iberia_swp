@@ -30,13 +30,13 @@ import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -58,18 +58,21 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private final ICityManagement cityManagement;
     private final IRegionManagement regionManagement;
     private final IConnectionManagement connectionManagement;
+    private final IPlagueManagement plagueManagement;
 
     @Inject
     public GameManagement(
             IPlayerManagement playerManagement,
             ICityManagement cityManagement,
             IConnectionManagement connectionManagement,
-            IRegionManagement regionManagement
+            IRegionManagement regionManagement,
+            IPlagueManagement plagueManagement
     ) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;
         this.connectionManagement = connectionManagement;
         this.regionManagement = regionManagement;
+        this.plagueManagement = plagueManagement;
     }
 
     /**
@@ -286,27 +289,27 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         infectionCardDiscardPile.add(infectionCard);
     }
 
-    public List<GameActions> getAvailableActions(String lobbyCode, IUser user) {
+    public List<GameActions> getAvailableActions(String lobbyId, IUser user) {
         List<GameActions> actions = new ArrayList<>();
-        if (areTrainTracksBuildable(lobbyCode)) {
+        if (areTrainTracksBuildable(lobbyId)) {
             actions.add(GameActions.BUILD_TRAIN_TRACKS);
         }
-        if (cityManagement.isHospitalBuildable(lobbyCode, user.getUsername())) {
+        if (cityManagement.isHospitalBuildable(lobbyId, user.getUsername())) {
             actions.add(GameActions.BUILD_HOSPITAL);
         }
-        if (isKnowledgeShareable(lobbyCode)) {
+        if (isKnowledgeShareable(lobbyId)) {
             actions.add(GameActions.SHARE_KNOWLEDGE);
         }
-        if (isInfectionTreatable(lobbyCode)) {
+        if (isInfectionTreatable(lobbyId)) {
             actions.add(GameActions.TREAT_INFECTION);
         }
-        if (isPlagueResearchable()) {
+        if (isPlagueResearchable(lobbyId)) {
             actions.add(GameActions.RESEARCH_PLAGUE);
         }
-        if (isWaterTreatmentPlaceable(lobbyCode, user)) {
+        if (isWaterTreatmentPlaceable(lobbyId, user)) {
             actions.add(GameActions.TREAT_WATER);
         }
-        if (isEndTurnPossible(lobbyCode, user)) {
+        if (isEndTurnPossible(lobbyId, user)) {
             actions.add(GameActions.END_TURN);
         }
         return actions;
@@ -315,11 +318,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     /**
      * Checks if train tracks can be built in the specified lobby.
      *
-     * @param lobbyCode the code of the lobby
+     * @param lobbyId the code of the lobby
      * @return true if train tracks can be built, false otherwise
      */
-    private boolean areTrainTracksBuildable(String lobbyCode) {
-        IGame game = super.getGame(lobbyCode);
+    private boolean areTrainTracksBuildable(String lobbyId) {
+        IGame game = super.getGame(lobbyId);
         return game.getTracksLeft() >= 0;
     }
 
@@ -354,9 +357,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                    .anyMatch(infection -> infection.getSeverity() > 0);
     }
 
-    private boolean isPlagueResearchable() {
-        //TODO: Implement logic in #179
-        return true;
+    private boolean isPlagueResearchable(String lobbyId) {
+        IGame game = getGame(lobbyId);
+        return plagueManagement.canResearchPlague(game);
     }
 
     boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
