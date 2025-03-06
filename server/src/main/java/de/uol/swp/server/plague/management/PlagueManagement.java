@@ -6,6 +6,7 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
@@ -37,7 +38,10 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     }
 
     @Override
-    public void researchPlague(PlagueName plagueToResearch, IGame game) throws PlagueManagementException {
+    public void researchPlague(
+            PlagueName plagueToResearch,
+            IGame game
+    ) throws PlagueManagementException, GameException {
         if (plagueToResearch == null) {
             throw new PlagueManagementException("The plague to be researched was not specified");
         }
@@ -77,12 +81,26 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
 
         List<CityCard> cardsToDiscard = plagueCards.subList(0, 5);
 
-        playerManagement.discardCards(game.getGameId(), game.getCurrentPlayer(), cardsToDiscard);
+        playerManagement.discardPlayerCards(
+                game.getGameId(),
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername(),
+                List.copyOf(cardsToDiscard.stream()
+                                          .map(CityCard::getId)
+                                          .toList())
+        );
 
         plague.setResearched(true);
         allPlaguesResearched(game);
     }
 
+    /**
+     * Checks if all plagues have been researched in the current game.
+     * If all plagues have been researched, the game state is transitioned to the end game state.
+     *
+     * @param game the current game instance
+     */
     public void allPlaguesResearched(IGame game) {
         boolean allResearched = game.getPlagueRepository()
                                     .getPlagues()
@@ -94,7 +112,11 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     }
 
     @Override
-    public void treatPlague(PlagueName plagueToTreat, ICity city, IGame game) throws IllegalGameStateException, PlagueNotFoundException {
+    public void treatPlague(
+            PlagueName plagueToTreat,
+            ICity city,
+            IGame game
+    ) throws IllegalGameStateException, PlagueNotFoundException {
         if (plagueToTreat == null || city == null) {
             throw new IllegalArgumentException("Invalid input: plague, city, or game cannot be null.");
         }
