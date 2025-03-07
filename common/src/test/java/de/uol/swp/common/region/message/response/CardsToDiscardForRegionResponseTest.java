@@ -3,6 +3,7 @@ package de.uol.swp.common.region.message.response;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 
@@ -55,9 +56,14 @@ class CardsToDiscardForRegionResponseTest {
         CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse("lobbyId", cardsList);
 
         assertNotNull(response.getCityCards());
-        assertEquals(2, response.getCityCards().size());
-        assertTrue(response.getCityCards().contains(card1));
-        assertTrue(response.getCityCards().contains(card2));
+        assertEquals(2,
+                response.getCityCards()
+                        .size()
+        );
+        assertTrue(response.getCityCards()
+                           .contains(card1));
+        assertTrue(response.getCityCards()
+                           .contains(card2));
     }
 
     @Test
@@ -72,7 +78,22 @@ class CardsToDiscardForRegionResponseTest {
     void testEqualsWithDifferentSubclass() {
         List<CityCardDTO> cardsList = List.of();
         CardsToDiscardForRegionResponse response = new CardsToDiscardForRegionResponse("lobbyId", cardsList);
-        AbstractResponseMessage differentSubclass = new AbstractResponseMessage() {};
+        AbstractResponseMessage differentSubclass = new AbstractResponseMessage() {
+        };
         assertNotEquals(response, differentSubclass);
+    }
+
+    /**
+     * Tests the equals method to ensure it correctly returns false
+     * when the superclass comparison fails.
+     */
+    @Test
+    void testEqualsWithDifferentSuperClassData() {
+        List<CityCardDTO> cityCards = List.of(Mockito.mock(CityCardDTO.class));
+
+        CardsToDiscardForRegionResponse response1 = new CardsToDiscardForRegionResponse("lobby123", cityCards);
+        CardsToDiscardForRegionResponse response2 = new CardsToDiscardForRegionResponse("lobby456", cityCards);
+
+        assertNotEquals(response1, response2);
     }
 }

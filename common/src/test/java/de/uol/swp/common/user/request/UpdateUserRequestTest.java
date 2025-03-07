@@ -5,6 +5,7 @@ import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Test for the update user request
@@ -12,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.user.request.UpdateUserRequest
  * @since 2023-05-14
  */
- class UpdateUserRequestTest {
+class UpdateUserRequestTest {
 
     final IUserDTO user = new UserDTO("Marco", "Marco");
 
@@ -30,4 +31,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         assertEquals(user, request.getUser());
     }
 
+    /**
+     * Tests the equals and hashCode methods of UpdateUserRequest.
+     */
+    @Test
+    void testEqualsAndHashCode() {
+        IUserDTO user1 = new UserDTO("user1", "password1");
+        IUserDTO user2 = new UserDTO("user1", "password1");
+        IUserDTO user3 = new UserDTO("user2", "password2");
+
+        UpdateUserRequest request1 = new UpdateUserRequest(user1);
+        UpdateUserRequest request2 = new UpdateUserRequest(user2);
+        UpdateUserRequest request3 = new UpdateUserRequest(user3);
+
+        assertEquals(request1, request2);
+        assertEquals(request1.hashCode(), request2.hashCode());
+
+        assertNotEquals(request1, request3);
+        assertNotEquals(request1.hashCode(), request3.hashCode());
+        assertNotEquals(null, request1);
+        assertNotEquals(request1, new Object());
+    }
 }
