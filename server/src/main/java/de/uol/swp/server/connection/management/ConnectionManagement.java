@@ -56,7 +56,8 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     public Map<Integer, DestinationInfo> getAvailableDestinations(String lobbyId, String username) {
         IPlayer player = super.getGame(lobbyId)
                               .getPlayer(username);
-        return getAvailableDestinations(super.getGame(lobbyId),
+        return getAvailableDestinations(
+                super.getGame(lobbyId),
                 player,
                 player.getCurrentPosition()
                       .getId()
@@ -122,7 +123,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     /**
      * Retrieves the available land connections for a given city.
      *
-     * @param game   the game to get the connections from
+     * @param game      the game to get the connections from
      * @param startCity the starting city
      * @return a map of cities that can be reached via land connections
      */
@@ -135,8 +136,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
             for (CityName connectedCity : connection.getCityNames()) {
                 if (!connectedCity.equals(startCity.getName())) {
                     ICity city = game.getCityRepository()
-                                     .getCitiesByNames(connectedCity)
-                                     .get(0);
+                                     .getCityByName(connectedCity);
 
                     if (connection.isTrainTrack()) {
                         addDestination(availableDestinations, city.getId(), new ArrayList<>(), TransportMode.TRAIN);
@@ -165,9 +165,9 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     /**
      * Retrieves the train connections for a given city.
      *
-     * @param game     the game to get the connections from
-     * @param previousCity the city that was previously checked, to prevent loops
-     * @param currentCity the starting city
+     * @param game                  the game to get the connections from
+     * @param previousCity          the city that was previously checked, to prevent loops
+     * @param currentCity           the starting city
      * @param availableDestinations the map of available destinations
      * @return a map of cities that can be reached via train connections
      */
@@ -185,8 +185,8 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                 for (CityName connectedCity : connection.getCityNames()) {
                     if (!connectedCity.equals(currentCity.getName())) {
                         ICity city = game.getCityRepository()
-                                          .getCitiesByNames(connectedCity)
-                                          .get(0);
+                                         .getCitiesByNames(connectedCity)
+                                         .get(0);
                         if (city.equals(previousCity)) {
                             continue;
                         }
@@ -207,7 +207,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
     /**
      * Retrieves the available sea connections for the player.
      *
-     * @param game the game to get the connections from
+     * @param game   the game to get the connections from
      * @param player the player to get the sea connections for
      * @param cityId the ID of the city to get the sea connections from
      * @return a map of cities that can be reached via sea connections
@@ -222,8 +222,8 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
                                                   .toList();
 
         boolean isSailor = player.getRole() != null && player.getRole()
-                                                                           .getName()
-                                                                           .equals(RoleEnum.SAILOR);
+                                                             .getName()
+                                                             .equals(RoleEnum.SAILOR);
         for (ICity city : harbourCities) {
             List<ICard> cards = isSailor ? new ArrayList<>() : getCardsWithSameColor(player, city);
             if (city.getId() != cityId && (!cards.isEmpty() || isSailor)) {
@@ -248,7 +248,7 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
      * Retrieves the cards of the player that match the color of the given city.
      *
      * @param player the player to get the cards from
-     * @param city    the city to match the card colors with
+     * @param city   the city to match the card colors with
      * @return a list of cards that match the color of the given city
      */
     private List<ICard> getCardsWithSameColor(IPlayer player, ICity city) {
@@ -269,9 +269,10 @@ public class ConnectionManagement extends AbstractManagement implements IConnect
         Map<Integer, DestinationInfo> allDestinations = new HashMap<>();
         for (ICity city : game.getCityRepository()
                               .getCities()) {
-            allDestinations.put(city.getId(), new DestinationInfo(
-                    new ArrayList<>(),
-                    new ArrayList<>(List.of(TransportMode.NONE))));
+            allDestinations.put(
+                    city.getId(),
+                    new DestinationInfo(new ArrayList<>(), new ArrayList<>(List.of(TransportMode.NONE)))
+            );
         }
         return allDestinations;
     }
