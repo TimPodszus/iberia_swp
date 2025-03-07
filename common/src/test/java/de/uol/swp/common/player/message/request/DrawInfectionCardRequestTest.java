@@ -12,8 +12,8 @@ class DrawInfectionCardRequestTest {
         DrawInfectionCardRequest request2 = new DrawInfectionCardRequest("lobby1");
         DrawInfectionCardRequest request3 = new DrawInfectionCardRequest("lobby2");
 
-        assertFalse(request1.equals(request2), "Expected requests with the same lobby code to be not equal");
-        assertFalse(request1.equals(request3), "Expected requests with different lobby codes to be not equal");
+        assertNotEquals(request1, request2, "Expected requests with the same lobby code to be not equal");
+        assertNotEquals(request1, request3, "Expected requests with different lobby codes to be not equal");
     }
 
     @Test
