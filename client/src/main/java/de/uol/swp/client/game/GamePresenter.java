@@ -83,6 +83,7 @@ public class GamePresenter extends AbstractPresenter {
     private static final String ESCALATION_STAGE_ID = "#escalationStage";
     private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
+    private static final String PREV_MARK_REGION_ID = "#prevMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final String REGION_HIGHLIGHTED_CLASS = "region-highlight";
     private static final String REGION_ID = "#region";
@@ -836,6 +837,22 @@ public class GamePresenter extends AbstractPresenter {
                     break;
                 }
             }
+        }
+    }
+
+    public void setPrevMarker(int regionId, boolean marker) {
+        StackPane stackPane = (StackPane) mapPane.lookup(PREV_MARK_REGION_ID + regionId);
+
+        if (!marker) {
+            stackPane.getStyleClass()
+                     .remove("prev-mark-visible");
+            stackPane.getStyleClass()
+                     .add("prev-mark");
+        } else {
+            stackPane.getStyleClass()
+                     .add("prev-mark-visible");
+            stackPane.getStyleClass()
+                     .remove("prev-mark");
         }
     }
 

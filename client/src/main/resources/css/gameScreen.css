@@ -166,6 +166,20 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
 
+.prev-mark {
+    visibility: false;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.prev-mark-visible {
+    visibility: true;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
 .plague-cubes-display {
     -fx-background-color: rgb(255, 255, 255, 0.7);
 }
