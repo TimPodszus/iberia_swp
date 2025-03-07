@@ -29,7 +29,7 @@ public class MainMenuPresenter extends AbstractPresenter {
 
     public static final String FXML = "/fxml/MainMenuView.fxml";
 
-    private static final String URL = "https://www.brettspielversand" + ".de/mediafiles/spieleanleitungen/zman/114-0021_Pandemic_Iberia_Anleitung.pdf";
+    private static final String URL = "https://images-cdn.zmangames.com" + "/us-east-1/filer_public/c3/62/c362beb7-bb07-4834-92f9-693de3f4eda5/zm7120_pandemic_iberia_rules.pdf";
 
     private static final ShowLobbyOverviewViewEvent showLobbyOverviewViewMessage = new ShowLobbyOverviewViewEvent();
 

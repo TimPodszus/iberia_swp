@@ -7,10 +7,6 @@ import de.uol.swp.client.game.objects.*;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.EventCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
-import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
-import de.uol.swp.client.game.objects.dialogs.CardSelectionWaterTreatmentDialog;
-import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
-import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
 import de.uol.swp.client.game.objects.dialogs.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
@@ -51,25 +47,17 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Shape;
-import javafx.scene.shape.StrokeType;
+import javafx.scene.shape.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
@@ -82,13 +70,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -204,10 +186,10 @@ public class GamePresenter extends AbstractPresenter {
     private Button endTurnButton;
 
     @FXML
-    private ToggleButton roleButtonOne;
+    private Button roleButtonOne;
 
     @FXML
-    private ToggleButton roleButtonTwo;
+    private Button roleButtonTwo;
 
 
     private double mouseX;
@@ -428,10 +410,13 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.CARRIAGE
-        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
+                TransportMode.TRAIN
+        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
+                cityId,
+                TransportMode.NONE
+        );
     }
 
     /**
@@ -639,13 +624,13 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onResearchPlague(ActionEvent event) {
-        if (researchPlagueButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
-        } else {
-
-        }
+        LOG.debug("Research plague action triggered");
+            if (gameDTO.getState()
+                       .equals(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
+                gameService.sendResearchPlagueRequest(lobbyId);
+                researchPlagueButton.setSelected(false);
+            }
     }
-
 
     /**
      * Handles place water treatment action.
@@ -668,31 +653,29 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private void onRoleButtonOne(ActionEvent event) {
-        if (roleButtonOne.isSelected()) {
-            LOG.debug("Role button one is selected");
-            if (gameDTO.getCurrentPlayer()
-                       .getRole()
-                       .getName()
-                       .equals(RoleEnum.POLITICIAN)) {
-                LOG.debug("Current player is a politician");
-                Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
-                List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
-                                                              .getCards()
-                                                              .stream()
-                                                              .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                                                     .getCurrentPosition()
-                                                                                                     .getId())
-                                                              .toList();
-                cardsToExchange.put(
-                        gameDTO.getCurrentPlayer()
-                               .getUsername(), currentPlayerCityCard
-                );
-                for (IPlayerDTO player : gameDTO.getPlayers()) {
-                    if (!player.getUsername()
-                               .equals(gameDTO.getCurrentPlayer()
-                                              .getUsername())) {
-                        cardsToExchange.put(player.getUsername(), player.getCards());
-                    }
+        LOG.debug("Role button one is selected");
+        if (gameDTO.getCurrentPlayer()
+                   .getRole()
+                   .getName()
+                   .equals(RoleEnum.POLITICIAN)) {
+            LOG.debug("Current player is a politician");
+            Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+            List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
+                                                          .getCards()
+                                                          .stream()
+                                                          .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                                 .getCurrentPosition()
+                                                                                                 .getId())
+                                                          .collect(Collectors.toList());
+            cardsToExchange.put(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(), currentPlayerCityCard
+            );
+            for (IPlayerDTO player : gameDTO.getPlayers()) {
+                if (!player.getUsername()
+                           .equals(gameDTO.getCurrentPlayer()
+                                          .getUsername())) {
+                    cardsToExchange.put(player.getUsername(), player.getCards());
                 }
                 LOG.debug("Cards to exchange: {}", cardsToExchange);
                 Platform.runLater(() -> {
@@ -707,15 +690,21 @@ public class GamePresenter extends AbstractPresenter {
                     });
                 });
             }
+
         }
     }
 
 
     @FXML
     private void onRoleButtonTwo(ActionEvent event) {
-        if (roleButtonTwo.isSelected()) {
-            //TODO
+        LOG.debug("RoleButton 2 pressed");
+        if (gameDTO.getCurrentPlayer()
+                   .getRole()
+                   .getName()
+                   .equals(RoleEnum.POLITICIAN)) {
+            gameService.politicianActionTradeWithDiscardPile(this.gameDTO, lobbyId);
         }
+
     }
 
     /**
@@ -1156,6 +1145,7 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
+     *
      */
     private void updatePlayerHandCards() {
         removePlayerHandCards();
@@ -1504,6 +1494,8 @@ public class GamePresenter extends AbstractPresenter {
         treatWaterButton.setDisable(true);
         treatInfectionButton.setDisable(true);
         shareKnowledgeButton.setDisable(true);
+        roleButtonOne.setDisable(true);
+        roleButtonTwo.setDisable(true);
         endTurnButton.setDisable(true);
     }
 
@@ -1540,6 +1532,12 @@ public class GamePresenter extends AbstractPresenter {
                     break;
                 case TREAT_WATER:
                     treatWaterButton.setDisable(false);
+                    break;
+                case ROLE_ACTION_ONE:
+                    roleButtonOne.setDisable(false);
+                    break;
+                case ROLE_ACTION_TWO:
+                    roleButtonTwo.setDisable(false);
                     break;
                 case END_TURN:
                     endTurnButton.setDisable(false);
