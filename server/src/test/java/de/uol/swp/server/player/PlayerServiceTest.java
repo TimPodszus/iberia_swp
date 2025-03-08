@@ -1,6 +1,7 @@
 package de.uol.swp.server.player;
 
 import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
@@ -9,16 +10,23 @@ import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.communication.UUIDSession;
+import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
@@ -28,6 +36,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -81,6 +91,31 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Test
     void onDrawPlayerCardRequest_Success() throws PlayerManagementException, InterruptedException {
+        IGame game = mock(IGame.class);
+        IPlayer mockPlayer = mock(IPlayer.class);
+        IUser mockUser = mock(IUser.class);
+        CityRepository mockCityRepository = mock(CityRepository.class);
+        ConnectionRepository mockConnectionRepository = mock(ConnectionRepository.class);
+        RegionRepository mockRegionRepository = mock(RegionRepository.class);
+        PlagueRepository mockPlagueRepository = mock(PlagueRepository.class);
+        IRole mockRole = mock(IRole.class);
+        IGameState iGameState = mock(IGameState.class);
+
+        when(game.getPlayers()).thenReturn(List.of(mockPlayer));
+        when(game.getCurrentPlayer()).thenReturn(mockPlayer);
+        when(mockPlayer.getUser()).thenReturn(mockUser);
+        when(game.getCityRepository()).thenReturn(mockCityRepository);
+        when(mockCityRepository.getCities()).thenReturn(Collections.emptyList());
+        when(game.getConnectionRepository()).thenReturn(mockConnectionRepository);
+        when(mockConnectionRepository.getConnections()).thenReturn(Collections.emptyList());
+        when(game.getRegionRepository()).thenReturn(mockRegionRepository);
+        when(mockRegionRepository.getRegions()).thenReturn(Collections.emptyList());
+        when(game.getPlagueRepository()).thenReturn(mockPlagueRepository);
+        when(mockPlagueRepository.getPlagues()).thenReturn(Collections.emptyList());
+        when(game.getCurrentPlayer().getRole()).thenReturn(mockRole);
+        when(game.getState()).thenReturn(iGameState);
+
+
         when(playerManagement.drawPlayerCard(eq("validGameId"), any(IUser.class))).thenReturn(cardDTO);
         when(gameManagement.getGame("validGameId")).thenReturn(game);
 
@@ -92,6 +127,30 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Test
     void onDrawPlayerCardRequest_PlayerManagementException() throws PlayerManagementException, InterruptedException {
+        IGame game = mock(IGame.class);
+        IPlayer mockPlayer = mock(IPlayer.class);
+        IUser mockUser = mock(IUser.class);
+        CityRepository mockCityRepository = mock(CityRepository.class);
+        ConnectionRepository mockConnectionRepository = mock(ConnectionRepository.class);
+        RegionRepository mockRegionRepository = mock(RegionRepository.class);
+        PlagueRepository mockPlagueRepository = mock(PlagueRepository.class);
+        IRole mockRole = mock(IRole.class);
+        IGameState iGameState = mock(IGameState.class);
+
+        when(game.getPlayers()).thenReturn(List.of(mockPlayer));
+        when(game.getCurrentPlayer()).thenReturn(mockPlayer);
+        when(mockPlayer.getUser()).thenReturn(mockUser);
+        when(game.getCityRepository()).thenReturn(mockCityRepository);
+        when(mockCityRepository.getCities()).thenReturn(Collections.emptyList());
+        when(game.getConnectionRepository()).thenReturn(mockConnectionRepository);
+        when(mockConnectionRepository.getConnections()).thenReturn(Collections.emptyList());
+        when(game.getRegionRepository()).thenReturn(mockRegionRepository);
+        when(mockRegionRepository.getRegions()).thenReturn(Collections.emptyList());
+        when(game.getPlagueRepository()).thenReturn(mockPlagueRepository);
+        when(mockPlagueRepository.getPlagues()).thenReturn(Collections.emptyList());
+        when(game.getCurrentPlayer().getRole()).thenReturn(mockRole);
+        when(game.getState()).thenReturn(iGameState);
+
         when(gameManagement.getGame("validGameId")).thenReturn(game);
         doThrow(new PlayerManagementException("Error")).when(playerManagement)
                                                        .drawPlayerCard(eq("validGameId"), any(IUser.class));
@@ -108,6 +167,29 @@ public class PlayerServiceTest extends EventBusBasedTest {
         ShareRideRequest shareRideRequest = new ShareRideRequest("validGameId", 1);
         shareRideRequest.setSession(testSession);
 
+        IGame game = mock(IGame.class);
+        IPlayer mockPlayer = mock(IPlayer.class);
+        CityRepository mockCityRepository = mock(CityRepository.class);
+        ConnectionRepository mockConnectionRepository = mock(ConnectionRepository.class);
+        RegionRepository mockRegionRepository = mock(RegionRepository.class);
+        PlagueRepository mockPlagueRepository = mock(PlagueRepository.class);
+        IRole mockRole = mock(IRole.class);
+        IGameState iGameState = mock(IGameState.class);
+
+        when(game.getPlayers()).thenReturn(List.of(mockPlayer));
+        when(game.getCurrentPlayer()).thenReturn(mockPlayer);
+        when(mockPlayer.getUser()).thenReturn(user);
+        when(game.getCityRepository()).thenReturn(mockCityRepository);
+        when(mockCityRepository.getCities()).thenReturn(Collections.emptyList());
+        when(game.getConnectionRepository()).thenReturn(mockConnectionRepository);
+        when(mockConnectionRepository.getConnections()).thenReturn(Collections.emptyList());
+        when(game.getRegionRepository()).thenReturn(mockRegionRepository);
+        when(mockRegionRepository.getRegions()).thenReturn(Collections.emptyList());
+        when(game.getPlagueRepository()).thenReturn(mockPlagueRepository);
+        when(mockPlagueRepository.getPlagues()).thenReturn(Collections.emptyList());
+        when(game.getCurrentPlayer().getRole()).thenReturn(mockRole);
+        when(game.getState()).thenReturn(iGameState);
+
         when(gameManagement.getGame("validGameId")).thenReturn(game);
 
         postAndWait(shareRideRequest);
@@ -123,6 +205,29 @@ public class PlayerServiceTest extends EventBusBasedTest {
         Session testSession = UUIDSession.create(user);
         ShareRideRequest shareRideRequest = new ShareRideRequest("validGameId");
         shareRideRequest.setSession(testSession);
+
+        IGame game = mock(IGame.class);
+        IPlayer mockPlayer = mock(IPlayer.class);
+        CityRepository mockCityRepository = mock(CityRepository.class);
+        ConnectionRepository mockConnectionRepository = mock(ConnectionRepository.class);
+        RegionRepository mockRegionRepository = mock(RegionRepository.class);
+        PlagueRepository mockPlagueRepository = mock(PlagueRepository.class);
+        IRole mockRole = mock(IRole.class);
+        IGameState iGameState = mock(IGameState.class);
+
+        when(game.getPlayers()).thenReturn(List.of(mockPlayer));
+        when(game.getCurrentPlayer()).thenReturn(mockPlayer);
+        when(mockPlayer.getUser()).thenReturn(user);
+        when(game.getCityRepository()).thenReturn(mockCityRepository);
+        when(mockCityRepository.getCities()).thenReturn(Collections.emptyList());
+        when(game.getConnectionRepository()).thenReturn(mockConnectionRepository);
+        when(mockConnectionRepository.getConnections()).thenReturn(Collections.emptyList());
+        when(game.getRegionRepository()).thenReturn(mockRegionRepository);
+        when(mockRegionRepository.getRegions()).thenReturn(Collections.emptyList());
+        when(game.getPlagueRepository()).thenReturn(mockPlagueRepository);
+        when(mockPlagueRepository.getPlagues()).thenReturn(Collections.emptyList());
+        when(game.getCurrentPlayer().getRole()).thenReturn(mockRole);
+        when(game.getState()).thenReturn(iGameState);
 
         when(gameManagement.getGame("validGameId")).thenReturn(game);
 

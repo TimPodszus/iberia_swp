@@ -200,7 +200,6 @@ public class RegionServiceTest extends EventBusBasedTest {
         WaterTreatmentRequest waterTreatmentRequest = mock(WaterTreatmentRequest.class);
         Session session = mock(Session.class);
         IUserDTO userDTO = mock(IUserDTO.class);
-        IUser user = mock(IUser.class);
         IGame game = mock(IGame.class);
         ICard card = mock(ICard.class);
         ILobby lobby = mock(ILobby.class);
@@ -216,6 +215,12 @@ public class RegionServiceTest extends EventBusBasedTest {
         int amount = 5;
         String username = "testUser";
         CityCardDTO cityCard = mock(CityCardDTO.class);
+
+        IPlayer player = mock(IPlayer.class);
+        IUser user = mock(IUser.class);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("TestUser");
 
         when(waterTreatmentRequest.getSession()).thenReturn(java.util.Optional.of(session));
         when(session.getUser()).thenReturn(userDTO);
@@ -282,6 +287,12 @@ public class RegionServiceTest extends EventBusBasedTest {
         PlagueRepository plagueRepository = mock(PlagueRepository.class);
         CityRepository cityRepository = mock(CityRepository.class);
 
+        IPlayer player = mock(IPlayer.class);
+        IUser user = mock(IUser.class);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("TestUser");
+
         when(game.getCityRepository()).thenReturn(cityRepository);
         when(cityRepository.getCities()).thenReturn(List.of(city));
         when(game.getConnectionRepository()).thenReturn(connectionRepository);
@@ -318,6 +329,12 @@ public class RegionServiceTest extends EventBusBasedTest {
         PlagueRepository plagueRepository = mock(PlagueRepository.class);
         CityRepository cityRepository = mock(CityRepository.class);
 
+        IPlayer player = mock(IPlayer.class);
+        IUser user = mock(IUser.class);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("TestUser");
+
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
         when(game.getCityRepository()).thenReturn(cityRepository);
         when(cityRepository.getCities()).thenReturn(List.of(city));
@@ -348,6 +365,12 @@ public class RegionServiceTest extends EventBusBasedTest {
         ConnectionRepository connectionRepository = mock(ConnectionRepository.class);
         PlagueRepository plagueRepository = mock(PlagueRepository.class);
         CityRepository cityRepository = mock(CityRepository.class);
+
+        IPlayer player = mock(IPlayer.class);
+        IUser user = mock(IUser.class);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("TestUser");
 
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
         when(game.getCityRepository()).thenReturn(cityRepository);

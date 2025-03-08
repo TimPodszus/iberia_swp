@@ -174,14 +174,14 @@ public class RegionService extends AbstractService {
             regionManagement.increaseWaterTreatment(request.getRegionId(), game, request.getAmount());
             game.setState(game.getPreviousState());
         }
-
-        IGameDTO gameDTO = GameMapper.toDTO(game);
-        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
         sendServerMessageEvent(request.getLobbyId(),
                 game.getCurrentPlayer()
                     .getUser()
                     .getUsername() + " hat erfolgreich Wasseraufbereitung in einer Region " + "durchgeführt, um die Ausbruchswahrscheinlichkeit in den anliegenden Städten zu verringern"
         );
+
+        IGameDTO gameDTO = GameMapper.toDTO(game);
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 }

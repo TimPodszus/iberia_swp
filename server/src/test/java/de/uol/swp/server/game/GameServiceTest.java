@@ -661,6 +661,9 @@ public class GameServiceTest extends EventBusBasedTest {
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
         when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby("lobbyId", "Test", List.of(user), user, 4));
 
+        IPlayer player = mock(IPlayer.class);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
         gameService.onBuildTrainTrackRequest(request);
 
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
@@ -743,6 +746,9 @@ public class GameServiceTest extends EventBusBasedTest {
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
         when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby("lobbyId", "Test", List.of(user), user, 4));
 
+        IPlayer player = mock(IPlayer.class);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
         gameService.onBuildTrainTrackRequest(request);
 
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);

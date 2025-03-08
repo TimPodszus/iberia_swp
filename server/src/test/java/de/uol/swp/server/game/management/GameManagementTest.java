@@ -163,6 +163,7 @@ class GameManagementTest {
         Session session = UUIDSession.create(testUser);
         IPlayer player = new Player(testUser);
         when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getCurrentPlayer()).thenReturn(player);
 
         ICity albacete = cityRepository.getCityByName(ALBACETE);
         CityCard cityCard = new CityCard(
