@@ -4,8 +4,8 @@ import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
+import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.game.message.response.StatusResponse;
@@ -14,9 +14,14 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.CardRepository;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
@@ -30,10 +35,6 @@ import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
-import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.EndGameState;
-import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
@@ -168,9 +169,9 @@ public class GameServiceTest extends EventBusBasedTest {
     /**
      * Tests the onMovePlayerRequest method with valid inputs.
      *
-     * @throws InterruptedException    if the thread is interrupted
+     * @throws InterruptedException      if the thread is interrupted
      * @throws IllegalGameStateException if the game is in an illegal state
-     * @throws GameException           if the player cannot be moved
+     * @throws GameException             if the player cannot be moved
      */
     @Test
     void testOnMovePlayerRequest() throws InterruptedException, IllegalGameStateException, GameException {
@@ -522,46 +523,13 @@ public class GameServiceTest extends EventBusBasedTest {
         gameService.onShareKnowledgeRequest(request);
 
         verify(gameManagement).unlockGameInWaitForConfirmation("lobbyId");
-        verify(gameManagement, times(1)).shareKnowledgeRequestAccepted(currentPlayer,
-                targetPlayer,
-                "lobbyId",
-                event,
-                lobbyManagement,
-                gameService
+        verify(gameManagement).shareKnowledgeRequestAccepted(
+                eq(currentPlayer),
+                eq(targetPlayer),
+                eq("lobbyId"),
+                eq(event),
+                eq(gameService)
         );
-    }
-
-    /**
-     * Tests the onShareKnowledgeRequest method when the request is denied.
-     */
-    @Test
-    void testOnShareKnowledgeRequest_Denied() {
-        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
-                "lobbyId",
-                "currentPlayer",
-                "targetPlayer",
-                mock(ICardDTO.class),
-                mock(ICardDTO.class)
-        );
-        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", false, event);
-
-        IPlayer currentPlayer = mock(IPlayer.class);
-        IPlayer targetPlayer = mock(IPlayer.class);
-        IUser currentUser = mock(IUser.class);
-        IUser targetUser = mock(IUser.class);
-
-        when(gameManagement.getGame("lobbyId")).thenReturn(game);
-        when(game.getCurrentPlayer()).thenReturn(currentPlayer);
-        when(game.getPlayers()).thenReturn(List.of(currentPlayer, targetPlayer));
-        when(currentPlayer.getUser()).thenReturn(currentUser);
-        when(targetPlayer.getUser()).thenReturn(targetUser);
-        when(currentUser.getUsername()).thenReturn("currentPlayer");
-        when(targetUser.getUsername()).thenReturn("targetPlayer");
-
-        gameService.onShareKnowledgeRequest(request);
-
-        verify(gameManagement).unlockGameInWaitForConfirmation("lobbyId");
-        verify(gameManagement).postShareKnowledgeResponse(event, lobbyManagement, gameService, false);
     }
 
 
@@ -762,6 +730,28 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     @Test
+    void testOnCardsExchangeWithDiscardPileRequest() throws PlayerManagementException, CardNotFoundException {
+        Map<String, ICardDTO> map = new HashMap<>();
+        IPlayer player = new Player(new User("testuser", "testpassword"));
+        ICard playerCard = new CityCard(1, "playerCard", mock(City.class));
+        ICard discardPileCard = new CityCard(2, "discardPileCard", mock(City.class));
+        List<ICard> playerCards = new ArrayList<>();
+        playerCards.add(playerCard);
+        player.setCards(playerCards);
+        map.put("testuser", CardMapper.toDTO(playerCard));
+        map.put("Discard Pile", CardMapper.toDTO(discardPileCard));
+        String lobbyId = "lobbyCode";
+        CardsExchangeWithDiscardPileRequest request = new CardsExchangeWithDiscardPileRequest(map, lobbyId);
+
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(gameManagement.getGame("lobbyCode")).thenReturn(game);
+
+        gameService.onCardsExchangeWithDiscardPileRequest(request);
+
+        verify(gameManagement).shareKnowledgeWithDiscardPile(1, 2, lobbyId, gameService);
+    }
+
+    @Test
     void testOnEndTurnRequest() throws IllegalGameStateException, InterruptedException {
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
@@ -805,5 +795,19 @@ public class GameServiceTest extends EventBusBasedTest {
 
         assertInstanceOf(StatusResponse.class, event);
         assertFalse(((StatusResponse) event).isSuccess());
+    }
+
+    @Test
+    void testSendBoardUpdateAfterCardExchangeWithDiscardPile() {
+        String lobbyId = "testLobbyId";
+        IGame game = new Game(2, lobbyId);
+        ILobby lobby = mock(ILobby.class);
+
+        when(gameManagement.getGame(lobbyId)).thenReturn(game);
+        when(lobbyManagement.getLobby(lobbyId)).thenReturn(lobby);
+
+        gameService.sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
+
+        verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 }

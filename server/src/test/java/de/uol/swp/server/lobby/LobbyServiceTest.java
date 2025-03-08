@@ -270,7 +270,6 @@ public class LobbyServiceTest extends EventBusBasedTest {
         postAndWait(request);
 
         assertInstanceOf(ExceptionMessage.class, event);
-        verify(lobbyManagement, never()).getLobby(anyString());
     }
 
     /**

@@ -7,25 +7,19 @@ import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.event.EndGameEvent;
-import de.uol.swp.common.game.message.event.ShareRideEvent;
-import de.uol.swp.common.game.message.event.StartGameEvent;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.game.message.request.BuildTrainTrackRequest;
-import de.uol.swp.common.game.message.request.CreateGameRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
-import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -475,7 +469,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         targetPlayer,
                         event.getLobbyId(),
                         event,
-                        lobbyManagement,
                         this
                 );
             } catch (PlayerManagementException e) {
@@ -483,7 +476,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 sendStatusResponse(request, false, "Spielerkarten konnten nicht getauscht werden");
             }
         } else {
-            gameManagement.postShareKnowledgeResponse(event, lobbyManagement, this, false);
+            postShareKnowledgeResponse(event, false);
         }
     }
 
@@ -515,6 +508,67 @@ public class GameService extends AbstractService implements GameStateChangeListe
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
+
+    @Subscribe
+    public void onCardsExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request)  {
+        try{
+        LOG.info("Received CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
+        int cardToDiscardID = request.getCardsToExchange()
+                                     .get(gameManagement.getGame(request.getLobbyId())
+                                                        .getCurrentPlayer()
+                                                        .getUser()
+                                                        .getUsername())
+                                     .getId();
+        int cardToReceiveID = request.getCardsToExchange()
+                                     .get("Discard Pile")
+                                     .getId();
+
+        sendServerMessageEvent(request.getLobbyId(),
+                "Spieler" + gameManagement.getGame(request.getLobbyId()).getCurrentPlayer().getUser().getUsername() + "hat eine Karte mit dem Ablagestapel getauscht");
+        gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, request.getLobbyId(), this);}
+        catch(CardNotFoundException exception){
+            LOG.error("Card not found");
+            sendStatusResponse(request, false, "Karte nicht gefunden");
+        }
+        catch (PlayerManagementException exception){
+            LOG.error("Player not found");
+            sendStatusResponse(request, false, "Spieler nicht gefunden");
+        }
+
+    }
+
+    /**
+     * Posts a response to the share knowledge event.
+     *
+     * @param event   The event containing details of the share knowledge request
+     * @param success Indicates whether the share knowledge request was successful
+     */
+
+    public void postShareKnowledgeResponse(ShareKnowledgeEvent event, boolean success) {
+
+        sendToAllInLobby(
+                lobbyManagement.getLobby(event.getLobbyId()),
+                new KnowledgeSharedEvent(
+                        event.getLobbyId(),
+                        success,
+                        GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()))
+                )
+        );
+        LOG.trace("Posted ShareKnowledgeResponse to event bus for lobby {}", event.getLobbyId());
+
+    }
+
+/**
+ * Sends a board update event to all players in the lobby after a card exchange with the discard pile.
+ *
+ * @param lobbyId the ID of the lobby
+ */
+public void sendBoardUpdateAfterCardExchangeWithDiscardPile(String lobbyId) {
+    sendToAllInLobby(
+            lobbyManagement.getLobby(lobbyId),
+            new BoardUpdateEvent(lobbyId, GameMapper.toDTO(gameManagement.getGame(lobbyId)))
+    );
+}
 
     /**
      * Handles the end turn request from a player. This method retrieves the user from the session,

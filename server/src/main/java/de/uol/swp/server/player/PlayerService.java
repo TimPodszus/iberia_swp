@@ -2,6 +2,7 @@ package de.uol.swp.server.player;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
@@ -10,6 +11,9 @@ import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
 import de.uol.swp.common.player.message.request.DiscardPlayerCardRequest;
 import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
+import de.uol.swp.common.player.message.request.GetCardsToSortRequest;
+import de.uol.swp.common.player.message.request.SortedCardsRequest;
+import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.player.message.response.DrawPlayerCardResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
@@ -18,9 +22,12 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -32,14 +39,17 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Service class for handling player-related operations.
  */
 public class PlayerService extends AbstractService implements CardsAmountChangeListener {
     public static final Logger LOG = LogManager.getLogger(PlayerService.class);
-    private final IPlayerManagement playerManagement;
-    private final IGameManagement gameManagement;
+    IPlayerManagement playerManagement;
+    IGameManagement gameManagement;
+    ILobbyManagement lobbyManagement;
 
     /**
      * Constructs a new PlayerService.
@@ -48,10 +58,13 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      * @param playerManagement the player management instance for player operations
      */
     @Inject
-    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement) {
+    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement,
+                         ILobbyManagement lobbyManagement
+    ) {
         super(bus);
         this.playerManagement = playerManagement;
         this.gameManagement = gameManagement;
+        this.lobbyManagement = lobbyManagement;
 
         playerManagement.setCardsAmountChangeListener(this);
     }
@@ -191,5 +204,60 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         event.setSession(session);
         bus.post(event);
         LOG.debug("Sent DiscardPlayerCardEvent to user {}", user.getUsername());
+    }
+
+    /**
+     * Handles the GetCardsToSortRequest event.
+     *
+     * @param request the request to get cards to sort
+     */
+    @Subscribe
+    public void onGetCardsToSortRequest(GetCardsToSortRequest request) {
+        LOG.debug("GetCardsToSortRequest received");
+        AbstractResponseMessage response;
+        Optional<Session> session = request.getSession();
+        try {
+            List<ICardDTO> cards = playerManagement.getCardsToSort(
+                    request.getLobbyId(),
+                    UserMapper.toUser(Objects.requireNonNull(session.map(Session::getUser)
+                                                                    .orElse(null)))
+            );
+            LOG.debug("GetCardsToSortRequest processed successfully");
+            response = new CardsToSortResponse(request.getLobbyId(), true, "Karten wurden erfolgreich ermittelt", cards);
+        } catch (GameException | IllegalGameStateException e) {
+            LOG.error("Error retrieving cards: {}", e.getMessage());
+            response = new StatusResponse(request.getLobbyId(), false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
+        }
+        response.setSession(session.orElse(null));
+        post(response);
+    }
+
+    /**
+     * Handles the SortedCardsRequest event.
+     *
+     * @param request the request to sort cards
+     */
+    @Subscribe
+    public void onSortedCardsRequest(SortedCardsRequest request) throws GameException {
+        LOG.debug("SortedCardsRequest received");
+        IGame game = playerManagement.getGame(request.getLobbyId());
+        Optional<Session> session = request.getSession();
+        try {
+            playerManagement.sortCards(
+                    request.getLobbyId(),
+                    UserMapper.toUser(Objects.requireNonNull(session.map(Session::getUser)
+                                                                    .orElse(null))),
+                    request.getCards()
+            );
+            IGameDTO gameDTO = GameMapper.toDTO(game);
+            ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+            LOG.debug("SortedCardsRequest processed successfully");
+            sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+            sendStatusResponse(request, true, "Karten wurden erfolgreich sortiert");
+            sendServerMessageEvent(request.getLobbyId(), "Die Wissenschaftlerin der königlichen Akademie hat die Karten auf dem Nachziehstapel sortiert");
+        } catch (IllegalStateException e) {
+            LOG.error("Error sorting cards: {}", e.getMessage());
+            sendStatusResponse(request, false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
+        }
     }
 }

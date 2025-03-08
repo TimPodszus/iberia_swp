@@ -5,9 +5,8 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
-import de.uol.swp.common.player.message.request.DiscardPlayerCardRequest;
-import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
-import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
+import de.uol.swp.common.player.message.request.*;
+import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.EventBusBasedTest;
@@ -18,8 +17,11 @@ import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -35,16 +37,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.*;
 
 public class PlayerServiceTest extends EventBusBasedTest {
     private static final String LOBBY_ID = "validGameId";
+
+    @Mock
+    private AuthenticationService authenticationService;
+
     @Mock
     private IPlayerManagement playerManagement;
 
@@ -52,7 +55,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     private IGameManagement gameManagement;
 
     @Mock
-    private AuthenticationService authenticationService;
+    private ILobbyManagement lobbyManagement;
 
     private final IGame game = new Game(1, LOBBY_ID);
 
@@ -80,13 +83,32 @@ public class PlayerServiceTest extends EventBusBasedTest {
         super.handleEvent(event);
     }
 
+    @Subscribe
+    public void onCardsToSortResponse(CardsToSortResponse event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onGetCardsToSortRequest(GetCardsToSortRequest event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onSortedCardsRequest(SortedCardsRequest event) {
+        super.handleEvent(event);
+    }
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws IllegalAccessException, NoSuchFieldException {
         MockitoAnnotations.openMocks(this);
-        playerService = new PlayerService(super.getBus(), playerManagement, gameManagement);
+        playerService = new PlayerService(super.getBus(), playerManagement, gameManagement, lobbyManagement);
 
         GameStore.getInstance()
                  .addGame(LOBBY_ID, game);
+
+        Field authServiceField = AbstractService.class.getDeclaredField("authenticationService");
+        authServiceField.setAccessible(true);
+        authServiceField.set(playerService, authenticationService);
 
         when(playerManagement.getGame(LOBBY_ID)).thenReturn(game);
     }
@@ -207,7 +229,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Test
     void onCardsAmountChanged_ExceedsLimit_SendsDiscardPlayerCardEvent() throws NoSuchFieldException, IllegalAccessException {
-        playerService = Mockito.spy(new PlayerService(getBus(), playerManagement, gameManagement));
+        playerService = Mockito.spy(new PlayerService(getBus(), playerManagement, gameManagement, lobbyManagement));
 
         IPlayer player = new Player(user);
         game.getPlayers()
@@ -226,5 +248,63 @@ public class PlayerServiceTest extends EventBusBasedTest {
         playerService.onCardsAmountChanged(LOBBY_ID, user.getUsername(), Collections.emptyList());
 
         assertInstanceOf(DiscardPlayerCardEvent.class, super.event);
+    }
+
+    @Test
+    void onGetCardsToSortRequest_Success() throws GameException, IllegalGameStateException, InterruptedException {
+        GetCardsToSortRequest request = new GetCardsToSortRequest(LOBBY_ID);
+        request.setSession(session);
+        List<ICardDTO> cards = List.of(mock(ICardDTO.class));
+
+        when(playerManagement.getCardsToSort("validGameId", user)).thenReturn(cards);
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).getCardsToSort("validGameId", user);
+        assertInstanceOf(CardsToSortResponse.class, super.event);
+    }
+
+    @Test
+    void onSortedCardsRequest_Success() throws GameException, InterruptedException {
+        List<ICardDTO> cards = List.of(mock(ICardDTO.class));
+        SortedCardsRequest request = new SortedCardsRequest(LOBBY_ID, cards);
+        request.setSession(session);
+        when(authenticationService.getSession(any())).thenReturn(Optional.of(session));
+        when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).sortCards(LOBBY_ID, UserMapper.toUser(session.getUser()), cards);
+        assertInstanceOf(StatusResponse.class, super.event);
+    }
+
+    @Test
+    void onGetCardsToSortRequest_IllegalStateException() throws GameException, IllegalGameStateException,
+            InterruptedException {
+        GetCardsToSortRequest request = new GetCardsToSortRequest(LOBBY_ID);
+        request.setSession(session);
+
+        when(playerManagement.getCardsToSort(LOBBY_ID, user)).thenThrow(new IllegalGameStateException("Test exception"));
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).getCardsToSort(LOBBY_ID, user);
+        assertInstanceOf(StatusResponse.class, super.event);
+    }
+
+    @Test
+    void onSortedCardsRequest_IllegalStateException() throws GameException, InterruptedException {
+        List<ICardDTO> cards = List.of(mock(ICardDTO.class));
+        SortedCardsRequest request = new SortedCardsRequest(LOBBY_ID, cards);
+        request.setSession(session);
+
+        when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
+
+        doThrow(new IllegalStateException("Test exception")).when(playerManagement).sortCards("validGameId", user, cards);
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).sortCards(LOBBY_ID, user, cards);
+        assertInstanceOf(StatusResponse.class, super.event);
     }
 }

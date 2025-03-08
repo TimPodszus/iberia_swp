@@ -13,6 +13,7 @@ import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.infection.management.InfectionManagement;
+import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -55,12 +56,15 @@ public class CityManagementTest {
     private RegionManagement regionManagement;
     @Mock
     private ConnectionManagement connectionManagement;
+    @Mock
+    private IPlagueManagement plagueManagement;
     @InjectMocks
     private final GameManagement gameManagement = new GameManagement(
             playerManagement,
             cityManagement,
             connectionManagement,
-            regionManagement
+            regionManagement,
+            plagueManagement
     );
     private final InfectionManagement infectionManagement = new InfectionManagement();
 

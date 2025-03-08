@@ -5,8 +5,9 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -114,10 +115,40 @@ public interface IPlayerManagement {
     InfectionCard drawBottomInfectionCard(IGame game) throws IllegalStateException;
 
     /**
-     * Returns the game with the specified lobby ID.
+     * Retrieves the cards that a player can sort.
      *
      * @param lobbyId the ID of the lobby
-     * @return the game with the specified lobby ID
+     * @param user    the user for whom the cards are to be sorted
+     * @return the list of cards to be sorted
+     * @throws GameException if an error occurs while retrieving the cards
+     * @throws IllegalGameStateException     if the player is not in the correct state to sort cards
+     */
+    List<ICardDTO> getCardsToSort(String lobbyId, IUser user) throws GameException, IllegalGameStateException;
+
+    /**
+     * Retrieves the game with the specified lobby code.
+     *
+     * @param lobbyId the id of the lobby in which the game is happening
+     * @return the game with the specified lobby code
      */
     IGame getGame(String lobbyId);
+
+    /**
+     * Retrieves the player with the specified user in the specified lobby.
+     *
+     * @param game the game in which the player is to be retrieved
+     * @param user the user for whom the player is to be retrieved
+     * @return the player with the specified user in the specified lobby
+     */
+    IPlayer getPlayerByUser(IUser user, IGame game);
+
+    /**
+     * Sorts the cards of the playerCardDrawPile in a lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param user    the user sorting the cards
+     * @param cards   the list of cards to be sorted
+     * @throws IllegalStateException if the player is not in the correct state to sort cards
+     */
+    void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws GameException;
 }

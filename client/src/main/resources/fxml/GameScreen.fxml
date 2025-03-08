@@ -18,7 +18,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane fx:id="gameScreen" onMouseDragged="#onMouseDraggedEvent" onMousePressed="#onMousePressedEvent" onScroll="#onScrollEvent" stylesheets="@../css/gameScreen.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.game.GamePresenter">
+<AnchorPane fx:id="gameScreen" onMouseDragged="#onMouseDraggedEvent" onMousePressed="#onMousePressedEvent" onScroll="#onScrollEvent" prefHeight="1020.0" prefWidth="1980.0" stylesheets="@../css/gameScreen.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.uol.swp.client.game.GamePresenter">
     <StackPane fx:id="mapPane" minWidth="1400.0" prefWidth="1400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1050.0" prefWidth="1300.0" style="-fx-background-color: #c6ecff;" />
         <AnchorPane id="zoomPane" fx:id="zoomPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" StackPane.alignment="TOP_CENTER">
@@ -933,7 +933,7 @@
                 <Text layoutX="-22.0" layoutY="-21.0" mouseTransparent="true" text="Coimbra" x="180.0" y="449.58" />
                 <Text layoutX="9.0" mouseTransparent="true" text="Madrid" x="521.684" y="423.223" />
                 <Text layoutX="-9.0" layoutY="-4.0" mouseTransparent="true" text="Toledo" x="344.906" y="470.627" />
-                <Text layoutX="-52.0" layoutY="-43.0" mouseTransparent="true" text="Cáceres" x="300.0" y="527.697" />
+                <Text layoutX="-56.0" layoutY="-49.0" mouseTransparent="true" text="Cáceres" x="300.0" y="527.697" />
                 <Text layoutX="-50.0" layoutY="-23.0" mouseTransparent="true" text="Badajoz" x="263.34" y="568.251" />
                 <Text layoutX="13.0" layoutY="-5.0" mouseTransparent="true" text="Évora" x="151.767" y="596.283" />
                 <Text layoutX="16.0" layoutY="-3.0" mouseTransparent="true" text="Jaén" x="506.87" y="673.083" />
@@ -941,7 +941,7 @@
                 <Text layoutX="8.0" layoutY="-6.0" mouseTransparent="true" text="Córdoba" x="312.315" y="690.859" />
                 <Text layoutX="3.0" layoutY="4.0" mouseTransparent="true" text="Bilbao- Bilbo" wrappingWidth="49.0615234375" x="512.418" y="138.281" />
                 <Text layoutX="-104.0" layoutY="1.0" mouseTransparent="true" text="Santiago De Compostela" wrappingWidth="69.071044921875" x="127.638" y="155.586" />
-                <Text layoutX="1.0" mouseTransparent="true" text="Vitoria Gasteiz" wrappingWidth="69.97265624999989" x="552.3" y="260.271" />
+                <Text layoutX="-4.0" layoutY="-8.0" mouseTransparent="true" text="Vitoria Gasteiz" wrappingWidth="69.97265624999989" x="552.3" y="260.271" />
                 <Text layoutX="8.0" layoutY="-4.0" mouseTransparent="true" text="Burgos" x="483.169" y="228.619" />
                 <Text layoutX="14.0" layoutY="-11.0" mouseTransparent="true" text="Palma De Mallorca ⚓" wrappingWidth="78.1416015625" x="910.617" y="487.301" />
                 <Text layoutX="-23.0" layoutY="-1.0" mouseTransparent="true" text="Almería ⚓" x="593.779" y="813.48" />
@@ -955,7 +955,7 @@
                 <Text layoutX="15.0" layoutY="-69.0" mouseTransparent="true" text="Andorra De Vella" wrappingWidth="76.07107543945312" x="895.281" y="242.459" />
                 <Text layoutX="1.0" layoutY="1.0" mouseTransparent="true" text="Cuenca" x="563.373" y="485.021" />
                 <Text layoutX="4.0" layoutY="-9.0" mouseTransparent="true" text="Salamanca" x="249.32" y="384.707" />
-                <StackPane id="waterMarkRegion1" layoutX="210.0" layoutY="133.0" mouseTransparent="true" styleClass="water-mark">
+                <StackPane id="waterMarkRegion1" layoutX="181.0" layoutY="123.0" mouseTransparent="true" styleClass="water-mark">
                     <children>
                         <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
                         <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
@@ -970,7 +970,7 @@
                         </Text>
                     </children>
                 </StackPane>
-                <StackPane id="waterMarkRegion2" layoutX="135.0" layoutY="186.0" mouseTransparent="true" styleClass="water-mark">
+                <StackPane id="waterMarkRegion2" layoutX="144.0" layoutY="183.0" mouseTransparent="true" styleClass="water-mark">
                     <children>
                         <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
                         <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
@@ -1375,7 +1375,7 @@
                         </Text>
                     </children>
                 </StackPane>
-                <StackPane id="waterMarkRegion11" layoutX="363.0" layoutY="725.0" mouseTransparent="true" styleClass="water-mark">
+                <StackPane id="waterMarkRegion11" layoutX="369.0" layoutY="728.0" mouseTransparent="true" styleClass="water-mark">
                     <children>
                         <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
                         <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
@@ -1390,7 +1390,7 @@
                         </Text>
                     </children>
                 </StackPane>
-                <StackPane id="waterMarkRegion10" layoutX="339.0" layoutY="772.0" mouseTransparent="true" styleClass="water-mark">
+                <StackPane id="waterMarkRegion10" layoutX="328.0" layoutY="764.0" mouseTransparent="true" styleClass="water-mark">
                     <children>
                         <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
                         <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
@@ -1420,7 +1420,7 @@
                         </Text>
                     </children>
                 </StackPane>
-                <StackPane id="waterMarkRegion14" layoutX="492.0" layoutY="747.0" mouseTransparent="true" styleClass="water-mark">
+                <StackPane id="waterMarkRegion14" layoutX="477.0" layoutY="748.0" mouseTransparent="true" styleClass="water-mark">
                     <children>
                         <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
                         <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
@@ -1435,7 +1435,7 @@
                         </Text>
                     </children>
                 </StackPane>
-                <StackPane id="waterMarkRegion4" layoutX="116.0" layoutY="278.0" mouseTransparent="true" styleClass="water-mark">
+                <StackPane id="waterMarkRegion4" layoutX="110.0" layoutY="264.0" mouseTransparent="true" styleClass="water-mark">
                     <children>
                         <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
                         <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
@@ -1450,7 +1450,7 @@
                         </Text>
                     </children>
                 </StackPane>
-                <StackPane id="waterMarkRegion30" layoutX="601.0" layoutY="266.0" mouseTransparent="true" styleClass="water-mark">
+                <StackPane id="waterMarkRegion30" layoutX="575.0" layoutY="269.0" mouseTransparent="true" styleClass="water-mark">
                     <children>
                         <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
                         <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
@@ -1465,6 +1465,346 @@
                         </Text>
                     </children>
                 </StackPane>
+            <StackPane id="prevMarkRegion30" layoutX="614.0" layoutY="271.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion24" layoutX="677.0" layoutY="250.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion23" layoutX="815.0" layoutY="254.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion21" layoutX="846.0" layoutY="424.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion22" layoutX="779.0" layoutY="323.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion20" layoutX="752.0" layoutY="407.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion17" layoutX="696.0" layoutY="544.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion19" layoutX="679.0" layoutY="497.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion15" layoutX="598.0" layoutY="631.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion13" layoutX="407.0" layoutY="680.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion16" layoutX="480.0" layoutY="599.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion18" layoutX="554.0" layoutY="498.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion31" layoutX="632.0" layoutY="359.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion29" layoutX="481.0" layoutY="303.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion26" layoutX="531.0" layoutY="175.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion27" layoutX="383.0" layoutY="175.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion1" layoutX="222.0" layoutY="123.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion3" layoutX="252.0" layoutY="237.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion2" layoutX="110.0" layoutY="185.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion4" layoutX="131.0" layoutY="288.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion5" layoutX="226.0" layoutY="383.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion33" layoutX="383.0" layoutY="416.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion28" layoutX="434.0" layoutY="366.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion34" layoutX="328.0" layoutY="521.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion32" layoutX="434.0" layoutY="501.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion7" layoutX="185.0" layoutY="497.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion6" layoutX="98.0" layoutY="474.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion8" layoutX="118.0" layoutY="629.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion9" layoutX="222.0" layoutY="620.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion12" layoutX="313.0" layoutY="585.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion11" layoutX="338.0" layoutY="712.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion9" layoutX="358.0" layoutY="782.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion14" layoutX="511.0" layoutY="743.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <StackPane id="prevMarkRegion25" layoutX="599.0" layoutY="179.0" mouseTransparent="true" styleClass="prev-mark">
+               <children>
+                  <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/target.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
             </AnchorPane>
         </AnchorPane>
     </StackPane>
@@ -1523,11 +1863,11 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
                             </ToggleButton>
-                            <ToggleButton fx:id="roleButtonOne" mnemonicParsing="false" onAction="#onRoleButtonOne" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Rollenaktion 1">
+                            <Button fx:id="roleButtonOne" mnemonicParsing="false" onAction="#onRoleButtonOne" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Rollenaktion 1">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
-                            </ToggleButton>
+                            </Button>
                         </children>
                     </VBox>
                     <VBox alignment="CENTER" spacing="1.0">
@@ -1547,18 +1887,17 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
                             </ToggleButton>
-                            <ToggleButton fx:id="roleButtonTwo" mnemonicParsing="false" onAction="#onRoleButtonTwo" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Rollenaktion 2">
+                            <Button fx:id="roleButtonTwo" mnemonicParsing="false" onAction="#onRoleButtonTwo" prefHeight="30.0" prefWidth="150.0" styleClass="action-button" text="Rollenaktion 2">
                                 <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                 </VBox.margin>
-                            </ToggleButton>
+                            </Button>
                         </children>
                     </VBox>
                     <VBox alignment="CENTER" layoutX="179.0" layoutY="17.0" spacing="10.0" />
                 </children>
             </HBox>
-            <Button fx:id="endTurnButton" mnemonicParsing="false" onAction="#onEndTurn" prefHeight="30.0"
-               prefWidth="350.0" styleClass="end-turn-button" text="Zug beenden">
+            <Button fx:id="endTurnButton" mnemonicParsing="false" onAction="#onEndTurn" prefHeight="30.0" prefWidth="350.0" styleClass="end-turn-button" text="Zug beenden">
                 <VBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </VBox.margin>
