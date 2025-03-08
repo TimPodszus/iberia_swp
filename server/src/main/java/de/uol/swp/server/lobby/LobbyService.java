@@ -257,6 +257,8 @@ public class LobbyService extends AbstractService {
     @Subscribe
     public void onRemoveUserFromLobbyRequest(RemoveUserFromLobbyRequest request) {
         LOG.debug("[LobbyId: {}] Received remove user from lobby request", request.getLobbyId());
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        IUser user = lobby.getUser(request.getUserToRemove());
 
         try {
             lobbyManagement.removeUser(request.getLobbyId(), request.getUserToRemove());
@@ -273,8 +275,6 @@ public class LobbyService extends AbstractService {
             return;
         }
 
-        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        IUser user = lobby.getUser(request.getUserToRemove());
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
                                                    LOG.error(
