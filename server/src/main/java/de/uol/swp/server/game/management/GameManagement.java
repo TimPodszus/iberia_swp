@@ -2,9 +2,9 @@ package de.uol.swp.server.game.management;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -36,7 +36,6 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
