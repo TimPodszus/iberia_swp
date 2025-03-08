@@ -238,7 +238,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      * @param request the request to sort cards
      */
     @Subscribe
-    public void onSortedCardsRequest(SortedCardsRequest request) throws GameException {
+    public void onSortedCardsRequest(SortedCardsRequest request) {
         LOG.debug("SortedCardsRequest received");
         IGame game = playerManagement.getGame(request.getLobbyId());
         Optional<Session> session = request.getSession();
@@ -255,7 +255,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
             sendStatusResponse(request, true, "Karten wurden erfolgreich sortiert");
             sendServerMessageEvent(request.getLobbyId(), "Die Wissenschaftlerin der königlichen Akademie hat die Karten auf dem Nachziehstapel sortiert");
-        } catch (IllegalStateException e) {
+        } catch (IllegalGameStateException e) {
             LOG.error("Error sorting cards: {}", e.getMessage());
             sendStatusResponse(request, false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
         }

@@ -148,7 +148,7 @@ public interface IPlayerManagement {
      * @param lobbyId the ID of the lobby
      * @param user    the user sorting the cards
      * @param cards   the list of cards to be sorted
-     * @throws IllegalStateException if the player is not in the correct state to sort cards
+     * @throws IllegalGameStateException if the player is not in the correct state to sort cards
      */
-    void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws GameException;
+    void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws IllegalGameStateException;
 }

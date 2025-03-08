@@ -355,7 +355,7 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @throws IllegalStateException if the player is not the current player or does not have the role of ScientistAtTheRoyalAcademy
      */
     @Override
-    public void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws GameException {
+    public void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws IllegalGameStateException {
         IGame game = getGame(lobbyId);
         IPlayer player = getPlayerByUser(user, game);
         if (player != null && player.equals(game.getCurrentPlayer()) && player.getRole() instanceof ScientistAtTheRoyalAcademy) {
@@ -373,7 +373,7 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
             LOG.debug("[LobbyID: {}] Cards sorted for player {}", lobbyId, player.getUser().getUsername());
         } else {
             LOG.error("[LobbyID: {}] Invalid request to sort cards by player {}", lobbyId, user.getUsername());
-            throw new GameException(
+            throw new IllegalGameStateException(
                     "It is not your turn or your role is not scientist of the royal academy");
         }
     }

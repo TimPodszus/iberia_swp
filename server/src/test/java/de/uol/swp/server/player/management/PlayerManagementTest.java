@@ -358,7 +358,7 @@ class PlayerManagementTest {
     }
 
     @Test
-    void testSortCards() throws GameException {
+    void testSortCards() throws GameException, IllegalGameStateException {
         ICard card1 = mock(ICard.class);
         ICard card2 = mock(ICard.class);
         ICard card3 = mock(ICard.class);
@@ -447,8 +447,8 @@ class PlayerManagementTest {
         doReturn(player).when(spyPlayerManagement)
                         .getPlayerByUser(user, game);
 
-        GameException thrown = assertThrows(
-                GameException.class,
+        IllegalGameStateException thrown = assertThrows(
+                IllegalGameStateException.class,
                 () -> spyPlayerManagement.sortCards("lobbyId", user, cards),
                 "Expected sortCards() to throw, but it did not"
         );
