@@ -282,15 +282,13 @@ public class LobbyServiceTest extends EventBusBasedTest {
     void testRemoveUserFromLobby_SessionNotFound() throws LobbyNotFoundException {
         IUser userToRemove = new User("RemoveMe", "RemoveMe");
         lobby.addUser(userToRemove);
+        when(authenticationService.getSession(userToRemove)).thenReturn(Optional.empty());
 
         when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
         when(lobbyManagement.removeUser("testcode", "RemoveMe")).thenReturn(lobby);
         RemoveUserFromLobbyRequest request = new RemoveUserFromLobbyRequest("testcode", "RemoveMe");
         Session session = UUIDSession.create(UserMapper.toUser(firstOwner));
         request.setSession(session);
-
-        doThrow(new SessionNotFoundException("Session not found")).when(authenticationService)
-                                                                  .getSession(userToRemove);
 
         assertThrows(SessionNotFoundException.class, () -> lobbyService.onRemoveUserFromLobbyRequest(request));
     }
