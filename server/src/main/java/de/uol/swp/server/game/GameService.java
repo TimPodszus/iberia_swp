@@ -19,6 +19,7 @@ import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -117,11 +118,11 @@ public class GameService extends AbstractService implements GameStateChangeListe
         }
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null) {
-        game.setGameStateChangeListener(this);
-        LOG.debug("Game created for lobby {}", request.getLobbyId());
-        post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
-        sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-    }
+            game.setGameStateChangeListener(this);
+            LOG.debug("Game created for lobby {}", request.getLobbyId());
+            post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
+            sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        }
     }
 
     /**
@@ -552,22 +553,23 @@ public class GameService extends AbstractService implements GameStateChangeListe
     public void onFavorableTimeEvent(FavorableTimeEvent event) {
         LOG.debug("[Lobby: {}] Received FavorableTimeEvent", event.getLobbyId());
         IGame game = gameManagement.getGame(event.getLobbyId());
-        gameManagement.setFavorableTimeEventCardPlayed(true);
         try {
-            playerManagement.getCard(
+            playerManagement.discardPlayerCard(
                     event.getLobbyId(),
                     game.getCurrentPlayer()
                         .getUser()
                         .getUsername(),
                     212
             );
-            // TODO: Discard Card -> Implement when Discard Card PR is merged
-        } catch (PlayerManagementException e) {
-            LOG.error(
-                    "[Lobby: {}] Could not find FavorableTimeEventCard for player {}",
+            gameManagement.setFavorableTimeEventCardPlayed(true);
+        } catch (GameException e) {
+            LOG.error("[Lobby: {}] Could not execute Favorable Time Event successfully", event.getLobbyId());
+            bus.post(new StatusResponse(
                     event.getLobbyId(),
-                    event.getUsername()
-            );
+                    false,
+                    "\"Günstige Zeit\"-Karte konnte nicht ausgeführt werden"
+            ));
+            return;
         }
         game.setState(game.getPreviousState());
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));

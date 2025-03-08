@@ -121,23 +121,6 @@ class GameManagementTest {
     }
 
     @Test
-    void testCreateAndInitializeGameThrowsGameInitializationException() throws GameInitializationException {
-        List<IUserDTO> testUsers = List.of(new UserDTO("test", "test"), new UserDTO("test2", "test2"));
-        CreateGameRequest request = new CreateGameRequest("lobby123", 1, testUsers);
-
-        doThrow(new GameInitializationException("Initialization failed", any(Throwable.class))).when(gameManagement)
-                                                                                               .createAndInitializeGame(
-                                                                                                       request);
-
-        GameInitializationException exception = assertThrows(
-                GameInitializationException.class,
-                () -> gameManagement.createAndInitializeGame(request)
-        );
-
-        assertEquals("Initialization failed", exception.getMessage());
-    }
-
-    @Test
     void testSetPositioning_InvalidLobbyCode() {
         PositioningRequest request = new PositioningRequest("lobby123", 12);
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));

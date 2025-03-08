@@ -3,6 +3,7 @@ package de.uol.swp.server.game;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
+import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
@@ -16,6 +17,7 @@ import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
+import de.uol.swp.server.cards.events.FavorableTimeEvent;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -45,6 +47,7 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
@@ -169,9 +172,9 @@ public class GameServiceTest extends EventBusBasedTest {
     /**
      * Tests the onMovePlayerRequest method with valid inputs.
      *
-     * @throws InterruptedException    if the thread is interrupted
+     * @throws InterruptedException      if the thread is interrupted
      * @throws IllegalGameStateException if the game is in an illegal state
-     * @throws GameException           if the player cannot be moved
+     * @throws GameException             if the player cannot be moved
      */
     @Test
     void testOnMovePlayerRequest() throws InterruptedException, IllegalGameStateException, GameException {
@@ -811,11 +814,75 @@ public class GameServiceTest extends EventBusBasedTest {
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
         ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
         when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
-        doThrow(IllegalGameStateException.class).when(gameManagement).endTurn("lobbyId", user);
+        doThrow(IllegalGameStateException.class).when(gameManagement)
+                                                .endTurn("lobbyId", user);
 
         postAndWait(endTurnRequest);
 
         assertInstanceOf(StatusResponse.class, event);
         assertFalse(((StatusResponse) event).isSuccess());
+    }
+
+    @Test
+    void testOnFavorableTimeEvent_Successful() throws GameException {
+        IGame game1 = new Game(2, "lobbyId");
+
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        IPlayer player = new Player(user);
+        player.setRole(new CountryDoctor());
+        game1.getPlayers()
+             .add(player);
+        game1.setCurrentPlayerIndex(0);
+        game1.setState(new PlayerTurnState());
+
+        doNothing().when(playerManagement)
+                   .discardPlayerCard("lobbyId", "testuser", 212);
+
+        FavorableTimeEvent event = new FavorableTimeEvent("lobbyId", "testuser");
+        event.setSession(session);
+
+        when(gameManagement.getGame("lobbyId")).thenReturn(game1);
+        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+
+        gameService.onFavorableTimeEvent(event);
+
+        verify(gameManagement).setFavorableTimeEventCardPlayed(true);
+        verify(playerManagement).discardPlayerCard("lobbyId", "testuser", 212);
+        verify(gameService).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+    }
+
+    @Test
+    void testOnFavorableTimeEvent_PlayerDoesNotHaveCard_Fails() throws GameException, InterruptedException {
+        IGame game1 = new Game(2, "lobbyId");
+
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        IPlayer player = new Player(user);
+        player.setRole(new CountryDoctor());
+        game1.getPlayers()
+             .add(player);
+        game1.setCurrentPlayerIndex(0);
+        game1.setState(new PlayerTurnState());
+
+        doThrow(GameException.class).when(playerManagement)
+                                    .discardPlayerCard("lobbyId", "testuser", 212);
+
+        FavorableTimeEvent event = new FavorableTimeEvent("lobbyId", "testuser");
+        event.setSession(session);
+
+        when(gameManagement.getGame("lobbyId")).thenReturn(game1);
+        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+
+        postAndWait(event);
+
+        assertInstanceOf(StatusResponse.class, this.event);
+        assertFalse(((StatusResponse) this.event).isSuccess());
     }
 }
