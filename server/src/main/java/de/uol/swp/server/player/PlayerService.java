@@ -30,6 +30,8 @@ import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.PlacePreventionMarkerState;
+import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
@@ -52,7 +54,7 @@ import java.util.Optional;
 /**
  * Service class for handling player-related operations.
  */
-public class PlayerService extends AbstractService implements CardsAmountChangeListener {
+public class PlayerService extends AbstractService implements CardsAmountChangeListener, PositionChangeListener {
     public static final Logger LOG = LogManager.getLogger(PlayerService.class);
 
     IPlayerManagement playerManagement;
@@ -87,7 +89,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      */
     @Subscribe
     public void onPositionRequest(PositioningRequest request) {
-        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
         Session session = request.getSession()
                                  .orElseThrow(() -> new IllegalStateException("Session not present"));
 
@@ -306,29 +308,50 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         }
     }
 
+    /**
+     * Handles the PlacePreventionMarkerRequest event.
+     *
+     * @param request the request to place a prevention marker
+     */
     @Subscribe
     public void onPlacePreventionMarkerRequest(PlacePreventionMarkerRequest request) {
-        IGame game = gameManagement.getGame(request.getLobbyId());
+        LOG.debug("PlacePreventionMarkerRequest received");
+        IGame game = playerManagement.getGame(request.getLobbyId());
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+
         playerManagement.placePreventionMarker(request.getLobbyId(), request.getRegionId());
-        game.setState(game.getPreviousState());
-        sendServerMessageEvent(request.getLobbyId(), "Prevention marker placed successfully");
-        sendStatusResponse(request, true, "Prevention marker placed successfully");
+        if(game.getPreviousState() instanceof WaitForPositioning waitForPositioningState && waitForPositioningState.getPositionedPlayersCount() == game.getPlayers().size()) {
+            game.setState(new PlayerTurnState());
+        } else {
+            game.setState(game.getPreviousState());
+        }
+        LOG.debug("PlacePreventionMarkerRequest processed successfully");
+        sendServerMessageEvent(request.getLobbyId(), "Präventionsmarker wurde erfolgreich platziert");
+        sendStatusResponse(request, true, "Präventionsmarker wurde erfolgreich platziert");
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
+    /**
+     * Handles the event when a player's position changes.
+     *
+     * @param player      the player whose position has changed
+     * @param oldPosition the old position of the player
+     * @param newPosition the new position of the player
+     */
     @Override
     public void onPositionChanged(IPlayer player, ICity oldPosition, ICity newPosition) {
+        LOG.debug("Nurse position change received");
         Session session = authenticationService.getSession(player.getUser())
                                                .orElseThrow(() -> new IllegalStateException("Session not present"));
         List<IRegionDTO> regions = playerManagement.determineRegionsForNurse(player, oldPosition, newPosition);
-        IGame game = gameManagement.getGame(player.getGameId());
+        IGame game = playerManagement.getGame(player.getGameId());
         game.setState(new PlacePreventionMarkerState());
-        RegionsForPreventionMarkerEvent response = new RegionsForPreventionMarkerEvent(
+        LOG.debug("Regions for nurse determined successfully");
+        RegionsForPreventionMarkerEvent event = new RegionsForPreventionMarkerEvent(
                 player.getGameId(),
                 regions
         );
-        response.setSession(session);
-        post(response);
+        event.setReceiver(List.of(session));
+        post(event);
     }
 }

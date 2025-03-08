@@ -177,7 +177,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                 .size(); i++) {
             game.getPlayers()
                 .get(i)
-                .setRole(new Nurse());
+                .setRole(allRoles.get(i));
         }
     }
 
@@ -207,9 +207,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      */
     public void setPositioning(PositioningRequest request) throws GameException, IllegalStateException {
         IGame game = getGame(request.getLobbyId());
-        IGameState gameState = game.getState();
 
-        if (!(gameState instanceof WaitForPositioning)) {
+        if (!(game.getState() instanceof WaitForPositioning waitForPositioningState)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows setting positioning", game.getGameId());
             throw new IllegalStateException("Game is not in a state that allows setting positioning");
         }
@@ -239,12 +238,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getCityNameById(request.getCityId()),
                     requestPlayer
             );
-            ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
+            waitForPositioningState.setPositionedPlayersCount(waitForPositioningState.getPositionedPlayersCount() + 1);
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
         }
-        if (((WaitForPositioning) gameState).getPositionedPlayersCount() == game.getPlayers()
-                                                                                .size()) {
+        if (game.getState() instanceof WaitForPositioning && waitForPositioningState.getPositionedPlayersCount() == game.getPlayers()
+                                                                       .size()) {
             game.setState(new PlayerTurnState());
             game.setCurrentPlayerIndex(0);
         }

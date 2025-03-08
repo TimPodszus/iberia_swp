@@ -496,6 +496,7 @@ public class GamePresenter extends AbstractPresenter {
             handleTreatWaterEvent();
         } else if(gameDTO.getState().equals(StateType.PLACE_PREVENTION_MARKER_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
             gameService.sendPlacePreventionMarkerRequest(lobbyId, regionId);
+            resetRegionStyle();
         }
     }
 
@@ -1227,6 +1228,7 @@ public class GamePresenter extends AbstractPresenter {
         for (IRegionDTO region : regions) {
             int regionId = region.getId();
             setWaterTreatments(regionId, region.getWaterTreatments());
+            setPrevMarker(regionId, region.isPreventionMarker());
         }
     }
 

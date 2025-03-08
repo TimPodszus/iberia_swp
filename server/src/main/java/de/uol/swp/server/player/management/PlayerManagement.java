@@ -443,23 +443,50 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                    .orElse(null);
     }
 
+    /**
+     * Determines the regions for the nurse player to put the preventionmarker.
+     *
+     * @param player the player whose regions are being determined
+     * @param oldPosition the old position of the player
+     * @param newPosition the new position of the player
+     * @return the list of regions for the player
+     * @throws IllegalStateException if the player is not in the correct state to sort cards
+     */
+
     public List<IRegionDTO> determineRegionsForNurse(IPlayer player, ICity oldPosition, ICity newPosition) throws IllegalStateException {
+        LOG.debug("Lobby {}: Determine Regions for Nurse", player.getGameId());
         IGame game = getGame(player.getGameId());
         removePreventionMarker(game, oldPosition);
         return RegionMapper.toDTOList(game.getRegionRepository().getRegionsByCityName(newPosition.getName()));
     }
 
+
+    /**
+     * Places a prevention marker in the specified region.
+     *
+     * @param lobbyId  the ID of the lobby
+     * @param regionId the ID of the region
+     */
     public void placePreventionMarker(String lobbyId, int regionId) {
+        LOG.debug("Lobby {}: Place Prevention Marker in Region {}", lobbyId, regionId);
         IGame game = getGame(lobbyId);
         IRegion region = game.getRegionRepository()
                              .getRegionByID(regionId);
         region.setPreventionMarker(true);
     }
 
+    /**
+     * Removes the prevention marker from the old position of the player.
+     *
+     * @param game       The game
+     * @param oldPosition The old position of the player
+     */
     private void removePreventionMarker(IGame game, ICity oldPosition) {
         if(oldPosition == null) {
+            LOG.debug("Lobby {}: Cant remove Prevention Marker from Old Position", game.getGameId());
             return;
         }
+        LOG.debug("Lobby {}: Remove Prevention Marker from Old Position {}", game.getGameId(), oldPosition.getName());
         List<IRegion> regions = game.getRegionRepository()
                                     .getRegionsByCityName(oldPosition.getName());
         regions.forEach(region -> region.setPreventionMarker(false));

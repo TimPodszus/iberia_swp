@@ -2,16 +2,20 @@ package de.uol.swp.server.player;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
+import de.uol.swp.common.player.message.event.RegionsForPreventionMarkerEvent;
 import de.uol.swp.common.player.message.request.*;
 import de.uol.swp.common.player.message.response.CardsToSortResponse;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.data.Game;
@@ -19,6 +23,8 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.PlacePreventionMarkerState;
+import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -26,6 +32,7 @@ import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.role.Nurse;
 import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
@@ -39,6 +46,7 @@ import org.mockito.*;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.*;
 
@@ -95,6 +103,15 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Subscribe
     public void onSortedCardsRequest(SortedCardsRequest event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onPlacePreventionMarkerRequest (PlacePreventionMarkerRequest event) {
+        super.handleEvent(event);
+    }
+    @Subscribe
+    public void onRegionsForPreventionMarkerEvent(RegionsForPreventionMarkerEvent event) {
         super.handleEvent(event);
     }
 
@@ -300,11 +317,112 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
         when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
 
-        doThrow(new IllegalStateException("Test exception")).when(playerManagement).sortCards("validGameId", user, cards);
+        doThrow(new IllegalStateException("Test exception")).when(playerManagement).sortCards(LOBBY_ID, user, cards);
 
         postAndWait(request);
 
         verify(playerManagement, times(1)).sortCards(LOBBY_ID, user, cards);
         assertInstanceOf(StatusResponse.class, super.event);
+    }
+
+    @Test
+    void testOnPlacePreventionMarkerRequest_WaitForPositioning() throws InterruptedException {
+        PlacePreventionMarkerRequest request = new PlacePreventionMarkerRequest(LOBBY_ID, 1);
+
+        when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
+        game.setState(new PlacePreventionMarkerState());
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).placePreventionMarker(LOBBY_ID, 1);
+        assertInstanceOf(BoardUpdateEvent.class, super.event);
+    }
+
+    @Test
+    void testOnPlacePreventionMarkerRequest_WaitForPositioningFullFilled() throws InterruptedException {
+        PlacePreventionMarkerRequest request = new PlacePreventionMarkerRequest(LOBBY_ID, 1);
+        IPlayer player = mock(IPlayer.class);
+        when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
+        WaitForPositioning waitForPositioning = new WaitForPositioning();
+        waitForPositioning.setPositionedPlayersCount(1);
+        game.setState(waitForPositioning);
+        game.setState(new PlacePreventionMarkerState());
+        game.getPlayers().add(player);
+        when(player.getUser()).thenReturn(user);
+        when(player.getRole()).thenReturn(new Nurse());
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).placePreventionMarker(LOBBY_ID, 1);
+        assertInstanceOf(BoardUpdateEvent.class, super.event);
+    }
+
+    @Test
+    void testOnPositionChanged() {
+        IPlayer player = mock(IPlayer.class);
+        ICity oldPosition = mock(ICity.class);
+        ICity newPosition = mock(ICity.class);
+        IRegionDTO regionDTO = mock(IRegionDTO.class);
+        List<IRegionDTO> regions = List.of(regionDTO);
+
+        when(player.getUser()).thenReturn(user);
+        when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
+        when(playerManagement.determineRegionsForNurse(player, oldPosition, newPosition)).thenReturn(regions);
+        when(player.getGameId()).thenReturn(LOBBY_ID);
+        when(playerManagement.getGame(LOBBY_ID)).thenReturn(game);
+
+        playerService.onPositionChanged(player, oldPosition, newPosition);
+
+        verify(playerManagement).determineRegionsForNurse(player, oldPosition, newPosition);
+        verify(playerManagement).getGame(LOBBY_ID);
+        assertInstanceOf(PlacePreventionMarkerState.class, game.getState());
+        assertInstanceOf(RegionsForPreventionMarkerEvent.class, super.event);
+    }
+
+    @Test
+    void testOnPositionRequest() throws PlayerManagementException, GameException, InterruptedException {
+        PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
+        request.setSession(session);
+
+        IPlayer player = mock(IPlayer.class);
+        when(playerManagement.getPlayer(game, user.getUsername())).thenReturn(player);
+        when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
+
+        postAndWait(request);
+
+        verify(player).setPositionChangeListener(playerService);
+        verify(gameManagement).setPositioning(request);
+        verify(playerManagement).getPlayer(game, user.getUsername());
+        verify(lobbyManagement).getLobby(LOBBY_ID);
+        assertInstanceOf(BoardUpdateEvent.class, super.event);
+    }
+
+    @Test
+    void testOnPositionRequest_PlayerManagementException() throws PlayerManagementException, InterruptedException {
+        PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
+        request.setSession(session);
+
+        when(playerManagement.getPlayer(game, user.getUsername())).thenThrow(new PlayerManagementException("Test exception"));
+
+        postAndWait(request);
+
+        verify(playerManagement).getPlayer(game, user.getUsername());
+        assertInstanceOf(StatusResponse.class, super.event);
+        assertEquals("Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand", ((StatusResponse) super.event).getDescription());
+    }
+
+    @Test
+    void testOnPositionRequest_GameException() throws PlayerManagementException, GameException, InterruptedException {
+        PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
+        request.setSession(session);
+
+        IPlayer player = mock(IPlayer.class);
+        when(playerManagement.getPlayer(game, user.getUsername())).thenReturn(player);
+        doThrow(new GameException("Test exception")).when(gameManagement).setPositioning(request);
+
+        postAndWait(request);
+
+        verify(gameManagement).setPositioning(request);
+        assertInstanceOf(StatusResponse.class, super.event);
+        assertEquals("Position konnte nicht gesetzt werden", ((StatusResponse) super.event).getDescription());
     }
 }
