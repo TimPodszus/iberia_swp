@@ -1,6 +1,6 @@
-package de.uol.swp.common.player.message.response;
+package de.uol.swp.common.player.message.event;
 
-import de.uol.swp.common.game.message.AbstractGameResponse;
+import de.uol.swp.common.game.message.AbstractGameEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import lombok.Getter;
 
@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Objects;
 
 @Getter
-public class RegionsForPreventionMarkerResponse extends AbstractGameResponse {
+public class RegionsForPreventionMarkerEvent extends AbstractGameEvent {
     List<IRegionDTO> regions;
 
-    public RegionsForPreventionMarkerResponse(String lobbyId, boolean success, List<IRegionDTO> regions) {
-        super(lobbyId, success);
+    public RegionsForPreventionMarkerEvent(String lobbyId, List<IRegionDTO> regions) {
+        super(lobbyId);
         this.regions = regions;
     }
 
@@ -21,7 +21,7 @@ public class RegionsForPreventionMarkerResponse extends AbstractGameResponse {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        RegionsForPreventionMarkerResponse that = (RegionsForPreventionMarkerResponse) o;
+        RegionsForPreventionMarkerEvent that = (RegionsForPreventionMarkerEvent) o;
         return Objects.equals(regions, that.regions);
     }
 

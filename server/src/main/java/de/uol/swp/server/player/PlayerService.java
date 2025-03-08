@@ -13,7 +13,7 @@ import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
 import de.uol.swp.common.player.message.response.DrawPlayerCardResponse;
 import de.uol.swp.common.player.message.request.PlacePreventionMarkerRequest;
-import de.uol.swp.common.player.message.response.RegionsForPreventionMarkerResponse;
+import de.uol.swp.common.player.message.event.RegionsForPreventionMarkerEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
@@ -66,10 +66,9 @@ public class PlayerService extends AbstractService implements PositionChangeList
         super(bus);
         this.playerManagement = playerManagement;
         this.gameManagement = gameManagement;
-
+        this.lobbyManagement = lobbyManagement;
         playerManagement.setCardsAmountChangeListener(this);
 
-        this.lobbyManagement = lobbyManagement;
     }
 
     /**
@@ -247,10 +246,12 @@ public class PlayerService extends AbstractService implements PositionChangeList
 
     @Subscribe
     public void onPlacePreventionMarkerRequest(PlacePreventionMarkerRequest request) {
-        playerManagement.placePreventionMarker(request.getLobbyId(), request.getRegionId());
         IGame game = gameManagement.getGame(request.getLobbyId());
-        game.setState(game.getPreviousState());
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        playerManagement.placePreventionMarker(request.getLobbyId(), request.getRegionId());
+        game.setState(game.getPreviousState());
+        sendServerMessageEvent(request.getLobbyId(), "Prevention marker placed successfully");
+        sendStatusResponse(request, true, "Prevention marker placed successfully");
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
@@ -261,9 +262,8 @@ public class PlayerService extends AbstractService implements PositionChangeList
         List<IRegionDTO> regions = playerManagement.determineRegionsForNurse(player, oldPosition, newPosition);
         IGame game = gameManagement.getGame(player.getGameId());
         game.setState(new PlacePreventionMarkerState());
-        RegionsForPreventionMarkerResponse response = new RegionsForPreventionMarkerResponse(
+        RegionsForPreventionMarkerEvent response = new RegionsForPreventionMarkerEvent(
                 player.getGameId(),
-                true,
                 regions
         );
         response.setSession(session);

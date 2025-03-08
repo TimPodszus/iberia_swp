@@ -36,7 +36,7 @@ import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
-import de.uol.swp.common.player.message.response.RegionsForPreventionMarkerResponse;
+import de.uol.swp.common.player.message.event.RegionsForPreventionMarkerEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
@@ -1881,7 +1881,7 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     @Subscribe
-    public void onRegionsForPreventionMarkerResponse(RegionsForPreventionMarkerResponse response){
+    public void onRegionsForPreventionMarkerResponse(RegionsForPreventionMarkerEvent response){
         for (IRegionDTO region : response.getRegions()) {
             Node stackPane = mapPane.lookup(REGION_ID + region.getId());
             stackPane.getStyleClass()
