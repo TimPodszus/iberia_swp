@@ -305,4 +305,27 @@ class PlayerManagementTest {
                 "Expected " + "IllegalStateException when the discard pile is empty"
         );
     }
+
+    @Test
+    void testGetCard() throws PlayerManagementException {
+        game.getPlayers()
+            .add(player);
+        ICard card = new CityCard(1, "test", mock(ICity.class));
+        when(player.getCards()).thenReturn(List.of(card));
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+
+        assertEquals(card, playerManagement.getCard(game.getGameId(), "testUser", 1));
+    }
+
+    @Test
+    void testGetCard_InvalidId() throws PlayerManagementException {
+        game.getPlayers()
+            .add(player);
+        when(player.getCards()).thenReturn(List.of());
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+
+        assertNull(playerManagement.getCard(game.getGameId(), "testUser", 0));
+    }
 }
