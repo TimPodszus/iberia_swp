@@ -74,7 +74,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         }
         response.setSession(session);
         post(response);
-        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
@@ -88,7 +88,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         AbstractResponseMessage response;
         Session session = request.getSession()
                                  .orElseThrow(SessionNotFoundException::new);
-        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
         if (!game.getCurrentPlayer()
                  .getUser()
                  .equals(UserMapper.toUser(session.getUser()))) {
@@ -105,10 +105,9 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      * Handles the ShareRideRequest event.
      *
      * @param request the request to share a ride
-     * @throws PlayerManagementException if there is an error in player management
      */
     @Subscribe
-    public void onShareRideRequest(ShareRideRequest request) throws PlayerManagementException {
+    public void onShareRideRequest(ShareRideRequest request) {
         if (request.isConfirmed()) {
             Session session = request.getSession()
                                      .orElseThrow(SessionNotFoundException::new);
@@ -121,7 +120,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         }
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
 
-        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
@@ -133,7 +132,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
     @Subscribe
     public void onDiscardPlayerCardRequest(DiscardPlayerCardRequest request) {
         LOG.debug("DiscardPlayerCardRequest received");
-        IGame game = gameManagement.getGame(request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
         Session session = request.getSession()
                                  .orElseThrow(SessionNotFoundException::new);
 
@@ -169,7 +168,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      */
     @Override
     public void onCardsAmountChanged(String lobbyId, String username, List<ICardDTO> cards) {
-        IGame game = gameManagement.getGame(lobbyId);
+        IGame game = playerManagement.getGame(lobbyId);
         IPlayer player = game.getPlayer(username);
         List<ICard> playerCards = player.getCards();
         if (playerCards.size() > 7) {

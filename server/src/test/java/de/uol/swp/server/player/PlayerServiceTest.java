@@ -88,7 +88,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
         GameStore.getInstance()
                  .addGame(LOBBY_ID, game);
 
-        when(gameManagement.getGame(LOBBY_ID)).thenReturn(game);
+        when(playerManagement.getGame(LOBBY_ID)).thenReturn(game);
     }
 
     @Test
@@ -156,7 +156,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
         postAndWait(drawInfectionCardRequest);
 
-        verify(gameManagement, times(1)).getGame(LOBBY_ID);
+        verify(playerManagement, times(1)).getGame(LOBBY_ID);
         verify(gameManagement, times(1)).drawInfectionCard(game);
         assertInstanceOf(BoardUpdateEvent.class, super.event);
     }
@@ -175,7 +175,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
         postAndWait(drawInfectionCardRequest);
 
-        verify(gameManagement, times(1)).getGame(LOBBY_ID);
+        verify(playerManagement, times(1)).getGame(LOBBY_ID);
         assertInstanceOf(StatusResponse.class, super.event);
     }
 

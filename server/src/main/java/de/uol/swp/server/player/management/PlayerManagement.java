@@ -3,6 +3,7 @@ package de.uol.swp.server.player.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.*;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Objects;
 
 
-public class PlayerManagement implements IPlayerManagement {
+public class PlayerManagement extends AbstractManagement implements IPlayerManagement {
     private final ICityManagement cityManagement;
 
     /**
@@ -239,23 +240,8 @@ public class PlayerManagement implements IPlayerManagement {
         }
     }
 
-    /**
-     * Retrieves a specific card from a player's hand.
-     * <p>
-     * This method retrieves the game instance using the provided lobby ID, then finds the player by their name.
-     * It then searches the player's hand for a card with the specified card ID and returns it.
-     * If the card is not found, it returns null.
-     *
-     * @param lobbyId    the ID of the lobby in which the game is happening
-     * @param playerName the name of the player whose card is to be retrieved
-     * @param cardId     the ID of the card to be retrieved
-     * @return the card with the specified ID, or null if not found
-     * @throws PlayerManagementException if the player is not found
-     */
-    public ICard getCard(String lobbyId, String playerName, int cardId) throws PlayerManagementException {
-        IGame game = GameStore.getInstance()
-                              .getGame(lobbyId);
-        IPlayer player = getPlayer(game, playerName);
+    public ICard getCard(String lobbyId, String playerName, int cardId) {
+        IPlayer player = getGame(lobbyId).getPlayer(playerName);
         return player.getCards()
                      .stream()
                      .filter(c -> Objects.equals(c.getId(), cardId))
@@ -263,42 +249,8 @@ public class PlayerManagement implements IPlayerManagement {
                      .orElse(null);
     }
 
-    /**
-     * Retrieves a player from the game by their username.
-     * <p>
-     * This method searches the list of players in the game for a player with the specified username.
-     * If the player is found, it is returned. If the player is not found, a PlayerManagementException is thrown.
-     *
-     * @param game       the game instance from which the player is to be retrieved
-     * @param playerName the username of the player to be retrieved
-     * @return the player with the specified username
-     * @throws PlayerManagementException if the player is not found
-     */
-    private IPlayer getPlayer(IGame game, String playerName) throws PlayerManagementException {
-        return game.getPlayers()
-                   .stream()
-                   .filter(p -> p.getUser()
-                                 .getUsername()
-                                 .equals(playerName))
-                   .findFirst()
-                   .orElseThrow(() -> new PlayerManagementException("Player not found"));
-    }
-
-    /**
-     * Sets the current position of a player in the game.
-     * <p>
-     * This method retrieves the game instance using the provided lobby ID, then finds the player by their name.
-     * It then retrieves the city with the specified city ID and sets it as the player's current position.
-     *
-     * @param lobbyId    the ID of the lobby in which the game is happening
-     * @param playerName the name of the player whose position is to be set
-     * @param cityId     the ID of the city to which the player will be moved
-     * @throws PlayerManagementException if the player is not found
-     */
-    public void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException {
-        IGame game = GameStore.getInstance()
-                              .getGame(lobbyId);
-        IPlayer player = getPlayer(game, playerName);
+    public void setPlayerLocation(String lobbyId, String playerName, int cityId) {
+        IPlayer player = getGame(lobbyId).getPlayer(playerName);
         ICity city = cityManagement.getCity(lobbyId, cityId);
         player.setCurrentPosition(city);
     }

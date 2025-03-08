@@ -101,7 +101,7 @@ public interface IPlayerManagement {
      * @param playerName the name of the player
      * @param cityId     the id of the city where the player is to be located
      */
-    void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException;
+    void setPlayerLocation(String lobbyId, String playerName, int cityId);
 
     /**
      * Shuffles the infection cards in the discard pile and adds them to the draw pile.
@@ -112,4 +112,12 @@ public interface IPlayerManagement {
      * Draws a player card from the DiscardPile. The specific behavior of this method should be defined.
      */
     InfectionCard drawBottomInfectionCard(IGame game) throws IllegalStateException;
+
+    /**
+     * Returns the game with the specified lobby ID.
+     *
+     * @param lobbyId the ID of the lobby
+     * @return the game with the specified lobby ID
+     */
+    IGame getGame(String lobbyId);
 }
