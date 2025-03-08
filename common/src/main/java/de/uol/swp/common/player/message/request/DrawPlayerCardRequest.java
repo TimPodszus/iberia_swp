@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 @Getter
 public class DrawPlayerCardRequest extends AbstractGameRequest {
-    
+
     /**
      * Constructs a new DrawPlayerCardRequest.
      *

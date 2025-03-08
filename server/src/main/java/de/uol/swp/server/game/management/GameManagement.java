@@ -30,7 +30,6 @@ import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.plague.management.IPlagueManagement;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -322,14 +321,21 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
 
     private boolean roleActionOneAvailable(String lobbyCode) {
-        if (getGame(lobbyCode).getCurrentPlayer()
+        IGame game = getGame(lobbyCode);
+        if (game.getCurrentPlayer()
                               .getRole()
                               .getName()
                               .equals(RoleEnum.POLITICIAN)) {
-            return getGame(lobbyCode).getCurrentPlayer()
+            return game.getCurrentPlayer()
                                      .getCards()
                                      .stream()
-                                     .anyMatch(card -> card instanceof CityCard);
+                                     .anyMatch(CityCard.class::isInstance);
+        } else if (game.getCurrentPlayer()
+                       .getRole()
+                       .getName()
+                       .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)){
+            return !game.getPlayerCardDrawPile()
+                        .isEmpty();
         }
         return false;
     }
@@ -342,11 +348,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             boolean playerHasCurrentCityCard = getGame(lobbyCode).getCurrentPlayer()
                                                                  .getCards()
                                                                  .stream()
-                                                                 .anyMatch(card -> card instanceof CityCard);
+                                                                 .anyMatch(CityCard.class::isInstance);
 
             boolean currentCityCardIsOnDiscardPile = getGame(lobbyCode).getPlayerCardDiscardPile()
                                                                        .stream()
-                                                                       .anyMatch(card -> card instanceof CityCard);
+                                                                       .anyMatch(CityCard.class::isInstance);
 
             return playerHasCurrentCityCard || currentCityCardIsOnDiscardPile;
         }

@@ -35,6 +35,7 @@ import de.uol.swp.common.plague.dto.IPlagueDTO;
 import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
 import de.uol.swp.common.player.message.event.RegionsForPreventionMarkerEvent;
 import de.uol.swp.common.region.IRegionDTO;
@@ -48,8 +49,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
@@ -677,7 +678,11 @@ public class GamePresenter extends AbstractPresenter {
                     });
                 });
             }
-
+        } else if (gameDTO.getCurrentPlayer()
+                          .getRole()
+                          .getName()
+                          .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)) {
+            gameService.sendGetCardsToSortRequest(lobbyId);
         }
     }
 
@@ -691,7 +696,6 @@ public class GamePresenter extends AbstractPresenter {
                    .equals(RoleEnum.POLITICIAN)) {
             gameService.politicianActionTradeWithDiscardPile(this.gameDTO, lobbyId);
         }
-
     }
 
     /**
@@ -1867,6 +1871,19 @@ public class GamePresenter extends AbstractPresenter {
 
         EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
         Platform.runLater(dialog::showEndGameDialog);
+    }
+
+    @Subscribe
+    public void onCardsToSortResponse(CardsToSortResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+        Platform.runLater(() -> {
+            CardsToSortDialog cardsToSortDialog = new CardsToSortDialog(true, response.getCards());
+            cardsToSortDialog.showAndWait()
+                             .ifPresent(result -> gameService.sendSortedCardRequest(lobbyId, result));
+        });
     }
 
     @Subscribe

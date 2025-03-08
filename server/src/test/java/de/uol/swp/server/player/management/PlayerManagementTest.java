@@ -18,11 +18,15 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.DrawCardState;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
+import de.uol.swp.server.role.Sailor;
+import de.uol.swp.server.role.ScientistAtTheRoyalAcademy;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -164,7 +168,7 @@ class PlayerManagementTest {
     @Test
     void discardCard_DiscardSingleCard() throws GameException {
         ICard infectionCard = new InfectionCard(1, "test", mock(ICity.class));
-        ArrayList<ICard> cards = new ArrayList<ICard>();
+        ArrayList<ICard> cards = new ArrayList<>();
         cards.add(infectionCard);
         when(player.getUser()).thenReturn(user);
         when(user.getUsername()).thenReturn("testUser");
@@ -190,7 +194,7 @@ class PlayerManagementTest {
     void discardCards_DiscardMultipleCards() throws GameException {
         ICard card1 = new InfectionCard(1, "test", mock(ICity.class));
         ICard card2 = new CityCard(1, "test", mock(ICity.class));
-        ArrayList<ICard> cards = new ArrayList<ICard>();
+        ArrayList<ICard> cards = new ArrayList<>();
         cards.add(card1);
         cards.add(card2);
 
@@ -304,5 +308,158 @@ class PlayerManagementTest {
                 () -> playerManagement.drawBottomInfectionCard(game),
                 "Expected " + "IllegalStateException when the discard pile is empty"
         );
+    }
+
+    @Test
+    void testGetCardsToSort() throws GameException, IllegalGameStateException {
+        ICard card = mock(ICard.class);
+        game.setState(new PlayerTurnState());
+        game.getPlayerCardDrawPile().add(card);
+        game.getPlayerCardDrawPile().add(card);
+        game.getPlayerCardDrawPile().add(card);
+        game.getPlayers().clear();
+        game.getPlayers().add(player);
+        when(player.getUser()).thenReturn(user);
+        IPlayerManagement spyPlayerManagement = spy(playerManagement);
+        doReturn(game).when(spyPlayerManagement).getGame("lobbyId");
+        when(player.getRole()).thenReturn(new ScientistAtTheRoyalAcademy());
+
+        List<ICardDTO> cards = spyPlayerManagement.getCardsToSort("lobbyId", user);
+        assertNotNull(cards);
+    }
+
+    @Test
+    void testSortCards() throws GameException{
+        ICard card1 = mock(ICard.class);
+        ICard card2 = mock(ICard.class);
+        ICard card3 = mock(ICard.class);
+        when(card1.getId()).thenReturn(1);
+        when(card2.getId()).thenReturn(2);
+        when(card3.getId()).thenReturn(3);
+
+        game.setState(new PlayerTurnState());
+        game.getPlayerCardDrawPile().clear();
+        game.getPlayerCardDrawPile().add(card1);
+        game.getPlayerCardDrawPile().add(card2);
+        game.getPlayerCardDrawPile().add(card3);
+        game.getPlayers().clear();
+        game.getPlayers().add(player);
+        when(player.getUser()).thenReturn(user);
+        IPlayerManagement spyPlayerManagement = spy(playerManagement);
+        doReturn(game).when(spyPlayerManagement).getGame("lobbyId");
+        when(player.getRole()).thenReturn(new ScientistAtTheRoyalAcademy());
+
+        List<ICardDTO> cards = new ArrayList<>();
+        ICardDTO cardDTO1 = mock(ICardDTO.class);
+        ICardDTO cardDTO2 = mock(ICardDTO.class);
+        ICardDTO cardDTO3 = mock(ICardDTO.class);
+        when(cardDTO1.getId()).thenReturn(3);
+        when(cardDTO2.getId()).thenReturn(2);
+        when(cardDTO3.getId()).thenReturn(1);
+        cards.add(cardDTO1);
+        cards.add(cardDTO2);
+        cards.add(cardDTO3);
+
+        spyPlayerManagement.sortCards("lobbyId", user, cards);
+
+        List<ICard> sortedDrawPile = game.getPlayerCardDrawPile();
+        assertEquals(card3, sortedDrawPile.get(0));
+        assertEquals(card2, sortedDrawPile.get(1));
+        assertEquals(card1, sortedDrawPile.get(2));
+    }
+
+    @Test
+    void testDrawPlayerCard_EmptyDrawPile_ThrowsException() {
+        game.getPlayerCardDrawPile().clear();
+        game.getPlayers().add(player);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+
+        assertThrows(PlayerManagementException.class, () -> playerManagement.drawPlayerCard(game.getGameId(), user));
+    }
+
+    @Test
+    void testSetPlayerLocation_PlayerNotFound_ThrowsException() {
+       game.getPlayers().clear();
+
+        assertThrows(PlayerManagementException.class, () -> playerManagement.setPlayerLocation(game.getGameId(), "nonExistentPlayer", 1));
+    }
+
+    @Test
+    void testGetCard_PlayerHasCard_ReturnsCard() throws PlayerManagementException {
+        ICard card = mock(ICard.class);
+        when(card.getId()).thenReturn(1);
+        game.getPlayers().add(player);
+        when(player.getCards()).thenReturn(List.of(card));
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+
+        ICard result = playerManagement.getCard(game.getGameId(), "testUser", 1);
+
+        assertEquals(card, result);
+    }
+
+    @Test
+    void testSortCards_NotCurrentPlayerOrNotScientist_ThrowsException() {
+        ICardDTO cardDTO = mock(ICardDTO.class);
+        List<ICardDTO> cards = List.of(cardDTO);
+        game.getPlayers().add(player);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+        when(player.getRole()).thenReturn(new Sailor());
+
+        IPlayerManagement spyPlayerManagement = spy(playerManagement);
+        doReturn(game).when(spyPlayerManagement).getGame("lobbyId");
+        doReturn(player).when(spyPlayerManagement).getPlayerByUser(user, game);
+
+        GameException thrown = assertThrows(
+                GameException.class,
+                () -> spyPlayerManagement.sortCards("lobbyId", user, cards),
+                "Expected sortCards() to throw, but it did not"
+        );
+
+        assertTrue(thrown.getMessage().contains("It is not your turn or your role is not scientist of the royal academy"));
+    }
+
+    @Test
+    void testGetCardsToSort_NotCurrentPlayerOrNotScientist_ThrowsException() {
+        game.getPlayers().add(player);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+        game.setState(new PlayerTurnState());
+        when(player.getRole()).thenReturn(new Sailor());
+
+        IPlayerManagement spyPlayerManagement = spy(playerManagement);
+        doReturn(game).when(spyPlayerManagement).getGame("lobbyId");
+        doReturn(player).when(spyPlayerManagement).getPlayerByUser(user, game);
+
+        GameException thrown = assertThrows(
+                GameException.class,
+                () -> spyPlayerManagement.getCardsToSort("lobbyId", user),
+                "Expected getCardsToSort() to throw, but it did not"
+        );
+
+        assertTrue(thrown.getMessage().contains("It is not your turn or your role is not scientist of the royal academy"));
+    }
+
+    @Test
+    void testGetCardsToSort_NotPlayerTurnState_ThrowsException() {
+        game.setState(new DrawCardState()); // Not PlayerTurnState
+        game.getPlayers().add(player);
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+        when(player.getRole()).thenReturn(new ScientistAtTheRoyalAcademy());
+
+        IPlayerManagement spyPlayerManagement = spy(playerManagement);
+        doReturn(game).when(spyPlayerManagement).getGame("lobbyId");
+        doReturn(player).when(spyPlayerManagement).getPlayerByUser(user, game);
+
+        IllegalGameStateException thrown = assertThrows(
+                IllegalGameStateException.class,
+                () -> spyPlayerManagement.getCardsToSort("lobbyId", user),
+                "Expected getCardsToSort() to throw, but it did not"
+        );
+
+        assertTrue(thrown.getMessage().contains("The game´s current state is not playerturnstate"));
     }
 }
