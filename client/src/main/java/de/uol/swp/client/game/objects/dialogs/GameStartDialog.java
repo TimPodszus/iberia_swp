@@ -78,7 +78,7 @@ public class GameStartDialog {
             try {
                 Desktop.getDesktop()
                        .browse(new URI(
-                               "https://www.brettspielversand.de/mediafiles/spieleanleitungen/zman/114-0021_Pandemic_Iberia_Anleitung.pdf"));
+                               "https://images-cdn.zmangames.com/us-east-1/filer_public/c3/62/c362beb7-bb07-4834-92f9-693de3f4eda5/zm7120_pandemic_iberia_rules.pdf"));
             } catch (IOException | URISyntaxException ioException) {
                 Logger.getLogger(GameService.class.getName())
                       .log(Level.WARNING, "Browseraufruf der Regeln hat nicht funktioniert", ioException);

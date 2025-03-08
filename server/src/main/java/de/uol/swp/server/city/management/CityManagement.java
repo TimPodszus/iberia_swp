@@ -9,6 +9,7 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.StartState;
@@ -290,9 +291,13 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         }
     }
 
-    public void buildHospital(String lobbyId, String userName, Integer cityId) {
+    public void buildHospital(
+            String lobbyId,
+            String username,
+            Integer cityId
+    ) throws CityManagementException, GameException {
         IGame game = getGame(lobbyId);
-        IPlayer player = game.getPlayer(userName);
+        IPlayer player = game.getPlayer(username);
 
         ICity city = getCity(lobbyId, cityId);
 
@@ -302,12 +307,17 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                                                                                                                       .equals(city))
                                          .findFirst();
 
-        if (!isHospitalBuildable(lobbyId, userName)) {
+        if (!isHospitalBuildable(lobbyId, username)) {
             throw new CityManagementException("Hospital cannot be built");
         }
 
         // 'Optional.get()' without 'isPresent()' check -> already checked in isHospitalBuildable()
-        new PlayerManagement(this).discardCard(lobbyId, player, cityCard.get());
+        new PlayerManagement(this).discardPlayerCard(
+                lobbyId,
+                username,
+                cityCard.get()
+                        .getId()
+        );
         buildHospitalWithEventCard(lobbyId, cityId);
 
         if (game.getState() instanceof PlayerTurnState playerTurnState) {

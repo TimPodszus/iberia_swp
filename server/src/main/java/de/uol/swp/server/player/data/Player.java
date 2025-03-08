@@ -28,6 +28,12 @@ public class Player implements IPlayer {
     @Setter
     private PositionChangeListener positionChangeListener;
 
+
+    @Override
+    public void addCard(ICard card) {
+        cards.add(card);
+    }
+
     @Override
     public ICard playCard(int cardId) {
         for (ICard card : cards) {

@@ -7,15 +7,19 @@ import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
+import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
+import de.uol.swp.common.player.message.request.DiscardPlayerCardRequest;
 import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
-import de.uol.swp.common.player.message.request.DrawPlayerCardResponse;
+import de.uol.swp.common.player.message.response.DrawPlayerCardResponse;
 import de.uol.swp.common.player.message.request.PlacePreventionMarkerRequest;
 import de.uol.swp.common.player.message.response.RegionsForPreventionMarkerResponse;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.cards.CardMapper;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -24,11 +28,15 @@ import de.uol.swp.server.game.states.PlacePreventionMarkerState;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
+import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -37,7 +45,7 @@ import java.util.List;
 /**
  * Service class for handling player-related operations.
  */
-public class PlayerService extends AbstractService implements PositionChangeListener {
+public class PlayerService extends AbstractService implements PositionChangeListener, CardsAmountChangeListener {
     static final Logger LOG = LogManager.getLogger(PlayerService.class);
 
     private final IPlayerManagement playerManagement;
@@ -58,6 +66,8 @@ public class PlayerService extends AbstractService implements PositionChangeList
         super(bus);
         this.playerManagement = playerManagement;
         this.gameManagement = gameManagement;
+
+        playerManagement.setCardsAmountChangeListener(this);
 
         this.lobbyManagement = lobbyManagement;
     }
@@ -106,7 +116,7 @@ public class PlayerService extends AbstractService implements PositionChangeList
     public void onDrawPlayerCardRequest(DrawPlayerCardRequest request) {
         AbstractResponseMessage response;
         Session session = request.getSession()
-                                 .orElseThrow(() -> new IllegalStateException("Session not present"));
+                                 .orElseThrow(SessionNotFoundException::new);
         try {
             ICardDTO card = playerManagement.drawPlayerCard(request.getLobbyId(), UserMapper.toUser(session.getUser()));
             response = new DrawPlayerCardResponse(request.getLobbyId(), true, "Card drawn successfully", card);
@@ -128,7 +138,7 @@ public class PlayerService extends AbstractService implements PositionChangeList
     public void onDrawInfectionCardRequest(DrawInfectionCardRequest request) {
         AbstractResponseMessage response;
         Session session = request.getSession()
-                                 .orElseThrow(() -> new IllegalStateException("Session not present"));
+                                 .orElseThrow(SessionNotFoundException::new);
         IGame game = gameManagement.getGame(request.getLobbyId());
         if (!game.getCurrentPlayer()
                  .getUser()
@@ -152,7 +162,7 @@ public class PlayerService extends AbstractService implements PositionChangeList
     public void onShareRideRequest(ShareRideRequest request) throws PlayerManagementException {
         if (request.isConfirmed()) {
             Session session = request.getSession()
-                                     .orElseThrow(() -> new IllegalStateException("Session not present"));
+                                     .orElseThrow(SessionNotFoundException::new);
             playerManagement.setPlayerLocation(
                     request.getLobbyId(),
                     session.getUser()
@@ -164,6 +174,75 @@ public class PlayerService extends AbstractService implements PositionChangeList
 
         IGame game = gameManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    /**
+     * Handles the DrawPlayerCardRequest event.
+     *
+     * @param request the request to draw a player card
+     */
+    @Subscribe
+    public void onDiscardPlayerCardRequest(DiscardPlayerCardRequest request) {
+        LOG.debug("DiscardPlayerCardRequest received");
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        Session session = request.getSession()
+                                 .orElseThrow(SessionNotFoundException::new);
+
+        try {
+            playerManagement.discardPlayerCard(
+                    request.getLobbyId(),
+                    session.getUser()
+                           .getUsername(),
+                    request.getCard()
+                           .getId()
+            );
+
+            LOG.debug("DiscardPlayerCardRequest processed successfully");
+            post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        } catch (GameException e) {
+            LOG.error("Error discarding a player card: {}", e.getMessage());
+            StatusResponse response = new StatusResponse(
+                    request.getLobbyId(),
+                    false,
+                    "Error discarding a player card: " + e.getMessage()
+            );
+            response.setSession(session);
+            post(response);
+        }
+    }
+
+    /**
+     * Handles the event when the amount of cards a player has changes.
+     *
+     * @param lobbyId  the ID of the lobby
+     * @param username the username of the player
+     * @param cards    the list of card DTOs
+     */
+    @Override
+    public void onCardsAmountChanged(String lobbyId, String username, List<ICardDTO> cards) {
+        IGame game = gameManagement.getGame(lobbyId);
+        IPlayer player = game.getPlayer(username);
+        List<ICard> playerCards = player.getCards();
+        if (playerCards.size() > 7) {
+            LOG.info("Player {} has exceeded the card limit", username);
+            sendDiscardPlayerCardEvent(game.getGameId(), player.getUser(), CardMapper.toMixedCardDTOList(playerCards));
+        }
+    }
+
+    /**
+     * Sends an event to discard a player's cards.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param user    the user whose cards are to be discarded
+     * @param cards   the list of card DTOs to be discarded
+     */
+    public void sendDiscardPlayerCardEvent(String lobbyId, IUser user, List<ICardDTO> cards) {
+        DiscardPlayerCardEvent event = new DiscardPlayerCardEvent(lobbyId, cards);
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow();
+        event.setSession(session);
+        bus.post(event);
+        LOG.debug("Sent DiscardPlayerCardEvent to user {}", user.getUsername());
     }
 
     @Subscribe

@@ -4,15 +4,20 @@ import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
+import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
+import de.uol.swp.common.player.message.request.DiscardPlayerCardRequest;
 import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
 import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
 import de.uol.swp.common.user.Session;
+import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -21,6 +26,7 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Sailor;
+import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.usermanagement.UserMapper;
@@ -29,28 +35,34 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.*;
 
 public class PlayerServiceTest extends EventBusBasedTest {
+    private static final String LOBBY_ID = "validGameId";
     @Mock
     private IPlayerManagement playerManagement;
 
     @Mock
     private IGameManagement gameManagement;
 
-    private final IGame game = new Game(1, "validGameId");
-
     @Mock
-    private DrawPlayerCardRequest request;
+    private AuthenticationService authenticationService;
+
+    private final IGame game = new Game(1, LOBBY_ID);
 
     @Mock
     private ICardDTO cardDTO;
 
-    @Mock
-    private Session session;
+    private final IUser user = new User("testUser", "testPassword");
+
+    private final Session session = UUIDSession.create(user);
 
     private PlayerService playerService;
 
@@ -67,38 +79,42 @@ public class PlayerServiceTest extends EventBusBasedTest {
         super.handleEvent(event);
     }
 
+    @Subscribe
+    public void onDiscardPlayerCardEvent(DiscardPlayerCardEvent event) {
+        super.handleEvent(event);
+    }
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         playerService = new PlayerService(super.getBus(), playerManagement, gameManagement, lobbyManagement);
-        IUser user = new User("testUser", "testPassword");
-
-        when(request.getLobbyId()).thenReturn("validGameId");
-
-        when(session.getUser()).thenReturn(UserMapper.toDTO(user));
-        when(request.getSession()).thenReturn(Optional.of(session));
 
         GameStore.getInstance()
-                 .addGame("validGameId", game);
+                 .addGame(LOBBY_ID, game);
+
+        when(gameManagement.getGame(LOBBY_ID)).thenReturn(game);
     }
 
     @Test
     void onDrawPlayerCardRequest_Success() throws PlayerManagementException, InterruptedException {
-        when(playerManagement.drawPlayerCard(eq("validGameId"), any(IUser.class))).thenReturn(cardDTO);
-        when(gameManagement.getGame("validGameId")).thenReturn(game);
+        DrawPlayerCardRequest request = new DrawPlayerCardRequest(LOBBY_ID);
+        request.setSession(session);
+
+        when(playerManagement.drawPlayerCard(eq(LOBBY_ID), any(IUser.class))).thenReturn(cardDTO);
 
         postAndWait(request);
 
         assertInstanceOf(BoardUpdateEvent.class, super.event);
-        verify(playerManagement, times(1)).drawPlayerCard("validGameId", UserMapper.toUser(session.getUser()));
+        verify(playerManagement, times(1)).drawPlayerCard(LOBBY_ID, UserMapper.toUser(session.getUser()));
     }
 
     @Test
     void onDrawPlayerCardRequest_PlayerManagementException() throws PlayerManagementException, InterruptedException {
-        when(gameManagement.getGame("validGameId")).thenReturn(game);
+        DrawPlayerCardRequest request = new DrawPlayerCardRequest(LOBBY_ID);
+        request.setSession(session);
+
         doThrow(new PlayerManagementException("Error")).when(playerManagement)
-                                                       .drawPlayerCard(eq("validGameId"), any(IUser.class));
+                                                       .drawPlayerCard(eq(LOBBY_ID), any(IUser.class));
 
         postAndWait(request);
 
@@ -107,77 +123,112 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Test
     void onShareRideRequest() throws InterruptedException, PlayerManagementException {
-        IUser user = new User("testUser", "testPassword");
-        Session testSession = UUIDSession.create(user);
-        ShareRideRequest shareRideRequest = new ShareRideRequest("validGameId", 1);
-        shareRideRequest.setSession(testSession);
-
-        when(gameManagement.getGame("validGameId")).thenReturn(game);
+        ShareRideRequest shareRideRequest = new ShareRideRequest(LOBBY_ID, 1);
+        shareRideRequest.setSession(session);
 
         postAndWait(shareRideRequest);
 
         assertInstanceOf(BoardUpdateEvent.class, super.event);
-        verify(playerManagement, times(1)).setPlayerLocation("validGameId", "testUser", 1);
-        verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("validGameId");
+        verify(playerManagement, times(1)).setPlayerLocation(LOBBY_ID, "testUser", 1);
+        verify(gameManagement, times(1)).unlockGameInWaitForConfirmation(LOBBY_ID);
     }
 
     @Test
     void onNotConfirmedShareRideRequest() throws InterruptedException, PlayerManagementException {
-        IUser user = new User("testUser", "testPassword");
-        Session testSession = UUIDSession.create(user);
-        ShareRideRequest shareRideRequest = new ShareRideRequest("validGameId");
-        shareRideRequest.setSession(testSession);
-
-        when(gameManagement.getGame("validGameId")).thenReturn(game);
+        ShareRideRequest shareRideRequest = new ShareRideRequest(LOBBY_ID);
+        shareRideRequest.setSession(session);
 
         postAndWait(shareRideRequest);
 
         assertInstanceOf(BoardUpdateEvent.class, super.event);
-        verify(playerManagement, never()).setPlayerLocation(eq("validGameId"), eq("testUser"), anyInt());
-        verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("validGameId");
+        verify(playerManagement, never()).setPlayerLocation(eq(LOBBY_ID), eq("testUser"), anyInt());
+        verify(gameManagement, times(1)).unlockGameInWaitForConfirmation(LOBBY_ID);
     }
 
     @Test
     void onDrawInfectionCardRequest_Success() throws CityManagementException, InterruptedException {
-        DrawInfectionCardRequest request = mock(DrawInfectionCardRequest.class);
-        Session session = mock(Session.class);
+        DrawInfectionCardRequest drawInfectionCardRequest = new DrawInfectionCardRequest(LOBBY_ID);
+        drawInfectionCardRequest.setSession(session);
+
         InfectionCard infectionCard = mock(InfectionCard.class);
-        IUser user = new User("testUser", "testPassword");
         IPlayer player = new Player(user, "validGameId");
-        when(request.getLobbyId()).thenReturn("validGameId");
-        when(request.getSession()).thenReturn(Optional.of(session));
-        when(session.getUser()).thenReturn(UserMapper.toDTO(user));
+        player.setRole(new Sailor());
         game.getPlayers()
             .add(player);
-        player.setRole(new Sailor());
-        when(gameManagement.getGame("validGameId")).thenReturn(game);
+
         when(gameManagement.drawInfectionCard(game)).thenReturn(infectionCard);
 
-        postAndWait(request);
+        postAndWait(drawInfectionCardRequest);
 
-        verify(gameManagement, times(1)).getGame("validGameId");
+        verify(gameManagement, times(1)).getGame(LOBBY_ID);
         verify(gameManagement, times(1)).drawInfectionCard(game);
         assertInstanceOf(BoardUpdateEvent.class, super.event);
     }
 
     @Test
     void onDrawInfectionCardRequest_NotCurrentPlayer() throws InterruptedException {
-        DrawInfectionCardRequest request = mock(DrawInfectionCardRequest.class);
-        Session session = mock(Session.class);
-        IUser user = new User("testUser", "testPassword");
+        DrawInfectionCardRequest drawInfectionCardRequest = new DrawInfectionCardRequest(LOBBY_ID);
         IUser user1 = new User("testUser1", "testPassword1");
+        Session session1 = UUIDSession.create(user1);
+        drawInfectionCardRequest.setSession(session1);
+
         IPlayer player = new Player(user, "validGameId");
         game.getPlayers()
             .add(player);
         player.setRole(new Sailor());
-        when(request.getLobbyId()).thenReturn("validGameId");
-        when(request.getSession()).thenReturn(Optional.of(session));
-        when(session.getUser()).thenReturn(UserMapper.toDTO(user1));
-        when(gameManagement.getGame("validGameId")).thenReturn(game);
 
-        postAndWait(request);
+        postAndWait(drawInfectionCardRequest);
 
-        verify(gameManagement, times(1)).getGame("validGameId");
+        verify(gameManagement, times(1)).getGame(LOBBY_ID);
         assertInstanceOf(StatusResponse.class, super.event);
+    }
+
+    @Test
+    void onDiscardPlayerCardRequest_Success() throws InterruptedException, GameException {
+        ICardDTO card = mock(ICardDTO.class);
+        DiscardPlayerCardRequest discardPlayerCardRequest = new DiscardPlayerCardRequest(LOBBY_ID, card);
+        discardPlayerCardRequest.setSession(session);
+
+        postAndWait(discardPlayerCardRequest);
+
+        verify(playerManagement, times(1)).discardPlayerCard(eq(LOBBY_ID), anyString(), anyInt());
+        assertInstanceOf(BoardUpdateEvent.class, super.event);
+    }
+
+    @Test
+    void onDiscardPlayerCardRequest_GameException() throws InterruptedException, GameException {
+        ICardDTO card = mock(ICardDTO.class);
+        DiscardPlayerCardRequest discardPlayerCardRequest = new DiscardPlayerCardRequest(LOBBY_ID, card);
+        discardPlayerCardRequest.setSession(session);
+        doThrow(new GameException("Error")).when(playerManagement)
+                                           .discardPlayerCard(any(), any(), anyInt());
+
+        postAndWait(discardPlayerCardRequest);
+
+        verify(playerManagement, times(1)).discardPlayerCard(any(), any(), anyInt());
+        assertInstanceOf(StatusResponse.class, super.event);
+    }
+
+    @Test
+    void onCardsAmountChanged_ExceedsLimit_SendsDiscardPlayerCardEvent() throws NoSuchFieldException, IllegalAccessException {
+        playerService = Mockito.spy(new PlayerService(getBus(), playerManagement, gameManagement, lobbyManagement));
+
+        IPlayer player = new Player(user, LOBBY_ID);
+        game.getPlayers()
+            .add(player);
+
+        List<ICard> cardList = new ArrayList<>(Collections.nCopies(8, mock(ICard.class)));
+        player.getCards()
+              .addAll(cardList);
+
+        Field authServiceField = AbstractService.class.getDeclaredField("authenticationService");
+        authServiceField.setAccessible(true);
+        authServiceField.set(playerService, authenticationService);
+
+        when(authenticationService.getSession(any(IUser.class))).thenReturn(Optional.of(session));
+
+        playerService.onCardsAmountChanged(LOBBY_ID, user.getUsername(), Collections.emptyList());
+
+        assertInstanceOf(DiscardPlayerCardEvent.class, super.event);
     }
 }

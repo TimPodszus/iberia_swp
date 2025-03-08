@@ -11,8 +11,8 @@ import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.StateType;
-import de.uol.swp.common.plague.IPlagueDTO;
-import de.uol.swp.common.plague.PlagueDTO;
+import de.uol.swp.common.plague.dto.IPlagueDTO;
+import de.uol.swp.common.plague.dto.PlagueDTO;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.PlayerDTO;
 import de.uol.swp.common.region.IRegionDTO;
@@ -60,6 +60,7 @@ public class GameDTOTest {
     private final int waterTreatmentsLeft = 5;
     private final int tracksLeft = 5;
     private final int currentPlayerIndex = 0;
+    private final int remainingActions = 4;
 
     @Test
     void testConstructor() {
@@ -89,6 +90,7 @@ public class GameDTOTest {
         assertEquals(waterTreatmentsLeft, gameDTO.getWaterTreatmentsLeft(), "WaterTreatmentsLeft is not set correctly");
         assertEquals(tracksLeft, gameDTO.getTracksLeft(), "TracksLeft is not set correctly");
         assertEquals(currentPlayerIndex, gameDTO.getCurrentPlayerIndex(), "CurrentPlayerIndex is not set correctly");
+        assertEquals(remainingActions, gameDTO.getRemainingActions(), "RemainingActions is not set correctly");
     }
 
     @Test
@@ -154,7 +156,8 @@ public class GameDTOTest {
                 0,
                 0,
                 0,
-                StateType.START_STATE
+                StateType.START_STATE,
+                0
         );
         assertTrue(emptyGame.getCities()
                             .isEmpty());
@@ -188,7 +191,8 @@ public class GameDTOTest {
                 waterTreatmentsLeft,
                 tracksLeft,
                 currentPlayerIndex,
-                StateType.START_STATE
+                StateType.START_STATE,
+                remainingActions
         );
     }
 }

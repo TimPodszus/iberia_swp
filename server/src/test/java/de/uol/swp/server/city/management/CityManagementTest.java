@@ -9,9 +9,11 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.infection.management.InfectionManagement;
+import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -53,12 +55,15 @@ public class CityManagementTest {
     private RegionManagement regionManagement;
     @Mock
     private ConnectionManagement connectionManagement;
+    @Mock
+    private IPlagueManagement plagueManagement;
     @InjectMocks
     private final GameManagement gameManagement = new GameManagement(
             playerManagement,
             cityManagement,
             connectionManagement,
-            regionManagement
+            regionManagement,
+            plagueManagement
     );
     private final InfectionManagement infectionManagement = new InfectionManagement();
 
@@ -218,7 +223,7 @@ public class CityManagementTest {
     }
 
     @Test
-    void testBuildHospitalSucceeds() {
+    void testBuildHospitalSucceeds() throws GameException {
         IUser user = new User("username", "password");
         IPlayer player = new Player(user, "gameId");
         player.setCurrentPosition(game.getCityRepository()

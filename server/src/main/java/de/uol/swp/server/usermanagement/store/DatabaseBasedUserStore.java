@@ -12,7 +12,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 
 
@@ -138,17 +137,6 @@ public class DatabaseBasedUserStore extends AbstractUserStore implements UserSto
             throw new UserManagementException("Failed to retrieve the updated user");
         }
 
-    }
-
-
-    @Override
-    public void removeUser(String username) {
-        // TODO
-    }
-
-    @Override
-    public List<IUser> getAllUsers() {
-        return List.of();
     }
 
 
