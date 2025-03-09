@@ -18,6 +18,7 @@ import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.management.RegionManagement;
+import de.uol.swp.server.region.management.RegionManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +72,7 @@ public class CityManagementTest {
      * Sets up the test environment before each test.
      */
     @BeforeEach
-    void setUp() {
+    void setUp() throws RegionManagementException {
         MockitoAnnotations.openMocks(this);
         cityManagement = new CityManagement(regionManagement, gameManagement, infectionManagement);
         when(regionManagement.reduceWaterTreatments(any(IGame.class), any(ICity.class), anyInt())).thenReturn(1);

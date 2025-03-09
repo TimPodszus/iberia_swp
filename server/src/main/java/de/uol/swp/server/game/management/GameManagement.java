@@ -86,7 +86,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                  .addGame(request.getLobbyId(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
-        } catch (PlayerManagementException e) {
+        } catch (IllegalGameStateException e) {
             throw new GameInitializationException("Failed to initialize game", e);
         }
         return game;
@@ -98,8 +98,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
+     * @throws IllegalGameStateException If the game is not in a state that allows players to draw cards
      */
-    private void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
+    private void initializing(IGame game, List<IUser> users) throws IllegalGameStateException {
         initiateInfections(game);
         createPlayers(users, game);
         game.gameStartShuffle(game.getDifficulty() + 3);
@@ -114,8 +115,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
+     * @throws IllegalGameStateException If the game is not in a state that allows players to draw cards
      */
-    void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
+    void createPlayers(List<IUser> users, IGame game) throws IllegalGameStateException {
         for (IUser user : users) {
             Player player = new Player(user, game.getGameId());
 
@@ -457,17 +459,18 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
         boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
                 && (availableDestinations.get(city.getId())
-                                                                                                                 .getTransportModes()
+                                         .getTransportModes()
                                          .contains(TransportMode.CARRIAGE) ||
                     availableDestinations.get(city.getId())
-                                                                                                                                                                         .getTransportModes()
+                                         .getTransportModes()
                                          .contains(TransportMode.TRAIN) ||
                     availableDestinations.get(city.getId())
-                                                                                                                                                                                                                              .getTransportModes()
+                                         .getTransportModes()
                                          .contains(TransportMode.NONE));
+
         boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
                 && availableDestinations.get(city.getId())
-                                                                                                               .getTransportModes()
+                                        .getTransportModes()
                                         .contains(TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.cards.data.CityCard;
@@ -69,20 +70,12 @@ class PlayerManagementTest {
     }
 
     /**
-     * Tests that drawPlayerCard throws an exception when the player is not found.
-     */
-    @Test
-    void drawPlayerCard_PlayerNotFound_ThrowsException() {
-        assertThrows(PlayerManagementException.class, () -> playerManagement.drawPlayerCard(game.getGameId(), user));
-    }
-
-    /**
      * Tests that drawPlayerCard draws a card for a valid player.
      *
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if an error occurs while drawing the card
      */
     @Test
-    void drawPlayerCard_ValidPlayer_DrawsCard() throws PlayerManagementException {
+    void drawPlayerCard_ValidPlayer_DrawsCard() throws IllegalGameStateException {
         game.getPlayers()
             .add(player);
         when(player.getUser()).thenReturn(user);
@@ -96,10 +89,10 @@ class PlayerManagementTest {
     /**
      * Tests that drawPlayerCard increases the infection counter when an EpidemicCard is drawn.
      *
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if an error occurs while drawing the card
      */
     @Test
-    void drawPlayerCard_EpidemicCard_IncreasesInfectionCounter() throws PlayerManagementException {
+    void drawPlayerCard_EpidemicCard_IncreasesInfectionCounter() throws IllegalGameStateException {
         game.getPlayers()
             .add(player);
         game.getPlayerCardDrawPile()
@@ -312,6 +305,29 @@ class PlayerManagementTest {
     }
 
     @Test
+    void testGetCard() throws PlayerManagementException {
+        game.getPlayers()
+            .add(player);
+        ICard card = new CityCard(1, "test", mock(ICity.class));
+        when(player.getCards()).thenReturn(List.of(card));
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+
+        assertEquals(card, playerManagement.getCard(game.getGameId(), "testUser", 1));
+    }
+
+    @Test
+    void testGetCard_InvalidId() throws PlayerManagementException {
+        game.getPlayers()
+            .add(player);
+        when(player.getCards()).thenReturn(List.of());
+        when(player.getUser()).thenReturn(user);
+        when(user.getUsername()).thenReturn("testUser");
+
+        assertNull(playerManagement.getCard(game.getGameId(), "testUser", 0));
+    }
+
+    @Test
     void testGetCardsToSort() throws GameException, IllegalGameStateException {
         ICard card = mock(ICard.class);
         game.setState(new PlayerTurnState());
@@ -336,7 +352,7 @@ class PlayerManagementTest {
     }
 
     @Test
-    void testSortCards() throws GameException {
+    void testSortCards() throws GameException, IllegalGameStateException {
         ICard card1 = mock(ICard.class);
         ICard card2 = mock(ICard.class);
         ICard card3 = mock(ICard.class);
@@ -436,8 +452,8 @@ class PlayerManagementTest {
         doReturn(player).when(spyPlayerManagement)
                         .getPlayerByUser(user, game);
 
-        GameException thrown = assertThrows(
-                GameException.class,
+        IllegalGameStateException thrown = assertThrows(
+                IllegalGameStateException.class,
                 () -> spyPlayerManagement.sortCards("lobbyId", user, cards),
                 "Expected sortCards() to throw, but it did not"
         );
@@ -492,6 +508,8 @@ class PlayerManagementTest {
                 "Expected getCardsToSort() to throw, but it did not"
         );
 
+        assertTrue(thrown.getMessage()
+                         .contains("The game´s current state is not playerturnstate"));
         assertTrue(thrown.getMessage()
                          .contains("The game´s current state is not playerturnstate"));
     }

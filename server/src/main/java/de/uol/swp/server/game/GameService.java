@@ -30,7 +30,6 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
-import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.game.states.DrawCardState;
@@ -368,10 +367,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
      * and posts it to the event bus.
      *
      * @param request the CardsExchangeRequest containing the lobby ID and cards to exchange
-     * @throws GameManagementException if the target player is not found or session is not found
      */
     @Subscribe
-    public void onCardsExchangeRequest(CardsExchangeRequest request) throws GameManagementException {
+    public void onCardsExchangeRequest(CardsExchangeRequest request) {
         LOG.info("Received CardsExchangeRequest for lobby {}", request.getLobbyId());
         IGame game = gameManagement.getGame(request.getLobbyId());
         gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
@@ -383,10 +381,12 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                      .stream()
                                                      .filter(username -> !username.equals(currentPlayerUsername))
                                                      .findFirst()
-                                                     .orElseThrow(() -> {
-                                                         LOG.error("Target player {} not found", currentPlayerUsername);
-                                                         return new GameManagementException("Target player not found");
-                                                     });
+                                                     .orElse(null);
+
+        if (targetPlayerUsername == null) {
+            LOG.error("[LobbyId: {}] Target player not found in cards to exchange", request.getLobbyId());
+            sendStatusResponse(request, false, "Ziel-Spieler nicht gefunden");
+        }
 
         LOG.debug("Current player: {}, Target player: {}", currentPlayerUsername, targetPlayerUsername);
 
@@ -399,24 +399,15 @@ public class GameService extends AbstractService implements GameStateChangeListe
         );
 
         IUser user = lobbyManagement.getLobby(request.getLobbyId())
-                                    .getUsers()
-                                    .stream()
-                                    .filter(u -> u.getUsername()
-                                                  .equals(targetPlayerUsername))
-                                    .findFirst()
-                                    .orElseThrow(() -> {
-                                        LOG.error(
-                                                "Target player not found in lobby for username {}",
-                                                targetPlayerUsername
-                                        );
-                                        return new GameManagementException("Target player not found");
-                                    });
+                                    .getUser(targetPlayerUsername);
         LOG.trace("Found target player in lobby: {}", user.getUsername());
 
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error("Session not found for user {}", user.getUsername());
-                                                   return new GameManagementException("Session not found");
+                                                   LOG.error("[LobbyId: {}] Session not found for user",
+                                                           request.getLobbyId()
+                                                   );
+                                                   return new SessionNotFoundException();
                                                });
         LOG.trace("Session found for user {} {}", user.getUsername(), session);
 
@@ -431,37 +422,30 @@ public class GameService extends AbstractService implements GameStateChangeListe
      * and updates the game state based on whether the request was accepted or not.
      *
      * @param request the ShareKnowledgeRequest containing the event and acceptance status
-     * @throws GameManagementException   if the target player is not found
-     * @throws PlayerManagementException if there is an error in player management
      */
     @Subscribe
-    public void onShareKnowledgeRequest(ShareKnowledgeRequest request) throws GameManagementException, PlayerManagementException {
+    public void onShareKnowledgeRequest(ShareKnowledgeRequest request) {
         LOG.info("Received ShareKnowledgeRequest for lobby {}", request.getLobbyId());
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
         ShareKnowledgeEvent event = request.getShareKnowledgeEvent();
-        IPlayer currentPlayer = gameManagement.getGame(event.getLobbyId())
-                                              .getCurrentPlayer();
-        IPlayer targetPlayer = gameManagement.getGame(event.getLobbyId())
-                                             .getPlayers()
-                                             .stream()
-                                             .filter(player -> player.getUser()
-                                                                     .getUsername()
-                                                                     .equals(event.getTargetPlayer()))
-                                             .findFirst()
-                                             .orElseThrow(() -> {
-                                                 LOG.error(
-                                                         "Target player not found for username {}",
-                                                         event.getTargetPlayer()
-                                                 );
-                                                 return new GameManagementException("Target player not found");
-                                             });
-
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        IPlayer currentPlayer = game.getCurrentPlayer();
+        IPlayer targetPlayer = game.getPlayer(event.getTargetPlayer());
         if (request.isAccepted()) {
-            gameManagement.shareKnowledgeRequestAccepted(currentPlayer, targetPlayer, event.getLobbyId(), event, this);
+            try {
+                gameManagement.shareKnowledgeRequestAccepted(currentPlayer,
+                        targetPlayer,
+                        event.getLobbyId(),
+                        event,
+                        this
+                );
+            } catch (PlayerManagementException e) {
+                LOG.error("[LobbyId: {}] Could not share knowledge", request.getLobbyId());
+                sendStatusResponse(request, false, "Spielerkarten konnten nicht getauscht werden");
+            }
         } else {
             postShareKnowledgeResponse(event, false);
         }
-
     }
 
     @Override
@@ -488,7 +472,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGame game = gameManagement.getGame(event.getLobbyId());
         gameManagement.increaseCurrentPlayerActions(game, event.getAmountOfActions());
         game.setState(game.getPreviousState());
-        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+        IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
@@ -562,7 +546,7 @@ public void sendBoardUpdateAfterCardExchangeWithDiscardPile(String lobbyId) {
      * @throws SessionNotFoundException if the session is unknown
      */
     @Subscribe
-    public void onEndTurnRequest(EndTurnRequest request) throws SessionNotFoundException {
+    public void onEndTurnRequest(EndTurnRequest request) {
         LOG.debug("[Lobby: {}] Got EndTurnRequest for current Player", request.getLobbyId());
         IUserDTO user = request.getSession()
                                .map(Session::getUser)

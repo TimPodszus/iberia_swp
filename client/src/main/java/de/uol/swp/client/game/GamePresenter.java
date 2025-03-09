@@ -117,7 +117,7 @@ public class GamePresenter extends AbstractPresenter {
     private StackPane mapPane;
 
     @FXML
-    private Pane zoomPane;
+    private AnchorPane zoomPane;
 
     @FXML
     private WebView webViewMap;
@@ -201,6 +201,8 @@ public class GamePresenter extends AbstractPresenter {
 
     private boolean dragging = false;
 
+    private boolean dragged = false;
+
     private IGameDTO gameDTO;
 
     private boolean isDismissibleDialog;
@@ -253,6 +255,7 @@ public class GamePresenter extends AbstractPresenter {
     void onMousePressedEvent(MouseEvent event) {
         if (event.getButton() == MouseButton.PRIMARY) {
             dragging = true;
+            dragged = false;
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         }
@@ -269,20 +272,26 @@ public class GamePresenter extends AbstractPresenter {
             double deltaX = event.getSceneX() - mouseX;
             double deltaY = event.getSceneY() - mouseY;
 
-            double newTranslateX = zoomPane.getTranslateX() + deltaX;
-            double newTranslateY = zoomPane.getTranslateY() + deltaY;
-
-            double maxTranslateY = 0;
-
-            zoomPane.setTranslateX(newTranslateX);
-
-            if (newTranslateY <= maxTranslateY) {
-                zoomPane.setTranslateY(newTranslateY);
+            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                dragged = true;
             }
+
+            zoomPane.setTranslateX(zoomPane.getTranslateX() + deltaX);
+            zoomPane.setTranslateY(zoomPane.getTranslateY() + deltaY);
 
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         }
+    }
+
+    /**
+     * Handles mouse released events to stop panning the game screen.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    void onMouseReleasedEvent(MouseEvent event) {
+        dragging = false;
     }
 
     /**
@@ -326,12 +335,15 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
+        if (dragged) {
+            return;
+        }
+
         Node source = (Node) event.getSource();
         int cityId = Integer.parseInt(source.getId()
                                             .replaceAll("\\D+", ""));
         LOG.debug("City {} clicked", cityId);
-        if (gameDTO.getState()
-                   .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
+        if (isGameState(StateType.WAIT_FOR_POSITIONING_STATE)) {
             LOG.debug("Setting initial position to city {}", cityId);
             gameService.setPosition(gameDTO.getGameId(), cityId);
             LOG.info("Initial position set");
@@ -381,7 +393,7 @@ public class GamePresenter extends AbstractPresenter {
                         TransportMode.TRAIN
                 ) && role == RoleEnum.RAILWAY_PERSON)) {
                     LOG.debug("Player is a {} and takes a player with him to the city {}", role, cityId);
-                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
+                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity(), role);
                     Optional<String> result = dialog.showAndWait();
                     result.ifPresentOrElse(
                             username -> {
@@ -394,6 +406,7 @@ public class GamePresenter extends AbstractPresenter {
                             }
                     );
                 }
+                return;
             }
 
             gameService.movePlayerToCity(this.lobbyId, cityId);
@@ -445,6 +458,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
+        if (dragged) {
+            return;
+        }
+
         Node source = (Node) event.getSource();
         int connectionId = Integer.parseInt(source.getId()
                                                   .replaceAll("\\D+", ""));
@@ -462,10 +479,7 @@ public class GamePresenter extends AbstractPresenter {
             return;
         }
 
-        StateType currentState = gameDTO.getState();
-        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) || currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
-
-        if (isValidState) {
+        if (isGameState(StateType.PLAYER_TURN_STATE) || isGameState(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE)) {
             gameService.buildTrainTrack(lobbyId, connectionId);
             highlightBuildableTrainTrackHighlight(false);
             buildTrainTracksButton.setSelected(false);
@@ -479,18 +493,19 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onRegionClickedEvent(MouseEvent event) {
+        if (dragged) {
+            return;
+        }
+
         Node source = (Node) event.getSource();
         regionId = Integer.parseInt(source.getId()
                                           .replaceAll("\\D+", ""));
         LOG.debug("Region {} clicked", regionId);
 
-        if (gameDTO.getState()
-                   .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
+        if (isGameState(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
                                                                  .contains(REGION_HIGHLIGHTED_CLASS)) {
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
-        } else if ((gameDTO.getState()
-                           .equals(StateType.EVENT_STATE) || gameDTO.getState()
-                                                                    .equals(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
+        } else if ((isGameState(StateType.EVENT_STATE) || isGameState(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
                                                                                                                                    .contains(
                                                                                                                                            REGION_HIGHLIGHTED_CLASS)) {
             handleTreatWaterEvent();
@@ -509,7 +524,9 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onPlayerCardPileClickedEvent(MouseEvent event) {
         LOG.debug("Player card pile clicked");
-        gameService.drawPlayerCard(lobbyId);
+        if ((isGameState(StateType.DRAW_CARD_STATE) || isGameState(StateType.START_STATE)) && isPlayersTurn()) {
+            gameService.drawPlayerCard(lobbyId);
+        }
     }
 
     /**
@@ -521,7 +538,9 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onInfectionCardDrawPileClickedEvent(MouseEvent event) {
         LOG.debug("Infection card draw pile clicked");
-        gameService.drawInfectionCard(lobbyId);
+        if (isGameState(StateType.INFECTION_STATE) && isPlayersTurn()) {
+            gameService.drawInfectionCard(lobbyId);
+        }
     }
 
     /**
@@ -532,8 +551,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildTrainTrack(ActionEvent event) {
         if (buildTrainTracksButton.isSelected()) {
-            if (gameDTO.getState()
-                       .equals(StateType.PLAYER_TURN_STATE)) {
+            if (isGameState(StateType.PLAYER_TURN_STATE)) {
                 resetHighlightetCities();
                 gameService.requestBuildableTrainTracks(
                         this.lobbyId,
@@ -556,8 +574,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildHospital(ActionEvent event) {
         if (buildHospitalButton.isSelected()) {
-            if (gameDTO.getState()
-                       .equals(StateType.PLAYER_TURN_STATE)) {
+            if (isGameState(StateType.PLAYER_TURN_STATE)) {
                 resetHighlightetCities();
 
                 Integer cityId = gameDTO.getCurrentPlayer()
@@ -580,8 +597,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onTreatPlague(ActionEvent event) {
         if (treatInfectionButton.isSelected()) {
-            if (gameDTO.getState()
-                       .equals(StateType.PLAYER_TURN_STATE)) {
+            if (isGameState(StateType.PLAYER_TURN_STATE)) {
                 gameService.sendAvailablePlaguesRequest(
                         lobbyId,
                         gameDTO.getCurrentPlayer()
@@ -614,8 +630,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onResearchPlague(ActionEvent event) {
         LOG.debug("Research plague action triggered");
-            if (gameDTO.getState()
-                       .equals(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
+        if (isGameState(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
                 gameService.sendResearchPlagueRequest(lobbyId);
                 researchPlagueButton.setSelected(false);
             }
@@ -629,8 +644,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onPlaceWaterTreatment(ActionEvent event) {
         if (treatWaterButton.isSelected()) {
-            if (gameDTO.getState()
-                       .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
+            if (isGameState(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
                 resetHighlightetCities();
                 gameService.sendAvailableRegionsRequest(lobbyId);
             }
@@ -707,8 +721,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onEndTurn(ActionEvent event) {
-        if (gameDTO.getState()
-                   .equals(StateType.PLAYER_TURN_STATE)) {
+        if (isGameState(StateType.PLAYER_TURN_STATE)) {
             gameService.sendEndTurnRequest(lobbyId);
         }
     }
@@ -1130,16 +1143,12 @@ public class GamePresenter extends AbstractPresenter {
         updateItems(gameDTO);
         updateRemainingActions(gameDTO.getRemainingActions());
 
-        if (!gameDTO.getState()
-                    .equals(StateType.START_STATE)) {
+        if (!isGameState(StateType.START_STATE)) {
             updatePlayersInCities(gameDTO.getPlayers());
         }
 
         disableActionButtons();
-        if (gameDTO.getState()
-                   .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
-                                                                  .getUsername()
-                                                                  .equals(user.getUsername())) {
+        if (isGameState(StateType.PLAYER_TURN_STATE) && isPlayersTurn()) {
             gameService.requestAvailableDestination(
                     this.lobbyId,
                     gameDTO.getCurrentPlayer()
@@ -1159,11 +1168,10 @@ public class GamePresenter extends AbstractPresenter {
         removePlayerHandCards();
         IPlayerDTO player = gameDTO.getPlayer(user.getUsername());
         List<ICardDTO> playerHand = player.getCards();
-        StateType state = gameDTO.getState();
         for (ICardDTO card : playerHand) {
             AbstractCard abstractCard = CardFactory.createCard(card);
-            if (abstractCard instanceof EventCard eventCard && (state.equals(StateType.PLAYER_TURN_STATE) || state.equals(
-                    StateType.DRAW_CARD_STATE) || state.equals(StateType.INFECTION_STATE))) {
+            if (abstractCard instanceof EventCard eventCard && (isGameState(StateType.PLAYER_TURN_STATE) || isGameState(
+                    StateType.DRAW_CARD_STATE) || isGameState(StateType.INFECTION_STATE))) {
                 abstractCard.setOnMouseClicked(event -> {
                     LOG.debug("Event card {} clicked", eventCard.getCardId());
                     if (event.getButton() == MouseButton.PRIMARY) {
@@ -2000,6 +2008,8 @@ public class GamePresenter extends AbstractPresenter {
                    Node stackPane = mapPane.lookup(CITY_ID + city.getId());
                    stackPane.getStyleClass()
                             .remove(CITY_HIGHLIGHTED_CLASS);
+                   stackPane.getStyleClass()
+                            .add(CITY_CLASS);
                });
     }
 
@@ -2024,5 +2034,27 @@ public class GamePresenter extends AbstractPresenter {
             alert.setContentText(response.getDescription());
             alert.showAndWait();
         });
+    }
+
+    /**
+     * Checks if the game state is the specified state type.
+     *
+     * @param stateType the state type to check
+     * @return true if the game state is the specified state type, false otherwise
+     */
+    private boolean isGameState(StateType stateType) {
+        return gameDTO.getState()
+                      .equals(stateType);
+    }
+
+    /**
+     * Checks if it is the player's turn.
+     *
+     * @return true if it is the player's turn, false otherwise
+     */
+    private boolean isPlayersTurn() {
+        return gameDTO.getCurrentPlayer()
+                      .getUsername()
+                      .equals(user.getUsername());
     }
 }

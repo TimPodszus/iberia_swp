@@ -33,9 +33,9 @@ public interface IPlayerManagement {
      * @param lobbyCode the code of the lobby
      * @param user      the user drawing the card
      * @return the drawn card
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if it is not the players turn to draw a card
      */
-    ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException;
+    ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws IllegalGameStateException;
 
     /**
      * Draws a player card for a given player in a game.
@@ -43,9 +43,9 @@ public interface IPlayerManagement {
      * @param lobbyCode the code of the lobby
      * @param player    the player drawing the card
      * @return the drawn card
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if it is not the players turn to draw a card
      */
-    ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws PlayerManagementException;
+    ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws IllegalGameStateException;
 
     /**
      * Sets the starting position for a player in a specified city.
@@ -104,7 +104,7 @@ public interface IPlayerManagement {
      * @param playerName the name of the player
      * @param cityId     the id of the city where the player is to be located
      */
-    void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException;
+    void setPlayerLocation(String lobbyId, String playerName, int cityId);
 
     /**
      * Shuffles the infection cards in the discard pile and adds them to the draw pile.
@@ -150,9 +150,9 @@ public interface IPlayerManagement {
      * @param lobbyId the ID of the lobby
      * @param user    the user sorting the cards
      * @param cards   the list of cards to be sorted
-     * @throws IllegalStateException if the player is not in the correct state to sort cards
+     * @throws IllegalGameStateException if the player is not in the correct state to sort cards
      */
-    void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws GameException;
+    void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws IllegalGameStateException;
 
     /**
      * Determines the regions for a nurse player.

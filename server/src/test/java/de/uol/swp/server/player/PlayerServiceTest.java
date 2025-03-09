@@ -47,6 +47,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.*;
 
@@ -131,7 +132,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onDrawPlayerCardRequest_Success() throws PlayerManagementException, InterruptedException {
+    void onDrawPlayerCardRequest_Success() throws IllegalGameStateException, InterruptedException {
         DrawPlayerCardRequest request = new DrawPlayerCardRequest(LOBBY_ID);
         request.setSession(session);
 
@@ -144,16 +145,17 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onDrawPlayerCardRequest_PlayerManagementException() throws PlayerManagementException, InterruptedException {
+    void onDrawPlayerCardRequest_IllegalGameStateException() throws IllegalGameStateException, InterruptedException {
         DrawPlayerCardRequest request = new DrawPlayerCardRequest(LOBBY_ID);
         request.setSession(session);
 
-        doThrow(new PlayerManagementException("Error")).when(playerManagement)
+        doThrow(new IllegalGameStateException("Error")).when(playerManagement)
                                                        .drawPlayerCard(eq(LOBBY_ID), any(IUser.class));
 
         postAndWait(request);
 
-        assertInstanceOf(BoardUpdateEvent.class, super.event);
+        assertInstanceOf(StatusResponse.class, super.event);
+        assertFalse(((StatusResponse) event).isSuccess());
     }
 
     @Test
@@ -282,7 +284,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onSortedCardsRequest_Success() throws GameException, InterruptedException {
+    void onSortedCardsRequest_Success() throws InterruptedException, IllegalGameStateException {
         List<ICardDTO> cards = List.of(mock(ICardDTO.class));
         SortedCardsRequest request = new SortedCardsRequest(LOBBY_ID, cards);
         request.setSession(session);
@@ -310,14 +312,15 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onSortedCardsRequest_IllegalStateException() throws GameException, InterruptedException {
+    void onSortedCardsRequest_IllegalGameStateException() throws InterruptedException, IllegalGameStateException {
         List<ICardDTO> cards = List.of(mock(ICardDTO.class));
         SortedCardsRequest request = new SortedCardsRequest(LOBBY_ID, cards);
         request.setSession(session);
 
         when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
 
-        doThrow(new IllegalStateException("Test exception")).when(playerManagement).sortCards(LOBBY_ID, user, cards);
+        doThrow(new IllegalGameStateException("Test exception")).when(playerManagement)
+                                                                .sortCards("validGameId", user, cards);
 
         postAndWait(request);
 

@@ -23,6 +23,7 @@ import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagement;
 import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.region.management.IRegionManagement;
+import de.uol.swp.server.region.management.RegionManagementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -104,9 +105,9 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                     infectionCard.getCity()
                                  .getName()
             );
-        } catch (CityManagementException e) {
+        } catch (CityManagementException | RegionManagementException e) {
             LOG.error("Error infecting city: {}", e.getMessage());
-            throw e;
+            throw new CityManagementException("Error infecting city", e);
         }
     }
 
@@ -119,6 +120,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param amount            the amount of infection cubes to add
      * @param triggerEscalation whether to trigger escalation if the infection severity exceeds the threshold
      * @throws CityManagementException if any parameter is invalid or an error occurs during infection
+     * @throws RegionManagementException if an error occurs when reducing water treatments
      */
     private void infectCity(
             IGame game,
@@ -126,7 +128,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             PlagueName plagueName,
             int amount,
             boolean triggerEscalation
-    ) throws CityManagementException {
+    ) throws CityManagementException, RegionManagementException {
         validateParameters(game, city, plagueName, amount);
 
         if (isCitySurroundedByPreventionMarker(game, city) || regionManagement.reduceWaterTreatments(game, city,
@@ -209,6 +211,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param amount            the amount to increase the infection severity by
      * @param city              the city to increase the infection severity in
      * @param triggerEscalation whether to trigger escalation if the infection severity exceeds the threshold
+     * @throws RegionManagementException if an error occurs when reducing water treatments
      */
     private void increaseInfectionSeverity(
             IGame game,
@@ -217,7 +220,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             int amount,
             ICity city,
             boolean triggerEscalation
-    ) {
+    ) throws RegionManagementException {
         int newSeverity;
 
         if (!triggerEscalation && infection.getSeverity() + amount > 3) {
@@ -249,8 +252,9 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param game       the game instance
      * @param cityName   the name of the city to escalate
      * @param plagueName the name of the plague causing the escalation
+     * @throws RegionManagementException if an error occurs when reducing water treatments
      */
-    private void escalation(IGame game, CityName cityName, PlagueName plagueName) {
+    private void escalation(IGame game, CityName cityName, PlagueName plagueName) throws RegionManagementException {
 
         Queue<CityName> citiesToProcess = new LinkedList<>();
         citiesToProcess.add(cityName);

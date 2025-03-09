@@ -57,18 +57,10 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @param lobbyCode the code of the lobby in which the game is happening
      * @param user      the user for whom the player card is to be drawn
      * @return the drawn player card as a data transfer object (DTO)
-     * @throws PlayerManagementException if the player is not found for the given user
+     * @throws IllegalGameStateException if the player is not found for the given user
      */
-    public ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException {
-        IPlayer player = getGame(lobbyCode)
-                                  .getPlayers()
-                                  .stream()
-                                  .filter(p -> Objects.equals(
-                                          p.getUser()
-                                           .getUsername(), user.getUsername()
-                                  ))
-                                  .findFirst()
-                                  .orElseThrow(() -> new PlayerManagementException("Player not found for the given user"));
+    public ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws IllegalGameStateException {
+        IPlayer player = getGame(lobbyCode).getPlayer(user.getUsername());
         LOG.debug("[LobbyID: {}] Player found for user {} and card drawn", lobbyCode, user.getUsername());
         return drawPlayerCard(lobbyCode, player);
     }
@@ -84,9 +76,9 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @param lobbyCode the code of the lobby in which the game is happening
      * @param player    the player for whom the card is to be drawn
      * @return the drawn player card as a data transfer object (DTO)
-     * @throws PlayerManagementException if there is an issue with drawing the card
+     * @throws IllegalGameStateException if it is not the player's turn to draw a card
      */
-    public ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws PlayerManagementException {
+    public ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws IllegalGameStateException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyCode);
 
@@ -126,13 +118,13 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @param game   the game instance from which the card is to be drawn
      * @param player the player who is drawing the card
      * @return the drawn card
-     * @throws PlayerManagementException if it is not the player's turn to draw a card or if the draw pile is empty
+     * @throws IllegalGameStateException if it is not the player's turn to draw a card or if the draw pile is empty
      */
-    private ICard getCard(IGame game, IPlayer player) throws PlayerManagementException {
+    private ICard getCard(IGame game, IPlayer player) throws IllegalGameStateException {
         if (!player.equals(game.getPlayers()
                                .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState) && !(game.getState() instanceof StartState)) {
             LOG.error("[LobbyID: {}] Failed to draw card. It is not the player's turn or game is not in a state that allows drawing cards", game.getGameId());
-            throw new PlayerManagementException("It is not the player's turn to draw a card");
+            throw new IllegalGameStateException("It is not the player's turn to draw a card");
         }
 
         List<ICard> playerCardDrawPile = game.getPlayerCardDrawPile();
@@ -140,7 +132,8 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
         if (playerCardDrawPile.isEmpty()) {
             game.setState(new EndGameState(false));
             LOG.error("[LobbyID: {}] Player card draw pile is empty. Game ended", game.getGameId());
-            throw new PlayerManagementException("Player card draw pile is empty");
+
+            return null;
         }
 
         return playerCardDrawPile.remove(0);
@@ -251,23 +244,8 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
         }
     }
 
-    /**
-     * Retrieves a specific card from a player's hand.
-     * <p>
-     * This method retrieves the game instance using the provided lobby ID, then finds the player by their name.
-     * It then searches the player's hand for a card with the specified card ID and returns it.
-     * If the card is not found, it returns null.
-     *
-     * @param lobbyId    the ID of the lobby in which the game is happening
-     * @param playerName the name of the player whose card is to be retrieved
-     * @param cardId     the ID of the card to be retrieved
-     * @return the card with the specified ID, or null if not found
-     * @throws PlayerManagementException if the player is not found
-     */
-    public ICard getCard(String lobbyId, String playerName, int cardId) throws PlayerManagementException {
-        IGame game = GameStore.getInstance()
-                              .getGame(lobbyId);
-        IPlayer player = getPlayer(game, playerName);
+    public ICard getCard(String lobbyId, String playerName, int cardId) {
+        IPlayer player = getGame(lobbyId).getPlayer(playerName);
         return player.getCards()
                      .stream()
                      .filter(c -> Objects.equals(c.getId(), cardId))
@@ -275,6 +253,12 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                      .orElse(null);
     }
 
+    public void setPlayerLocation(String lobbyId, String playerName, int cityId) {
+        IPlayer player = getGame(lobbyId).getPlayer(playerName);
+        ICity city = cityManagement.getCity(lobbyId, cityId);
+        player.setCurrentPosition(city);
+        LOG.debug("[LobbyID: {}] Player {} moved to city with ID {}", lobbyId, playerName, cityId);
+    }
     /**
      * Retrieves a player from the game by their username.
      * <p>
@@ -294,26 +278,6 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                                  .equals(playerName))
                    .findFirst()
                    .orElseThrow(() -> new PlayerManagementException("Player not found"));
-    }
-
-    /**
-     * Sets the current position of a player in the game.
-     * <p>
-     * This method retrieves the game instance using the provided lobby ID, then finds the player by their name.
-     * It then retrieves the city with the specified city ID and sets it as the player's current position.
-     *
-     * @param lobbyId    the ID of the lobby in which the game is happening
-     * @param playerName the name of the player whose position is to be set
-     * @param cityId     the ID of the city to which the player will be moved
-     * @throws PlayerManagementException if the player is not found
-     */
-    public void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException {
-        IGame game = GameStore.getInstance()
-                              .getGame(lobbyId);
-        IPlayer player = getPlayer(game, playerName);
-        ICity city = cityManagement.getCity(lobbyId, cityId);
-        player.setCurrentPosition(city);
-        LOG.debug("[LobbyID: {}] Player {} moved to city with ID {}", lobbyId, playerName, cityId);
     }
 
     /**
@@ -404,7 +368,7 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @throws IllegalStateException if the player is not the current player or does not have the role of ScientistAtTheRoyalAcademy
      */
     @Override
-    public void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws GameException {
+    public void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws IllegalGameStateException {
         IGame game = getGame(lobbyId);
         IPlayer player = getPlayerByUser(user, game);
         if (player != null && player.equals(game.getCurrentPlayer()) && player.getRole() instanceof ScientistAtTheRoyalAcademy) {
@@ -422,7 +386,7 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
             LOG.debug("[LobbyID: {}] Cards sorted for player {}", lobbyId, player.getUser().getUsername());
         } else {
             LOG.error("[LobbyID: {}] Invalid request to sort cards by player {}", lobbyId, user.getUsername());
-            throw new GameException(
+            throw new IllegalGameStateException(
                     "It is not your turn or your role is not scientist of the royal academy");
         }
     }
