@@ -849,8 +849,8 @@ class GameManagementTest {
         gameManagement.movePlayer(testUser1, "lobbyCode", destinationCity, null);
 
         assertEquals(
-                destinationCity,
-                player.getCurrentPosition(),
+                destinationCity.getName(),
+                player.getCurrentPosition().getName(),
                 "Expected player1 to have moved to Palma de Mallorca"
         );
         assertEquals(
