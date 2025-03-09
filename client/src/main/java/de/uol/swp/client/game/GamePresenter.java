@@ -199,6 +199,8 @@ public class GamePresenter extends AbstractPresenter {
 
     private boolean dragging = false;
 
+    private boolean dragged = false;
+
     private IGameDTO gameDTO;
 
     private boolean isDismissibleDialog;
@@ -251,6 +253,7 @@ public class GamePresenter extends AbstractPresenter {
     void onMousePressedEvent(MouseEvent event) {
         if (event.getButton() == MouseButton.PRIMARY) {
             dragging = true;
+            dragged = false;
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         }
@@ -267,20 +270,23 @@ public class GamePresenter extends AbstractPresenter {
             double deltaX = event.getSceneX() - mouseX;
             double deltaY = event.getSceneY() - mouseY;
 
-            double newTranslateX = zoomPane.getTranslateX() + deltaX;
-            double newTranslateY = zoomPane.getTranslateY() + deltaY;
-
-            double maxTranslateY = 0;
-
-            zoomPane.setTranslateX(newTranslateX);
-
-            if (newTranslateY <= maxTranslateY) {
-                zoomPane.setTranslateY(newTranslateY);
+            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                dragged = true;
             }
 
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         }
+    }
+
+    /**
+     * Handles mouse released events to stop panning the game screen.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    void onMouseReleasedEvent(MouseEvent event) {
+        dragging = false;
     }
 
     /**
@@ -324,6 +330,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
+        if (dragged) {
+            return;
+        }
+
         Node source = (Node) event.getSource();
         int cityId = Integer.parseInt(source.getId()
                                             .replaceAll("\\D+", ""));
@@ -443,6 +453,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
+        if (dragged) {
+            return;
+        }
+
         Node source = (Node) event.getSource();
         int connectionId = Integer.parseInt(source.getId()
                                                   .replaceAll("\\D+", ""));
@@ -477,6 +491,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onRegionClickedEvent(MouseEvent event) {
+        if (dragged) {
+            return;
+        }
+
         Node source = (Node) event.getSource();
         regionId = Integer.parseInt(source.getId()
                                           .replaceAll("\\D+", ""));
