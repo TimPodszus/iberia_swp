@@ -29,7 +29,6 @@ import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
@@ -82,8 +81,14 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         try {
             ICardDTO card = playerManagement.drawPlayerCard(request.getLobbyId(), UserMapper.toUser(session.getUser()));
             response = new DrawPlayerCardResponse(request.getLobbyId(), true, "Card drawn successfully", card);
-        } catch (PlayerManagementException e) {
-            response = new StatusResponse(request.getLobbyId(), false, "Error drawing a player card");
+        } catch (IllegalGameStateException e) {
+            sendStatusResponse(
+                    request,
+                    false,
+                    "Du bist nicht an der Reihe oder es ist nicht möglich im momentanen Spielstatus eine Karte zu ziehen"
+            );
+
+            return;
         }
         response.setSession(session);
         post(response);
@@ -98,16 +103,13 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      */
     @Subscribe
     public void onDrawInfectionCardRequest(DrawInfectionCardRequest request) {
-        AbstractResponseMessage response;
         Session session = request.getSession()
                                  .orElseThrow(SessionNotFoundException::new);
         IGame game = playerManagement.getGame(request.getLobbyId());
         if (!game.getCurrentPlayer()
                  .getUser()
                  .equals(UserMapper.toUser(session.getUser()))) {
-            response = new StatusResponse(request.getLobbyId(), false, "It is not your turn");
-            response.setSession(session);
-            post(response);
+            sendStatusResponse(request, false, "Du bist nicht an der Reihe");
             return;
         }
         gameManagement.drawInfectionCard(game);
@@ -118,10 +120,9 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      * Handles the ShareRideRequest event.
      *
      * @param request the request to share a ride
-     * @throws PlayerManagementException if there is an error in player management
      */
     @Subscribe
-    public void onShareRideRequest(ShareRideRequest request) throws PlayerManagementException {
+    public void onShareRideRequest(ShareRideRequest request) {
         if (request.isConfirmed()) {
             Session session = request.getSession()
                                      .orElseThrow(SessionNotFoundException::new);
@@ -239,7 +240,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      * @param request the request to sort cards
      */
     @Subscribe
-    public void onSortedCardsRequest(SortedCardsRequest request) throws GameException {
+    public void onSortedCardsRequest(SortedCardsRequest request) {
         LOG.debug("SortedCardsRequest received");
         IGame game = playerManagement.getGame(request.getLobbyId());
         Optional<Session> session = request.getSession();
@@ -256,7 +257,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
             sendStatusResponse(request, true, "Karten wurden erfolgreich sortiert");
             sendServerMessageEvent(request.getLobbyId(), "Die Wissenschaftlerin der königlichen Akademie hat die Karten auf dem Nachziehstapel sortiert");
-        } catch (IllegalStateException e) {
+        } catch (IllegalGameStateException e) {
             LOG.error("Error sorting cards: {}", e.getMessage());
             sendStatusResponse(request, false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
         }

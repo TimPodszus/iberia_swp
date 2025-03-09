@@ -888,7 +888,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testCreatePlayersWithDifferentUserCounts() throws PlayerManagementException {
+    void testCreatePlayersWithDifferentUserCounts() throws IllegalGameStateException {
         List<IUser> twoUsers = List.of(new User("user1", "pass1"), new User("user2", "pass2"));
         List<IUser> threeUsers = List.of(
                 new User("user1", "pass1"),

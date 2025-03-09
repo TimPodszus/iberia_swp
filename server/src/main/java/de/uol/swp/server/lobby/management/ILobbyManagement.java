@@ -1,7 +1,7 @@
 package de.uol.swp.server.lobby.management;
 
 import de.uol.swp.server.lobby.data.ILobby;
-import de.uol.swp.server.lobby.store.LobbyStoreException;
+import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
 import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
@@ -16,17 +16,15 @@ public interface ILobbyManagement {
      *
      * @param owner the owner of the lobby
      * @return the created lobby
-     * @throws LobbyStoreException if an error occurs during lobby creation
      */
-    ILobby createLobby(IUser owner) throws LobbyStoreException;
+    ILobby createLobby(IUser owner);
 
     /**
      * Deletes an existing lobby.
      *
      * @param lobbyId the ID of the lobby to delete
-     * @throws LobbyStoreException if an error occurs during lobby deletion
      */
-    void deleteLobby(String lobbyId) throws LobbyStoreException;
+    void deleteLobby(String lobbyId);
 
     /**
      * Retrieves a lobby by its ID.
@@ -40,26 +38,25 @@ public interface ILobbyManagement {
      * Retrieves a list of all lobbies.
      *
      * @return a list of all lobbies
-     * @throws LobbyStoreException if an error occurs during lobby retrieval
      */
-    List<ILobby> getLobbies() throws LobbyStoreException;
+    List<ILobby> getLobbies();
 
     /**
      * Allows a user to join a specified lobby.
      *
      * @param lobbyId the ID of the lobby to join
-     * @throws LobbyStoreException if an error occurs during the join process
+     * @throws LobbyNotFoundException if the lobby, with the given id, could not be found
      */
-    void joinLobby(String lobbyId, IUser user) throws LobbyStoreException;
+    void joinLobby(String lobbyId, IUser user) throws LobbyNotFoundException;
 
     /**
      * Updates an existing lobby.
      *
      * @param lobby the lobby to update
      * @return the updated lobby
-     * @throws LobbyStoreException if an error occurs during lobby update
+     * @throws LobbyNotFoundException if the lobby, with the given id, could not be found
      */
-    ILobby updateLobby(ILobby lobby) throws LobbyStoreException;
+    ILobby updateLobby(ILobby lobby) throws LobbyNotFoundException;
 
     /**
      * Removes a user from a specified lobby.
@@ -67,8 +64,9 @@ public interface ILobbyManagement {
      * @param lobbyId  the ID of the lobby
      * @param username the username of the user to remove
      * @return the updated lobby after the user is removed
+     * @throws LobbyNotFoundException if the lobby, with the given id, could not be found
      */
-    public ILobby removeUser(String lobbyId, String username) throws LobbyStoreException;
+    ILobby removeUser(String lobbyId, String username) throws LobbyNotFoundException;
 
     /**
      * Allows a user to leave a specified lobby.

@@ -12,11 +12,11 @@ import de.uol.swp.server.cards.events.SecondChanceEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.cards.management.CardNotPlayableException;
 import de.uol.swp.server.cards.management.ICardManagement;
-import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import de.uol.swp.server.usermanagement.management.ServerUserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,12 +60,12 @@ public class CardService extends AbstractService {
     }
 
     @Subscribe
-    public void onPlayCardRequest(PlayCardRequest request) throws GameException {
+    public void onPlayCardRequest(PlayCardRequest request) {
         LOG.debug("[LobbyId: {}] Received PlayCardRequest", request.getLobbyId());
         IUserDTO user = request.getSession()
                                .orElseThrow(() -> {
                                    LOG.error("[LobbyId: {}] Session missing in PlayCardRequest", request.getLobbyId());
-                                   return new GameException("Session missing in PlayCardRequest");
+                                   return new SessionNotFoundException("Session missing in PlayCardRequest");
                                })
                                .getUser();
 
@@ -90,16 +90,15 @@ public class CardService extends AbstractService {
      * Finally, it sends a BoardUpdateEvent to all users in the lobby.
      *
      * @param event the SecondChanceEvent containing the lobby ID and username
-     * @throws GameException if the user is not logged in or if there is an error during card play
      */
     @Subscribe
-    public void onSecondChanceEvent(SecondChanceEvent event) throws GameException {
+    public void onSecondChanceEvent(SecondChanceEvent event) {
         LOG.debug("[LobbyId: {}] Received SecondChanceEvent", event.getLobbyId());
         IUser user = userManagement.getUser(event.getUsername());
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error(USER_NOT_LOGGED_IN);
-                                                   return new GameException(USER_NOT_LOGGED_IN);
+                                                   LOG.error("[LobbyId: {}] Session not found", event.getLobbyId());
+                                                   return new SessionNotFoundException();
                                                });
 
         try {
