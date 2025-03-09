@@ -1261,6 +1261,9 @@ public class GamePresenter extends AbstractPresenter {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
             setInfectionCardDiscardPile(CardFactory.createCard(infectionCard));
+        } else {
+            infectionCardDiscardPile.getChildren()
+                                    .clear();
         }
     }
 
