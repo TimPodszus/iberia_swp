@@ -68,7 +68,7 @@ public class MovePlayerRequestTest {
     @Test
     void testEqualsWithOtherClass() {
         MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD_ID);
-        assertNotEquals(movePlayerRequest, new Object());
+        assertNotEquals(new Object(), movePlayerRequest);
     }
 
     /**

@@ -17,6 +17,7 @@ import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import de.uol.swp.server.usermanagement.management.ServerUserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -92,32 +93,44 @@ public class ConnectionService extends AbstractService {
      * Handles the MovePlayerAnywhereEvent.
      *
      * @param event the event containing the lobby ID and the username of the player to be moved
-     * @throws GameException if the user is not logged in
      */
     @Subscribe
-    public void onMovePlayerAnywhereEvent(MovePlayerAnywhereEvent event) throws GameException {
+    public void onMovePlayerAnywhereEvent(MovePlayerAnywhereEvent event) {
         LOG.debug("[Lobby: {}] Got MovePlayerAnywhereEvent for player {}", event.getLobbyId(), event.getUsername());
         IUser user = userManagement.getUser(event.getUsername());
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error(USER_NOT_LOGGED_IN);
-                                                   return new GameException(USER_NOT_LOGGED_IN);
+                                                   LOG.error(
+                                                           "[Lobby: {}] Session not found for user",
+                                                           event.getLobbyId()
+                                                   );
+                                                   return new SessionNotFoundException();
                                                });
 
         Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAllDestinations(
                 event.getLobbyId()
         );
 
-        AvailableDestinationsResponse response = new AvailableDestinationsResponse(
-                event.getLobbyId(),
-                availableDestinations
-        );
-        response.setSession(session);
-        post(response);
-        LOG.debug("[Lobby: {}] Sent AvailableDestinationsResponse for player {}",
-                event.getLobbyId(),
-                event.getUsername()
-        );
+        ScheduledExecutorService scheduler = null;
+        try {
+            // Warning is wrong, scheduler is shutdown in finally block. A close method does not exist.
+            scheduler = Executors.newScheduledThreadPool(1);
+            scheduler.schedule(() -> {
+                AvailableDestinationsResponse response = new AvailableDestinationsResponse(event.getLobbyId(),
+                        availableDestinations
+                );
+                response.setSession(session);
+                post(response);
+            }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+            LOG.debug("[Lobby: {}] Sent AvailableDestinationsResponse for player {}",
+                    event.getLobbyId(),
+                    event.getUsername()
+            );
+        } finally {
+            if (scheduler != null) {
+                scheduler.shutdown();
+            }
+        }
     }
 
     /**

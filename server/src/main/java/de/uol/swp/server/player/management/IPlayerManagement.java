@@ -5,8 +5,9 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -30,9 +31,9 @@ public interface IPlayerManagement {
      * @param lobbyCode the code of the lobby
      * @param user      the user drawing the card
      * @return the drawn card
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if it is not the players turn to draw a card
      */
-    ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException;
+    ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws IllegalGameStateException;
 
     /**
      * Draws a player card for a given player in a game.
@@ -40,9 +41,9 @@ public interface IPlayerManagement {
      * @param lobbyCode the code of the lobby
      * @param player    the player drawing the card
      * @return the drawn card
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if it is not the players turn to draw a card
      */
-    ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws PlayerManagementException;
+    ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws IllegalGameStateException;
 
     /**
      * Sets the starting position for a player in a specified city.
@@ -101,7 +102,7 @@ public interface IPlayerManagement {
      * @param playerName the name of the player
      * @param cityId     the id of the city where the player is to be located
      */
-    void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException;
+    void setPlayerLocation(String lobbyId, String playerName, int cityId);
 
     /**
      * Shuffles the infection cards in the discard pile and adds them to the draw pile.
@@ -112,4 +113,42 @@ public interface IPlayerManagement {
      * Draws a player card from the DiscardPile. The specific behavior of this method should be defined.
      */
     InfectionCard drawBottomInfectionCard(IGame game) throws IllegalStateException;
+
+    /**
+     * Retrieves the cards that a player can sort.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param user    the user for whom the cards are to be sorted
+     * @return the list of cards to be sorted
+     * @throws GameException if an error occurs while retrieving the cards
+     * @throws IllegalGameStateException     if the player is not in the correct state to sort cards
+     */
+    List<ICardDTO> getCardsToSort(String lobbyId, IUser user) throws GameException, IllegalGameStateException;
+
+    /**
+     * Retrieves the game with the specified lobby code.
+     *
+     * @param lobbyId the id of the lobby in which the game is happening
+     * @return the game with the specified lobby code
+     */
+    IGame getGame(String lobbyId);
+
+    /**
+     * Retrieves the player with the specified user in the specified lobby.
+     *
+     * @param game the game in which the player is to be retrieved
+     * @param user the user for whom the player is to be retrieved
+     * @return the player with the specified user in the specified lobby
+     */
+    IPlayer getPlayerByUser(IUser user, IGame game);
+
+    /**
+     * Sorts the cards of the playerCardDrawPile in a lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param user    the user sorting the cards
+     * @param cards   the list of cards to be sorted
+     * @throws IllegalGameStateException if the player is not in the correct state to sort cards
+     */
+    void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws IllegalGameStateException;
 }

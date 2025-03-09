@@ -6,14 +6,14 @@ import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.data.ICity;
-import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.game.GameService;
+import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
-import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -112,12 +112,11 @@ public interface IGameManagement {
     /**
      * Handles the acceptance of a share knowledge request.
      *
-     * @param currentPlayer   the player currently taking the action
-     * @param targetPlayer    the player with whom knowledge is being shared
-     * @param lobbyId         the ID of the lobby in which the game is happening
-     * @param event           the event representing the share knowledge request
-     * @param lobbyManagement the lobby management service
-     * @param gameService     the game service
+     * @param currentPlayer the player currently taking the action
+     * @param targetPlayer  the player with whom knowledge is being shared
+     * @param lobbyId       the ID of the lobby in which the game is happening
+     * @param event         the event representing the share knowledge request
+     * @param gameService   the game service
      * @throws PlayerManagementException if an error occurs during the process
      */
     void shareKnowledgeRequestAccepted(
@@ -125,24 +124,9 @@ public interface IGameManagement {
             IPlayer targetPlayer,
             String lobbyId,
             ShareKnowledgeEvent event,
-            ILobbyManagement lobbyManagement,
             GameService gameService
     ) throws PlayerManagementException;
 
-    /**
-     * Posts the response to a share knowledge request.
-     *
-     * @param event           the event representing the share knowledge request
-     * @param lobbyManagement the lobby management service
-     * @param gameService     the game service
-     * @param success         whether the share knowledge request was successful
-     */
-    void postShareKnowledgeResponse(
-            ShareKnowledgeEvent event,
-            ILobbyManagement lobbyManagement,
-            GameService gameService,
-            boolean success
-    );
 
     /**
      * Increases the number of actions the current player has in the game.
@@ -151,6 +135,23 @@ public interface IGameManagement {
      * @param amount the amount by which to increase the current player's actions
      */
     void increaseCurrentPlayerActions(IGame game, int amount);
+
+  /**
+   * Shares knowledge by discarding a card and receiving another card.
+   *
+   * @param cardToDiscardID the ID of the card to be discarded
+   * @param cardToReceiveID the ID of the card to be received
+   * @param lobbyId         the ID of the lobby in which the game is happening
+   * @param service         the game service
+   * @throws CardNotFoundException      if the card to be discarded or received is not found
+   * @throws PlayerManagementException  if an error occurs during the process
+   */
+  void shareKnowledgeWithDiscardPile(
+          int cardToDiscardID,
+          int cardToReceiveID,
+          String lobbyId,
+          GameService service
+  ) throws CardNotFoundException, PlayerManagementException;
 
     /**
      * Ends the turn for the current player in the specified lobby.

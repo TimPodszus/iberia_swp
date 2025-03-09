@@ -61,6 +61,7 @@ public class ServerModule extends AbstractModule {
         bind(IRegionManagement.class).to(RegionManagement.class);
         bind(ServerUserService.class).to(UserManagement.class);
         bind(ICardManagement.class).to(CardManagement.class);
+        bind(IPlagueManagement.class).to(PlagueManagement.class);
         bind(IChatManagement.class).to(ChatManagement.class);
         bind(IChatStore.class).toInstance(chatStore);
     }
