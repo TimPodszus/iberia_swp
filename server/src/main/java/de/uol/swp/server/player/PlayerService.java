@@ -29,7 +29,6 @@ import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
@@ -82,8 +81,14 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         try {
             ICardDTO card = playerManagement.drawPlayerCard(request.getLobbyId(), UserMapper.toUser(session.getUser()));
             response = new DrawPlayerCardResponse(request.getLobbyId(), true, "Card drawn successfully", card);
-        } catch (PlayerManagementException e) {
-            response = new StatusResponse(request.getLobbyId(), false, "Error drawing a player card");
+        } catch (IllegalGameStateException e) {
+            sendStatusResponse(
+                    request,
+                    false,
+                    "Du bist nicht an der Reihe oder es ist nicht möglich im momentanen Spielstatus eine Karte zu ziehen"
+            );
+
+            return;
         }
         response.setSession(session);
         post(response);
@@ -98,16 +103,13 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      */
     @Subscribe
     public void onDrawInfectionCardRequest(DrawInfectionCardRequest request) {
-        AbstractResponseMessage response;
         Session session = request.getSession()
                                  .orElseThrow(SessionNotFoundException::new);
         IGame game = playerManagement.getGame(request.getLobbyId());
         if (!game.getCurrentPlayer()
                  .getUser()
                  .equals(UserMapper.toUser(session.getUser()))) {
-            response = new StatusResponse(request.getLobbyId(), false, "It is not your turn");
-            response.setSession(session);
-            post(response);
+            sendStatusResponse(request, false, "Du bist nicht an der Reihe");
             return;
         }
         gameManagement.drawInfectionCard(game);

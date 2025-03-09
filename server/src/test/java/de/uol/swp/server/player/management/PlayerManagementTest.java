@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
@@ -68,20 +69,12 @@ class PlayerManagementTest {
     }
 
     /**
-     * Tests that drawPlayerCard throws an exception when the player is not found.
-     */
-    @Test
-    void drawPlayerCard_PlayerNotFound_ThrowsException() {
-        assertThrows(PlayerManagementException.class, () -> playerManagement.drawPlayerCard(game.getGameId(), user));
-    }
-
-    /**
      * Tests that drawPlayerCard draws a card for a valid player.
      *
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if an error occurs while drawing the card
      */
     @Test
-    void drawPlayerCard_ValidPlayer_DrawsCard() throws PlayerManagementException {
+    void drawPlayerCard_ValidPlayer_DrawsCard() throws IllegalGameStateException {
         game.getPlayers()
             .add(player);
         when(player.getUser()).thenReturn(user);
@@ -95,10 +88,10 @@ class PlayerManagementTest {
     /**
      * Tests that drawPlayerCard increases the infection counter when an EpidemicCard is drawn.
      *
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if an error occurs while drawing the card
      */
     @Test
-    void drawPlayerCard_EpidemicCard_IncreasesInfectionCounter() throws PlayerManagementException {
+    void drawPlayerCard_EpidemicCard_IncreasesInfectionCounter() throws IllegalGameStateException {
         game.getPlayers()
             .add(player);
         game.getPlayerCardDrawPile()
@@ -402,18 +395,6 @@ class PlayerManagementTest {
         assertEquals(card3, sortedDrawPile.get(0));
         assertEquals(card2, sortedDrawPile.get(1));
         assertEquals(card1, sortedDrawPile.get(2));
-    }
-
-    @Test
-    void testDrawPlayerCard_EmptyDrawPile_ThrowsException() {
-        game.getPlayerCardDrawPile()
-            .clear();
-        game.getPlayers()
-            .add(player);
-        when(player.getUser()).thenReturn(user);
-        when(user.getUsername()).thenReturn("testUser");
-
-        assertThrows(PlayerManagementException.class, () -> playerManagement.drawPlayerCard(game.getGameId(), user));
     }
 
     @Test

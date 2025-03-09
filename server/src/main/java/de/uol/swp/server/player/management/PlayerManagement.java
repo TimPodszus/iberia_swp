@@ -57,18 +57,10 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @param lobbyCode the code of the lobby in which the game is happening
      * @param user      the user for whom the player card is to be drawn
      * @return the drawn player card as a data transfer object (DTO)
-     * @throws PlayerManagementException if the player is not found for the given user
+     * @throws IllegalGameStateException if the player is not found for the given user
      */
-    public ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException {
-        IPlayer player = getGame(lobbyCode)
-                                  .getPlayers()
-                                  .stream()
-                                  .filter(p -> Objects.equals(
-                                          p.getUser()
-                                           .getUsername(), user.getUsername()
-                                  ))
-                                  .findFirst()
-                                  .orElseThrow(() -> new PlayerManagementException("Player not found for the given user"));
+    public ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws IllegalGameStateException {
+        IPlayer player = getGame(lobbyCode).getPlayer(user.getUsername());
         LOG.debug("[LobbyID: {}] Player found for user {} and card drawn", lobbyCode, user.getUsername());
         return drawPlayerCard(lobbyCode, player);
     }
@@ -84,9 +76,9 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @param lobbyCode the code of the lobby in which the game is happening
      * @param player    the player for whom the card is to be drawn
      * @return the drawn player card as a data transfer object (DTO)
-     * @throws PlayerManagementException if there is an issue with drawing the card
+     * @throws IllegalGameStateException if it is not the player's turn to draw a card
      */
-    public ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws PlayerManagementException {
+    public ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws IllegalGameStateException {
         IGame game = GameStore.getInstance()
                               .getGame(lobbyCode);
 
@@ -126,13 +118,13 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @param game   the game instance from which the card is to be drawn
      * @param player the player who is drawing the card
      * @return the drawn card
-     * @throws PlayerManagementException if it is not the player's turn to draw a card or if the draw pile is empty
+     * @throws IllegalGameStateException if it is not the player's turn to draw a card or if the draw pile is empty
      */
-    private ICard getCard(IGame game, IPlayer player) throws PlayerManagementException {
+    private ICard getCard(IGame game, IPlayer player) throws IllegalGameStateException {
         if (!player.equals(game.getPlayers()
                                .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState) && !(game.getState() instanceof StartState)) {
             LOG.error("[LobbyID: {}] Failed to draw card. It is not the player's turn or game is not in a state that allows drawing cards", game.getGameId());
-            throw new PlayerManagementException("It is not the player's turn to draw a card");
+            throw new IllegalGameStateException("It is not the player's turn to draw a card");
         }
 
         List<ICard> playerCardDrawPile = game.getPlayerCardDrawPile();
@@ -140,7 +132,8 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
         if (playerCardDrawPile.isEmpty()) {
             game.setState(new EndGameState(false));
             LOG.error("[LobbyID: {}] Player card draw pile is empty. Game ended", game.getGameId());
-            throw new PlayerManagementException("Player card draw pile is empty");
+
+            return null;
         }
 
         return playerCardDrawPile.remove(0);

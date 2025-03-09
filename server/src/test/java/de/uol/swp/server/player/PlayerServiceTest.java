@@ -39,6 +39,7 @@ import org.mockito.*;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.*;
 
@@ -114,7 +115,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onDrawPlayerCardRequest_Success() throws PlayerManagementException, InterruptedException {
+    void onDrawPlayerCardRequest_Success() throws IllegalGameStateException, InterruptedException {
         DrawPlayerCardRequest request = new DrawPlayerCardRequest(LOBBY_ID);
         request.setSession(session);
 
@@ -127,16 +128,17 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onDrawPlayerCardRequest_PlayerManagementException() throws PlayerManagementException, InterruptedException {
+    void onDrawPlayerCardRequest_IllegalGameStateException() throws IllegalGameStateException, InterruptedException {
         DrawPlayerCardRequest request = new DrawPlayerCardRequest(LOBBY_ID);
         request.setSession(session);
 
-        doThrow(new PlayerManagementException("Error")).when(playerManagement)
+        doThrow(new IllegalGameStateException("Error")).when(playerManagement)
                                                        .drawPlayerCard(eq(LOBBY_ID), any(IUser.class));
 
         postAndWait(request);
 
-        assertInstanceOf(BoardUpdateEvent.class, super.event);
+        assertInstanceOf(StatusResponse.class, super.event);
+        assertFalse(((StatusResponse) event).isSuccess());
     }
 
     @Test
