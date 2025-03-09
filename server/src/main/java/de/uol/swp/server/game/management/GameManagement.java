@@ -268,7 +268,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1),
                         1
                 );
+                this.setFavorableTimeEventCardPlayed(false);
                 game.incrementCurrentPlayerIndex();
+                return null;
             }
             cityManagement.infectCityWithOwnPlague(game, infectionCardDrawPile.remove(0), 1);
             return null;
