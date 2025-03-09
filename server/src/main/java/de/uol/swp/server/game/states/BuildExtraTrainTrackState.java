@@ -15,9 +15,14 @@ import java.util.List;
  */
 @Setter
 @Getter
-@AllArgsConstructor
 public class BuildExtraTrainTrackState extends PlayerTurnState {
     private List<IConnection> connections;
+
+    public BuildExtraTrainTrackState(List<IConnection> connections, int actionsRemaining) {
+        super();
+        this.connections = connections;
+        this.actionsRemaining = actionsRemaining;
+    }
 
     /**
      * Retrieves the type of this state.

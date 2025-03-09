@@ -697,7 +697,7 @@ public class GameServiceTest extends EventBusBasedTest {
         IConnection connection = new Connection(1, List.of(CityName.ALICANTE, CityName.ALBACETE), true);
         when(connectionManagement.getConnection("lobbyId", 1)).thenReturn(connection);
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
-        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection)));
+        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection), 4));
         when(game.getCityRepository()).thenReturn(new CityRepository());
         when(game.getRegionRepository()).thenReturn(new RegionRepository(new CityRepository()));
         when(game.getPlagueRepository()).thenReturn(new PlagueRepository());
