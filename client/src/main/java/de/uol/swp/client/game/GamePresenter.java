@@ -393,6 +393,7 @@ public class GamePresenter extends AbstractPresenter {
                             }
                     );
                 }
+                return;
             }
 
             gameService.movePlayerToCity(this.lobbyId, cityId);
