@@ -115,7 +115,7 @@ public class GamePresenter extends AbstractPresenter {
     private StackPane mapPane;
 
     @FXML
-    private Pane zoomPane;
+    private AnchorPane zoomPane;
 
     @FXML
     private WebView webViewMap;
@@ -273,6 +273,9 @@ public class GamePresenter extends AbstractPresenter {
             if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
                 dragged = true;
             }
+
+            zoomPane.setTranslateX(zoomPane.getTranslateX() + deltaX);
+            zoomPane.setTranslateY(zoomPane.getTranslateY() + deltaY);
 
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
