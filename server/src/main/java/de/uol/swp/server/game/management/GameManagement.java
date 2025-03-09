@@ -632,9 +632,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             player.setCurrentPosition(city);
             LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
         } else if (game.getState() instanceof EventState eventState) {
+            player.setCurrentPosition(city);
+            LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
             if (eventState.getEventCard() instanceof StateMobilizationEventCard stateMobilizationEventCard) {
-                player.setCurrentPosition(city);
-                LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
                 LOG.info("[LobbyId: {}] Decreasing players to move.", game.getGameId());
                 stateMobilizationEventCard.playerMoved(player);
                 if (!stateMobilizationEventCard.getPlayersToMove()

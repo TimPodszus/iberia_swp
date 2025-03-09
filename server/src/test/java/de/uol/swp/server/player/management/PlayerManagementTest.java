@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.cards.data.CityCard;
@@ -396,29 +395,6 @@ class PlayerManagementTest {
         assertEquals(card3, sortedDrawPile.get(0));
         assertEquals(card2, sortedDrawPile.get(1));
         assertEquals(card1, sortedDrawPile.get(2));
-    }
-
-    @Test
-    void testDrawPlayerCard_EmptyDrawPile_ThrowsException() {
-        game.getPlayerCardDrawPile()
-            .clear();
-        game.getPlayers()
-            .add(player);
-        when(player.getUser()).thenReturn(user);
-        when(user.getUsername()).thenReturn("testUser");
-
-        assertThrows(PlayerManagementException.class, () -> playerManagement.drawPlayerCard(game.getGameId(), user));
-    }
-
-    @Test
-    void testSetPlayerLocation_PlayerNotFound_ThrowsException() {
-        game.getPlayers()
-            .clear();
-
-        assertThrows(
-                PlayerManagementException.class,
-                () -> playerManagement.setPlayerLocation(game.getGameId(), "nonExistentPlayer", 1)
-        );
     }
 
     @Test

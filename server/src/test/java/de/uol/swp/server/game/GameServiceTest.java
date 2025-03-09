@@ -435,9 +435,9 @@ public class GameServiceTest extends EventBusBasedTest {
         ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", true, event);
 
         IUser currentUser = new User("currentUser", "testPassword");
-        IPlayer currentPlayer = new Player(currentUser);
+        IPlayer currentPlayer = new Player(currentUser, "lobbyId");
         IUser targetUser = new User("targetUser", "testPassword");
-        IPlayer targetPlayer = new Player(targetUser);
+        IPlayer targetPlayer = new Player(targetUser, "lobbyId");
 
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
         when(game.getCurrentPlayer()).thenReturn(currentPlayer);
