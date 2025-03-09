@@ -1,6 +1,6 @@
 services:
   db:
-    build: ./
+    image: timpodszus/iberia-db
     restart: always
     env_file: ./server/src/main/resources/.env
     ports:
@@ -9,5 +9,24 @@ services:
       - '3306'
     volumes:
       - my-db:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    image: timpodszus/iberia-swp
+    restart: always
+    ports:
+      - '8899:8899'
+    expose:
+      - '8899'
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+
 volumes:
   my-db:
