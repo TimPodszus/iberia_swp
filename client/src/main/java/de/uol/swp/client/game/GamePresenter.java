@@ -1957,6 +1957,8 @@ public class GamePresenter extends AbstractPresenter {
                    Node stackPane = mapPane.lookup(CITY_ID + city.getId());
                    stackPane.getStyleClass()
                             .remove(CITY_HIGHLIGHTED_CLASS);
+                   stackPane.getStyleClass()
+                            .add(CITY_CLASS);
                });
     }
 
