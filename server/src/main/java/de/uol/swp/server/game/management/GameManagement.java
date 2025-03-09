@@ -459,17 +459,18 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
         boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
                 && (availableDestinations.get(city.getId())
-                                                                                                                 .getTransportModes()
+                                         .getTransportModes()
                                          .contains(TransportMode.CARRIAGE) ||
                     availableDestinations.get(city.getId())
-                                                                                                                                                                         .getTransportModes()
+                                         .getTransportModes()
                                          .contains(TransportMode.TRAIN) ||
                     availableDestinations.get(city.getId())
-                                                                                                                                                                                                                              .getTransportModes()
+                                         .getTransportModes()
                                          .contains(TransportMode.NONE));
+
         boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
                 && availableDestinations.get(city.getId())
-                                                                                                               .getTransportModes()
+                                        .getTransportModes()
                                         .contains(TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {

@@ -393,7 +393,7 @@ public class GamePresenter extends AbstractPresenter {
                         TransportMode.TRAIN
                 ) && role == RoleEnum.RAILWAY_PERSON)) {
                     LOG.debug("Player is a {} and takes a player with him to the city {}", role, cityId);
-                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
+                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity(), role);
                     Optional<String> result = dialog.showAndWait();
                     result.ifPresentOrElse(
                             username -> {
@@ -406,6 +406,7 @@ public class GamePresenter extends AbstractPresenter {
                             }
                     );
                 }
+                return;
             }
 
             gameService.movePlayerToCity(this.lobbyId, cityId);
