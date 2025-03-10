@@ -831,7 +831,7 @@ public class GameServiceTest extends EventBusBasedTest {
 
         gameService.onFavorableTimeEvent(event);
 
-        assertTrue(game1.getFavorableTimeEventCardPlayed());
+        assertTrue(game1.isFavorableTimeEventCardPlayed());
         verify(gameService).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 

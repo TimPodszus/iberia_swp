@@ -21,15 +21,23 @@ public class InfectionState implements IGameState {
 
     public void increaseInfectedCities(IGame game) {
         infectedCities++;
-        int citiesToInfect = switch (game.getInfectionCounter()) {
-            case 4, 5 -> 3;
-            case 6, 7 -> 4;
-            default -> 2;
-        };
-        if (citiesToInfect == infectedCities) {
+
+        if (amountOfCitiesToInfect(game) == infectedCities) {
             game.setState(new PlayerTurnState());
             game.incrementCurrentPlayerIndex(game.getPlayers()
                                                  .size());
         }
+    }
+
+    private int amountOfCitiesToInfect(IGame game) {
+        return switch (game.getInfectionCounter()) {
+            case 4, 5 -> 3;
+            case 6, 7 -> 4;
+            default -> 2;
+        };
+    }
+
+    public void setInfectedCitiesToOnlyDrawOneMoreCard(IGame game) {
+        infectedCities = amountOfCitiesToInfect(game) - 1;
     }
 }

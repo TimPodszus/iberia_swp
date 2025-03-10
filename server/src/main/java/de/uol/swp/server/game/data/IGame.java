@@ -224,8 +224,7 @@ public interface IGame {
      *
      * @return if the FavorableTimeEventCard has been played: true, else: false
      */
-    boolean getFavorableTimeEventCardPlayed();
-
+    boolean isFavorableTimeEventCardPlayed();
 
     /**
      * Gets the player by username.

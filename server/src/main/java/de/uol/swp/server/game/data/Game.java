@@ -146,11 +146,6 @@ public class Game implements IGame {
     @Setter
     private boolean favorableTimeEventCardPlayed;
 
-    @Override
-    public boolean getFavorableTimeEventCardPlayed() {
-        return favorableTimeEventCardPlayed;
-    }
-
     /**
      * Constructs a new Game instance with default values.
      * Initializes repositories and sets initial game state.

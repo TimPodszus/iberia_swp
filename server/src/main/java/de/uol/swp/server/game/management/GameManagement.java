@@ -261,21 +261,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (infectionCardDrawPile.isEmpty()) {
             throw new IllegalStateException("Infection card draw pile is empty");
         }
-        if (game.getState() instanceof InfectionState) {
-            if (game.getFavorableTimeEventCardPlayed()) {
-                cityManagement.infectCityWithOwnPlague(
-                        game,
-                        infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1),
-                        1
-                );
+        InfectionCard card = null;
+        if (game.getState() instanceof InfectionState infectionState) {
+            if (game.isFavorableTimeEventCardPlayed()) {
+                card = infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1);
+                infectionState.setInfectedCitiesToOnlyDrawOneMoreCard(game);
                 game.setFavorableTimeEventCardPlayed(false);
-                game.setState(new PlayerTurnState());
-                game.incrementCurrentPlayerIndex(game.getPlayers()
-                                                     .size());
             } else {
-                cityManagement.infectCityWithOwnPlague(game, infectionCardDrawPile.remove(0), 1);
+                card = infectionCardDrawPile.remove(0);
             }
-            return null;
         } else if (game.getState() instanceof StartState) {
             return infectionCardDrawPile.remove(0);
         } else {
@@ -285,6 +279,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             );
             return null;
         }
+        cityManagement.infectCityWithOwnPlague(game, card, 1);
+        return null;
     }
 
     /**

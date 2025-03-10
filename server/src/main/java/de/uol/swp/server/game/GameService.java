@@ -526,6 +526,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         game.setState(game.getPreviousState());
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+        sendServerMessageEvent(event.getLobbyId(), "Spieler hat die Ereigniskarte 'Günstige Zeit' gespielt");
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
 

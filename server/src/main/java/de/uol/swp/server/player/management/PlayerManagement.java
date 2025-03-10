@@ -143,18 +143,9 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
 
         if (playerCardDrawPile.isEmpty()) {
             game.setState(new EndGameState(false));
-            LOG.error("[LobbyID: {}] Player card draw pile is empty. Game ended", game.getGameId());
+            LOG.info("[LobbyID: {}] Player card draw pile is empty. Game ended", game.getGameId());
 
             return null;
-        }
-
-        ICard card = playerCardDrawPile.stream()
-                                       .filter(c -> c.getId() == 212)
-                                       .findFirst()
-                                       .orElse(null);
-        if (card != null) {
-            playerCardDrawPile.remove(card);
-            return card;
         }
 
         return playerCardDrawPile.remove(0);
