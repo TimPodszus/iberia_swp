@@ -8,13 +8,6 @@ import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.city.request.BuildHospitalRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
-import de.uol.swp.common.game.message.request.ShareRideRequest;
-import de.uol.swp.common.player.message.request.DiscardPlayerCardRequest;
-import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
-import de.uol.swp.common.player.message.request.MovePlayerRequest;
-import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.AvailableActionsRequest;
-import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
@@ -23,6 +16,7 @@ import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.player.message.request.*;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
@@ -106,6 +100,7 @@ public class GameService {
     public void drawPlayerCard(String lobbyCode) {
         DrawPlayerCardRequest request = new DrawPlayerCardRequest(lobbyCode);
         eventBus.post(request);
+        LOG.info("[LobbyId: {}] DrawPlayerCardRequest sent", lobbyCode);
     }
 
     /**
@@ -116,6 +111,7 @@ public class GameService {
     public void drawInfectionCard(String lobbyId) {
         DrawInfectionCardRequest request = new DrawInfectionCardRequest(lobbyId);
         eventBus.post(request);
+        LOG.info("[LobbyId: {}] DrawInfectionCardRequest sent", lobbyId);
     }
 
     public void setPosition(String lobbyCode, int id) {
@@ -363,6 +359,25 @@ public class GameService {
      */
     public void sendBuildHospitalRequest(String lobbyId, int cityId) {
         eventBus.post(new BuildHospitalRequest(lobbyId, cityId));
+    }
+
+    /**
+     * Sends a request to sort the cards.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param result  the list of cards to be sorted
+     */
+    public void sendSortedCardRequest(String lobbyId, List<ICardDTO> result) {
+        eventBus.post(new SortedCardsRequest(lobbyId, result));
+    }
+
+    /**
+     * Sends a request to get the cards to sort.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    public void sendGetCardsToSortRequest(String lobbyId) {
+        eventBus.post(new GetCardsToSortRequest(lobbyId));
     }
 
     /**

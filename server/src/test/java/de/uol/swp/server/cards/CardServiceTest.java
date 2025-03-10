@@ -19,6 +19,7 @@ import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import de.uol.swp.server.usermanagement.management.ServerUserService;
 import de.uol.swp.server.usermanagement.management.UserManagement;
 import org.greenrobot.eventbus.Subscribe;
@@ -144,7 +145,7 @@ public class CardServiceTest extends EventBusBasedTest {
     @Test
     void testOnPlayCardRequestWithMissingSession() {
         PlayCardRequest request = new PlayCardRequest("1234", 1);
-        assertThrows(GameException.class, () -> cardService.onPlayCardRequest(request));
+        assertThrows(SessionNotFoundException.class, () -> cardService.onPlayCardRequest(request));
     }
 
     @Test
@@ -172,7 +173,7 @@ public class CardServiceTest extends EventBusBasedTest {
     @Test
     void testOnSecondChanceEvent_withMissingSession()  {
         SecondChanceEvent event = new SecondChanceEvent("1234", "testuser");
-        assertThrows(GameException.class, () -> cardService.onSecondChanceEvent(event));
+        assertThrows(SessionNotFoundException.class, () -> cardService.onSecondChanceEvent(event));
     }
 
     @Test

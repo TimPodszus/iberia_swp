@@ -30,7 +30,6 @@ import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.plague.management.IPlagueManagement;
-import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -87,7 +86,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                  .addGame(request.getLobbyId(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
-        } catch (PlayerManagementException e) {
+        } catch (IllegalGameStateException e) {
             throw new GameInitializationException("Failed to initialize game", e);
         }
         return game;
@@ -99,8 +98,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
+     * @throws IllegalGameStateException If the game is not in a state that allows players to draw cards
      */
-    private void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
+    private void initializing(IGame game, List<IUser> users) throws IllegalGameStateException {
         initiateInfections(game);
         createPlayers(users, game);
         game.gameStartShuffle(game.getDifficulty() + 3);
@@ -115,8 +115,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
+     * @throws IllegalGameStateException If the game is not in a state that allows players to draw cards
      */
-    void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
+    void createPlayers(List<IUser> users, IGame game) throws IllegalGameStateException {
         for (IUser user : users) {
             Player player = new Player(user);
 
@@ -322,14 +323,21 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
 
     private boolean roleActionOneAvailable(String lobbyCode) {
-        if (getGame(lobbyCode).getCurrentPlayer()
+        IGame game = getGame(lobbyCode);
+        if (game.getCurrentPlayer()
                               .getRole()
                               .getName()
                               .equals(RoleEnum.POLITICIAN)) {
-            return getGame(lobbyCode).getCurrentPlayer()
+            return game.getCurrentPlayer()
                                      .getCards()
                                      .stream()
-                                     .anyMatch(card -> card instanceof CityCard);
+                                     .anyMatch(CityCard.class::isInstance);
+        } else if (game.getCurrentPlayer()
+                       .getRole()
+                       .getName()
+                       .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)){
+            return !game.getPlayerCardDrawPile()
+                        .isEmpty();
         }
         return false;
     }
@@ -342,11 +350,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             boolean playerHasCurrentCityCard = getGame(lobbyCode).getCurrentPlayer()
                                                                  .getCards()
                                                                  .stream()
-                                                                 .anyMatch(card -> card instanceof CityCard);
+                                                                 .anyMatch(CityCard.class::isInstance);
 
             boolean currentCityCardIsOnDiscardPile = getGame(lobbyCode).getPlayerCardDiscardPile()
                                                                        .stream()
-                                                                       .anyMatch(card -> card instanceof CityCard);
+                                                                       .anyMatch(CityCard.class::isInstance);
 
             return playerHasCurrentCityCard || currentCityCardIsOnDiscardPile;
         }
@@ -453,17 +461,18 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
         boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
                 && (availableDestinations.get(city.getId())
-                                                                                                                 .getTransportModes()
+                                         .getTransportModes()
                                          .contains(TransportMode.CARRIAGE) ||
                     availableDestinations.get(city.getId())
-                                                                                                                                                                         .getTransportModes()
+                                         .getTransportModes()
                                          .contains(TransportMode.TRAIN) ||
                     availableDestinations.get(city.getId())
-                                                                                                                                                                                                                              .getTransportModes()
+                                         .getTransportModes()
                                          .contains(TransportMode.NONE));
+
         boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
                 && availableDestinations.get(city.getId())
-                                                                                                               .getTransportModes()
+                                        .getTransportModes()
                                         .contains(TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {

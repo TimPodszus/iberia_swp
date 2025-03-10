@@ -580,6 +580,38 @@ class GameManagementTest {
         assertEquals(6, actions.size());
     }
 
+    @Test
+    void testGetAvailableActionsScientist() {
+        IUser user = mock(IUser.class);
+        when(user.getUsername()).thenReturn("username");
+        when(cityManagement.isHospitalBuildable(any(String.class), any(String.class))).thenReturn(true);
+
+        String lobbyCode = "testLobby";
+
+        game = mock(IGame.class);
+        GameStore.getInstance()
+                 .addGame(lobbyCode, game);
+
+        IPlayer player = mock(IPlayer.class);
+        ICity city = mock(ICity.class);
+        CityCard cityCard = mock(CityCard.class);
+
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getCurrentPosition()).thenReturn(city);
+        when(city.getId()).thenReturn(1);
+        when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getPlayerCardDrawPile()).thenReturn(List.of(mock(ICard.class)));
+        when(player.getCards()).thenReturn(List.of(cityCard));
+        when(cityCard.getCity()).thenReturn(city);
+        when(player.getRole()).thenReturn(new ScientistAtTheRoyalAcademy());
+        when(player.getUser()).thenReturn(user);
+
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
+
+        assertEquals(5, actions.size());
+    }
+
 
     @Test
     void buildTrainTrack_Successful() throws IllegalGameStateException, GameException {
@@ -856,7 +888,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testCreatePlayersWithDifferentUserCounts() throws PlayerManagementException {
+    void testCreatePlayersWithDifferentUserCounts() throws IllegalGameStateException {
         List<IUser> twoUsers = List.of(new User("user1", "pass1"), new User("user2", "pass2"));
         List<IUser> threeUsers = List.of(
                 new User("user1", "pass1"),
