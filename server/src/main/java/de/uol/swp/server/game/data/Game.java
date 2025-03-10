@@ -141,6 +141,12 @@ public class Game implements IGame {
     private GameStateChangeListener gameStateChangeListener;
 
     /**
+     * Flag indicating whether the favorable time event card has been played.
+     */
+    @Setter
+    private boolean favorableTimeEventCardPlayed;
+
+    /**
      * Constructs a new Game instance with default values.
      * Initializes repositories and sets initial game state.
      */
@@ -265,5 +271,9 @@ public class Game implements IGame {
             }
         }
         return null;
+    }
+
+    public void incrementCurrentPlayerIndex(Integer userAmount) {
+        this.setCurrentPlayerIndex(currentPlayerIndex == userAmount - 1 ? 0 : currentPlayerIndex + 1);
     }
 }
