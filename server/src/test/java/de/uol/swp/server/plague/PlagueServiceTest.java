@@ -216,7 +216,7 @@ class PlagueServiceTest {
 
     @Test
     void testOnTreatPlagueRequest_ExitTreatExtraPlagueState() {
-        when(game.getState()).thenReturn(new TreatExtraPlagueState(4));
+        when(game.getState()).thenReturn(new TreatExtraPlagueState());
         when(game.getPreviousState()).thenReturn(previousState);
         when(game.getCurrentPlayer()).thenReturn(player);
 

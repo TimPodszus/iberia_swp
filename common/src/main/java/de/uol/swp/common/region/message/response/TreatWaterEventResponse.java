@@ -1,16 +1,15 @@
 package de.uol.swp.common.region.message.response;
 
-import de.uol.swp.common.game.message.AbstractGameResponse;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 import lombok.Getter;
 
 import java.util.Objects;
 
 @Getter
-public class TreatWaterEventResponse extends AbstractGameResponse {
+public class TreatWaterEventResponse extends AbstractResponseMessage {
     boolean isDismissible;
 
-    public TreatWaterEventResponse(String lobbyId, boolean isDismissible) {
-        super(lobbyId, true, "");
+    public TreatWaterEventResponse(boolean isDismissible) {
         this.isDismissible = isDismissible;
     }
 
@@ -19,8 +18,11 @@ public class TreatWaterEventResponse extends AbstractGameResponse {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        if (!super.equals(o)) {
+            return false;
+        }
         TreatWaterEventResponse that = (TreatWaterEventResponse) o;
-        return super.equals(that) && isDismissible == that.isDismissible;
+        return isDismissible == that.isDismissible;
     }
 
     @Override

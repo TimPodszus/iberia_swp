@@ -162,13 +162,15 @@ public class RegionService extends AbstractService {
 
     @Subscribe
     public void onTreatWaterEvent(TreatWaterEvent event) {
-        TreatWaterEventResponse response = new TreatWaterEventResponse(event.getLobbyId(), false);
+        LOG.debug("[Lobby: {}] Got TreatWaterEvent", event.getLobbyId());
+        TreatWaterEventResponse response = new TreatWaterEventResponse(false);
         IUser user = regionManagement.getGame(event.getLobbyId())
                                      .getPlayer(event.getUsername())
                                      .getUser();
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error("[LobbyId: {}] Session not found for user",
+                                                   LOG.error(
+                                                           "[LobbyId: {}] Session not found for user",
                                                            event.getLobbyId()
                                                    );
                                                    return new SessionNotFoundException();
@@ -192,7 +194,7 @@ public class RegionService extends AbstractService {
             regionManagement.increaseWaterTreatment(request.getRegionId(), game, request.getAmount());
             game.setState(game.getPreviousState());
             game.setState(new PlaceExtraWaterTreatmentState());
-            TreatWaterEventResponse response = new TreatWaterEventResponse(request.getLobbyId(), true);
+            TreatWaterEventResponse response = new TreatWaterEventResponse(true);
             response.setSession(session);
             post(response);
         } else if (request.isDismissed()) {

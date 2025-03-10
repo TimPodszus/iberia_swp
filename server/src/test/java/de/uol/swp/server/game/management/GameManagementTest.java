@@ -719,7 +719,6 @@ class GameManagementTest {
         when(city.getId()).thenReturn(1);
         when(city.getName()).thenReturn(ALICANTE);
         when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(List.of(connection));
-        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 34)).thenReturn(List.of(connection));
 
         gameManagement.buildTrainTrack(user, LOBBY_CODE, connection);
 
@@ -737,7 +736,7 @@ class GameManagementTest {
         IPlayer player = mock(IPlayer.class);
         ICity city = mock(ICity.class);
 
-        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection), 4));
+        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection)));
         when(game.getCurrentPlayer()).thenReturn(player);
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
         when(game.getPreviousState()).thenReturn(new PlayerTurnState());

@@ -195,12 +195,13 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
             throw new PlagueNotFoundException("The selected plague is not present in the city or no cubes to remove.");
         }
 
-        if (game.getState() instanceof PlayerTurnState) {
+        if (game.getState() instanceof PlayerTurnState playerTurnState) {
             LOG.debug("Removing one cube of plague {} from city {}", plagueToTreat, city.getName());
             city.removePlagueCubes(plagueToTreat, 1);
             game.getPlagueRepository()
                 .getPlagueByName(plagueToTreat)
                 .increaseCubes(1);
+            playerTurnState.reduceActionsRemaining(game);
         } else if (game.getState() instanceof TreatExtraPlagueState) {
             LOG.debug("Treating extra plague cube of {} in city {}", plagueToTreat, city.getName());
             city.removePlagueCubes(plagueToTreat, 1);

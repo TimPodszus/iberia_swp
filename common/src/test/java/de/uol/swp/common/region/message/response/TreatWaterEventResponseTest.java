@@ -9,9 +9,9 @@ class TreatWaterEventResponseTest {
 
     @Test
     void testEqualsAndHashCode() {
-        TreatWaterEventResponse response1 = new TreatWaterEventResponse("lobbyId", true);
-        TreatWaterEventResponse response2 = new TreatWaterEventResponse("lobbyId", true);
-        TreatWaterEventResponse response3 = new TreatWaterEventResponse("lobbyId", false);
+        TreatWaterEventResponse response1 = new TreatWaterEventResponse(true);
+        TreatWaterEventResponse response2 = new TreatWaterEventResponse(true);
+        TreatWaterEventResponse response3 = new TreatWaterEventResponse(false);
 
         assertEquals(response1, response2);
         assertNotEquals(response1, response3);
@@ -20,26 +20,35 @@ class TreatWaterEventResponseTest {
     }
 
     @Test
+    void testIsDismissible() {
+        TreatWaterEventResponse response = new TreatWaterEventResponse(true);
+        assertTrue(response.isDismissible());
+
+        response = new TreatWaterEventResponse(false);
+        assertFalse(response.isDismissible());
+    }
+
+    @Test
     void testConstructor() {
-        TreatWaterEventResponse response = new TreatWaterEventResponse("lobbyId", true);
+        TreatWaterEventResponse response = new TreatWaterEventResponse(true);
         assertNotNull(response);
         assertTrue(response.isDismissible());
 
-        response = new TreatWaterEventResponse("lobbyId", false);
+        response = new TreatWaterEventResponse(false);
         assertNotNull(response);
         assertFalse(response.isDismissible());
     }
 
     @Test
     void testEqualsWithNullAndDifferentClass() {
-        TreatWaterEventResponse response = new TreatWaterEventResponse("lobbyId", true);
+        TreatWaterEventResponse response = new TreatWaterEventResponse(true);
         assertNotEquals(null, response);
         assertNotEquals(new Object(), response);
     }
 
     @Test
     void testEqualsWithDifferentSubclass() {
-        TreatWaterEventResponse response = new TreatWaterEventResponse("lobbyId", true);
+        TreatWaterEventResponse response = new TreatWaterEventResponse(true);
         AbstractResponseMessage differentSubclass = new AbstractResponseMessage() {};
         assertNotEquals(response, differentSubclass);
     }

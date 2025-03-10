@@ -21,9 +21,14 @@ import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.*;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
-import de.uol.swp.common.game.message.event.*;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.EndGameEvent;
+import de.uol.swp.common.game.message.event.ShareRideEvent;
+import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
+import de.uol.swp.common.game.message.response.CardExchangeResponse;
+import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.dto.IPlagueDTO;
@@ -1573,6 +1578,35 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Event handler for the CardSelectionResponse.
+     * This method is called when a CardSelectionResponse is received.
+     * It displays a dialog for the user to select a card.
+     *
+     * @param response the CardSelectionResponse containing the cards to be selected
+     */
+    @Subscribe
+    public void onCardSelectionResponse(CardSelectionResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
+        CardDialog dialog = new CardDialog(true, response.isDismissible(), response.getCards());
+        Optional<ICardDTO> result = dialog.showAndWait();
+    }
+
+    @Subscribe
+    public void onCardExchangeResponse(CardExchangeResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
+        CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
+        Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
+    }
+
     @Subscribe
     public void onDiscardPlayerCardEvent(DiscardPlayerCardEvent event) {
         LOG.debug("DiscardPlayerCardEvent received");
@@ -1804,11 +1838,6 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
-        if (!response.getLobbyId()
-                     .equals(this.lobbyId)) {
-            return;
-        }
-
         LOG.debug("Received ShareKnowledgeResponse");
         if (response.wasSuccessful()) {
             LOG.info("Knowledge shared");
@@ -1855,10 +1884,6 @@ public class GamePresenter extends AbstractPresenter {
 
     @Subscribe
     public void onTreatWaterEventResponse(TreatWaterEventResponse eventResponse) {
-        if(!eventResponse.getLobbyId().equals(lobbyId)) {
-            return;
-        }
-
         List<IRegionDTO> regions = gameDTO.getRegions();
         isDismissibleDialog = eventResponse.isDismissible();
         for (IRegionDTO region : regions) {
@@ -1876,10 +1901,6 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
-        if(!response.getLobbyId().equals(lobbyId)) {
-            return;
-        }
-
         LOG.info(
                 "AvailablePlaguesResponse received! Current plague count: {}",
                 response.getAvailablePlagues()
@@ -1906,10 +1927,6 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onTreatPlagueResponse(TreatPlagueResponse response) {
-        if(!response.getLobbyId().equals(lobbyId)) {
-            return;
-        }
-
         LOG.info("TreatPlagueResponse received from Lobby: {}", response.getLobbyId());
         if (response.isCountryDoctor()) {
             Platform.runLater(() -> {
@@ -1983,8 +2000,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onGameResponse(AbstractGameResponse response) {
-        if (!response.getLobbyId()
-                     .equals(lobbyId) || response.isSuccess()) {
+        if (response.isSuccess()) {
             return;
         }
 
@@ -2017,22 +2033,5 @@ public class GamePresenter extends AbstractPresenter {
         return gameDTO.getCurrentPlayer()
                       .getUsername()
                       .equals(user.getUsername());
-    }
-
-    @Subscribe
-    public void onCardSelectionEvent(CardSelectionEvent event) {
-        if (!event.getLobbyId()
-                  .equals(lobbyId)) {
-            return;
-        }
-        LOG.debug("[LobbyId: {}] Received CardSelectionEvent", event.getLobbyId());
-        Platform.runLater(() -> {
-            CardDialog dialog = new CardDialog(true, false, event.getCards());
-            Optional<ICardDTO> result = dialog.showAndWait();
-            result.ifPresent(card -> {
-                LOG.debug("[LobbyId: {}] Player selected card {}", lobbyId, card.getId());
-                gameService.sendGetCardRequest(lobbyId, card.getId());
-            });
-        });
     }
 }

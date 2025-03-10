@@ -5,7 +5,11 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
-import de.uol.swp.server.cards.data.eventcards.*;
+import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
+import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
+import de.uol.swp.server.cards.data.eventcards.SecondChanceEventCard;
+import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
+import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
 import de.uol.swp.server.city.CityRepository;
 import lombok.Getter;
 
@@ -133,7 +137,6 @@ public class CardRepository {
         cards.put(208, new AnotherDayEventCard(208));
         cards.put(209, new StateMobilizationEventCard(209));
         cards.put(210, new SecondChanceEventCard(210));
-        cards.put(211, new TreatWaterEventCard(211));
-        cards.put(212, new ForTheGoodCauseEventCard(212));
+        cards.put(210, new TreatWaterEventCard(210));
     }
 }
