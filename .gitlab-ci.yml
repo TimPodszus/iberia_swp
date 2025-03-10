@@ -50,8 +50,6 @@ deploy-job:
     - docker build -t timpodszus/iberia-db .
     - docker push timpodszus/iberia-db
 
-  only:
-    - master
 
 
 
