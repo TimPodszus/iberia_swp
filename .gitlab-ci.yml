@@ -15,8 +15,6 @@ build-job:
   stage: build
   image: maven:3.8.6-openjdk-18
   before_script:
-    - echo "Setting up Docker..."
-    - docker info
     - echo "Changing ownership of files..."
     - sudo chown -R $(whoami) .
   script:
@@ -31,8 +29,6 @@ unit-test-job:
   stage: test
   image: maven:3.8.6-openjdk-18
   before_script:
-    - echo "Setting up Docker..."
-    - docker info
     - echo "Changing ownership of files..."
     - sudo chown -R $(whoami) .
   script:
@@ -53,8 +49,6 @@ deploy-job:
   services:
     - docker:dind
   before_script:
-    - echo "Setting up Docker..."
-    - docker info
     - echo "Changing ownership of files..."
     - sudo chown -R $(whoami) .
   script:
