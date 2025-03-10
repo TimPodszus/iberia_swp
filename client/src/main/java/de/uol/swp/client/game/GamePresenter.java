@@ -14,6 +14,7 @@ import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.city.message.response.HospitalFoundationEventResponse;
 import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
@@ -206,6 +207,8 @@ public class GamePresenter extends AbstractPresenter {
 
     private boolean isDismissibleDialog;
 
+    private boolean currentlyHandlingHospitalFoundationEventCard;
+
     @FXML
     private ChatDetailPresenter chatController;
 
@@ -356,6 +359,13 @@ public class GamePresenter extends AbstractPresenter {
             return;
         }
 
+        if (isGameState(StateType.EVENT_STATE) && currentlyHandlingHospitalFoundationEventCard) {
+            LOG.debug("City with ID {} selected for hospital foundation", cityId);
+            gameService.sendHospitalFoundationEventRequest(lobbyId, cityId);
+            this.currentlyHandlingHospitalFoundationEventCard = false;
+            return;
+        }
+
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
             LOG.trace("Player wants to move to city {}", cityId);
@@ -502,11 +512,11 @@ public class GamePresenter extends AbstractPresenter {
         LOG.debug("Region {} clicked", regionId);
 
         if (isGameState(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
-                                                                 .contains(REGION_HIGHLIGHTED_CLASS)) {
+                                                              .contains(REGION_HIGHLIGHTED_CLASS)) {
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
         } else if ((isGameState(StateType.EVENT_STATE) || isGameState(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
-                                                                                                                                   .contains(
-                                                                                                                                           REGION_HIGHLIGHTED_CLASS)) {
+                                                                                                                             .contains(
+                                                                                                                                     REGION_HIGHLIGHTED_CLASS)) {
             Platform.runLater(() -> {
                 TreatWaterEventDialog dialog = new TreatWaterEventDialog(
                         isDismissibleDialog,
@@ -644,9 +654,9 @@ public class GamePresenter extends AbstractPresenter {
     private void onResearchPlague(ActionEvent event) {
         LOG.debug("Research plague action triggered");
         if (isGameState(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
-                gameService.sendResearchPlagueRequest(lobbyId);
-                researchPlagueButton.setSelected(false);
-            }
+            gameService.sendResearchPlagueRequest(lobbyId);
+            researchPlagueButton.setSelected(false);
+        }
     }
 
     /**
@@ -1175,7 +1185,6 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
-     *
      */
     private void updatePlayerHandCards() {
         removePlayerHandCards();
@@ -1692,6 +1701,27 @@ public class GamePresenter extends AbstractPresenter {
             node.getStyleClass()
                 .add(REGION_HIGHLIGHTED_CLASS);
         }
+    }
+
+    /**
+     * Handles the HospitalFoundationEventResponse.
+     * <p>
+     * This method is called when an HospitalFoundationEventResponse is received.
+     * It updates the available cities on the game map by highlighting them.
+     *
+     * @param response the HospitalFoundationEventResponse containing the available cities
+     */
+    @Subscribe
+    public void onHospitalFoundationEventResponse(HospitalFoundationEventResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
+        this.currentlyHandlingHospitalFoundationEventCard = true;
+        LOG.debug("Received available cities to build a hospital");
+        resetHighlightetCities();
+        highlightAvailableHospitalLocations(response.getCityIds());
     }
 
     /**

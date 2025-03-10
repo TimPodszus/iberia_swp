@@ -5,7 +5,8 @@ import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.request.PlayCardRequest;
-import de.uol.swp.common.city.request.BuildHospitalRequest;
+import de.uol.swp.common.city.message.request.BuildHospitalRequest;
+import de.uol.swp.common.city.message.request.HospitalFoundationEventRequest;
 import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.game.PlagueName;
@@ -484,5 +485,14 @@ public class GameService {
      */
     public void sendEndTurnRequest(String lobbyId) {
         eventBus.post(new EndTurnRequest(lobbyId));
+    }
+
+    /**
+     * Sends a request to build a hospital in the specified city.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    public void sendHospitalFoundationEventRequest(String lobbyId, Integer cityId) {
+        eventBus.post(new HospitalFoundationEventRequest(lobbyId, cityId));
     }
 }
