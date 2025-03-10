@@ -14,6 +14,11 @@ cache:
 deploy-job:
   image: docker:20.10.8
   stage: deploy
+  services:
+    - docker:20.10.8-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
   script:
     - echo "Deploying the application..."
     - docker build -t timpodszus/iberia-swp server/.
