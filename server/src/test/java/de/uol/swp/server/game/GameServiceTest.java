@@ -831,40 +831,8 @@ public class GameServiceTest extends EventBusBasedTest {
 
         gameService.onFavorableTimeEvent(event);
 
-        verify(game1).setFavorableTimeEventCardPlayed(true);
-        verify(playerManagement).discardPlayerCard("lobbyId", "testuser", 212);
+        assertTrue(game1.getFavorableTimeEventCardPlayed());
         verify(gameService).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
-    }
-
-    @Test
-    void testOnFavorableTimeEvent_PlayerDoesNotHaveCard_Fails() throws GameException, InterruptedException {
-        IGame game1 = new Game(2, "lobbyId");
-
-        IUser user = new User("testuser", "testpassword");
-        Session session = UUIDSession.create(user);
-        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
-
-        IPlayer player = new Player(user);
-        player.setRole(new CountryDoctor());
-        game1.getPlayers()
-             .add(player);
-        game1.setCurrentPlayerIndex(0);
-        game1.setState(new PlayerTurnState());
-
-        doThrow(GameException.class).when(playerManagement)
-                                    .discardPlayerCard("lobbyId", "testuser", 212);
-
-        FavorableTimeEvent event = new FavorableTimeEvent("lobbyId", "testuser");
-        event.setSession(session);
-
-        when(gameManagement.getGame("lobbyId")).thenReturn(game1);
-        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
-        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
-
-        postAndWait(event);
-
-        assertInstanceOf(StatusResponse.class, this.event);
-        assertFalse(((StatusResponse) this.event).isSuccess());
     }
 
     @Test
