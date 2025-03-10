@@ -1,6 +1,7 @@
 package de.uol.swp.server.plague.management;
 
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
@@ -320,4 +321,19 @@ public class PlagueManagementTest {
         assertThrows(PlagueManagementException.class, () -> plagueManagement.researchPlague(game));
     }
 
+    @Test
+    void testGetCitesWithPlagues() {
+        IInfection infection = mock(IInfection.class);
+        when(game.getCityRepository()).thenReturn(mock(CityRepository.class));
+        when(game.getCityRepository().getCities()).thenReturn(List.of(city));
+        when(city.getInfections()).thenReturn(List.of(infection));
+        when(infection.getSeverity()).thenReturn(1);
+
+        List<ICityDTO> result = plagueManagement.getCitesWithPlagues(game);
+
+        assertEquals(1, result.size());
+        verify(game.getCityRepository(), times(1)).getCities();
+        verify(city, times(2)).getInfections();
+        verify(infection, times(2)).getSeverity();
+    }
 }

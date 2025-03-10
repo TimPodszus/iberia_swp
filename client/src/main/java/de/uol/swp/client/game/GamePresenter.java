@@ -1942,6 +1942,12 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Handles the response after playing a MigrationOverseas card.
+     * Opens a dialog for the player to select a city to treat.
+     *
+     * @param response The response confirming the water treatment.
+     */
     @Subscribe
     public void onMigrationOverseasResponse(MigrationOverseasResponse response) {
         if (!response.getLobbyId()

@@ -89,8 +89,11 @@ public class PlagueService extends AbstractService {
             response = new StatusResponse(request.getLobbyId(), false, "Fehler beim Erforschen der Seuche");
         } catch (IllegalGameStateException e) {
             LOG.error("Game is in an illegal state for researching plague");
-            response = new StatusResponse(request.getLobbyId(), false, "In dem Zustand des Spiels kann die Seuche " +
-                    "nicht erforscht werden.");
+            response = new StatusResponse(
+                    request.getLobbyId(),
+                    false,
+                    "In dem Zustand des Spiels kann die Seuche " + "nicht erforscht werden."
+            );
         } catch (GameException e) {
             throw new RuntimeException(e);
         }
@@ -118,17 +121,20 @@ public class PlagueService extends AbstractService {
         LOG.debug("Received AvailablePlaguesRequest for lobbyId: {}", request.getLobbyId());
         IGame game = plagueManagement.getGame(request.getLobbyId());
 
-        List<IInfectionDTO> infectionsInCity = InfectionMapper.toDTOList(plagueManagement.getInfectionsInCity(game,
+        List<IInfectionDTO> infectionsInCity = InfectionMapper.toDTOList(plagueManagement.getInfectionsInCity(
+                game,
                 request.getCityId()
         ));
-        LOG.debug("Found {} infections in city {}",
+        LOG.debug(
+                "Found {} infections in city {}",
                 infectionsInCity.size(),
                 game.getCurrentPlayer()
                     .getCurrentPosition()
                     .getName()
         );
 
-        AvailablePlaguesResponse availablePlaguesResponse = new AvailablePlaguesResponse(request.getLobbyId(),
+        AvailablePlaguesResponse availablePlaguesResponse = new AvailablePlaguesResponse(
+                request.getLobbyId(),
                 true,
                 infectionsInCity,
                 request.getCityId()
@@ -138,7 +144,8 @@ public class PlagueService extends AbstractService {
         request.getMessageContext()
                .ifPresent(availablePlaguesResponse::setMessageContext);
 
-        LOG.debug("Sending AvailablePlaguesResponse with {} plagues and role: {}",
+        LOG.debug(
+                "Sending AvailablePlaguesResponse with {} plagues and role: {}",
                 infectionsInCity.size(),
                 game.getCurrentPlayer()
                     .getRole()
@@ -156,7 +163,8 @@ public class PlagueService extends AbstractService {
     @Subscribe
     public void onTreatPlagueRequest(TreatPlagueRequest request) {
         AbstractResponseMessage response;
-        LOG.debug("Received TreatPlagueRequest for lobbyId: {}, cityId: {}, plagueName: {}",
+        LOG.debug(
+                "Received TreatPlagueRequest for lobbyId: {}, cityId: {}, plagueName: {}",
                 request.getLobbyId(),
                 request.getCityId(),
                 request.getPlagueName()
@@ -179,7 +187,8 @@ public class PlagueService extends AbstractService {
 
             return;
         }
-        boolean isCountryDoctor = game.getCurrentPlayer().getRole() instanceof CountryDoctor;
+        boolean isCountryDoctor = game.getCurrentPlayer()
+                                      .getRole() instanceof CountryDoctor;
         boolean isPlayerTurnState = game.getState() instanceof PlayerTurnState;
         boolean isEventState = game.getState() instanceof EventState;
 
@@ -187,9 +196,11 @@ public class PlagueService extends AbstractService {
             List<ICityDTO> availableCities;
             if (isEventState) {
                 game.setState(game.getPreviousState());
-                availableCities = plagueManagement.getCitesWithPlagues(request.getLobbyId());
+                availableCities = plagueManagement.getCitesWithPlagues(game);
+                LOG.debug("EventState: sending available cities with plagues");
             } else {
                 availableCities = CityMapper.toDTOList(plagueManagement.getCitiesNearBy(game, city));
+                LOG.debug("PlayerTurnState: sending nearby cities");
             }
             if (!availableCities.isEmpty()) {
                 game.setState(new TreatExtraPlagueState());
@@ -203,17 +214,23 @@ public class PlagueService extends AbstractService {
 
                 return;
             }
-        }else {
+        } else {
             if (game.getState() instanceof TreatExtraPlagueState) {
                 game.setState(game.getPreviousState());
             }
         }
-
+        sendServerMessageEvent(request.getLobbyId(), "Die Seuche in der Stadt " + city.getName() + " wurde behandelt.");
         IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 
+    /**
+     * handles the MigrationOverseasEvent and sends a MigrationOverseasResponse
+     * with the available cities to migrate to.
+     *
+     * @param event The MigrationOverseasEvent
+     */
     @Subscribe
     public void onMigrationOverseasEvent(MigrationOverseasEvent event) {
         LOG.debug(
@@ -221,9 +238,9 @@ public class PlagueService extends AbstractService {
                 event.getLobbyId(),
                 event.getUsername()
         );
-        IUser user = plagueManagement.getGame(event.getLobbyId())
-                                     .getPlayer(event.getUsername())
-                                     .getUser();
+        IGame game = plagueManagement.getGame(event.getLobbyId());
+        IUser user = game.getPlayer(event.getUsername())
+                         .getUser();
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
                                                    LOG.error(
@@ -232,7 +249,7 @@ public class PlagueService extends AbstractService {
                                                    );
                                                    return new SessionNotFoundException();
                                                });
-        List<ICityDTO> availableCities = plagueManagement.getCitesWithPlagues(event.getLobbyId());
+        List<ICityDTO> availableCities = plagueManagement.getCitesWithPlagues(game);
         MigrationOverseasResponse response = new MigrationOverseasResponse(event.getLobbyId(), true, availableCities);
         response.setSession(session);
         post(response);

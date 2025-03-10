@@ -251,12 +251,11 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
     }
 
     /**
-     * @param lobbyId the ID of the lobby
+     * @param game the current game instance
      * @return a list of cities that have at least one plague cube
      */
     @Override
-    public List<ICityDTO> getCitesWithPlagues(String lobbyId) {
-        IGame game = getGame(lobbyId);
+    public List<ICityDTO> getCitesWithPlagues(IGame game) {
         List<ICity> availableCities = game.getCityRepository()
                                           .getCities()
                                           .stream()

@@ -73,8 +73,8 @@ public interface IPlagueManagement {
     /**
      * Retrieves a list of cities that have at least one plague cube.
      *
-     * @param lobbyId     the ID of the lobby
+     * @param game the current game instance
      * @return a list of cities near the given city
      */
-    List<ICityDTO> getCitesWithPlagues(String lobbyId);
+    List<ICityDTO> getCitesWithPlagues(IGame game);
 }

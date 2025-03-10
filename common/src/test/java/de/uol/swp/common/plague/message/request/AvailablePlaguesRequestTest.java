@@ -24,8 +24,8 @@ class AvailablePlaguesRequestTest {
         assertEquals(request1, request2);
         assertNotEquals(request1, request3);
         assertNotEquals(request1, request4);
-        assertNotEquals(null, request1);
-        assertNotEquals(new Object(), request1);
+        assertNotEquals(request1, null);
+        assertNotEquals(request1, new Object());
     }
 
     @Test

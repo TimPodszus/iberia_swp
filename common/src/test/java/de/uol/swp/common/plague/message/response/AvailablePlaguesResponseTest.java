@@ -41,8 +41,8 @@ class AvailablePlaguesResponseTest {
         assertNotEquals(response1, response3);
         assertNotEquals(response1, response4);
         assertNotEquals(response1, response5);
-        assertNotEquals(null, response1);
-        assertNotEquals(new Object(), response1);
+        assertNotEquals(response1, null);
+        assertNotEquals(response1, new Object());
     }
 
     @Test

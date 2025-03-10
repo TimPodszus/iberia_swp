@@ -485,13 +485,4 @@ public class GameService {
     public void sendEndTurnRequest(String lobbyId) {
         eventBus.post(new EndTurnRequest(lobbyId));
     }
-
-    /**
-     * Sends a request to end the game in the specified lobby.
-     *
-     * @param lobbyId the ID of the lobby where the game is to be ended
-     * @param id     the ID of the player who ended the game
-     */
-    public void sendMigrationOverseasRequest(String lobbyId, int id) {
-    }
 }
