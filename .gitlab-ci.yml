@@ -16,7 +16,7 @@ build-job:
   stage: build
   script:
     - echo "Starting Maven build for all modules..."
-    - mvn $MAVEN_CLI_OPTS clean package
+    - mvn $MAVEN_CLI_OPTS clean package -DskipTests
     - echo "Listing contents of the target directory..."
     - ls -l /builds/swp/2024/ga/iberia/server/target/
   artifacts:
@@ -24,6 +24,21 @@ build-job:
       - /builds/swp/2024/ga/iberia/server/target/server-1.0.0-jar-with-dependencies.jar
     expire_in: 2 days
 
+unit-test-job:
+  image: maven:3.8.6-openjdk-18
+  stage: test
+  script:
+    - echo "Running unit tests across all modules..."
+    - mvn $MAVEN_CLI_OPTS verify
+  artifacts:
+    when: always
+    paths:
+      - target/
+    expire_in: 2 days
+    reports:
+      junit: "**/target/surefire-reports/*.xml"
+
+  coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
 
 
 deploy-job:
