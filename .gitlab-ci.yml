@@ -18,7 +18,7 @@ build-job:
     - echo "Starting Maven build for all modules..."
     - mvn $MAVEN_CLI_OPTS clean package
     - echo "Listing contents of the target directory..."
-    - ls -l target/
+    - ls -l /builds/swp/2024/ga/iberia/server/target/
   artifacts:
     paths:
       - /builds/swp/2024/ga/iberia/server/target/
