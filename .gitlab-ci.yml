@@ -39,6 +39,21 @@ unit-test-job:
 
   coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
 
+deploy-job:
+  before_script:
+    - docker info
+  image: docker:20.10.8
+  stage: deploy
+  script:
+    - echo "Deploying the application..."
+    - docker login
+    - docker build -t timpodszus/iberia-swp server/.
+    - docker push timpodszus/iberia-swp
+    - docker build -t timpodszus/ieria-db .
+    - docker push timpodszus/iberia-db
+
+
+
 
 
 
