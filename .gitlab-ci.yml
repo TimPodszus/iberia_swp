@@ -50,6 +50,8 @@ deploy-job:
   script:
     - docker build -t "$CI_REGISTRY_IMAGE" server/.
     - docker push "$CI_REGISTRY_IMAGE"
+  dependencies:
+    - build-job
   after_script:
     - echo "Cleaning up target folders..."
     - rm -rf target/
