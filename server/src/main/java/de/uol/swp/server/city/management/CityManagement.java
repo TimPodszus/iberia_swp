@@ -98,6 +98,9 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                     amount
             );
             infectCity(game, findCity(game, infectionCard), plagueName, amount, true);
+            if (game.getState() instanceof InfectionState infectionState) {
+                infectionState.increaseInfectedCities(game);
+            }
             gameManagement.discardInfectionCard(game, infectionCard);
             LOG.debug(
                     "Infection card discarded: {}",
@@ -139,10 +142,6 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                              .getPlagueByName(plagueName);
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
-
-        if (game.getState() instanceof InfectionState infectionState) {
-            infectionState.increaseInfectedCities(game);
-        }
     }
 
     /**
