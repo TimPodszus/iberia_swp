@@ -22,7 +22,6 @@ build-job:
       - target/
     expire_in: 2 days
 
-
 unit-test-job:
   image: maven:3.8.6-openjdk-18
   stage: test
@@ -36,7 +35,6 @@ unit-test-job:
     expire_in: 2 days
     reports:
       junit: "**/target/surefire-reports/*.xml"
-
   coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
 
 deploy-job:
@@ -44,15 +42,8 @@ deploy-job:
   stage: deploy
   script:
     - echo "Deploying the application..."
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
     - docker build -t timpodszus/iberia-swp server/.
     - docker push timpodszus/iberia-swp
     - docker build -t timpodszus/iberia-db .
     - docker push timpodszus/iberia-db
-
-  only:
-    - development
-    - master
-
-
-
-
