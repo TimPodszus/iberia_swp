@@ -3,6 +3,7 @@ package de.uol.swp.common.user.message;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Test for the user logged in message
@@ -27,4 +28,15 @@ public class UserLoggedInMessageTest {
         assertEquals("Test", message.getUsername());
     }
 
+    /**
+     * Tests the constructor without parameters and hashCode method of UserLoggedInMessage.
+     */
+    @Test
+    void testConstructorAndHashCode() {
+        UserLoggedInMessage message1 = new UserLoggedInMessage();
+        UserLoggedInMessage message2 = new UserLoggedInMessage();
+
+        assertNull(message1.getUsername());
+        assertEquals(message1.hashCode(), message2.hashCode());
+    }
 }
