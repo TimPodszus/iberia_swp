@@ -1,6 +1,7 @@
 package de.uol.swp.common.user;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -17,11 +18,10 @@ class UserDTOTest {
     private static final IUserDTO secondUser = new UserDTO("marco2", "marco");
 
 
-
-
     /**
      * This test checks if the createWithoutPassword function generates the Object correctly
      * This test fails if the usernames or emails do not match or the password is not empty.
+     *
      * @since 2019-09-04
      */
     @Test
@@ -37,6 +37,7 @@ class UserDTOTest {
     /**
      * This test checks if the getWithoutPassword function generates the Object correctly
      * This test fails if the usernames do not match or the password is not empty.
+     *
      * @since 2019-09-04
      */
     @Test
@@ -50,6 +51,7 @@ class UserDTOTest {
     /**
      * Test if two different users are equal
      * This test fails if they are considered equal
+     *
      * @since 2019-09-04
      */
     @Test
@@ -57,10 +59,11 @@ class UserDTOTest {
         assertNotEquals(defaultUser, secondUser);
     }
 
-     /**
+    /**
      * Test of compare function
      * This test compares two different users. It fails if the function returns
      * that both of them are equal.
+     *
      * @since 2019-09-04
      */
     @Test
@@ -68,5 +71,34 @@ class UserDTOTest {
         assertEquals(defaultUser.compareTo((UserDTO) secondUser), -1);
     }
 
+    /**
+     * Tests the constructor that creates a UserDTO from an IUserDTO instance,
+     * ensuring that the username and password are correctly copied.
+     */
+    @Test
+    void testUserDTOConstructorFromIUserDTO() {
+        IUserDTO mockUser = Mockito.mock(IUserDTO.class);
+        Mockito.when(mockUser.getUsername())
+               .thenReturn("testUser");
+        Mockito.when(mockUser.getPassword())
+               .thenReturn("securePass");
+
+        UserDTO userDTO = new UserDTO(mockUser);
+
+        assertEquals("testUser", userDTO.getUsername());
+        assertEquals("securePass", userDTO.getPassword());
+    }
+
+    /**
+     * Tests the equals method to ensure it correctly returns false
+     * when comparing a UserDTO instance with null or an object of a different class.
+     */
+    @Test
+    void testEqualsWithDifferentClassAndNull() {
+        UserDTO user = new UserDTO("testUser", "password");
+
+        assertNotEquals(null, user);
+        assertNotEquals(user, new Object());
+    }
 
 }

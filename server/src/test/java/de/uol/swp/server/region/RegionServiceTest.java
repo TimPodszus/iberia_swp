@@ -8,6 +8,7 @@ import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRequest;
+import de.uol.swp.common.region.message.response.TreatWaterEventResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.cards.data.ICard;
@@ -28,6 +29,7 @@ import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
@@ -89,11 +91,6 @@ public class RegionServiceTest extends EventBusBasedTest {
     }
 
     @Subscribe
-    public void onTreatWaterEvent(TreatWaterEvent event) {
-        super.handleEvent(event);
-    }
-
-    @Subscribe
     public void onWaterTreatmentEventRequest(WaterTreatmentRequest request) {
         super.handleEvent(request);
     }
@@ -105,6 +102,11 @@ public class RegionServiceTest extends EventBusBasedTest {
 
     @Subscribe
     public void onStatusResponse(StatusResponse response) {
+        super.handleEvent(response);
+    }
+
+    @Subscribe
+    public void onTreatWaterEventResponse(TreatWaterEventResponse response) {
         super.handleEvent(response);
     }
 
@@ -268,25 +270,30 @@ public class RegionServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnTreatWaterEvent() {
-        TreatWaterEvent event = new TreatWaterEvent("lobby1", "user1");
+    void testOnTreatWaterEvent() throws InterruptedException {
+        TreatWaterEvent treatWaterEvent = new TreatWaterEvent("lobby1", "user1");
         IGame game = mock(IGame.class);
-        IPlayer player = mock(IPlayer.class);
-        IUser user = mock(IUser.class);
+        IUser user = new User("user1", "password");
+        IPlayer player = new Player(user);
         Session session = UUIDSession.create(user);
-        event.setSession(session);
+        when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
 
         when(regionManagement.getGame("lobby1")).thenReturn(game);
-        when(game.getPlayers()).thenReturn(List.of(player));
-        when(player.getUser()).thenReturn(user);
-        when(user.getUsername()).thenReturn("user1");
+        when(game.getPlayer("user1")).thenReturn(player);
 
-        regionService.onTreatWaterEvent(event);
+        postAndWait(treatWaterEvent);
+
+        assertInstanceOf(TreatWaterEventResponse.class, event);
     }
 
     @Test
     void testOnTreatWaterEvent_MissingSession() {
         TreatWaterEvent event = new TreatWaterEvent("lobby1", "user1");
+        IGame game = mock(IGame.class);
+        when(regionManagement.getGame("lobby1")).thenReturn(game);
+        IPlayer player = mock(IPlayer.class);
+        when(game.getPlayer("user1")).thenReturn(player);
+        when(player.getUser()).thenReturn(mock(IUser.class));
 
         assertThrows(SessionNotFoundException.class, () -> regionService.onTreatWaterEvent(event));
     }

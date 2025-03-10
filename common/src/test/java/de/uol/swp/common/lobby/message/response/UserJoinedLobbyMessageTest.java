@@ -1,10 +1,9 @@
 package de.uol.swp.common.lobby.message.response;
 
-import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
 import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test for the user joined lobby message
@@ -31,6 +30,18 @@ class UserJoinedLobbyMessageTest {
 
         assertEquals(lobbyName, message.getLobbyId());
         assertEquals(user, message.getUser());
+    }
+
+    /**
+     * Tests the default constructor of UserJoinedLobbyMessage
+     */
+    @Test
+    void testDefaultConstructor() {
+        UserJoinedLobbyMessage message = new UserJoinedLobbyMessage();
+
+        assertNotNull(message);
+        assertNull(message.getLobbyId());
+        assertNull(message.getUser());
     }
 
 }

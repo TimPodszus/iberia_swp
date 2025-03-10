@@ -91,6 +91,8 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
             game.setInfectionCounter(game.getInfectionCounter() + 1);
             game.getPlayerCardDiscardPile()
                 .add(card);
+            game.getInfectionCardDiscardPile()
+                .add(infectionCard);
             shuffleInfectionCardsFromDrawPile(game);
             LOG.debug(
                     "[LobbyID: {}] Epidemic card drawn. Infection counter increased to {}",

@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
 
-
 import java.sql.Connection;
 import java.sql.SQLException;
 

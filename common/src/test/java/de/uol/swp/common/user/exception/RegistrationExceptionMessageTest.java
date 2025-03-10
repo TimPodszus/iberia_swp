@@ -1,9 +1,9 @@
 package de.uol.swp.common.user.exception;
 
-import de.uol.swp.common.user.message.UserLoggedInMessage;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Test for the registration exception message
@@ -26,6 +26,16 @@ public class RegistrationExceptionMessageTest {
         RegistrationExceptionMessage message = new RegistrationExceptionMessage("Test");
 
         assertEquals("RegistrationExceptionMessage Test", message.toString());
+    }
+
+    @Test
+    void testHashCode() {
+        RegistrationExceptionMessage msg1 = new RegistrationExceptionMessage("Error: Username taken");
+        RegistrationExceptionMessage msg2 = new RegistrationExceptionMessage("Error: Username taken");
+        RegistrationExceptionMessage msg3 = new RegistrationExceptionMessage("Error: Email already in use");
+
+        assertEquals(msg1.hashCode(), msg2.hashCode());
+        assertNotEquals(msg1.hashCode(), msg3.hashCode());
     }
 
 }

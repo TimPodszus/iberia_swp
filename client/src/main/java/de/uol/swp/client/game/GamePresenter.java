@@ -404,8 +404,8 @@ public class GamePresenter extends AbstractPresenter {
                                 LOG.info("Player has not selected a player to take with him. Moving alone.");
                             }
                     );
+                    return;
                 }
-                return;
             }
 
             gameService.movePlayerToCity(this.lobbyId, cityId);
@@ -1261,6 +1261,9 @@ public class GamePresenter extends AbstractPresenter {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
             setInfectionCardDiscardPile(CardFactory.createCard(infectionCard));
+        } else {
+            infectionCardDiscardPile.getChildren()
+                                    .clear();
         }
     }
 
