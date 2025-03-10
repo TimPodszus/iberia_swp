@@ -17,11 +17,11 @@ build-job:
   script:
     - echo "Starting Maven build for all modules..."
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
-    - echo "Listing contents of the target directory..."
-    - ls -l /builds/swp/2024/ga/iberia/server/target/
+    - echo "$CI_DOTENV_SQL_PASSWORD" > .env
   artifacts:
     paths:
       - /builds/swp/2024/ga/iberia/server/target/server-1.0.0-jar-with-dependencies.jar
+      - .env
     expire_in: 2 days
 
 unit-test-job:
