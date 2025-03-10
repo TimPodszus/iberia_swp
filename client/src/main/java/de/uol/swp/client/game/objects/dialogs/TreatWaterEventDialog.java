@@ -77,6 +77,8 @@ public class TreatWaterEventDialog extends Stage {
 
         Scene scene = new Scene(vbox, 150, 150);
         this.setScene(scene);
+
+        this.setOnCloseRequest(event -> result.complete(null));
     }
 
     public CompletableFuture<Integer> showAndWaitForResult() {
