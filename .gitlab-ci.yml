@@ -17,6 +17,8 @@ build-job:
   script:
     - echo "Starting Maven build for all modules..."
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
+    - echo "Listing contents of the target directory..."
+    - ls -l target/
   artifacts:
     paths:
       - target/
