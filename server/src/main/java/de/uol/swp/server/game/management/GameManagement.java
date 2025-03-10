@@ -14,6 +14,7 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.ForTheGoodCauseEventCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.management.CardNotFoundException;
