@@ -22,7 +22,6 @@ build-job:
       - target/
     expire_in: 2 days
 
-
 unit-test-job:
   image: maven:3.8.6-openjdk-18
   stage: test
@@ -36,9 +35,7 @@ unit-test-job:
     expire_in: 2 days
     reports:
       junit: "**/target/surefire-reports/*.xml"
-
   coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
-
 
 deploy-job:
   image: docker:20.10.8
@@ -51,5 +48,5 @@ deploy-job:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   script:
-    - docker build -t "$CI_REGISTRY_IMAGE" server/.
+    - docker build -t "$CI_REGISTRY_IMAGE" .
     - docker push "$CI_REGISTRY_IMAGE"
