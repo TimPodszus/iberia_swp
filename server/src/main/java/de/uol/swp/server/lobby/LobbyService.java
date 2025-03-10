@@ -10,7 +10,9 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.exceptions.LobbyIsFullException;
 import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
+import de.uol.swp.server.lobby.exceptions.UserAlreadyInLobbyException;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
@@ -105,8 +107,25 @@ public class LobbyService extends AbstractService {
             lobbyManagement.joinLobby(request.getLobbyId(), UserMapper.toUser(user));
         } catch (LobbyNotFoundException e) {
             LOG.error("[LobbyId: {}] Lobby to join not found", request.getLobbyId());
-            ExceptionMessage exceptionMessage = new ExceptionMessage(
-                    "Lobby konnte nicht beigetreten werden. Keine Lobby mit der ID " + request.getLobbyId() + " gefunden.");
+            ExceptionMessage exceptionMessage = new ExceptionMessage("Der Lobby konnte nicht beigetreten werden. Keine Lobby mit der ID " + request.getLobbyId() + " gefunden.");
+            exceptionMessage.setSession(session);
+            request.getMessageContext()
+                   .ifPresent(exceptionMessage::setMessageContext);
+            post(exceptionMessage);
+
+            return;
+        } catch (LobbyIsFullException e) {
+            LOG.error("[LobbyId: {}] Lobby to join is full", request.getLobbyId());
+            ExceptionMessage exceptionMessage = new ExceptionMessage("Der Lobby konnte nicht beigetreten werden. Die Lobby ist bereits voll.");
+            exceptionMessage.setSession(session);
+            request.getMessageContext()
+                   .ifPresent(exceptionMessage::setMessageContext);
+            post(exceptionMessage);
+
+            return;
+        } catch (UserAlreadyInLobbyException e) {
+            LOG.error("[LobbyId: {}] Lobby join failed. User is already in Lobby", request.getLobbyId());
+            ExceptionMessage exceptionMessage = new ExceptionMessage("Der Lobby konnte nicht beigetreten werden. Du bist bereits in der Lobby.");
             exceptionMessage.setSession(session);
             request.getMessageContext()
                    .ifPresent(exceptionMessage::setMessageContext);
