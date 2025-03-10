@@ -44,12 +44,14 @@ deploy-job:
   stage: deploy
   script:
     - echo "Deploying the application..."
-    - docker login
     - docker build -t timpodszus/iberia-swp server/.
     - docker push timpodszus/iberia-swp
     - docker build -t timpodszus/iberia-db .
     - docker push timpodszus/iberia-db
 
+  only:
+    - development
+    - master
 
 
 
