@@ -30,6 +30,7 @@ import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
 import de.uol.swp.server.plague.management.PlagueNotFoundException;
+import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.role.CountryDoctor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -176,10 +177,10 @@ public class PlagueService extends AbstractService {
         }
 
         if (game.getCurrentPlayer()
-                .getRole() instanceof CountryDoctor && (game.getState() instanceof PlayerTurnState)) {
+                .getRole() instanceof CountryDoctor && game.getState() instanceof PlayerTurnState playerTurnState && !(playerTurnState instanceof TreatExtraPlagueState)) {
             List<ICityDTO> citiesNearBy = CityMapper.toDTOList(plagueManagement.getCitiesNearBy(game, city));
             if (!citiesNearBy.isEmpty()) {
-                game.setState(new TreatExtraPlagueState());
+                game.setState(new TreatExtraPlagueState(playerTurnState.getActionsRemaining()));
 
                 response = new TreatPlagueResponse(request.getLobbyId(), true, citiesNearBy, true);
                 request.getSession()
@@ -190,12 +191,11 @@ public class PlagueService extends AbstractService {
 
                 return;
             }
-        } else {
-            if (game.getState() instanceof TreatExtraPlagueState) {
-                game.setState(game.getPreviousState());
-            }
+        } else if (game.getState() instanceof TreatExtraPlagueState) {
+            game.setState(game.getPreviousState());
         }
 
+        ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
         IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
