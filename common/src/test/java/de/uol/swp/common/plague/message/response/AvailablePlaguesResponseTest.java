@@ -1,9 +1,8 @@
-package de.uol.swp.common.plague;
+package de.uol.swp.common.plague.message.response;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.infection.InfectionDTO;
-import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
@@ -42,8 +41,8 @@ class AvailablePlaguesResponseTest {
         assertNotEquals(response1, response3);
         assertNotEquals(response1, response4);
         assertNotEquals(response1, response5);
-        assertNotEquals(response1, null);
-        assertNotEquals(response1, new Object());
+        assertNotEquals(null, response1);
+        assertNotEquals(new Object(), response1);
     }
 
     @Test

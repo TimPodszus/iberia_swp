@@ -32,8 +32,9 @@ import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.dto.IPlagueDTO;
-import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
-import de.uol.swp.common.plague.response.TreatPlagueResponse;
+import de.uol.swp.common.plague.message.response.AvailablePlaguesResponse;
+import de.uol.swp.common.plague.message.response.MigrationOverseasResponse;
+import de.uol.swp.common.plague.message.response.TreatPlagueResponse;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
@@ -1939,6 +1940,20 @@ public class GamePresenter extends AbstractPresenter {
                 });
             });
         }
+    }
+
+    @Subscribe
+    public void onMigrationOverseasResponse(MigrationOverseasResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+        List<ICityDTO> availableCities = response.getAvailableCities();
+        Platform.runLater(() -> {
+            SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(availableCities);
+            Optional<ICityDTO> selectedCity = dialog.showAndWait();
+            selectedCity.ifPresent(city -> gameService.sendAvailablePlaguesRequest(lobbyId, city.getId()));
+        });
     }
 
     /**

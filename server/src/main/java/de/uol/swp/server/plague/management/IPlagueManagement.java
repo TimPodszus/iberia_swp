@@ -1,5 +1,6 @@
 package de.uol.swp.server.plague.management;
 
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
@@ -68,4 +69,12 @@ public interface IPlagueManagement {
      * @param game the current game instance
      */
     void allPlaguesResearched(IGame game);
+
+    /**
+     * Retrieves a list of cities that have at least one plague cube.
+     *
+     * @param lobbyId     the ID of the lobby
+     * @return a list of cities near the given city
+     */
+    List<ICityDTO> getCitesWithPlagues(String lobbyId);
 }

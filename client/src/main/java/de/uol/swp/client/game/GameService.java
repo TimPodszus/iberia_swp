@@ -12,9 +12,9 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
-import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
-import de.uol.swp.common.plague.request.ResearchPlagueRequest;
-import de.uol.swp.common.plague.request.TreatPlagueRequest;
+import de.uol.swp.common.plague.message.request.AvailablePlaguesRequest;
+import de.uol.swp.common.plague.message.request.ResearchPlagueRequest;
+import de.uol.swp.common.plague.message.request.TreatPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.request.*;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
@@ -484,5 +484,14 @@ public class GameService {
      */
     public void sendEndTurnRequest(String lobbyId) {
         eventBus.post(new EndTurnRequest(lobbyId));
+    }
+
+    /**
+     * Sends a request to end the game in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby where the game is to be ended
+     * @param id     the ID of the player who ended the game
+     */
+    public void sendMigrationOverseasRequest(String lobbyId, int id) {
     }
 }

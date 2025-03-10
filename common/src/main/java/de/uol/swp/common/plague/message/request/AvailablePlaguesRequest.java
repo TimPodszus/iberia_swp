@@ -1,4 +1,4 @@
-package de.uol.swp.common.plague.request;
+package de.uol.swp.common.plague.message.request;
 
 import de.uol.swp.common.game.message.AbstractGameRequest;
 import lombok.Getter;

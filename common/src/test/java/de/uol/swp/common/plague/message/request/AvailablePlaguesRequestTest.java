@@ -1,6 +1,5 @@
-package de.uol.swp.common.plague;
+package de.uol.swp.common.plague.message.request;
 
-import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,8 +24,8 @@ class AvailablePlaguesRequestTest {
         assertEquals(request1, request2);
         assertNotEquals(request1, request3);
         assertNotEquals(request1, request4);
-        assertNotEquals(request1, null);
-        assertNotEquals(request1, new Object());
+        assertNotEquals(null, request1);
+        assertNotEquals(new Object(), request1);
     }
 
     @Test

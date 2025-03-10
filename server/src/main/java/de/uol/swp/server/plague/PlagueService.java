@@ -8,19 +8,22 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
-import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
-import de.uol.swp.common.plague.request.ResearchPlagueRequest;
-import de.uol.swp.common.plague.request.TreatPlagueRequest;
-import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
-import de.uol.swp.common.plague.response.TreatPlagueResponse;
+import de.uol.swp.common.plague.message.request.AvailablePlaguesRequest;
+import de.uol.swp.common.plague.message.request.ResearchPlagueRequest;
+import de.uol.swp.common.plague.message.request.TreatPlagueRequest;
+import de.uol.swp.common.plague.message.response.AvailablePlaguesResponse;
+import de.uol.swp.common.plague.message.response.MigrationOverseasResponse;
+import de.uol.swp.common.plague.message.response.TreatPlagueResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.events.MigrationOverseasEvent;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.TreatExtraPlagueState;
 import de.uol.swp.server.infection.InfectionMapper;
@@ -31,6 +34,8 @@ import de.uol.swp.server.plague.management.PlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
 import de.uol.swp.server.plague.management.PlagueNotFoundException;
 import de.uol.swp.server.role.CountryDoctor;
+import de.uol.swp.server.usermanagement.IUser;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
@@ -174,14 +179,22 @@ public class PlagueService extends AbstractService {
 
             return;
         }
+        boolean isCountryDoctor = game.getCurrentPlayer().getRole() instanceof CountryDoctor;
+        boolean isPlayerTurnState = game.getState() instanceof PlayerTurnState;
+        boolean isEventState = game.getState() instanceof EventState;
 
-        if (game.getCurrentPlayer()
-                .getRole() instanceof CountryDoctor && (game.getState() instanceof PlayerTurnState)) {
-            List<ICityDTO> citiesNearBy = CityMapper.toDTOList(plagueManagement.getCitiesNearBy(game, city));
-            if (!citiesNearBy.isEmpty()) {
+        if (isCountryDoctor && isPlayerTurnState || isEventState) {
+            List<ICityDTO> availableCities;
+            if (isEventState) {
+                game.setState(game.getPreviousState());
+                availableCities = plagueManagement.getCitesWithPlagues(request.getLobbyId());
+            } else {
+                availableCities = CityMapper.toDTOList(plagueManagement.getCitiesNearBy(game, city));
+            }
+            if (!availableCities.isEmpty()) {
                 game.setState(new TreatExtraPlagueState());
 
-                response = new TreatPlagueResponse(request.getLobbyId(), true, citiesNearBy, true);
+                response = new TreatPlagueResponse(request.getLobbyId(), true, availableCities, true);
                 request.getSession()
                        .ifPresent(response::setSession);
                 request.getMessageContext()
@@ -190,7 +203,7 @@ public class PlagueService extends AbstractService {
 
                 return;
             }
-        } else {
+        }else {
             if (game.getState() instanceof TreatExtraPlagueState) {
                 game.setState(game.getPreviousState());
             }
@@ -199,5 +212,29 @@ public class PlagueService extends AbstractService {
         IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+    }
+
+    @Subscribe
+    public void onMigrationOverseasEvent(MigrationOverseasEvent event) {
+        LOG.debug(
+                "Received MigrationOverseasEvent for lobbyId: {}, username: {}",
+                event.getLobbyId(),
+                event.getUsername()
+        );
+        IUser user = plagueManagement.getGame(event.getLobbyId())
+                                     .getPlayer(event.getUsername())
+                                     .getUser();
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow(() -> {
+                                                   LOG.error(
+                                                           "[LobbyId: {}] Session not found for user",
+                                                           event.getLobbyId()
+                                                   );
+                                                   return new SessionNotFoundException();
+                                               });
+        List<ICityDTO> availableCities = plagueManagement.getCitesWithPlagues(event.getLobbyId());
+        MigrationOverseasResponse response = new MigrationOverseasResponse(event.getLobbyId(), true, availableCities);
+        response.setSession(session);
+        post(response);
     }
 }
