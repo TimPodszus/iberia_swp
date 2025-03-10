@@ -138,4 +138,12 @@ public class CityRepository {
                      .map(ICity::getName)
                      .orElse(null);
     }
+
+    public List<Integer> getCityIdsForPlague(PlagueName plagueName) {
+        return cities.stream()
+                     .filter(city -> city.getPlagueName()
+                                         .equals(plagueName))
+                     .map(ICity::getId)
+                     .toList();
+    }
 }
