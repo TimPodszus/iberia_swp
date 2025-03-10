@@ -21,7 +21,7 @@ build-job:
     - ls -l target/
   artifacts:
     paths:
-      - target/
+      - /builds/swp/2024/ga/iberia/server/target/
     expire_in: 2 days
 
 
