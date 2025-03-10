@@ -16,7 +16,7 @@ build-job:
   stage: build
   script:
     - echo "Starting Maven build for all modules..."
-    - mvn $MAVEN_CLI_OPTS clean install -DskipTests
+    - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     paths:
       - target/
@@ -42,7 +42,7 @@ unit-test-job:
 
 deploy-job:
   image: docker:20.10.8
-  stage: build
+  stage: deploy
   services:
     - docker:20.10.8-dind
   before_script:
@@ -51,6 +51,5 @@ deploy-job:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   script:
-
     - docker build -t "$CI_REGISTRY_IMAGE" server/.
     - docker push "$CI_REGISTRY_IMAGE"
