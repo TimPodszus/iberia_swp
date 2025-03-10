@@ -3,7 +3,6 @@ package de.uol.swp.client;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import de.uol.swp.common.LoggingHandler;
 import de.uol.swp.common.MyObjectDecoder;
 import de.uol.swp.common.MyObjectEncoder;
 import de.uol.swp.common.message.Message;
@@ -31,7 +30,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * The ClientConnection Connection class
- *
  * This Class manages connecting to a server, disconnecting  from the server and
  * handling of incoming and outgoing messages.
  *
@@ -67,7 +65,6 @@ public class ClientConnection {
 
     /**
      * Sets the EventBus for the object
-     *
      * Sets the EventBus for the object and registers the object to it.
      *
      * @param eventBus The new EventBus to set
@@ -81,13 +78,12 @@ public class ClientConnection {
 
     /**
      * The netty init method
-     *
      * The example method on how to initialize a connection to a server via netty.
      * Inside the ChannelInitializer multiple settings are made with the {@code
      * pipeline.addLast()} method. Things usually added are encoders, decoders and
      * the ChannelHandler.
      *
-     * @throws Exception Connection failed
+     * @throws ConnectException Connection failed
      * @implNote If no ChannelHandler is added, communication will not be possible
      * @since 2017-03-17
      */
@@ -103,8 +99,6 @@ public class ClientConnection {
                  @Override
                  protected void initChannel(SocketChannel ch) {
                      // Add both Encoder and Decoder to send and receive serializable objects
-                     ch.pipeline()
-                       .addLast(new LoggingHandler());
                      ch.pipeline()
                        .addLast(new MyObjectEncoder());
                      ch.pipeline()
@@ -127,7 +121,6 @@ public class ClientConnection {
 
     /**
      * Disconnects the client from the server
-     *
      * Disconnects the client from the server and prints the stack trace if an
      * InterruptedException is thrown.
      *
@@ -166,9 +159,7 @@ public class ClientConnection {
 
     /**
      * Processes the incoming messages
-     *
      * This method posts the message it gets on the EventBus
-     *
      * Post on event bus " and
      * the Message to the LOG if the LOG-Level is set to DEBUG or higher.
      * If it is a different kind of Message, it gets discarded and with LOG-Level
@@ -186,7 +177,6 @@ public class ClientConnection {
 
     /**
      * Handles RequestMessages detected on the EventBus
-     *
      * If the client is connected to the server and the channel of this object
      * is set the RequestMessage given to this method is send to the server.
      * Otherwise "Some tries to send a message, but server is not connected" is
@@ -206,7 +196,6 @@ public class ClientConnection {
 
     /**
      * Handles ExceptionMessages found on the EventBus
-     *
      * If an ExceptionMessage object is detected on the EventBus, this method is called.
      * It calls the exceptionOccurred method of every ConnectionListener in the
      * ConnectionListener array.
@@ -223,7 +212,6 @@ public class ClientConnection {
 
     /**
      * Handles the distribution of throwable messages
-     *
      * This method distributes throwable messages to the ConnectionListeners.
      * It calls the exceptionOccurred method of every ConnectionListener in the
      * ConnectionListener array passing them the message.
