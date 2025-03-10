@@ -13,6 +13,7 @@ cache:
 
 build-job:
   stage: build
+  image: maven:3.8.6-openjdk-18
   before_script:
     - echo "Setting up Docker..."
     - docker info
@@ -20,7 +21,7 @@ build-job:
     - sudo chown -R $(whoami) .
   script:
     - echo "Starting Maven build for all modules..."
-    - docker run --rm -v "$PWD":/usr/src/app -v "$PWD/.m2":/root/.m2 -w /usr/src/app maven:3.8.6-openjdk-18 mvn $MAVEN_CLI_OPTS clean install -DskipTests
+    - mvn $MAVEN_CLI_OPTS clean install -DskipTests
   artifacts:
     paths:
       - target/
@@ -28,6 +29,7 @@ build-job:
 
 unit-test-job:
   stage: test
+  image: maven:3.8.6-openjdk-18
   before_script:
     - echo "Setting up Docker..."
     - docker info
@@ -35,7 +37,7 @@ unit-test-job:
     - sudo chown -R $(whoami) .
   script:
     - echo "Running unit tests across all modules..."
-    - docker run --rm -v "$PWD":/usr/src/app -v "$PWD/.m2":/root/.m2 -w /usr/src/app maven:3.8.6-openjdk-18 mvn $MAVEN_CLI_OPTS verify
+    - mvn $MAVEN_CLI_OPTS verify
   artifacts:
     when: always
     paths:
@@ -47,6 +49,9 @@ unit-test-job:
 
 deploy-job:
   stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
   before_script:
     - echo "Setting up Docker..."
     - docker info
