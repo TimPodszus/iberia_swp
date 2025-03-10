@@ -27,7 +27,9 @@ public class InfectionState implements IGameState {
             default -> 2;
         };
         if (citiesToInfect == infectedCities) {
-            game.incrementCurrentPlayerIndex();
+            game.setState(new PlayerTurnState());
+            game.incrementCurrentPlayerIndex(game.getPlayers()
+                                                 .size());
         }
     }
 }

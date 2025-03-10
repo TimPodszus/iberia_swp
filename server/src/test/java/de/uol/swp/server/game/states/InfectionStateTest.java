@@ -51,7 +51,7 @@ class InfectionStateTest {
             state.increaseInfectedCities(mockGame);
         }
         assertEquals(3, state.getInfectedCities(), "Three cities should have been infected.");
-        verify(mockGame).incrementCurrentPlayerIndex();
+        verify(mockGame).incrementCurrentPlayerIndex(any());
     }
 
     @Test
@@ -60,7 +60,7 @@ class InfectionStateTest {
         for (int i = 0; i < 3; i++) {
             state.increaseInfectedCities(mockGame);
         }
-        verify(mockGame).incrementCurrentPlayerIndex();
+        verify(mockGame).incrementCurrentPlayerIndex(any());
     }
 
     @Test
@@ -70,7 +70,7 @@ class InfectionStateTest {
             state.increaseInfectedCities(mockGame);
         }
         assertEquals(2, state.getInfectedCities(), "Two cities should have been infected.");
-        verify(mockGame).incrementCurrentPlayerIndex();
+        verify(mockGame).incrementCurrentPlayerIndex(any());
     }
 
     @Test
@@ -80,7 +80,7 @@ class InfectionStateTest {
             state.increaseInfectedCities(mockGame);
         }
         assertEquals(4, state.getInfectedCities(), "Four cities should have been infected.");
-        verify(mockGame).incrementCurrentPlayerIndex();
+        verify(mockGame).incrementCurrentPlayerIndex(any());
     }
 }
 

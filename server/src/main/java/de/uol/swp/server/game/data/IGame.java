@@ -175,7 +175,7 @@ public interface IGame {
     /**
      * Increments the current player index and sets the current state to playerTurnState.
      */
-    void incrementCurrentPlayerIndex();
+    void incrementCurrentPlayerIndex(Integer userAmount);
 
     /**
      * Gets the current player index.
@@ -211,6 +211,21 @@ public interface IGame {
      * @param listener the new GameStateChangeListener
      */
     void setGameStateChangeListener(GameStateChangeListener listener);
+
+    /**
+     * Sets the FavorableTimeEventCardPlayed.
+     *
+     * @param cardPlayed the new FavorableTimeEventCardPlayed
+     */
+    void setFavorableTimeEventCardPlayed(boolean cardPlayed);
+
+    /**
+     * Gets the FavorableTimeEventCardPlayed.
+     *
+     * @return if the FavorableTimeEventCard has been played: true, else: false
+     */
+    boolean getFavorableTimeEventCardPlayed();
+
 
     /**
      * Gets the player by username.

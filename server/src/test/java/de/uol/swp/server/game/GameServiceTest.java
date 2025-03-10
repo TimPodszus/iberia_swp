@@ -3,7 +3,6 @@ package de.uol.swp.server.game;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
-import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
@@ -508,7 +507,10 @@ public class GameServiceTest extends EventBusBasedTest {
      */
     @Test
     void testOnShareKnowledgeRequest_Accepted() throws PlayerManagementException {
-        ShareKnowledgeEvent event = new ShareKnowledgeEvent("lobbyId", "currentUser", "targetUser",
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                "lobbyId",
+                "currentUser",
+                "targetUser",
                 mock(ICardDTO.class),
                 mock(ICardDTO.class)
         );
@@ -573,7 +575,8 @@ public class GameServiceTest extends EventBusBasedTest {
                 mock(IGameState.class),
                 mock(IGameState.class),
                 1,
-                mock(GameStateChangeListener.class)
+                mock(GameStateChangeListener.class),
+                false
         );
 
         when(gameManagement.getGame(any())).thenReturn(notMockedGame);
@@ -647,7 +650,7 @@ public class GameServiceTest extends EventBusBasedTest {
 
     /**
      * Tests the onBuildTrainTrackRequest method when the game is in a state that does not allow building train tracks.
-     * Ensures a StatusResponse is send correctly
+     * Ensures a StatusResponse is sent correctly
      */
     @Test
     void testOnBuildTrainTrackRequest_IllegalGameState() throws IllegalGameStateException, GameException, InterruptedException {
@@ -828,7 +831,7 @@ public class GameServiceTest extends EventBusBasedTest {
 
         gameService.onFavorableTimeEvent(event);
 
-        verify(gameManagement).setFavorableTimeEventCardPlayed(true);
+        verify(game1).setFavorableTimeEventCardPlayed(true);
         verify(playerManagement).discardPlayerCard("lobbyId", "testuser", 212);
         verify(gameService).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }

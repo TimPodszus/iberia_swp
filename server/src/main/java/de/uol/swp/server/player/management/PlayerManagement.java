@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Objects;
 
 
-public class PlayerManagement extends AbstractManagement implements IPlayerManagement{
+public class PlayerManagement extends AbstractManagement implements IPlayerManagement {
     static final Logger LOG = LogManager.getLogger(PlayerManagement.class);
     private final ICityManagement cityManagement;
 
@@ -92,7 +92,11 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
             game.getPlayerCardDiscardPile()
                 .add(card);
             shuffleInfectionCardsFromDrawPile(game);
-            LOG.debug("[LobbyID: {}] Epidemic card drawn. Infection counter increased to {}", lobbyCode, game.getInfectionCounter());
+            LOG.debug(
+                    "[LobbyID: {}] Epidemic card drawn. Infection counter increased to {}",
+                    lobbyCode,
+                    game.getInfectionCounter()
+            );
         } else {
             addCard(
                     lobbyCode,
@@ -103,7 +107,12 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
         }
         if (game.getState() instanceof DrawCardState drawCardState) {
             drawCardState.increaseCardsDrawn(game);
-            LOG.debug("[LobbyID: {}] Cards drawn increased for player {}", lobbyCode, player.getUser().getUsername());
+            LOG.debug(
+                    "[LobbyID: {}] Cards drawn increased for player {}",
+                    lobbyCode,
+                    player.getUser()
+                          .getUsername()
+            );
         }
         return CardMapper.toDTO(card);
     }
@@ -123,7 +132,10 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
     private ICard getCard(IGame game, IPlayer player) throws IllegalGameStateException {
         if (!player.equals(game.getPlayers()
                                .get(game.getCurrentPlayerIndex())) || !(game.getState() instanceof DrawCardState) && !(game.getState() instanceof StartState)) {
-            LOG.error("[LobbyID: {}] Failed to draw card. It is not the player's turn or game is not in a state that allows drawing cards", game.getGameId());
+            LOG.error(
+                    "[LobbyID: {}] Failed to draw card. It is not the player's turn or game is not in a state that allows drawing cards",
+                    game.getGameId()
+            );
             throw new IllegalGameStateException("It is not the player's turn to draw a card");
         }
 
@@ -134,6 +146,15 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
             LOG.error("[LobbyID: {}] Player card draw pile is empty. Game ended", game.getGameId());
 
             return null;
+        }
+
+        ICard card = playerCardDrawPile.stream()
+                                       .filter(c -> c.getId() == 212)
+                                       .findFirst()
+                                       .orElse(null);
+        if (card != null) {
+            playerCardDrawPile.remove(card);
+            return card;
         }
 
         return playerCardDrawPile.remove(0);
@@ -283,7 +304,10 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
         List<InfectionCard> infectionCardDrawPile = game.getInfectionCardDrawPile();
 
         if (infectionCardDrawPile.isEmpty()) {
-            LOG.error("[LobbyID: {}] Failed to draw infection card. Infection card draw pile is empty", game.getGameId());
+            LOG.error(
+                    "[LobbyID: {}] Failed to draw infection card. Infection card draw pile is empty",
+                    game.getGameId()
+            );
             throw new IllegalStateException("Infection card draw pile is empty");
         }
 
@@ -301,8 +325,8 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @param lobbyId the ID of the lobby
      * @param user    the user for whom the cards are to be sorted
      * @return the top three cards from the player's card draw pile
-     * @throws GameException if the player is not found for the given user or if the player is not the current player or does not have the role of ScientistAtTheRoyalAcademy
-     * @throws IllegalGameStateException     if the game is not in the turn state
+     * @throws GameException             if the player is not found for the given user or if the player is not the current player or does not have the role of ScientistAtTheRoyalAcademy
+     * @throws IllegalGameStateException if the game is not in the turn state
      */
     @Override
     public List<ICardDTO> getCardsToSort(String lobbyId, IUser user) throws GameException, IllegalGameStateException {
@@ -363,11 +387,15 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                 playerCardDrawPile.remove(card);
                 playerCardDrawPile.add(0, card);
             }
-            LOG.debug("[LobbyID: {}] Cards sorted for player {}", lobbyId, player.getUser().getUsername());
+            LOG.debug(
+                    "[LobbyID: {}] Cards sorted for player {}",
+                    lobbyId,
+                    player.getUser()
+                          .getUsername()
+            );
         } else {
             LOG.error("[LobbyID: {}] Invalid request to sort cards by player {}", lobbyId, user.getUsername());
-            throw new IllegalGameStateException(
-                    "It is not your turn or your role is not scientist of the royal academy");
+            throw new IllegalGameStateException("It is not your turn or your role is not scientist of the royal academy");
         }
     }
 
