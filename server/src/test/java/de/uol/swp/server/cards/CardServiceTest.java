@@ -1,10 +1,15 @@
 package de.uol.swp.server.cards;
 
+import de.uol.swp.common.cards.request.GetCardRequest;
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.CardSelectionEvent;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
+import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.events.ForTheGoodCauseEvent;
 import de.uol.swp.server.cards.events.SecondChanceEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.cards.management.CardNotPlayableException;
@@ -13,6 +18,7 @@ import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -33,8 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -77,6 +82,16 @@ public class CardServiceTest extends EventBusBasedTest {
      */
     @Subscribe
     public void onStatusResponse(StatusResponse event) {
+        super.handleEvent(event);
+    }
+
+    /**
+     * Handles CardSelectionEvent
+     *
+     * @param event the CardSelectionEvent to handle
+     */
+    @Subscribe
+    public void onCardSelectionEvent(CardSelectionEvent event) {
         super.handleEvent(event);
     }
 
@@ -199,5 +214,126 @@ public class CardServiceTest extends EventBusBasedTest {
 
         assertInstanceOf(BoardUpdateEvent.class, this.event, "Expected BoardUpdateEvent");
         verify(cardManagement, atLeastOnce()).returnLastPlayedCard("1234", "testuser");
+    }
+
+    /**
+     * Tests the onForTheGoodCauseEvent method.
+     *
+     * @throws InterruptedException if the thread is interrupted
+     */
+    @Test
+    void testOnForTheGoodCauseEvent() throws InterruptedException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(userManagement.getUser("testuser")).thenReturn(user);
+        when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
+
+        EventCard eventCard = new AnotherDayEventCard(1);
+        when(cardManagement.getCardsFromPlayerDiscardPile("lobbyId", EventCard.class)).thenReturn(List.of(eventCard));
+
+        ForTheGoodCauseEvent forTheGoodCauseEvent = new ForTheGoodCauseEvent("lobbyId", "testuser");
+        postAndWait(forTheGoodCauseEvent);
+
+        assertInstanceOf(CardSelectionEvent.class, this.event, "Expected CardSelectionEvent");
+    }
+
+    /**
+     * Tests the onForTheGoodCauseEvent method when the session is not found.
+     */
+    @Test
+    void testOnForTheGoodCauseEvent_SessionNotFound() {
+        IUser user = new User("testuser", "testpassword");
+        when(userManagement.getUser("testuser")).thenReturn(user);
+        when(authenticationService.getSession(user)).thenReturn(Optional.empty());
+
+        when(cardManagement.getCardsFromPlayerDiscardPile("lobbyId", EventCard.class)).thenReturn(List.of());
+        ForTheGoodCauseEvent forTheGoodCauseEvent = new ForTheGoodCauseEvent("lobbyId", "testuser");
+
+        assertThrows(SessionNotFoundException.class, () -> cardService.onForTheGoodCauseEvent(forTheGoodCauseEvent));
+    }
+
+    /**
+     * Tests the GetCardRequest.
+     *
+     * @throws InterruptedException if the thread is interrupted
+     */
+    @Test
+    void testOnGetCardRequest() throws IllegalGameStateException, CardNotFoundException, InterruptedException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
+
+        IGame game = new Game(2, "lobbyId");
+        when(cardManagement.getGame("lobbyId")).thenReturn(game);
+
+        ILobby lobby = new Lobby("lobbyId", "testLobby", new ArrayList<>(List.of(user)), user, 2);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+
+        GetCardRequest request = new GetCardRequest("lobbyId", 1);
+        request.setSession(session);
+
+        postAndWait(request);
+
+        assertInstanceOf(BoardUpdateEvent.class, this.event, "Expected BoardUpdateEvent");
+        verify(cardManagement, times(1)).getCardForPlayer("lobbyId", "testuser", 1);
+    }
+
+    /**
+     * Tests the onGetCardRequest method with a missing session.
+     */
+    @Test
+    void testOnGetCardRequest_MissingSession() {
+        GetCardRequest request = new GetCardRequest("lobbyId", 1);
+        assertThrows(SessionNotFoundException.class, () -> cardService.onGetCardRequest(request));
+    }
+
+    /**
+     * Tests the onGetCardRequest method with a card not found exception.
+     *
+     * @throws InterruptedException      if the thread is interrupted
+     * @throws IllegalGameStateException if the game is in an illegal state
+     * @throws CardNotFoundException     if the card is not found
+     */
+    @Test
+    void testOnGetCardRequest_CardNotFoundException() throws InterruptedException, IllegalGameStateException, CardNotFoundException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+
+        doThrow(new CardNotFoundException("Card not found")).when(cardManagement)
+                                                            .getCardForPlayer("lobbyId", "testuser", 1);
+
+        GetCardRequest request = new GetCardRequest("lobbyId", 1);
+        request.setSession(session);
+
+        postAndWait(request);
+
+        assertInstanceOf(StatusResponse.class, this.event);
+        assertFalse(((StatusResponse) this.event).isSuccess());
+    }
+
+    /**
+     * Tests the onGetCardRequest method with an illegal game state.
+     *
+     * @throws InterruptedException      if the thread is interrupted
+     * @throws IllegalGameStateException if the game is in an illegal state
+     * @throws CardNotFoundException     if the card is not found
+     */
+    @Test
+    void testGetCardRequest_IllegalGameState() throws InterruptedException, IllegalGameStateException, CardNotFoundException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+
+        doThrow(new IllegalGameStateException("Game is not in the right state")).when(cardManagement)
+                                                                                .getCardForPlayer("lobbyId",
+                                                                                        "testuser",
+                                                                                        1
+                                                                                );
+        GetCardRequest request = new GetCardRequest("lobbyId", 1);
+        request.setSession(session);
+
+        postAndWait(request);
+
+        assertInstanceOf(StatusResponse.class, event);
+        assertFalse(((StatusResponse) event).isSuccess());
     }
 }

@@ -14,6 +14,7 @@ import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.ForTheGoodCauseEventCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.management.CardNotFoundException;
@@ -673,6 +674,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             throw new GameException("Player is not the current player");
         }
 
+        RoleEnum roleName = game.getCurrentPlayer()
+                                .getRole()
+                                .getName();
+
         List<IConnection> buildableTrainTracks = getBuildableTrainTracks(lobbyId, game, player);
 
         if (!buildableTrainTracks.contains(connection)) {
@@ -693,7 +698,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             .getConnectionByID(connection.getId())
             .buildTrainTracks(true);
         game.setTracksLeft(game.getTracksLeft() - 1);
-        ((PlayerTurnState) gameState).reduceActionsRemaining(game);
         LOG.debug(
                 "[LobbyID: {}] {} builds train track between {} and {}",
                 lobbyId,
@@ -705,10 +709,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                           .get(1)
         );
 
-        if (game.getCurrentPlayer()
-                .getRole()
-                .getName() == RoleEnum.RAILWAY_PERSON) {
-            if (game.getState() instanceof PlayerTurnState && !(game.getState() instanceof BuildExtraTrainTrackState)) {
+        if (roleName == RoleEnum.RAILWAY_PERSON) {
+            if (game.getState() instanceof PlayerTurnState playerTurnState && !(playerTurnState instanceof BuildExtraTrainTrackState)) {
                 CityName cityName = connection.getCityNames()
                                               .stream()
                                               .filter(name -> !name.equals(player.getCurrentPosition()
@@ -716,13 +718,23 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                               .findFirst()
                                               .orElseThrow(() -> new GameException("Error while building train track"));
 
-                game.setState(new BuildExtraTrainTrackState(connectionManagement.getBuildableTrainTracks(
+                List<IConnection> buildableExtraTrainTracks = connectionManagement.getBuildableTrainTracks(
                         lobbyId,
                         cityName.getId()
-                )));
+                );
+
+                if (!buildableExtraTrainTracks.isEmpty()) {
+                    game.setState(new BuildExtraTrainTrackState(
+                            buildableExtraTrainTracks,
+                            playerTurnState.getActionsRemaining()
+                    ));
+                }
             } else {
                 game.setState(game.getPreviousState());
+                ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
             }
+        } else {
+            ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
         }
     }
 
