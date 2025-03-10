@@ -7,10 +7,6 @@ import de.uol.swp.client.game.objects.*;
 import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.EventCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
-import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
-import de.uol.swp.client.game.objects.dialogs.CardSelectionWaterTreatmentDialog;
-import de.uol.swp.client.game.objects.dialogs.GameStartDialog;
-import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
 import de.uol.swp.client.game.objects.dialogs.*;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
@@ -34,6 +30,7 @@ import de.uol.swp.common.plague.dto.IPlagueDTO;
 import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import de.uol.swp.common.player.IPlayerDTO;
+import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
@@ -54,17 +51,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Shape;
-import javafx.scene.shape.StrokeType;
+import javafx.scene.shape.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
@@ -77,13 +66,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -96,6 +79,7 @@ public class GamePresenter extends AbstractPresenter {
     private static final String ESCALATION_STAGE_ID = "#escalationStage";
     private static final String PLAGUE_DISPLAY_CITY_ID = "#plagueDisplayCity";
     private static final String WATER_MARK_REGION_ID = "#waterMarkRegion";
+    private static final String PREV_MARK_REGION_ID = "#prevMarkRegion";
     private static final String CONNECTION_ID = "#connection";
     private static final String REGION_HIGHLIGHTED_CLASS = "region-highlight";
     private static final String REGION_ID = "#region";
@@ -127,7 +111,7 @@ public class GamePresenter extends AbstractPresenter {
     private StackPane mapPane;
 
     @FXML
-    private Pane zoomPane;
+    private AnchorPane zoomPane;
 
     @FXML
     private WebView webViewMap;
@@ -199,10 +183,10 @@ public class GamePresenter extends AbstractPresenter {
     private Button endTurnButton;
 
     @FXML
-    private ToggleButton roleButtonOne;
+    private Button roleButtonOne;
 
     @FXML
-    private ToggleButton roleButtonTwo;
+    private Button roleButtonTwo;
 
 
     private double mouseX;
@@ -210,6 +194,8 @@ public class GamePresenter extends AbstractPresenter {
     private double mouseY;
 
     private boolean dragging = false;
+
+    private boolean dragged = false;
 
     private IGameDTO gameDTO;
 
@@ -263,6 +249,7 @@ public class GamePresenter extends AbstractPresenter {
     void onMousePressedEvent(MouseEvent event) {
         if (event.getButton() == MouseButton.PRIMARY) {
             dragging = true;
+            dragged = false;
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         }
@@ -279,20 +266,26 @@ public class GamePresenter extends AbstractPresenter {
             double deltaX = event.getSceneX() - mouseX;
             double deltaY = event.getSceneY() - mouseY;
 
-            double newTranslateX = zoomPane.getTranslateX() + deltaX;
-            double newTranslateY = zoomPane.getTranslateY() + deltaY;
-
-            double maxTranslateY = 0;
-
-            zoomPane.setTranslateX(newTranslateX);
-
-            if (newTranslateY <= maxTranslateY) {
-                zoomPane.setTranslateY(newTranslateY);
+            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                dragged = true;
             }
+
+            zoomPane.setTranslateX(zoomPane.getTranslateX() + deltaX);
+            zoomPane.setTranslateY(zoomPane.getTranslateY() + deltaY);
 
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         }
+    }
+
+    /**
+     * Handles mouse released events to stop panning the game screen.
+     *
+     * @param event the mouse event
+     */
+    @FXML
+    void onMouseReleasedEvent(MouseEvent event) {
+        dragging = false;
     }
 
     /**
@@ -336,12 +329,15 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onCityClickedEvent(MouseEvent event) {
+        if (dragged) {
+            return;
+        }
+
         Node source = (Node) event.getSource();
         int cityId = Integer.parseInt(source.getId()
                                             .replaceAll("\\D+", ""));
         LOG.debug("City {} clicked", cityId);
-        if (gameDTO.getState()
-                   .equals(StateType.WAIT_FOR_POSITIONING_STATE)) {
+        if (isGameState(StateType.WAIT_FOR_POSITIONING_STATE)) {
             LOG.debug("Setting initial position to city {}", cityId);
             gameService.setPosition(gameDTO.getGameId(), cityId);
             LOG.info("Initial position set");
@@ -391,7 +387,7 @@ public class GamePresenter extends AbstractPresenter {
                         TransportMode.TRAIN
                 ) && role == RoleEnum.RAILWAY_PERSON)) {
                     LOG.debug("Player is a {} and takes a player with him to the city {}", role, cityId);
-                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity());
+                    PlayerSelectionDialog dialog = new PlayerSelectionDialog(this.getPlayersInCity(), role);
                     Optional<String> result = dialog.showAndWait();
                     result.ifPresentOrElse(
                             username -> {
@@ -404,6 +400,7 @@ public class GamePresenter extends AbstractPresenter {
                             }
                     );
                 }
+                return;
             }
 
             gameService.movePlayerToCity(this.lobbyId, cityId);
@@ -423,10 +420,13 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.CARRIAGE
-        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
+                TransportMode.TRAIN
+        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
+                cityId,
+                TransportMode.NONE
+        );
     }
 
     /**
@@ -452,6 +452,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onConnectionClickedEvent(MouseEvent event) {
+        if (dragged) {
+            return;
+        }
+
         Node source = (Node) event.getSource();
         int connectionId = Integer.parseInt(source.getId()
                                                   .replaceAll("\\D+", ""));
@@ -469,10 +473,7 @@ public class GamePresenter extends AbstractPresenter {
             return;
         }
 
-        StateType currentState = gameDTO.getState();
-        boolean isValidState = currentState.equals(StateType.PLAYER_TURN_STATE) || currentState.equals(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE);
-
-        if (isValidState) {
+        if (isGameState(StateType.PLAYER_TURN_STATE) || isGameState(StateType.BUILD_EXTRA_TRAIN_TRACK_STATE)) {
             gameService.buildTrainTrack(lobbyId, connectionId);
             highlightBuildableTrainTrackHighlight(false);
             buildTrainTracksButton.setSelected(false);
@@ -486,18 +487,19 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onRegionClickedEvent(MouseEvent event) {
+        if (dragged) {
+            return;
+        }
+
         Node source = (Node) event.getSource();
         regionId = Integer.parseInt(source.getId()
                                           .replaceAll("\\D+", ""));
         LOG.debug("Region {} clicked", regionId);
 
-        if (gameDTO.getState()
-                   .equals(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
+        if (isGameState(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
                                                                  .contains(REGION_HIGHLIGHTED_CLASS)) {
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
-        } else if ((gameDTO.getState()
-                           .equals(StateType.EVENT_STATE) || gameDTO.getState()
-                                                                    .equals(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
+        } else if ((isGameState(StateType.EVENT_STATE) || isGameState(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
                                                                                                                                    .contains(
                                                                                                                                            REGION_HIGHLIGHTED_CLASS)) {
             Platform.runLater(() -> {
@@ -530,7 +532,9 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onPlayerCardPileClickedEvent(MouseEvent event) {
         LOG.debug("Player card pile clicked");
-        gameService.drawPlayerCard(lobbyId);
+        if ((isGameState(StateType.DRAW_CARD_STATE) || isGameState(StateType.START_STATE)) && isPlayersTurn()) {
+            gameService.drawPlayerCard(lobbyId);
+        }
     }
 
     /**
@@ -542,7 +546,9 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onInfectionCardDrawPileClickedEvent(MouseEvent event) {
         LOG.debug("Infection card draw pile clicked");
-        gameService.drawInfectionCard(lobbyId);
+        if (isGameState(StateType.INFECTION_STATE) && isPlayersTurn()) {
+            gameService.drawInfectionCard(lobbyId);
+        }
     }
 
     /**
@@ -553,8 +559,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildTrainTrack(ActionEvent event) {
         if (buildTrainTracksButton.isSelected()) {
-            if (gameDTO.getState()
-                       .equals(StateType.PLAYER_TURN_STATE)) {
+            if (isGameState(StateType.PLAYER_TURN_STATE)) {
                 resetHighlightetCities();
                 gameService.requestBuildableTrainTracks(
                         this.lobbyId,
@@ -577,8 +582,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onBuildHospital(ActionEvent event) {
         if (buildHospitalButton.isSelected()) {
-            if (gameDTO.getState()
-                       .equals(StateType.PLAYER_TURN_STATE)) {
+            if (isGameState(StateType.PLAYER_TURN_STATE)) {
                 resetHighlightetCities();
 
                 Integer cityId = gameDTO.getCurrentPlayer()
@@ -601,8 +605,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onTreatPlague(ActionEvent event) {
         if (treatInfectionButton.isSelected()) {
-            if (gameDTO.getState()
-                       .equals(StateType.PLAYER_TURN_STATE)) {
+            if (isGameState(StateType.PLAYER_TURN_STATE)) {
                 gameService.sendAvailablePlaguesRequest(
                         lobbyId,
                         gameDTO.getCurrentPlayer()
@@ -634,13 +637,12 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onResearchPlague(ActionEvent event) {
-        if (researchPlagueButton.isSelected()) {
-            //TODO: Implement logic in https://git.swp-ibs.de/swp/2024/ga/iberia/-/issues/89
-        } else {
-
-        }
+        LOG.debug("Research plague action triggered");
+        if (isGameState(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
+                gameService.sendResearchPlagueRequest(lobbyId);
+                researchPlagueButton.setSelected(false);
+            }
     }
-
 
     /**
      * Handles place water treatment action.
@@ -650,8 +652,7 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onPlaceWaterTreatment(ActionEvent event) {
         if (treatWaterButton.isSelected()) {
-            if (gameDTO.getState()
-                       .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
+            if (isGameState(StateType.PLAYER_TURN_STATE) && gameDTO.getWaterTreatmentsLeft() > 0) {
                 resetHighlightetCities();
                 gameService.sendAvailableRegionsRequest(lobbyId);
             }
@@ -663,31 +664,29 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private void onRoleButtonOne(ActionEvent event) {
-        if (roleButtonOne.isSelected()) {
-            LOG.debug("Role button one is selected");
-            if (gameDTO.getCurrentPlayer()
-                       .getRole()
-                       .getName()
-                       .equals(RoleEnum.POLITICIAN)) {
-                LOG.debug("Current player is a politician");
-                Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
-                List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
-                                                              .getCards()
-                                                              .stream()
-                                                              .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                                                     .getCurrentPosition()
-                                                                                                     .getId())
-                                                              .toList();
-                cardsToExchange.put(
-                        gameDTO.getCurrentPlayer()
-                               .getUsername(), currentPlayerCityCard
-                );
-                for (IPlayerDTO player : gameDTO.getPlayers()) {
-                    if (!player.getUsername()
-                               .equals(gameDTO.getCurrentPlayer()
-                                              .getUsername())) {
-                        cardsToExchange.put(player.getUsername(), player.getCards());
-                    }
+        LOG.debug("Role button one is selected");
+        if (gameDTO.getCurrentPlayer()
+                   .getRole()
+                   .getName()
+                   .equals(RoleEnum.POLITICIAN)) {
+            LOG.debug("Current player is a politician");
+            Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+            List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
+                                                          .getCards()
+                                                          .stream()
+                                                          .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                                 .getCurrentPosition()
+                                                                                                 .getId())
+                                                          .collect(Collectors.toList());
+            cardsToExchange.put(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(), currentPlayerCityCard
+            );
+            for (IPlayerDTO player : gameDTO.getPlayers()) {
+                if (!player.getUsername()
+                           .equals(gameDTO.getCurrentPlayer()
+                                          .getUsername())) {
+                    cardsToExchange.put(player.getUsername(), player.getCards());
                 }
                 LOG.debug("Cards to exchange: {}", cardsToExchange);
                 Platform.runLater(() -> {
@@ -702,14 +701,23 @@ public class GamePresenter extends AbstractPresenter {
                     });
                 });
             }
+        } else if (gameDTO.getCurrentPlayer()
+                          .getRole()
+                          .getName()
+                          .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)) {
+            gameService.sendGetCardsToSortRequest(lobbyId);
         }
     }
 
 
     @FXML
     private void onRoleButtonTwo(ActionEvent event) {
-        if (roleButtonTwo.isSelected()) {
-            //TODO
+        LOG.debug("RoleButton 2 pressed");
+        if (gameDTO.getCurrentPlayer()
+                   .getRole()
+                   .getName()
+                   .equals(RoleEnum.POLITICIAN)) {
+            gameService.politicianActionTradeWithDiscardPile(this.gameDTO, lobbyId);
         }
     }
 
@@ -721,8 +729,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @FXML
     private void onEndTurn(ActionEvent event) {
-        if (gameDTO.getState()
-                   .equals(StateType.PLAYER_TURN_STATE)) {
+        if (isGameState(StateType.PLAYER_TURN_STATE)) {
             gameService.sendEndTurnRequest(lobbyId);
         }
     }
@@ -842,6 +849,22 @@ public class GamePresenter extends AbstractPresenter {
                     break;
                 }
             }
+        }
+    }
+
+    public void setPrevMarker(int regionId, boolean marker) {
+        StackPane stackPane = (StackPane) mapPane.lookup(PREV_MARK_REGION_ID + regionId);
+
+        if (!marker) {
+            stackPane.getStyleClass()
+                     .remove("prev-mark-visible");
+            stackPane.getStyleClass()
+                     .add("prev-mark");
+        } else {
+            stackPane.getStyleClass()
+                     .add("prev-mark-visible");
+            stackPane.getStyleClass()
+                     .remove("prev-mark");
         }
     }
 
@@ -1128,16 +1151,12 @@ public class GamePresenter extends AbstractPresenter {
         updateItems(gameDTO);
         updateRemainingActions(gameDTO.getRemainingActions());
 
-        if (!gameDTO.getState()
-                    .equals(StateType.START_STATE)) {
+        if (!isGameState(StateType.START_STATE)) {
             updatePlayersInCities(gameDTO.getPlayers());
         }
 
         disableActionButtons();
-        if (gameDTO.getState()
-                   .equals(StateType.PLAYER_TURN_STATE) && gameDTO.getCurrentPlayer()
-                                                                  .getUsername()
-                                                                  .equals(user.getUsername())) {
+        if (isGameState(StateType.PLAYER_TURN_STATE) && isPlayersTurn()) {
             gameService.requestAvailableDestination(
                     this.lobbyId,
                     gameDTO.getCurrentPlayer()
@@ -1151,16 +1170,16 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
+     *
      */
     private void updatePlayerHandCards() {
         removePlayerHandCards();
         IPlayerDTO player = gameDTO.getPlayer(user.getUsername());
         List<ICardDTO> playerHand = player.getCards();
-        StateType state = gameDTO.getState();
         for (ICardDTO card : playerHand) {
             AbstractCard abstractCard = CardFactory.createCard(card);
-            if (abstractCard instanceof EventCard eventCard && (state.equals(StateType.PLAYER_TURN_STATE) || state.equals(
-                    StateType.DRAW_CARD_STATE) || state.equals(StateType.INFECTION_STATE))) {
+            if (abstractCard instanceof EventCard eventCard && (isGameState(StateType.PLAYER_TURN_STATE) || isGameState(
+                    StateType.DRAW_CARD_STATE) || isGameState(StateType.INFECTION_STATE))) {
                 abstractCard.setOnMouseClicked(event -> {
                     LOG.debug("Event card {} clicked", eventCard.getCardId());
                     if (event.getButton() == MouseButton.PRIMARY) {
@@ -1237,6 +1256,9 @@ public class GamePresenter extends AbstractPresenter {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
             setInfectionCardDiscardPile(CardFactory.createCard(infectionCard));
+        } else {
+            infectionCardDiscardPile.getChildren()
+                                    .clear();
         }
     }
 
@@ -1499,6 +1521,8 @@ public class GamePresenter extends AbstractPresenter {
         treatWaterButton.setDisable(true);
         treatInfectionButton.setDisable(true);
         shareKnowledgeButton.setDisable(true);
+        roleButtonOne.setDisable(true);
+        roleButtonTwo.setDisable(true);
         endTurnButton.setDisable(true);
     }
 
@@ -1535,6 +1559,12 @@ public class GamePresenter extends AbstractPresenter {
                     break;
                 case TREAT_WATER:
                     treatWaterButton.setDisable(false);
+                    break;
+                case ROLE_ACTION_ONE:
+                    roleButtonOne.setDisable(false);
+                    break;
+                case ROLE_ACTION_TWO:
+                    roleButtonTwo.setDisable(false);
                     break;
                 case END_TURN:
                     endTurnButton.setDisable(false);
@@ -1811,6 +1841,19 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     @Subscribe
+    public void onCardsToSortResponse(CardsToSortResponse response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+        Platform.runLater(() -> {
+            CardsToSortDialog cardsToSortDialog = new CardsToSortDialog(true, response.getCards());
+            cardsToSortDialog.showAndWait()
+                             .ifPresent(result -> gameService.sendSortedCardRequest(lobbyId, result));
+        });
+    }
+
+    @Subscribe
     public void onTreatWaterEventResponse(TreatWaterEventResponse eventResponse) {
         if(!eventResponse.getLobbyId().equals(lobbyId)) {
             return;
@@ -1925,6 +1968,8 @@ public class GamePresenter extends AbstractPresenter {
                    Node stackPane = mapPane.lookup(CITY_ID + city.getId());
                    stackPane.getStyleClass()
                             .remove(CITY_HIGHLIGHTED_CLASS);
+                   stackPane.getStyleClass()
+                            .add(CITY_CLASS);
                });
     }
 
@@ -1950,6 +1995,28 @@ public class GamePresenter extends AbstractPresenter {
             alert.setContentText(response.getDescription());
             alert.showAndWait();
         });
+    }
+
+    /**
+     * Checks if the game state is the specified state type.
+     *
+     * @param stateType the state type to check
+     * @return true if the game state is the specified state type, false otherwise
+     */
+    private boolean isGameState(StateType stateType) {
+        return gameDTO.getState()
+                      .equals(stateType);
+    }
+
+    /**
+     * Checks if it is the player's turn.
+     *
+     * @return true if it is the player's turn, false otherwise
+     */
+    private boolean isPlayersTurn() {
+        return gameDTO.getCurrentPlayer()
+                      .getUsername()
+                      .equals(user.getUsername());
     }
 
     @Subscribe

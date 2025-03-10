@@ -3,27 +3,34 @@ package de.uol.swp.server.plague;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.RoleEnum;
-import de.uol.swp.common.plague.PlagueResearchedMessage;
+import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
+import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import de.uol.swp.common.user.Session;
+import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.TreatExtraPlagueState;
 import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.PlagueRepository;
-import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.plague.management.PlagueManagementException;
+import de.uol.swp.server.plague.management.PlagueNotFoundException;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
@@ -34,9 +41,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Field;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -70,6 +76,8 @@ class PlagueServiceTest {
     @Mock
     private AvailablePlaguesRequest availablePlaguesRequest;
     @Mock
+    private ResearchPlagueRequest researchPlagueRequest;
+    @Mock
     private TreatPlagueRequest treatPlagueRequest;
     @Mock
     private AuthenticationService authenticationService;
@@ -79,8 +87,12 @@ class PlagueServiceTest {
     private IGameState previousState;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IllegalAccessException, NoSuchFieldException {
         MockitoAnnotations.openMocks(this);
+
+        Field authServiceField = AbstractService.class.getDeclaredField("authenticationService");
+        authServiceField.setAccessible(true);
+        authServiceField.set(plagueService, authenticationService);
 
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCurrentPosition()).thenReturn(city);
@@ -108,43 +120,109 @@ class PlagueServiceTest {
     }
 
     @Test
-    void testOnResearchPlagueRequest_Success() throws PlagueManagementException, GameException {
-        ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA);
-        doNothing().when(plagueManagement)
-                   .researchPlague(PlagueName.CHOLERA, game);
+    void testOnResearchPlagueRequest() throws PlagueManagementException, IllegalGameStateException, GameException {
+        when(researchPlagueRequest.getLobbyId()).thenReturn("lobby123");
+        when(researchPlagueRequest.getSession()).thenReturn(Optional.of(session));
+        when(plagueManagement.getGame(researchPlagueRequest.getLobbyId())).thenReturn(game);
 
-        plagueService.onResearchPlagueRequest(request, game);
-
-        verify(plagueManagement, times(1)).researchPlague(PlagueName.CHOLERA, game);
-        verify(eventBus, times(1)).post(any(PlagueResearchedMessage.class));
+        plagueService.onResearchPlagueRequest(researchPlagueRequest);
+        verify(plagueManagement).researchPlague(any());
+        verify(eventBus).post(any(BoardUpdateEvent.class));
     }
 
     @Test
-    void testOnResearchPlagueRequest_Fails() throws PlagueManagementException, GameException {
-        ResearchPlagueRequest request = new ResearchPlagueRequest(PlagueName.CHOLERA);
-        doThrow(new PlagueManagementException("Error")).when(plagueManagement)
-                                                       .researchPlague(PlagueName.CHOLERA, game);
+    void testOnResearchPlagueRequest_PlagueManagementException() throws PlagueManagementException, IllegalGameStateException, GameException {
+        when(researchPlagueRequest.getLobbyId()).thenReturn("lobby123");
+        when(researchPlagueRequest.getSession()).thenReturn(Optional.of(session));
+        when(plagueManagement.getGame(researchPlagueRequest.getLobbyId())).thenReturn(game);
 
-        plagueService.onResearchPlagueRequest(request, game);
+        doThrow(new PlagueManagementException("Error while researching plague")).when(plagueManagement)
+                                                                                .researchPlague(any());
+        plagueService.onResearchPlagueRequest(researchPlagueRequest);
+        verify(eventBus).post(argThat(response -> response instanceof StatusResponse && !((StatusResponse) response).isSuccess() && ((StatusResponse) response).getDescription()
+                                                                                                                                                               .equals("Fehler beim Erforschen der Seuche")));
+    }
 
-        verify(plagueManagement, times(1)).researchPlague(PlagueName.CHOLERA, game);
-        verify(eventBus, never()).post(any(PlagueResearchedMessage.class));
+    @Test
+    void testOnResearchPlagueRequest_IllegalGameStateException() throws PlagueManagementException, IllegalGameStateException, GameException {
+        when(researchPlagueRequest.getLobbyId()).thenReturn("lobby123");
+        when(researchPlagueRequest.getSession()).thenReturn(Optional.of(session));
+        when(plagueManagement.getGame(researchPlagueRequest.getLobbyId())).thenReturn(game);
+
+        doThrow(new IllegalGameStateException("Game is in an illegal state")).when(plagueManagement)
+                                                                             .researchPlague(any());
+        plagueService.onResearchPlagueRequest(researchPlagueRequest);
+        verify(eventBus).post(argThat(response -> response instanceof StatusResponse && !((StatusResponse) response).isSuccess() && ((StatusResponse) response).getDescription()
+                                                                                                                                                               .equals("In dem Zustand des Spiels kann die Seuche nicht " + "erforscht werden.")));
     }
 
     @Test
     void testOnAvailablePlaguesRequest() {
-        String lobbyId = "lobby123";
         int cityId = 444;
 
-        when(availablePlaguesRequest.getLobbyId()).thenReturn(lobbyId);
+        when(availablePlaguesRequest.getLobbyId()).thenReturn("lobby123");
         when(availablePlaguesRequest.getCityId()).thenReturn(cityId);
         List<IInfection> infections = new ArrayList<>();
         when(plagueManagement.getInfectionsInCity(game, cityId)).thenReturn(infections);
 
         plagueService.onAvailablePlaguesRequest(availablePlaguesRequest);
-
         verify(plagueManagement).getInfectionsInCity(game, cityId);
         verify(eventBus).post(any(AvailablePlaguesResponse.class));
-
     }
+
+    @Test
+    void testOnTreatPlagueRequest_Success() throws IllegalGameStateException, PlagueNotFoundException {
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getRole()).thenReturn(mock(CountryDoctor.class));
+        when(plagueManagement.getCitiesNearBy(game, city)).thenReturn(Collections.emptyList());
+
+        plagueService.onTreatPlagueRequest(treatPlagueRequest);
+        verify(plagueManagement).treatPlague(PlagueName.CHOLERA, city, game);
+        verify(eventBus).post(any(BoardUpdateEvent.class));
+    }
+
+    @Test
+    void testOnTreatPlagueRequest_IllegalGameStateException() throws IllegalGameStateException, PlagueNotFoundException {
+        doThrow(new IllegalGameStateException("Invalid state")).when(plagueManagement)
+                                                               .treatPlague(any(), any(), any());
+        plagueService.onTreatPlagueRequest(treatPlagueRequest);
+        verify(eventBus).post(any(StatusResponse.class));
+    }
+
+    @Test
+    void testOnTreatPlagueRequest_PlagueNotFoundException() throws IllegalGameStateException, PlagueNotFoundException {
+        doThrow(new PlagueNotFoundException("Plague not found")).when(plagueManagement)
+                                                                .treatPlague(any(), any(), any());
+        plagueService.onTreatPlagueRequest(treatPlagueRequest);
+        verify(eventBus).post(any(StatusResponse.class));
+    }
+
+    @Test
+    void testOnTreatPlagueRequest_CountryDoctor_TreatExtraPlagueState() {
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        when(game.getCurrentPlayer()).thenReturn(player);
+
+        CountryDoctor countryDoctorMock = mock(CountryDoctor.class);
+        when(player.getRole()).thenReturn(countryDoctorMock);
+
+        List<ICity> citiesNearBy = List.of(mock(ICity.class));
+        when(plagueManagement.getCitiesNearBy(game, city)).thenReturn(citiesNearBy);
+
+        plagueService.onTreatPlagueRequest(treatPlagueRequest);
+        verify(game).setState(argThat(state -> state instanceof TreatExtraPlagueState));
+        verify(eventBus).post(argThat(response -> response instanceof TreatPlagueResponse && ((TreatPlagueResponse) response).isSuccess()));
+    }
+
+    @Test
+    void testOnTreatPlagueRequest_ExitTreatExtraPlagueState() {
+        when(game.getState()).thenReturn(new TreatExtraPlagueState(4));
+        when(game.getPreviousState()).thenReturn(previousState);
+        when(game.getCurrentPlayer()).thenReturn(player);
+
+        plagueService.onTreatPlagueRequest(treatPlagueRequest);
+        verify(game).setState(previousState);
+    }
+
+
 }

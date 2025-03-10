@@ -107,8 +107,8 @@ public class CardService extends AbstractService {
         IUser user = userManagement.getUser(event.getUsername());
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error(USER_NOT_LOGGED_IN);
-                                                   return new SessionNotFoundException(USER_NOT_LOGGED_IN);
+                                                   LOG.error("[LobbyId: {}] Session not found", event.getLobbyId());
+                                                   return new SessionNotFoundException();
                                                });
 
         try {

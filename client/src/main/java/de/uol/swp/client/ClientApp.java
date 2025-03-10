@@ -62,7 +62,7 @@ public class ClientApp extends Application implements ConnectionListener {
         List<String> args = p.getRaw();
 
         if (args.size() != 2) {
-            host = "localhost";
+            host = "iberia.timpodszus.de";
             port = Configuration.getDefaultPort();
             LOG.info("Usage: {} host port", ClientConnection.class.getSimpleName());
             LOG.info("Using default port {} {}", port, host);

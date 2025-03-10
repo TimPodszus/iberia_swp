@@ -4,39 +4,46 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DrawPlayerCardRequestTest {
+class DrawPlayerCardRequestTest {
 
     @Test
     void testConstructorAndGetters() {
-        String lobbyCode = "testLobby";
+        DrawPlayerCardRequest request = new DrawPlayerCardRequest("lobby123");
 
-        DrawPlayerCardRequest request = new DrawPlayerCardRequest(lobbyCode);
-
-        assertEquals(lobbyCode, request.getLobbyId());
+        assertEquals("lobby123", request.getLobbyId());
     }
 
     @Test
-    void testEquals() {
-        String lobbyCode = "testLobby";
+    void testEqualsAndHashCode() {
+        DrawPlayerCardRequest request1 = new DrawPlayerCardRequest("lobby123");
+        DrawPlayerCardRequest request2 = new DrawPlayerCardRequest("lobby123");
+        DrawPlayerCardRequest request3 = new DrawPlayerCardRequest("lobby456");
 
-        DrawPlayerCardRequest request1 = new DrawPlayerCardRequest(lobbyCode);
-        DrawPlayerCardRequest request2 = new DrawPlayerCardRequest(lobbyCode);
-        DrawPlayerCardRequest request3 = new DrawPlayerCardRequest("differentLobby");
-
-        // Test equality with itself
-        assertEquals(request1, request1);
-
-        // Test equality with another object with the same values
         assertEquals(request1, request2);
         assertEquals(request1.hashCode(), request2.hashCode());
-
-        // Test inequality with null
-        assertNotEquals(request1, null);
-
-        // Test inequality with an object of a different class
-        assertNotEquals(request1, new Object());
-
-        // Test inequality with different lobbyCode
         assertNotEquals(request1, request3);
+        assertNotEquals(request1.hashCode(), request3.hashCode());
+    }
+
+    @Test
+    void testNotEqualsDifferentClass() {
+        DrawPlayerCardRequest request = new DrawPlayerCardRequest("lobby123");
+        Object other = new Object();
+
+        assertNotEquals(request, other);
+    }
+
+    @Test
+    void testNotEqualsNull() {
+        DrawPlayerCardRequest request = new DrawPlayerCardRequest("lobby123");
+
+        assertNotEquals(null, request);
+    }
+
+    @Test
+    void testEqualsSameObject() {
+        DrawPlayerCardRequest request = new DrawPlayerCardRequest("lobby123");
+
+        assertEquals(request, request);
     }
 }

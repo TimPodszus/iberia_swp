@@ -6,51 +6,64 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-public class DrawPlayerCardResponseTest {
+class DrawPlayerCardResponseTest {
 
     @Test
     void testConstructorAndGetters() {
-        String lobbyCode = "testLobby";
-        boolean success = true;
-        String description = "Card drawn successfully";
         ICardDTO card = mock(ICardDTO.class);
+        DrawPlayerCardResponse response = new DrawPlayerCardResponse("lobby123", true, "description", card);
 
-        DrawPlayerCardResponse response = new DrawPlayerCardResponse(lobbyCode, success, description, card);
-
-        assertEquals(lobbyCode, response.getLobbyId());
-        assertEquals(success, response.isSuccess());
-        assertEquals(description, response.getDescription());
+        assertEquals("lobby123", response.getLobbyId());
+        assertTrue(response.isSuccess());
+        assertEquals("description", response.getDescription());
+        assertEquals(card, response.getCard());
     }
 
     @Test
-    void testEquals() {
-        String lobbyCode = "testLobby";
-        boolean success = true;
-        String description = "Card drawn successfully";
-        ICardDTO card = mock(ICardDTO.class);
+    void testEqualsAndHashCode() {
+        ICardDTO card1 = mock(ICardDTO.class);
+        ICardDTO card2 = mock(ICardDTO.class);
+        DrawPlayerCardResponse response1 = new DrawPlayerCardResponse("lobby123", true, "description", card1);
+        DrawPlayerCardResponse response2 = new DrawPlayerCardResponse("lobby123", true, "description", card1);
+        DrawPlayerCardResponse response3 = new DrawPlayerCardResponse("lobby123", true, "description", card2);
 
-        DrawPlayerCardResponse response1 = new DrawPlayerCardResponse(lobbyCode, success, description, card);
-        DrawPlayerCardResponse response2 = new DrawPlayerCardResponse(lobbyCode, success, description, card);
-        DrawPlayerCardResponse response3 = new DrawPlayerCardResponse("differentLobby", success, description, card);
-        DrawPlayerCardResponse response4 = new DrawPlayerCardResponse(lobbyCode, false, description, card);
-
-        // Test equality with itself
-        assertEquals(response1, response1);
-
-        // Test equality with another object with the same values
         assertEquals(response1, response2);
         assertEquals(response1.hashCode(), response2.hashCode());
-
-        // Test inequality with null
-        assertNotEquals(response1, null);
-
-        // Test inequality with an object of a different class
-        assertNotEquals(response1, new Object());
-
-        // Test inequality with different lobbyCode
         assertNotEquals(response1, response3);
+        assertNotEquals(response1.hashCode(), response3.hashCode());
+    }
 
-        // Test inequality with different success value
-        assertNotEquals(response1, response4);
+    @Test
+    void testNotEqualsDifferentClass() {
+        ICardDTO card = mock(ICardDTO.class);
+        DrawPlayerCardResponse response = new DrawPlayerCardResponse("lobby123", true, "description", card);
+        Object other = new Object();
+
+        assertNotEquals(response, other);
+    }
+
+    @Test
+    void testNotEqualsNull() {
+        ICardDTO card = mock(ICardDTO.class);
+        DrawPlayerCardResponse response = new DrawPlayerCardResponse("lobby123", true, "description", card);
+
+        assertNotEquals(null, response);
+    }
+
+    @Test
+    void testEqualsSameObject() {
+        ICardDTO card = mock(ICardDTO.class);
+        DrawPlayerCardResponse response = new DrawPlayerCardResponse("lobby123", true, "description", card);
+
+        assertEquals(response, response);
+    }
+
+    @Test
+    void testNotEqualsDifferentSuperClass() {
+        ICardDTO card = mock(ICardDTO.class);
+        DrawPlayerCardResponse response1 = new DrawPlayerCardResponse("lobby123", true, "description", card);
+        DrawPlayerCardResponse response2 = new DrawPlayerCardResponse("lobby456", true, "description", card);
+
+        assertNotEquals(response1, response2);
     }
 }
