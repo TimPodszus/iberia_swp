@@ -160,10 +160,6 @@ public class CardService extends AbstractService {
         cardSelectionEvent.setReceiver(List.of(session));
         post(cardSelectionEvent);
         LOG.info("[LobbyId: {}] Sent CardSelectionEvent to user", event.getLobbyId());
-        sendServerMessageEvent(
-                event.getLobbyId(),
-                user.getUsername() + " hat die Ereigniskarte 'Zum guten Zweck' gespielt und darf sich eine Ereigniskarte aus dem Ablagestapel aussuchen."
-        );
     }
 
     /**

@@ -215,6 +215,10 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
 
         game.getPlayer(username)
             .addCard(card);
+        sendServerMessageEvent(
+                lobbyId,
+                username + " hat die Ereigniskarte 'Zum guten Zweck' gespielt und hat sich " + card.getTitle() + " aus dem Ablagestapel genommen."
+        );
         game.setState(game.getPreviousState());
         LOG.info(
                 "[LobbyId: {}] Card from player discard pile added to player's hand. Eventcard is handled, game will resume in last active state",
