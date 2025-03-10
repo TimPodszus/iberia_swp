@@ -1,5 +1,6 @@
 package de.uol.swp.server.communication.netty;
 
+import de.uol.swp.common.LoggingHandler;
 import de.uol.swp.common.MyObjectDecoder;
 import de.uol.swp.common.MyObjectEncoder;
 import io.netty.bootstrap.ServerBootstrap;
@@ -28,6 +29,7 @@ public class Server {
      * Constructor
      *
      * Creates a new Server Object
+     *
      * @see io.netty.channel.ChannelHandler
      * @see de.uol.swp.server.communication.ServerHandler
      * @since 2019-11-20
@@ -49,27 +51,39 @@ public class Server {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                    .localAddress(new InetSocketAddress(port)).childHandler(new ChannelInitializer<SocketChannel>() {
+            b.group(bossGroup, workerGroup)
+             .channel(NioServerSocketChannel.class)
+             .localAddress(new InetSocketAddress(port))
+             .childHandler(new ChannelInitializer<SocketChannel>() {
 
-                @Override
-                protected void initChannel(SocketChannel ch) {
-                    // Encoder and decoder are both needed! Send and
-                    // receive serializable objects
-                    ch.pipeline().addLast(new MyObjectEncoder());
-                    ch.pipeline().addLast(new MyObjectDecoder(ClassResolvers.cacheDisabled(null)));
-                    // must be last in the pipeline else they will not
-                    // get encoded/decoded objects but ByteBuf
-                    ch.pipeline().addLast(serverHandler);
-                }
+                 @Override
+                 protected void initChannel(SocketChannel ch) {
+                     // Encoder and decoder are both needed! Send and
+                     // receive serializable objects
+                     ch.pipeline()
+                       .addLast(new LoggingHandler());
+                     ch.pipeline()
+                       .addLast(new MyObjectEncoder());
+                     ch.pipeline()
+                       .addLast(new MyObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                     // must be last in the pipeline else they will not
+                     // get encoded/decoded objects but ByteBuf
+                     ch.pipeline()
+                       .addLast(serverHandler);
+                 }
 
-            });
+             });
             // Just wait for server shutdown
-            ChannelFuture f = b.bind().sync();
-            f.channel().closeFuture().sync();
+            ChannelFuture f = b.bind()
+                               .sync();
+            f.channel()
+             .closeFuture()
+             .sync();
         } finally {
-            bossGroup.shutdownGracefully().sync();
-            workerGroup.shutdownGracefully().sync();
+            bossGroup.shutdownGracefully()
+                     .sync();
+            workerGroup.shutdownGracefully()
+                       .sync();
         }
     }
 
