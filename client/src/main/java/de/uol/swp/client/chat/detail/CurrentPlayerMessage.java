@@ -19,6 +19,7 @@ public class CurrentPlayerMessage extends HBox {
         HBox.setHgrow(messageLabel, Priority.ALWAYS);
         messageLabel.setAlignment(Pos.TOP_RIGHT);
         messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(225);
 
         this.setAlignment(Pos.TOP_RIGHT);
         this.getChildren().addAll(messageLabel, youLabel);

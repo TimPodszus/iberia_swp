@@ -237,9 +237,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             );
             ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
             sendServerMessageEvent(game.getGameId(),
-                    game.getCurrentPlayer()
-                        .getUser()
-                        .getUsername() + " hat seine Startposition festgelegt."
+                    requestPlayer.getUser().getUsername() + " hat seine Startposition festgelegt."
             );
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");

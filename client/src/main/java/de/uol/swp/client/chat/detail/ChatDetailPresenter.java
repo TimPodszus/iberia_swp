@@ -4,11 +4,13 @@ import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.common.chat.messages.PlayerSentChatMessage;
 import de.uol.swp.common.chat.messages.SentChatMessage;
+import de.uol.swp.common.chat.response.GetChatResponse;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +39,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
     @Inject
     private ChatService chatService;
 
-    @Setter
+
     private String lobbyId;
     @Setter
     private String currentUsername;
@@ -82,4 +84,47 @@ public class ChatDetailPresenter extends AbstractPresenter {
             chatScrollPane.setVvalue(1.0);
         });
     }
+
+    public void setLobbyId(String lobbyId) {
+        this.lobbyId = lobbyId;
+        requestChatHistory();
+    }
+
+    private void requestChatHistory() {
+        chatService.requestChatHistory(lobbyId);
+    }
+
+    @Subscribe
+    public void onGetChatResponse(GetChatResponse response) {
+        if (!response.getLobbyId().equals(lobbyId)) {
+            return;
+        }
+
+        Platform.runLater(() -> {
+            chatContainer.getChildren().clear();
+            for (SentChatMessage message : response.getChatMessages()) {
+                if (message instanceof PlayerSentChatMessage playerMessage) {
+                    if (playerMessage.getSender().equals(currentUsername)) {
+                        chatContainer.getChildren().add(new CurrentPlayerMessage(playerMessage.getMessage()));
+                    } else {
+                        chatContainer.getChildren().add(new PlayerMessage(playerMessage.getSender(), playerMessage.getMessage()));
+                    }
+                } else {
+                    chatContainer.getChildren().add(new ServerMessage(message.getMessage()));
+                }
+            }
+            chatScrollPane.setVvalue(1.0);
+        });
+    }
+
+    @FXML
+    public void initialize() {
+        chatInput.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER && !event.isShiftDown()) {
+                onSendChat();
+                event.consume();
+            }
+        });
+    }
+
 }
