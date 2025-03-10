@@ -1,7 +1,7 @@
 package de.uol.swp.common;
 
 public class Configuration {
-    static final int DEFAULT_PORT = 8899;
+    static final int DEFAULT_PORT = 443;
 
     private Configuration(){
     }
