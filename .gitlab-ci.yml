@@ -16,6 +16,8 @@ build-job:
   before_script:
     - echo "Setting up Docker..."
     - docker info
+    - echo "Changing ownership of files..."
+    - sudo chown -R $(whoami) .
   script:
     - echo "Starting Maven build for all modules..."
     - docker run --rm -v "$PWD":/usr/src/app -v "$PWD/.m2":/root/.m2 -w /usr/src/app maven:3.8.6-openjdk-18 mvn $MAVEN_CLI_OPTS clean install -DskipTests
@@ -29,6 +31,8 @@ unit-test-job:
   before_script:
     - echo "Setting up Docker..."
     - docker info
+    - echo "Changing ownership of files..."
+    - sudo chown -R $(whoami) .
   script:
     - echo "Running unit tests across all modules..."
     - docker run --rm -v "$PWD":/usr/src/app -v "$PWD/.m2":/root/.m2 -w /usr/src/app maven:3.8.6-openjdk-18 mvn $MAVEN_CLI_OPTS verify
@@ -46,6 +50,8 @@ deploy-job:
   before_script:
     - echo "Setting up Docker..."
     - docker info
+    - echo "Changing ownership of files..."
+    - sudo chown -R $(whoami) .
   script:
     - echo "Deploying the application..."
     - docker login
