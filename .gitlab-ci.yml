@@ -21,7 +21,7 @@ build-job:
     - ls -l /builds/swp/2024/ga/iberia/server/target/
   artifacts:
     paths:
-      - /builds/swp/2024/ga/iberia/server/target/
+      - /builds/swp/2024/ga/iberia/server/target/server-1.0.0-jar-with-dependencies.jar
     expire_in: 2 days
 
 
