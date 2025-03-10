@@ -13,15 +13,15 @@ cache:
 
 deploy-job:
   image: docker:20.10.8
-  stage: deploy
+  stage: build
   services:
     - docker:20.10.8-dind
+  before_script:
+    - docker info
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_TLS_CERTDIR: ""
+    DOCKER_TLS_CERTDIR: "/certs"
   script:
-    - echo "Deploying the application..."
-    - docker build -t timpodszus/iberia-swp server/.
-    - docker push timpodszus/iberia-swp
-    - docker build -t timpodszus/iberia-db .
-    - docker push timpodszus/iberia-db
+
+    - docker build -t "$CI_REGISTRY_IMAGE" server/.
+    - docker push "$CI_REGISTRY_IMAGE"
