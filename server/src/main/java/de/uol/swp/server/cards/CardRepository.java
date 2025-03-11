@@ -136,5 +136,6 @@ public class CardRepository {
         cards.put(211, new TreatWaterEventCard(211));
         cards.put(212, new MigrationOverseasEventCard(212));
         cards.put(213, new FavorableTimeEventCard(213));
+        cards.put(214, new HospitalFoundationEventCard(214));
     }
 }

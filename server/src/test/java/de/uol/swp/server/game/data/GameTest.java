@@ -76,7 +76,7 @@ class GameTest {
     void testGetCurrentPlayer() {
         IUser user = new User("testUser", "testPassword");
         game.getPlayers()
-            .add(new Player(user));
+            .add(new Player(user, "123"));
         assertNotNull(game.getCurrentPlayer());
     }
 
@@ -117,9 +117,7 @@ class GameTest {
 
     @Test
     void testGameStartShuffleWithInvalidNumSubDecks() {
-        Exception exception = assertThrows(
-                IllegalArgumentException.class, () -> game.gameStartShuffle(0)
-        );
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> game.gameStartShuffle(0));
         assertEquals("Number of sub-decks must be greater than zero.", exception.getMessage());
     }
 }
