@@ -735,7 +735,7 @@ public class GameServiceTest extends EventBusBasedTest {
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
 
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "lobbyId");
         player.setRole(new CountryDoctor());
         game1.getPlayers()
              .add(player);
