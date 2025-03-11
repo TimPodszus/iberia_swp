@@ -570,6 +570,10 @@ class GameManagementTest {
         when(cityCard.getCity()).thenReturn(city);
         when(player.getRole()).thenReturn(new Politician());
         when(player.getUser()).thenReturn(user);
+        when(connectionManagement.getBuildableTrainTracks("testLobby", 1)).thenReturn(List.of(new Connection(1,
+                List.of(ALICANTE, ALBACETE),
+                true
+        )));
 
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
@@ -606,7 +610,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(5, actions.size());
+        assertEquals(4, actions.size());
     }
 
 

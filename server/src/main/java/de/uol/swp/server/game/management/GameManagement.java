@@ -369,12 +369,23 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     /**
      * Checks if train tracks can be built in the specified lobby.
+     * If the current player is in a city where train tracks can be built and has enough tracks left, the action is possible.
      *
      * @param lobbyId the code of the lobby
      * @return true if train tracks can be built, false otherwise
      */
     private boolean areTrainTracksBuildable(String lobbyId) {
         IGame game = super.getGame(lobbyId);
+        IPlayer player = game.getCurrentPlayer();
+        if (connectionManagement.getBuildableTrainTracks(
+                                        lobbyId,
+                                        player.getCurrentPosition()
+                                              .getId()
+                                )
+                                .isEmpty()) {
+            return false;
+        }
+
         return game.getTracksLeft() >= 0;
     }
 
