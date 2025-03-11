@@ -92,6 +92,9 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CITY_ID = "#city";
     private static final String CITY_CLASS = "city";
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
+    private static final String PILE_CLASS = "pile";
+    private static final String PILE_HIGHLIGHTED_CLASS = "pile-highlighted";
+
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
 
     private String lobbyId;
@@ -192,7 +195,6 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private Button roleButtonTwo;
-
 
     private double mouseX;
 
@@ -1274,6 +1276,17 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateInfectionCardDrawPile(List<InfectionCardDTO> infectionCardDrawPileList) {
         setInfectionCardDrawPileCounter(infectionCardDrawPileList.size());
+        if (isGameState(StateType.INFECTION_STATE) && isPlayersTurn()) {
+            this.infectionCardDrawPile.getStyleClass()
+                                      .removeAll(PILE_CLASS);
+            this.infectionCardDrawPile.getStyleClass()
+                                      .add(PILE_HIGHLIGHTED_CLASS);
+        } else {
+            this.infectionCardDrawPile.getStyleClass()
+                                      .remove(PILE_HIGHLIGHTED_CLASS);
+            this.infectionCardDrawPile.getStyleClass()
+                                      .add(PILE_CLASS);
+        }
     }
 
     /**
@@ -1298,6 +1311,17 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updatePlayerCardDrawPile(List<ICardDTO> playerCardDrawPileList) {
         setPlayerCardDrawPileCounter(playerCardDrawPileList.size());
+        if (isGameState(StateType.DRAW_CARD_STATE) && isPlayersTurn()) {
+            this.playerCardDrawPile.getStyleClass()
+                                   .removeAll(PILE_CLASS);
+            this.playerCardDrawPile.getStyleClass()
+                                   .add(PILE_HIGHLIGHTED_CLASS);
+        } else {
+            this.playerCardDrawPile.getStyleClass()
+                                   .removeAll(PILE_HIGHLIGHTED_CLASS);
+            this.playerCardDrawPile.getStyleClass()
+                                   .add(PILE_CLASS);
+        }
     }
 
     /**
