@@ -205,13 +205,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Updates the game state if all players have been positioned.
      *
      * @param request The request with where the position is to be set
+     * @throws GameException If the game is not in a state that allows setting positioning
+     * @throws IllegalGameStateException If the game is not in a state that allows setting positioning
      */
-    public void setPositioning(PositioningRequest request) throws GameException, IllegalStateException {
+    public void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
         IGame game = getGame(request.getLobbyId());
 
         if (!(game.getState() instanceof WaitForPositioning waitForPositioningState)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows setting positioning", game.getGameId());
-            throw new IllegalStateException("Game is not in a state that allows setting positioning");
+            throw new IllegalGameStateException("Game is not in a state that allows setting positioning");
         }
 
         List<IPlayer> players = game.getPlayers();

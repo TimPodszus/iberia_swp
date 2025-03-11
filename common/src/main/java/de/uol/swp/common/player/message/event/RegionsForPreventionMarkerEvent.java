@@ -11,6 +11,11 @@ import java.util.Objects;
 public class RegionsForPreventionMarkerEvent extends AbstractGameEvent {
     List<IRegionDTO> regions;
 
+    /**
+     * Constructor of the RegionsForPreventionMarkerEvent
+     * @param lobbyId The lobbyId of the lobby
+     * @param regions The regions possible for the prevention marker
+     */
     public RegionsForPreventionMarkerEvent(String lobbyId, List<IRegionDTO> regions) {
         super(lobbyId);
         this.regions = regions;

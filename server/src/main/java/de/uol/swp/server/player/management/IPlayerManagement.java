@@ -170,13 +170,4 @@ public interface IPlayerManagement {
      * @param regionId the ID of the region
      */
      void placePreventionMarker(String lobbyId, int regionId);
-
-    /**
-     * Retrieves a player from a lobby.
-     * @param game the game
-     * @param playerName the name of the player
-     * @return the player
-     * @throws PlayerManagementException if an error occurs while retrieving the player
-     */
-     IPlayer getPlayer(IGame game, String playerName) throws PlayerManagementException;
 }

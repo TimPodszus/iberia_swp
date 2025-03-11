@@ -1798,10 +1798,10 @@ public class GamePresenter extends AbstractPresenter {
             dialog.showAndWaitForResult()
                   .thenAccept(selectedValue -> {
                       if (selectedValue != null) {
-                          LOG.debug("Player has selected {} water treatments", selectedValue);
+                          LOG.debug("[LobbyId: {}] Player has selected {} water treatments",lobbyId, selectedValue);
                           gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
                       } else {
-                          LOG.debug("Player has not selected any water treatments");
+                          LOG.debug("[LobbyId: {}] Player has not selected any water treatments", lobbyId);
                           gameService.sendTreatWaterEventRequest(lobbyId, regionId, 0, true);
                       }
                   });
@@ -1883,6 +1883,11 @@ public class GamePresenter extends AbstractPresenter {
         Platform.runLater(dialog::showEndGameDialog);
     }
 
+    /**
+     * Handles the CardsToSortResponse.
+     * Opens a dialog for the player to sort the cards.
+     * @param response the CardsToSortResponse containing the cards to sort
+     */
     @Subscribe
     public void onCardsToSortResponse(CardsToSortResponse response) {
         if (!response.getLobbyId()
@@ -1896,6 +1901,12 @@ public class GamePresenter extends AbstractPresenter {
         });
     }
 
+    /**
+     * Handles the response containing the regions to treat water.
+     * Highlights the regions where water can be treated.
+     *
+     * @param eventResponse The response containing the regions to treat water
+     */
     @Subscribe
     public void onTreatWaterEventResponse(TreatWaterEventResponse eventResponse) {
         List<IRegionDTO> regions = gameDTO.getRegions();
@@ -1907,9 +1918,19 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
+    /**
+     * Handles the RegionsForPreventionMarkerEvent.
+     * Highlights the regions where a prevention marker can be placed.
+     * @param event the RegionsForPreventionMarkerEvent containing the regions
+     */
     @Subscribe
-    public void onRegionsForPreventionMarkerResponse(RegionsForPreventionMarkerEvent response){
-        for (IRegionDTO region : response.getRegions()) {
+    public void onRegionsForPreventionMarkerEvent(RegionsForPreventionMarkerEvent event){
+        if (!event.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+        LOG.debug("[LobbyId: {}] Received RegionsForPreventionMarkerEvent", lobbyId);
+        for (IRegionDTO region : event.getRegions()) {
             Node stackPane = mapPane.lookup(REGION_ID + region.getId());
             stackPane.getStyleClass()
                      .add(REGION_HIGHLIGHTED_CLASS);

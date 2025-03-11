@@ -259,26 +259,6 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
         player.setCurrentPosition(city);
         LOG.debug("[LobbyID: {}] Player {} moved to city with ID {}", lobbyId, playerName, cityId);
     }
-    /**
-     * Retrieves a player from the game by their username.
-     * <p>
-     * This method searches the list of players in the game for a player with the specified username.
-     * If the player is found, it is returned. If the player is not found, a PlayerManagementException is thrown.
-     *
-     * @param game       the game instance from which the player is to be retrieved
-     * @param playerName the username of the player to be retrieved
-     * @return the player with the specified username
-     * @throws PlayerManagementException if the player is not found
-     */
-    public IPlayer getPlayer(IGame game, String playerName) throws PlayerManagementException {
-        return game.getPlayers()
-                   .stream()
-                   .filter(p -> p.getUser()
-                                 .getUsername()
-                                 .equals(playerName))
-                   .findFirst()
-                   .orElseThrow(() -> new PlayerManagementException("Player not found"));
-    }
 
     /**
      * Shuffles the infection cards from the discard pile back into the draw pile.
@@ -414,11 +394,10 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @param oldPosition the old position of the player
      * @param newPosition the new position of the player
      * @return the list of regions for the player
-     * @throws IllegalStateException if the player is not in the correct state to sort cards
      */
 
-    public List<IRegionDTO> determineRegionsForNurse(IPlayer player, ICity oldPosition, ICity newPosition) throws IllegalStateException {
-        LOG.debug("Lobby {}: Determine Regions for Nurse", player.getGameId());
+    public List<IRegionDTO> determineRegionsForNurse(IPlayer player, ICity oldPosition, ICity newPosition) {
+        LOG.debug("[LobbyId: {}] Determine Regions for Nurse", player.getGameId());
         IGame game = getGame(player.getGameId());
         removePreventionMarker(game, oldPosition);
         return RegionMapper.toDTOList(game.getRegionRepository().getRegionsByCityName(newPosition.getName()));
@@ -432,7 +411,7 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * @param regionId the ID of the region
      */
     public void placePreventionMarker(String lobbyId, int regionId) {
-        LOG.debug("Lobby {}: Place Prevention Marker in Region {}", lobbyId, regionId);
+        LOG.debug("[LobbyId: {}] Place Prevention Marker in Region {}", lobbyId, regionId);
         IGame game = getGame(lobbyId);
         IRegion region = game.getRegionRepository()
                              .getRegionByID(regionId);
@@ -447,10 +426,10 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      */
     private void removePreventionMarker(IGame game, ICity oldPosition) {
         if(oldPosition == null) {
-            LOG.debug("Lobby {}: Cant remove Prevention Marker from Old Position", game.getGameId());
+            LOG.debug("[LobbyId: {}] Cant remove Prevention Marker from Old Position", game.getGameId());
             return;
         }
-        LOG.debug("Lobby {}: Remove Prevention Marker from Old Position {}", game.getGameId(), oldPosition.getName());
+        LOG.debug("[LobbyId: {}] Remove Prevention Marker from Old Position {}", game.getGameId(), oldPosition.getName());
         List<IRegion> regions = game.getRegionRepository()
                                     .getRegionsByCityName(oldPosition.getName());
         regions.forEach(region -> region.setPreventionMarker(false));

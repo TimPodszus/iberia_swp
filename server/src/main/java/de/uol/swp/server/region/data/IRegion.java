@@ -52,5 +52,9 @@ public interface IRegion {
      */
     void setPreventionMarker(boolean preventionMarker);
 
+    /**
+     * Checks if the region has a prevention marker.
+     * @return true if the region has a prevention marker, false otherwise
+     */
     boolean isPreventionMarker();
 }

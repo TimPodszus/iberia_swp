@@ -9,6 +9,12 @@ import java.util.Objects;
 public class PlacePreventionMarkerRequest extends AbstractGameRequest{
     private final int regionId;
 
+    /**
+     * Constructor of the PlacePreventionMarkerRequest
+     *
+     * @param lobbyId The lobbyId of the lobby
+     * @param regionId The regionId of the region to place the prevention marker
+     */
     public PlacePreventionMarkerRequest(String lobbyId, int regionId) {
         super(lobbyId);
         this.regionId = regionId;

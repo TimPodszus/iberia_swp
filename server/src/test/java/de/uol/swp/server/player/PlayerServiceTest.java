@@ -31,7 +31,6 @@ import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.role.Nurse;
 import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.AuthenticationService;
@@ -159,7 +158,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onShareRideRequest() throws InterruptedException, PlayerManagementException {
+    void onShareRideRequest() throws InterruptedException {
         ShareRideRequest shareRideRequest = new ShareRideRequest(LOBBY_ID, 1);
         shareRideRequest.setSession(session);
 
@@ -171,7 +170,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void onNotConfirmedShareRideRequest() throws InterruptedException, PlayerManagementException {
+    void onNotConfirmedShareRideRequest() throws InterruptedException {
         ShareRideRequest shareRideRequest = new ShareRideRequest(LOBBY_ID);
         shareRideRequest.setSession(session);
 
@@ -382,44 +381,33 @@ public class PlayerServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnPositionRequest() throws PlayerManagementException, GameException, InterruptedException {
+    void testOnPositionRequest() throws GameException, InterruptedException, IllegalGameStateException {
         PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
         request.setSession(session);
 
         IPlayer player = mock(IPlayer.class);
-        when(playerManagement.getPlayer(game, user.getUsername())).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
+        when(player.getRole()).thenReturn(new Sailor());
+        game.getPlayers().add(player);
         when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
 
         postAndWait(request);
 
         verify(player).setPositionChangeListener(playerService);
         verify(gameManagement).setPositioning(request);
-        verify(playerManagement).getPlayer(game, user.getUsername());
         verify(lobbyManagement).getLobby(LOBBY_ID);
         assertInstanceOf(BoardUpdateEvent.class, super.event);
     }
 
     @Test
-    void testOnPositionRequest_PlayerManagementException() throws PlayerManagementException, InterruptedException {
-        PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
-        request.setSession(session);
-
-        when(playerManagement.getPlayer(game, user.getUsername())).thenThrow(new PlayerManagementException("Test exception"));
-
-        postAndWait(request);
-
-        verify(playerManagement).getPlayer(game, user.getUsername());
-        assertInstanceOf(StatusResponse.class, super.event);
-        assertEquals("Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand", ((StatusResponse) super.event).getDescription());
-    }
-
-    @Test
-    void testOnPositionRequest_GameException() throws PlayerManagementException, GameException, InterruptedException {
+    void testOnPositionRequest_GameException() throws GameException, InterruptedException, IllegalGameStateException {
         PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
         request.setSession(session);
 
         IPlayer player = mock(IPlayer.class);
-        when(playerManagement.getPlayer(game, user.getUsername())).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
+        when(player.getRole()).thenReturn(new Sailor());
+        game.getPlayers().add(player);
         doThrow(new GameException("Test exception")).when(gameManagement).setPositioning(request);
 
         postAndWait(request);
@@ -427,5 +415,22 @@ public class PlayerServiceTest extends EventBusBasedTest {
         verify(gameManagement).setPositioning(request);
         assertInstanceOf(StatusResponse.class, super.event);
         assertEquals("Position konnte nicht gesetzt werden", ((StatusResponse) super.event).getDescription());
+    }
+
+    @Test
+    void testOnPositionRequest_IllegalGameStateException() throws InterruptedException, IllegalGameStateException, GameException {
+        PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
+        request.setSession(session);
+        IPlayer player = mock(IPlayer.class);
+        when(player.getUser()).thenReturn(user);
+        when(player.getRole()).thenReturn(new Sailor());
+        game.getPlayers().add(player);
+        doThrow(new IllegalGameStateException("Test exception")).when(gameManagement).setPositioning(request);
+
+        postAndWait(request);
+
+        verify(gameManagement).setPositioning(request);
+        assertInstanceOf(StatusResponse.class, super.event);
+        assertEquals("Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand", ((StatusResponse) super.event).getDescription());
     }
 }

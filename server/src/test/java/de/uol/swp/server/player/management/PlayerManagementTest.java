@@ -215,10 +215,9 @@ class PlayerManagementTest {
     /**
      * Tests that setPlayerLocation sets the player's location to the specified city.
      *
-     * @throws PlayerManagementException if an error occurs while setting the player's location
      */
     @Test
-    void testSetPlayerLocation() throws PlayerManagementException {
+    void testSetPlayerLocation() {
         ICity city = new City(1, PlagueName.CHOLERA, CityName.ALBACETE, 1234, false);
         when(cityManagement.getCity(game.getGameId(), 1)).thenReturn(city);
 
@@ -351,7 +350,7 @@ class PlayerManagementTest {
     }
 
     @Test
-    void testSortCards() throws GameException, IllegalGameStateException {
+    void testSortCards() throws IllegalGameStateException {
         ICard card1 = mock(ICard.class);
         ICard card2 = mock(ICard.class);
         ICard card3 = mock(ICard.class);
@@ -506,5 +505,17 @@ class PlayerManagementTest {
         playerManagement.placePreventionMarker("123", 1);
         assertTrue(game.getRegionRepository().getRegionByID(1).isPreventionMarker(), "Expected prevention marker to " +
                 "be set to true");
+    }
+
+    @Test
+    void testDetermineRegionsForNurse_OldPositionIsNull() {
+        ICity newPosition = mock(ICity.class);
+        when(newPosition.getName()).thenReturn(CityName.PORTO);
+        when(player.getGameId()).thenReturn("123");
+
+        List<IRegionDTO> regions = playerManagement.determineRegionsForNurse(player, null, newPosition);
+
+        assertNotNull(regions);
+        assertTrue(game.getRegionRepository().getRegionsByCityName(null).isEmpty());
     }
 }
