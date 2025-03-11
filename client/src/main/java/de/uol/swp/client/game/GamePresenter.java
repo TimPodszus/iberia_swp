@@ -1128,7 +1128,7 @@ public class GamePresenter extends AbstractPresenter {
      * @param gameDTO the game data transfer object containing the latest game state
      */
     private void updateBoard(IGameDTO gameDTO) {
-        LOG.trace("Updating game board with latest data");
+        LOG.trace("[LobbyId: {}] Updating game board with latest data", this.lobbyId);
         updateCities(gameDTO.getCities());
         updateConnections(gameDTO.getConnections());
         updateCurrentPlayer(gameDTO.getCurrentPlayer());
@@ -1144,13 +1144,19 @@ public class GamePresenter extends AbstractPresenter {
         updateResearchedPlagues(gameDTO.getPlagues());
         updateItems(gameDTO);
         updateRemainingActions(gameDTO.getRemainingActions());
+        disableActionButtons();
 
         if (!isGameState(StateType.START_STATE)) {
             updatePlayersInCities(gameDTO.getPlayers());
         }
 
-        disableActionButtons();
-        if (isGameState(StateType.PLAYER_TURN_STATE) && isPlayersTurn()) {
+        if (isGameState(StateType.WAIT_FOR_POSITIONING_STATE) && playersPositionMissing()) {
+            LOG.info(
+                    "[LobbyId: {}] Player has not set initial position yet. Highlighting all accessible cities",
+                    this.lobbyId
+            );
+            setStartingPositions();
+        } else if (isGameState(StateType.PLAYER_TURN_STATE) && isPlayersTurn()) {
             gameService.requestAvailableDestination(
                     this.lobbyId,
                     gameDTO.getCurrentPlayer()
@@ -1159,6 +1165,37 @@ public class GamePresenter extends AbstractPresenter {
             );
             gameService.sendAvailableActionsRequest(this.lobbyId);
         }
+    }
+
+    private void setStartingPositions() {
+        IPlayerDTO player = gameDTO.getPlayer(user.getUsername());
+        List<ICardDTO> cityCards = player.getCards()
+                                         .stream()
+                                         .filter(CityCardDTO.class::isInstance)
+                                         .toList();
+
+        if (cityCards.isEmpty()) {
+            LOG.debug("[LobbyId: {}] Player has no city cards. Highlighting all cities", lobbyId);
+            highlightAllCities();
+        } else {
+            LOG.debug("[LobbyId: {}] Player has city cards. Highlighting {} cities", lobbyId, cityCards);
+            List<Integer> cityIds = cityCards.stream()
+                                             .map(ICardDTO::getId)
+                                             .toList();
+            highlightCities(cityIds);
+        }
+    }
+
+    /**
+     * Checks if the player's position is missing.
+     *
+     * @return true if the player's position is missing, false otherwise
+     */
+    private boolean playersPositionMissing() {
+        boolean positionMissing = gameDTO.getPlayer(user.getUsername())
+                                         .getCurrentPosition() == null;
+        LOG.trace("[LobbyId: {}] Player's position is missing: {}", this.lobbyId, positionMissing);
+        return positionMissing;
     }
 
     /**
@@ -1193,11 +1230,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateCities(List<ICityDTO> cities) {
         for (ICityDTO city : cities) {
-            Node stackPane = mapPane.lookup(CITY_ID + city.getId());
-            stackPane.getStyleClass()
-                     .remove(CITY_HIGHLIGHTED_CLASS);
-            stackPane.getStyleClass()
-                     .add(CITY_CLASS);
+            highlightCity(city.getId(), false);
             updateInfections(city);
         }
     }
@@ -1271,7 +1304,7 @@ public class GamePresenter extends AbstractPresenter {
                                       .add(PILE_HIGHLIGHTED_CLASS);
         } else {
             this.infectionCardDrawPile.getStyleClass()
-                                      .remove(PILE_HIGHLIGHTED_CLASS);
+                                      .removeAll(PILE_HIGHLIGHTED_CLASS);
             this.infectionCardDrawPile.getStyleClass()
                                       .add(PILE_CLASS);
         }
@@ -1749,11 +1782,11 @@ public class GamePresenter extends AbstractPresenter {
      * of the corresponding city StackPane to indicate it is a highlighted destination.
      */
     private void highlightAvailableDestinations() {
-        LOG.debug("Highlighting available destinations");
-        highlightCitys(availableDestinations.keySet()
-                                            .stream()
-                                            .toList());
-        LOG.info("Available destinations highlighted");
+        LOG.debug("[LobbyId: {}] Highlighting {} available destinations", lobbyId, availableDestinations.size());
+        highlightCities(availableDestinations.keySet()
+                                             .stream()
+                                             .toList());
+        LOG.info("[LobbyId: {}] Available destinations highlighted", lobbyId);
     }
 
     /**
@@ -1763,9 +1796,9 @@ public class GamePresenter extends AbstractPresenter {
      * @param cityIds the list of city IDs where hospitals can be built
      */
     private void highlightAvailableHospitalLocations(List<Integer> cityIds) {
-        LOG.debug("Highlighting available hospital locations");
-        highlightCitys(cityIds);
-        LOG.info("Available hospital locations highlighted");
+        LOG.debug("[LobbyId: {}] Highlighting {} available hospital locations", lobbyId, cityIds.size());
+        highlightCities(cityIds);
+        LOG.info("[LobbyId: {}] Available hospital locations highlighted", lobbyId);
     }
 
     /**
@@ -1774,17 +1807,58 @@ public class GamePresenter extends AbstractPresenter {
      *
      * @param cityIds the list of city IDs to highlight
      */
-    private void highlightCitys(List<Integer> cityIds) {
+    private void highlightCities(List<Integer> cityIds) {
+        LOG.debug("[LobbyId: {}] Highlighting {} cities", lobbyId, cityIds.size());
         for (Integer cityId : cityIds) {
-            LOG.trace("Highlighting city {}", cityId);
-            Node node = mapPane.lookup(CITY_ID + cityId);
+            highlightCity(cityId, true);
+        }
+        LOG.info("[LobbyId: {}] Cities highlighted", lobbyId);
+    }
+
+    /**
+     * Resets the highlight for buildable train tracks.
+     * <p>
+     * This method iterates through all cities in the game and removes the
+     * highlight style class from the corresponding StackPane elements.
+     */
+    public void resetHighlightetCities() {
+        gameDTO.getCities()
+               .forEach(city -> highlightCity(city.getId(), false));
+        LOG.info("[LobbyId: {}] Reset highlighted cities", lobbyId);
+    }
+
+    /**
+     * Highlights all cities on the map
+     */
+    private void highlightAllCities() {
+        List<Integer> cityIds = gameDTO.getCities()
+                                       .stream()
+                                       .map(ICityDTO::getId)
+                                       .toList();
+        highlightCities(cityIds);
+        LOG.info("All cities highlighted");
+    }
+
+    /**
+     * Adds or removes the highlight of a city on the map
+     *
+     * @param cityId    the id of the city to highlight
+     * @param highlight true if the city should be highlighted, false otherwise
+     */
+    private void highlightCity(int cityId, boolean highlight) {
+        Node node = mapPane.lookup(CITY_ID + cityId);
+        if (highlight) {
             node.getStyleClass()
                 .removeAll(CITY_CLASS);
             node.getStyleClass()
+                .add(CITY_HIGHLIGHTED_CLASS);
+        } else {
+            node.getStyleClass()
                 .removeAll(CITY_HIGHLIGHTED_CLASS);
             node.getStyleClass()
-                .add(CITY_HIGHLIGHTED_CLASS);
+                .add(CITY_CLASS);
         }
+        LOG.trace("[LobbyId: {}] City {} highlighted: {}", lobbyId, cityId, highlight);
     }
 
     /**
@@ -2047,23 +2121,6 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Resets the highlight for buildable train tracks.
-     * <p>
-     * This method iterates through all cities in the game and removes the
-     * highlight style class from the corresponding StackPane elements.
-     */
-    public void resetHighlightetCities() {
-        gameDTO.getCities()
-               .forEach(city -> {
-                   Node stackPane = mapPane.lookup(CITY_ID + city.getId());
-                   stackPane.getStyleClass()
-                            .remove(CITY_HIGHLIGHTED_CLASS);
-                   stackPane.getStyleClass()
-                            .add(CITY_CLASS);
-               });
-    }
-
-    /**
      * Handles game responses.
      * <p>
      * This method is called when a game response is received. If the response indicates
@@ -2076,7 +2133,7 @@ public class GamePresenter extends AbstractPresenter {
         if (response.isSuccess()) {
             return;
         }
-
+        LOG.debug("[LobbyId: {}] Got failed game response", lobbyId);
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Fehler");
@@ -2093,8 +2150,10 @@ public class GamePresenter extends AbstractPresenter {
      * @return true if the game state is the specified state type, false otherwise
      */
     private boolean isGameState(StateType stateType) {
-        return gameDTO.getState()
-                      .equals(stateType);
+        boolean isGameState = gameDTO.getState()
+                                     .equals(stateType);
+        LOG.trace("[LobbyId: {}] Is game state {}: {}", lobbyId, stateType, isGameState);
+        return isGameState;
     }
 
     /**
@@ -2103,8 +2162,10 @@ public class GamePresenter extends AbstractPresenter {
      * @return true if it is the player's turn, false otherwise
      */
     private boolean isPlayersTurn() {
-        return gameDTO.getCurrentPlayer()
-                      .getUsername()
-                      .equals(user.getUsername());
+        boolean isPlayersTurn = gameDTO.getCurrentPlayer()
+                                       .getUsername()
+                                       .equals(user.getUsername());
+        LOG.trace("[LobbyId: {}] Is it the players turn: {}", lobbyId, isPlayersTurn);
+        return isPlayersTurn;
     }
 }
