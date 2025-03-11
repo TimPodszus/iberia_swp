@@ -13,11 +13,10 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
+import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
-import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
-import de.uol.swp.common.player.message.request.MovePlayerRequest;
+import de.uol.swp.common.player.message.request.*;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentRegionRequest;
@@ -101,6 +100,7 @@ public class GameService {
     public void drawPlayerCard(String lobbyCode) {
         DrawPlayerCardRequest request = new DrawPlayerCardRequest(lobbyCode);
         eventBus.post(request);
+        LOG.info("[LobbyId: {}] DrawPlayerCardRequest sent", lobbyCode);
     }
 
     /**
@@ -111,6 +111,7 @@ public class GameService {
     public void drawInfectionCard(String lobbyId) {
         DrawInfectionCardRequest request = new DrawInfectionCardRequest(lobbyId);
         eventBus.post(request);
+        LOG.info("[LobbyId: {}] DrawInfectionCardRequest sent", lobbyId);
     }
 
     public void setPosition(String lobbyCode, int id) {
@@ -341,9 +342,9 @@ public class GameService {
     /**
      * Sends a request to perform water treatment in the specified region.
      *
-     * @param lobbyId the ID of the lobby
-     * @param regionId the ID of the region where the water treatment is to be performed
-     * @param amount the amount of water treatments to be performed
+     * @param lobbyId   the ID of the lobby
+     * @param regionId  the ID of the region where the water treatment is to be performed
+     * @param amount    the amount of water treatments to be performed
      * @param dismissed whether the event was dismissed
      */
     public void sendTreatWaterEventRequest(String lobbyId, int regionId, int amount, boolean dismissed) {
@@ -358,6 +359,25 @@ public class GameService {
      */
     public void sendBuildHospitalRequest(String lobbyId, int cityId) {
         eventBus.post(new BuildHospitalRequest(lobbyId, cityId));
+    }
+
+    /**
+     * Sends a request to sort the cards.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param result  the list of cards to be sorted
+     */
+    public void sendSortedCardRequest(String lobbyId, List<ICardDTO> result) {
+        eventBus.post(new SortedCardsRequest(lobbyId, result));
+    }
+
+    /**
+     * Sends a request to get the cards to sort.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    public void sendGetCardsToSortRequest(String lobbyId) {
+        eventBus.post(new GetCardsToSortRequest(lobbyId));
     }
 
     /**
@@ -379,6 +399,82 @@ public class GameService {
      */
     public void sendTreatPlagueRequest(String lobbyID, int cityID, PlagueName selectedPlague) {
         eventBus.post(new TreatPlagueRequest(lobbyID, cityID, selectedPlague));
+    }
+
+    public void politicianActionTradeWithDiscardPile(IGameDTO gameDTO, String lobbyId) {
+        boolean playerHasCityCard = gameDTO.getCurrentPlayer()
+                                           .getCards()
+                                           .stream()
+                                           .anyMatch(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                                    .getCurrentPosition()
+                                                                                    .getId());
+
+        Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
+
+        if (playerHasCityCard) {
+            gameDTO.getCurrentPlayer()
+                   .getCards()
+                   .stream()
+                   .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                          .getCurrentPosition()
+                                                          .getId())
+                   .findFirst()
+                   .ifPresent(card -> {
+                       List<ICardDTO> cardOfCurrentCity = new ArrayList<>();
+                       cardOfCurrentCity.add(card);
+                       cardsToExchange.put(
+                               gameDTO.getCurrentPlayer()
+                                      .getUsername(), cardOfCurrentCity
+                       );
+                   });
+            cardsToExchange.put("Discard Pile", gameDTO.getPlayerCardDiscardPile());
+        } else {
+            cardsToExchange.put(
+                    gameDTO.getCurrentPlayer()
+                           .getUsername(),
+                    gameDTO.getCurrentPlayer()
+                           .getCards()
+            );
+            cardsToExchange.put(
+                    "Discard Pile",
+                    gameDTO.getPlayerCardDiscardPile()
+                           .stream()
+                           .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
+                                                                  .getCurrentPosition()
+                                                                  .getId())
+                           .toList()
+            );
+        }
+
+        CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                gameDTO.getCurrentPlayer()
+                       .getUsername(), cardsToExchange
+        );
+        Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+        result.ifPresent(map -> {
+            LOG.debug("Card exchange result: {}", map);
+            eventBus.post(new CardsExchangeWithDiscardPileRequest(map, lobbyId));
+        });
+    }
+
+    /**
+     * Posts a request to research a plague for the given game lobby.
+     *
+     * @param lobbyId The game lobby's unique identifier.
+     */
+    public void sendResearchPlagueRequest(String lobbyId) {
+        LOG.debug("Sending ResearchPlagueRequest with Id {}", lobbyId);
+        eventBus.post(new ResearchPlagueRequest(lobbyId));
+    }
+
+    /**
+     * Sends a request to discard a player card in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby where the card is to be discarded
+     * @param card    the card to be discarded
+     */
+    public void sendDiscardPlayerCardRequest(String lobbyId, ICardDTO card) {
+        eventBus.post(new DiscardPlayerCardRequest(lobbyId, card));
     }
 
     /**

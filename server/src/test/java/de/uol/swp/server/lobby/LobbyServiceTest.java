@@ -7,18 +7,22 @@ import de.uol.swp.common.lobby.message.response.GetLobbyResponse;
 import de.uol.swp.common.lobby.message.response.LobbyListResponse;
 import de.uol.swp.common.lobby.message.response.LobbyUpdatedEvent;
 import de.uol.swp.common.lobby.message.response.UserJoinedLobbyMessage;
+import de.uol.swp.common.message.response.ExceptionMessage;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
+import de.uol.swp.server.lobby.exceptions.LobbyIsFullException;
+import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
+import de.uol.swp.server.lobby.exceptions.UserAlreadyInLobbyException;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
-import de.uol.swp.server.lobby.store.LobbyStoreException;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import de.uol.swp.server.usermanagement.UserMapper;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 /**
@@ -108,6 +113,16 @@ public class LobbyServiceTest extends EventBusBasedTest {
     }
 
     /**
+     * Handles ExceptionMessage events.
+     *
+     * @param e the ExceptionMessage event
+     */
+    @Subscribe
+    public void onExceptionMessage(ExceptionMessage e) {
+        handleEvent(e);
+    }
+
+    /**
      * Sets up the test environment before each test.
      * <p>
      * This method initializes the mocked instances of ILobbyManagement and AuthenticationService,
@@ -116,23 +131,20 @@ public class LobbyServiceTest extends EventBusBasedTest {
      * behavior of the mocked lobbyManagement to return a predefined lobby when the createLobby
      * method is called.
      *
-     * @throws LobbyStoreException    if an error occurs during lobby management
      * @throws NoSuchFieldException   if the authenticationService field is not found
      * @throws IllegalAccessException if the authenticationService field is not accessible
      */
     @BeforeEach
-    public void setUp() throws LobbyStoreException, NoSuchFieldException, IllegalAccessException {
+    public void setUp() throws NoSuchFieldException, IllegalAccessException {
         MockitoAnnotations.openMocks(this);
         when(lobbyManagement.createLobby(UserMapper.toUser(firstOwner))).thenReturn(lobby);
     }
 
     /**
      * Tests the creation of a lobby.
-     *
-     * @throws LobbyStoreException if an error occurs during lobby creation
      */
     @Test
-    void createLobbyTest() throws LobbyStoreException {
+    void createLobbyTest() {
         IUser user = UserMapper.toUser(firstOwner);
         Session session = UUIDSession.create(user);
         final CreateLobbyRequest request = new CreateLobbyRequest();
@@ -144,13 +156,21 @@ public class LobbyServiceTest extends EventBusBasedTest {
     }
 
     /**
+     * Tests the creation of a lobby with an invalid session.
+     */
+    @Test
+    void testCreateLobby_InvalidSession() {
+        final CreateLobbyRequest request = new CreateLobbyRequest();
+        assertThrows(SessionNotFoundException.class, () -> lobbyService.onCreateLobbyRequest(request));
+    }
+
+    /**
      * Tests retrieving all lobbies.
      *
      * @throws InterruptedException if the thread is interrupted
-     * @throws LobbyStoreException  if an error occurs during lobby retrieval
      */
     @Test
-    void getAllLobbiesTest() throws InterruptedException, LobbyStoreException {
+    void getAllLobbiesTest() throws InterruptedException {
         when(lobbyManagement.getLobbies()).thenReturn(new ArrayList<>());
 
         postAndWait(new LobbyListRequest());
@@ -178,10 +198,10 @@ public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * Tests updating a lobby.
      *
-     * @throws LobbyStoreException if an error occurs during lobby update
+     * @throws LobbyNotFoundException if an error occurs during lobby update
      */
     @Test
-    void updateLobbyTest() throws LobbyStoreException, InterruptedException {
+    void updateLobbyTest() throws InterruptedException, LobbyNotFoundException {
         ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
         when(lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO))).thenReturn(lobby);
         UpdateLobbyRequest request = new UpdateLobbyRequest(lobbyDTO);
@@ -195,13 +215,31 @@ public class LobbyServiceTest extends EventBusBasedTest {
     }
 
     /**
+     * Tests updating a lobby.
+     *
+     * @throws LobbyNotFoundException if an error occurs during lobby update
+     */
+    @Test
+    void testUpdateLobby_LobbyNotFound() throws InterruptedException, LobbyNotFoundException {
+        ILobbyDTO lobbyDTO = LobbyMapper.toDTO(lobby);
+        when(lobbyManagement.updateLobby(LobbyMapper.toLobby(lobbyDTO))).thenThrow(LobbyNotFoundException.class);
+        UpdateLobbyRequest request = new UpdateLobbyRequest(lobbyDTO);
+        Session session = UUIDSession.create(UserMapper.toUser(firstOwner));
+        request.setSession(session);
+
+        postAndWait(request);
+
+        assertInstanceOf(ExceptionMessage.class, event);
+    }
+
+    /**
      * Tests removing a user from a lobby.
      *
-     * @throws LobbyStoreException  if an error occurs during user removal
+     * @throws LobbyNotFoundException  if an error occurs during user removal
      * @throws InterruptedException if the thread is interrupted
      */
     @Test
-    void testRemoveUserFromLobby() throws LobbyStoreException, InterruptedException {
+    void testRemoveUserFromLobby() throws LobbyNotFoundException, InterruptedException {
         IUser userToRemove = new User("RemoveMe", "RemoveMe");
         Session userToRemoveSession = UUIDSession.create(userToRemove);
         when(authenticationService.getSession(userToRemove)).thenReturn(Optional.of(userToRemoveSession));
@@ -217,6 +255,43 @@ public class LobbyServiceTest extends EventBusBasedTest {
 
         assertInstanceOf(LobbyUpdatedEvent.class, event);
         verify(lobbyManagement, atLeast(1)).removeUser("testcode", "RemoveMe");
+    }
+
+    /**
+     * Tests removing a user from a lobby when the lobby is not found.
+     *
+     * @throws LobbyNotFoundException if the lobby is not found
+     * @throws InterruptedException   if the thread is interrupted
+     */
+    @Test
+    void testRemoveUserFromLobby_LobbyNotFound() throws LobbyNotFoundException, InterruptedException {
+        when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
+        when(lobbyManagement.removeUser("testcode", "RemoveMe")).thenThrow(LobbyNotFoundException.class);
+        RemoveUserFromLobbyRequest request = new RemoveUserFromLobbyRequest("testcode", "RemoveMe");
+
+        postAndWait(request);
+
+        assertInstanceOf(ExceptionMessage.class, event);
+    }
+
+    /**
+     * Tests removing a user from a lobby when the session is not found.
+     *
+     * @throws LobbyNotFoundException if the lobby is not found
+     */
+    @Test
+    void testRemoveUserFromLobby_SessionNotFound() throws LobbyNotFoundException {
+        IUser userToRemove = new User("RemoveMe", "RemoveMe");
+        lobby.addUser(userToRemove);
+        when(authenticationService.getSession(userToRemove)).thenReturn(Optional.empty());
+
+        when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
+        when(lobbyManagement.removeUser("testcode", "RemoveMe")).thenReturn(lobby);
+        RemoveUserFromLobbyRequest request = new RemoveUserFromLobbyRequest("testcode", "RemoveMe");
+        Session session = UUIDSession.create(UserMapper.toUser(firstOwner));
+        request.setSession(session);
+
+        assertThrows(SessionNotFoundException.class, () -> lobbyService.onRemoveUserFromLobbyRequest(request));
     }
 
     /**
@@ -240,12 +315,21 @@ public class LobbyServiceTest extends EventBusBasedTest {
 
     /**
      * Tests joining a lobby.
+     */
+    @Test
+    void testLeaveLobby_InvalidSession() {
+        final LeaveLobbyRequest request = new LeaveLobbyRequest("testcode");
+        assertThrows(SessionNotFoundException.class, () -> lobbyService.onLobbyLeaveUserRequest(request));
+    }
+
+    /**
+     * Tests joining a lobby.
      *
-     * @throws LobbyStoreException  if an error occurs during lobby joining
+     * @throws LobbyNotFoundException  if an error occurs during lobby joining
      * @throws InterruptedException if the eventbus is interrupted
      */
     @Test
-    void testJoinLobby() throws LobbyStoreException, InterruptedException {
+    void testJoinLobby() throws LobbyNotFoundException, InterruptedException, UserAlreadyInLobbyException, LobbyIsFullException {
         when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
         IUser user = UserMapper.toUser(firstOwner);
         JoinLobbyRequest request = new JoinLobbyRequest("testcode");
@@ -256,6 +340,87 @@ public class LobbyServiceTest extends EventBusBasedTest {
 
         assertInstanceOf(UserJoinedLobbyMessage.class, event);
         verify(lobbyManagement, atLeastOnce()).joinLobby("testcode", user);
+    }
+
+    /**
+     * Tests joining a lobby when the lobby is not found.
+     *
+     * @throws UserAlreadyInLobbyException if the user is already in the lobby
+     * @throws LobbyIsFullException        if the lobby is full
+     * @throws LobbyNotFoundException if the lobby is not found
+     * @throws InterruptedException   if the eventbus is interrupted
+     */
+    @Test
+    void testJoinLobby_LobbyNotFound() throws UserAlreadyInLobbyException, LobbyIsFullException, LobbyNotFoundException, InterruptedException {
+        IUser user = UserMapper.toUser(firstOwner);
+        JoinLobbyRequest request = new JoinLobbyRequest("testcode");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+
+        doThrow(new LobbyNotFoundException("Lobby not found")).when(lobbyManagement)
+                                                              .joinLobby("testcode", user);
+
+        postAndWait(request);
+
+        assertInstanceOf(ExceptionMessage.class, event);
+        verify(lobbyManagement, never()).getLobby(anyString());
+    }
+
+    /**
+     * Tests joining a lobby when user already in lobby.
+     *
+     * @throws UserAlreadyInLobbyException if the user is already in the lobby
+     * @throws LobbyIsFullException        if the lobby is full
+     * @throws LobbyNotFoundException if the lobby is not found
+     * @throws InterruptedException   if the eventbus is interrupted
+     */
+    @Test
+    void testJoinLobby_UserAlreadyInLobby() throws UserAlreadyInLobbyException, LobbyIsFullException, LobbyNotFoundException, InterruptedException {
+        IUser user = UserMapper.toUser(firstOwner);
+        JoinLobbyRequest request = new JoinLobbyRequest("testcode");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+
+        doThrow(new UserAlreadyInLobbyException("User already in Lobby")).when(lobbyManagement)
+                                                                         .joinLobby("testcode", user);
+
+        postAndWait(request);
+
+        assertInstanceOf(ExceptionMessage.class, event);
+        verify(lobbyManagement, never()).getLobby(anyString());
+    }
+
+    /**
+     * Tests joining a lobby when the lobby is full.
+     *
+     * @throws UserAlreadyInLobbyException if the user is already in the lobby
+     * @throws LobbyIsFullException        if the lobby is full
+     * @throws LobbyNotFoundException if the lobby is not found
+     * @throws InterruptedException   if the eventbus is interrupted
+     */
+    @Test
+    void testJoinLobby_LobbyIsFull() throws UserAlreadyInLobbyException, LobbyIsFullException, LobbyNotFoundException, InterruptedException {
+        IUser user = UserMapper.toUser(firstOwner);
+        JoinLobbyRequest request = new JoinLobbyRequest("testcode");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+
+        doThrow(new LobbyIsFullException("Lobby is full")).when(lobbyManagement)
+                                                          .joinLobby("testcode", user);
+
+        postAndWait(request);
+
+        assertInstanceOf(ExceptionMessage.class, event);
+        verify(lobbyManagement, never()).getLobby(anyString());
+    }
+
+    /**
+     * Tests joining a lobby with an invalid session.
+     */
+    @Test
+    void testJoinLobby_InvalidSession() {
+        final JoinLobbyRequest request = new JoinLobbyRequest("testcode");
+        assertThrows(SessionNotFoundException.class, () -> lobbyService.onLobbyJoinUserRequest(request));
     }
 }
 

@@ -7,6 +7,7 @@ import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.GameMapper;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
@@ -51,21 +52,22 @@ public class CityService extends AbstractService {
     public void onBuildHospitalRequest(BuildHospitalRequest request) {
         LOG.debug("Got BuildHospitalRequest for lobby {}", request.getLobbyId());
 
-        cityManagement.buildHospital(
-                request.getLobbyId(),
-                request.getSession()
-                       .orElseThrow()
-                       .getUser()
-                       .getUsername(),
-                request.getCityId()
-        );
+        try {
+            cityManagement.buildHospital(
+                    request.getLobbyId(),
+                    request.getSession()
+                           .orElseThrow()
+                           .getUser()
+                           .getUsername(),
+                    request.getCityId()
+            );
 
-        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
-        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
-        sendServerMessageEvent(
-                request.getLobbyId(),
-                "Krankenhaus wurde erfolgreich auf der Stadt mit der Id " + request.getCityId() + " gebaut."
-        );
+            IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
+            ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+            sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        } catch (GameException e) {
+            LOG.error("Error building hospital: {} ", e.getMessage());
+            sendStatusResponse(request, false, "Das Krankenhaus konnte nicht gebaut werden.");
+        }
     }
 }

@@ -2,22 +2,24 @@ package de.uol.swp.server.plague;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.city.ICityDTO;
-import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
-import de.uol.swp.common.plague.PlagueResearchedMessage;
 import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.request.TreatPlagueRequest;
 import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import de.uol.swp.common.plague.response.TreatPlagueResponse;
+import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.TreatExtraPlagueState;
@@ -35,7 +37,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
-
 
 public class PlagueService extends AbstractService {
     private static final Logger LOG = LogManager.getLogger(PlagueService.class);
@@ -62,19 +63,42 @@ public class PlagueService extends AbstractService {
      * Handles ResearchPlagueRequest found on the EventBus.
      * If a ResearchPlagueRequest is detected, it triggers the plague research process.
      *
-     * @param researchPlagueRequest The ResearchPlagueRequest found on the EventBus
-     * @see PlagueManagement#researchPlague(PlagueName, IGame)
+     * @param request The ResearchPlagueRequest found on the EventBus
+     * @see PlagueManagement#researchPlague(IGame)
      * @since 2024-10-04
      */
     @Subscribe
     public void onResearchPlagueRequest(
-            ResearchPlagueRequest researchPlagueRequest, IGame game
-    ) throws PlagueManagementException {
-        PlagueName name = researchPlagueRequest.getName();
+            ResearchPlagueRequest request
+    ) {
+        LOG.debug("ResearchPlagueRequest received");
+        AbstractGameResponse response;
+        Session session = request.getSession()
+                                 .orElse(null);
+        IGame game = plagueManagement.getGame(request.getLobbyId());
+        try {
+            plagueManagement.researchPlague(game);
+            response = new StatusResponse(request.getLobbyId(), true, "Plage wurde erforscht");
+        } catch (PlagueManagementException e) {
+            LOG.error("Error while researching plague", e);
+            response = new StatusResponse(request.getLobbyId(), false, "Fehler beim Erforschen der Seuche");
+        } catch (IllegalGameStateException e) {
+            LOG.error("Game is in an illegal state for researching plague");
+            response = new StatusResponse(request.getLobbyId(), false, "In dem Zustand des Spiels kann die Seuche " +
+                    "nicht erforscht werden.");
+        } catch (GameException e) {
+            throw new RuntimeException(e);
+        }
 
-        plagueManagement.researchPlague(name, game);
 
-        sendToAll(new PlagueResearchedMessage(name));
+        response.setSession(session);
+        post(response);
+
+        IGameDTO gameDTO = GameMapper.toDTO(game);
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        LOG.debug("Sending new BoardUpdateEvent after successful plague research");
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(game.getGameId(), "Eine neue Plage wurde erforscht");
     }
 
     /**
@@ -124,7 +148,6 @@ public class PlagueService extends AbstractService {
      * Removes one instance of the specified plague from the city and sends a response.
      *
      * @param request The request containing the lobby ID, city ID, plague name, and doctor role.
-     * @throws PlagueManagementException if there is an issue treating the plague.
      */
     @Subscribe
     public void onTreatPlagueRequest(TreatPlagueRequest request) {
@@ -177,5 +200,10 @@ public class PlagueService extends AbstractService {
         IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(lobby.getLobbyId(),
+                "In der Stadt " + game.getCurrentPlayer().getCurrentPosition().getName() + " wurde ein " + "Seuchenwürfel der " +
+                        "Plage " + request.getPlagueName()
+                                                                                                                         .toString() + " entfernt."
+        );
     }
 }

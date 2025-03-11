@@ -8,6 +8,7 @@ import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
@@ -53,7 +54,7 @@ public class CityServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void testOnBuildHospitalRequest() {
+    void testOnBuildHospitalRequest() throws GameException {
         IUser user = new User("testUser", "testPassword");
         Session session = UUIDSession.create(user);
 

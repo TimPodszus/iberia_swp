@@ -3,9 +3,11 @@ package de.uol.swp.server.lobby.management;
 
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
+import de.uol.swp.server.lobby.exceptions.LobbyIsFullException;
+import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
+import de.uol.swp.server.lobby.exceptions.UserAlreadyInLobbyException;
 import de.uol.swp.server.lobby.store.ILobbyStore;
 import de.uol.swp.server.lobby.store.LobbyStore;
-import de.uol.swp.server.lobby.store.LobbyStoreException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -139,7 +141,7 @@ class LobbyManagementTest {
      * Tests a successful user joining a lobby.
      */
     @Test
-    void joinLobby_Success() throws LobbyStoreException {
+    void joinLobby_Success() throws LobbyNotFoundException, UserAlreadyInLobbyException, LobbyIsFullException {
         User user = new User("testUser", "testUser");
         Lobby lobby = new Lobby("testLobbyCode", "testLobbyName", new ArrayList<>(List.of(firstOwner)), firstOwner, 4);
         lobbyStore.saveLobby(lobby);
@@ -151,6 +153,44 @@ class LobbyManagementTest {
                 lobby.getUsers()
                      .size()
         );
+    }
+
+    /**
+     * Tests user that joins the lobby is already in lobby.
+     */
+    @Test
+    void joinLobby_UserAlreadyInLobby() {
+        Lobby lobby = new Lobby("testLobbyCode", "testLobbyName", new ArrayList<>(List.of(firstOwner)), firstOwner, 4);
+        lobbyStore.saveLobby(lobby);
+
+        assertThrows(UserAlreadyInLobbyException.class, () -> lobbyManagement.joinLobby("testLobbyCode", firstOwner));
+    }
+
+    /**
+     * Tests a user joining a full lobby.
+     */
+    @Test
+    void joinLobby_LobbyFull() {
+        User user = new User("testUser", "testUser");
+        Lobby lobby = new Lobby(
+                "testLobbyCode",
+                "testLobbyName",
+                new ArrayList<>(
+                        List.of(firstOwner, firstOwner, firstOwner, firstOwner, firstOwner)),
+                        firstOwner, 4);
+        lobbyStore.saveLobby(lobby);
+
+        assertThrows(LobbyIsFullException.class, () -> lobbyManagement.joinLobby("testLobbyCode", user));
+    }
+
+    /**
+     * Tests a user joining a lobby that not exists.
+     */
+    @Test
+    void joinLobby_lobbyNotFound() {
+        User user = new User("testUser", "testUser");
+
+        assertThrows(LobbyNotFoundException.class, () -> lobbyManagement.joinLobby("testLobbyCode", user));
     }
 
     /**
@@ -212,20 +252,10 @@ class LobbyManagementTest {
     }
 
     /**
-     * Tests joining a non-existent lobby.
-     */
-    @Test
-    void joinLobby_LobbyNotFound() {
-        User user = new User("testUser", "testUser");
-
-        assertThrows(LobbyStoreException.class, () -> lobbyManagement.joinLobby("testLobbyCode", user));
-    }
-
-    /**
      * Tests removing a user from a lobby.
      */
     @Test
-    void testRemoveUser() throws LobbyStoreException {
+    void testRemoveUser() throws LobbyNotFoundException {
         ILobby lobby = new Lobby("testcode", "Test", userList, firstOwner, 4);
         lobbyStore.saveLobby(lobby);
         ILobby updatedLobby = lobbyManagement.removeUser("testcode", "Lasse");
@@ -242,14 +272,14 @@ class LobbyManagementTest {
      */
     @Test
     void testRemoveUserWithInvalidLobby() {
-        assertThrows(LobbyStoreException.class, () -> lobbyManagement.removeUser("test", "Lasse"));
+        assertThrows(LobbyNotFoundException.class, () -> lobbyManagement.removeUser("test", "Lasse"));
     }
 
     /**
      * Tests removing a user with an invalid username.
      */
     @Test
-    void testRemoveUserWithWrongUsername() throws LobbyStoreException {
+    void testRemoveUserWithWrongUsername() throws LobbyNotFoundException {
         ILobby lobby = new Lobby("testcode", "Test", userList, firstOwner, 4);
         lobbyStore.saveLobby(lobby);
         ILobby updatedLobby = lobbyManagement.removeUser("testcode", "invalid");

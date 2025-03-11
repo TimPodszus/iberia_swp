@@ -105,6 +105,15 @@ class ConnectionManagementTest {
         game.getConnectionRepository()
             .getConnectionByID(72)
             .buildTrainTracks(true);
+        game.getConnectionRepository()
+            .getConnectionByID(78)
+            .buildTrainTracks(true);
+        game.getConnectionRepository()
+            .getConnectionByID(77)
+            .buildTrainTracks(true);
+        game.getConnectionRepository()
+            .getConnectionByID(20)
+            .buildTrainTracks(true);
 
         when(game.getCurrentPlayer()).thenReturn(player);
         when(player.getCards()).thenReturn(new ArrayList<>());
@@ -114,7 +123,7 @@ class ConnectionManagementTest {
                 evora.getId()
         );
 
-        assertEquals(6, cities.size(), "Expected 5 available destinations for Evora");
+        assertEquals(8, cities.size(), "Expected 8 available destinations for Evora");
     }
 
     @Test
