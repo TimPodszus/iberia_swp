@@ -1812,7 +1812,8 @@
         <children>
             <StackPane prefHeight="40.0" prefWidth="40.0">
                 <children>
-                    <Button mnemonicParsing="false" onAction="#onOptionsClickedEvent" prefHeight="40.0" prefWidth="40.0" styleClass="action-button" />
+                    <Button mnemonicParsing="false" onAction="#onLeaveGameClicked" prefHeight="40.0" prefWidth="40.0"
+                            styleClass="action-button" />
                     <ImageView fitHeight="20.0" fitWidth="20.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                         <StackPane.margin>
                             <Insets bottom="5.0" />

@@ -37,8 +37,8 @@ import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.EventState;
-import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -614,11 +614,14 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                             .orElseThrow(SessionNotFoundException::new)
                                             .getUser());
         try {
+            lobbyManagement.removeUser(event.getLobbyId(), user.getUsername());
             gameManagement.removePlayer(event.getLobbyId(), user);
         } catch (LobbyIsEmptyException e) {
             post(new LobbyClosedEvent(game.getGameId()));
 
             return;
+        } catch (LobbyNotFoundException e) {
+            LOG.fatal("[LobbyID: {}] Lobby not found", event.getLobbyId());
         }
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
