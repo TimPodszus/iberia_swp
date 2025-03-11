@@ -435,13 +435,10 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.TRAIN
-        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
-                cityId,
-                TransportMode.NONE
-        );
+                TransportMode.CARRIAGE
+        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
     }
 
     /**
@@ -692,7 +689,7 @@ public class GamePresenter extends AbstractPresenter {
                                                           .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
                                                                                                  .getCurrentPosition()
                                                                                                  .getId())
-                                                          .collect(Collectors.toList());
+                                                          .toList();
             cardsToExchange.put(
                     gameDTO.getCurrentPlayer()
                            .getUsername(), currentPlayerCityCard
