@@ -16,12 +16,12 @@ build-job:
   stage: build
   script:
     - echo "Starting Maven build for all modules..."
-    - mvn $MAVEN_CLI_OPTS clean install -DskipTests
+    - echo "$CI_DOTENV_SQL_PASSWORD" > /builds/swp/2024/ga/iberia/server/src/main/resources/.env
+    - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     paths:
-      - target/
+      - /builds/swp/2024/ga/iberia/server/target/server-1.0.0-jar-with-dependencies.jar
     expire_in: 2 days
-
 
 unit-test-job:
   image: maven:3.8.6-openjdk-18
@@ -40,5 +40,21 @@ unit-test-job:
   coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
 
 
-
-
+deploy-job:
+  image: docker:20.10.8
+  stage: deploy
+  services:
+    - docker:20.10.8-dind
+  before_script:
+    - docker info
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE" server/.
+    - docker push "$CI_REGISTRY_IMAGE"
+  dependencies:
+    - build-job
+  only:
+    - master
+    - development

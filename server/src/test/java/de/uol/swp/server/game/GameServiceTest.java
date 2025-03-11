@@ -19,6 +19,7 @@ import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
+import de.uol.swp.server.cards.events.FavorableTimeEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.City;
@@ -45,6 +46,7 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
@@ -505,7 +507,10 @@ public class GameServiceTest extends EventBusBasedTest {
      */
     @Test
     void testOnShareKnowledgeRequest_Accepted() throws PlayerManagementException {
-        ShareKnowledgeEvent event = new ShareKnowledgeEvent("lobbyId", "currentUser", "targetUser",
+        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
+                "lobbyId",
+                "currentUser",
+                "targetUser",
                 mock(ICardDTO.class),
                 mock(ICardDTO.class)
         );
@@ -570,7 +575,8 @@ public class GameServiceTest extends EventBusBasedTest {
                 mock(IGameState.class),
                 mock(IGameState.class),
                 1,
-                mock(GameStateChangeListener.class)
+                mock(GameStateChangeListener.class),
+                false
         );
 
         when(gameManagement.getGame(any())).thenReturn(notMockedGame);
@@ -644,7 +650,7 @@ public class GameServiceTest extends EventBusBasedTest {
 
     /**
      * Tests the onBuildTrainTrackRequest method when the game is in a state that does not allow building train tracks.
-     * Ensures a StatusResponse is send correctly
+     * Ensures a StatusResponse is sent correctly
      */
     @Test
     void testOnBuildTrainTrackRequest_IllegalGameState() throws IllegalGameStateException, GameException, InterruptedException {
@@ -789,12 +795,44 @@ public class GameServiceTest extends EventBusBasedTest {
         when(gameManagement.getGame("lobbyId")).thenReturn(testGame);
         ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
         when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
-        doThrow(IllegalGameStateException.class).when(gameManagement).endTurn("lobbyId", user);
+        doThrow(IllegalGameStateException.class).when(gameManagement)
+                                                .endTurn("lobbyId", user);
 
         postAndWait(endTurnRequest);
 
         assertInstanceOf(StatusResponse.class, event);
         assertFalse(((StatusResponse) event).isSuccess());
+    }
+
+    @Test
+    void testOnFavorableTimeEvent_Successful() throws GameException {
+        IGame game1 = new Game(2, "lobbyId");
+
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        IPlayer player = new Player(user);
+        player.setRole(new CountryDoctor());
+        game1.getPlayers()
+             .add(player);
+        game1.setCurrentPlayerIndex(0);
+        game1.setState(new PlayerTurnState());
+
+        doNothing().when(playerManagement)
+                   .discardPlayerCard("lobbyId", "testuser", 212);
+
+        FavorableTimeEvent event = new FavorableTimeEvent("lobbyId", "testuser");
+        event.setSession(session);
+
+        when(gameManagement.getGame("lobbyId")).thenReturn(game1);
+        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+
+        gameService.onFavorableTimeEvent(event);
+
+        assertTrue(game1.isFavorableTimeEventCardPlayed());
+        verify(gameService).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 
     @Test

@@ -133,7 +133,8 @@ public class CardRepository {
         cards.put(208, new AnotherDayEventCard(208));
         cards.put(209, new StateMobilizationEventCard(209));
         cards.put(210, new SecondChanceEventCard(210));
-        cards.put(210, new TreatWaterEventCard(210));
+        cards.put(211, new TreatWaterEventCard(211));
+        cards.put(212, new FavorableTimeEventCard(212));
         cards.put(213, new HospitalFoundationEventCard(213));
     }
 }
