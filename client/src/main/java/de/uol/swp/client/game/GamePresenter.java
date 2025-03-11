@@ -1950,6 +1950,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onMigrationOverseasResponse(MigrationOverseasResponse response) {
+        LOG.debug("[LobbyId: {}] MigrationOverseasResponse received", response.getLobbyId());
         if (!response.getLobbyId()
                      .equals(this.lobbyId)) {
             return;

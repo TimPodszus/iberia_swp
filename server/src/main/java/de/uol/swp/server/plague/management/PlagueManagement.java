@@ -263,7 +263,7 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
                                                               .stream()
                                                               .anyMatch(infection -> infection.getSeverity() > 0))
                                           .toList();
-
+        LOG.debug("[LobbyId: {}] Found {} cities with plagues", game.getGameId(), availableCities.size());
         return CityMapper.toDTOList(availableCities);
     }
 }

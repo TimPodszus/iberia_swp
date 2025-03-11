@@ -92,7 +92,7 @@ public class PlagueService extends AbstractService {
             response = new StatusResponse(
                     request.getLobbyId(),
                     false,
-                    "In dem Zustand des Spiels kann die Seuche " + "nicht erforscht werden."
+                    "In dem Zustand des Spiels kann die Seuche nicht erforscht werden."
             );
         } catch (GameException e) {
             throw new RuntimeException(e);
@@ -233,11 +233,7 @@ public class PlagueService extends AbstractService {
      */
     @Subscribe
     public void onMigrationOverseasEvent(MigrationOverseasEvent event) {
-        LOG.debug(
-                "Received MigrationOverseasEvent for lobbyId: {}, username: {}",
-                event.getLobbyId(),
-                event.getUsername()
-        );
+        LOG.debug("[Lobbyid: {}] Received MigrationOverseasEvent", event.getLobbyId());
         IGame game = plagueManagement.getGame(event.getLobbyId());
         IUser user = game.getPlayer(event.getUsername())
                          .getUser();

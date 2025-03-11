@@ -15,6 +15,7 @@ import de.uol.swp.common.plague.message.response.TreatPlagueResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.cards.data.eventcards.EventCard;
 import de.uol.swp.server.cards.events.MigrationOverseasEvent;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
@@ -244,6 +245,14 @@ public class PlagueServiceTest extends EventBusBasedTest {
         plagueService.onTreatPlagueRequest(new TreatPlagueRequest("lobby123", 1, PlagueName.CHOLERA));
 
         assertInstanceOf(StartState.class, game.getState());
+
+        game.setState(new EventState(mock(EventCard.class)));
+        when(plagueManagement.getCitesWithPlagues(game)).thenReturn(availableCities);
+
+        plagueService.onTreatPlagueRequest(new TreatPlagueRequest("lobby123", 1, PlagueName.CHOLERA));
+
+        assertInstanceOf(TreatExtraPlagueState.class, game.getState());
+        verify(eventBus).post(argThat(response -> response instanceof TreatPlagueResponse && ((TreatPlagueResponse) response).isSuccess()));
     }
 
     @Test
@@ -267,5 +276,4 @@ public class PlagueServiceTest extends EventBusBasedTest {
 
         assertThrows(SessionNotFoundException.class, () -> plagueService.onMigrationOverseasEvent(event));
     }
-
 }
