@@ -1,6 +1,5 @@
-package de.uol.swp.common.player.request;
+package de.uol.swp.common.player.message.request;
 
-import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +68,7 @@ public class MovePlayerRequestTest {
     @Test
     void testEqualsWithOtherClass() {
         MovePlayerRequest movePlayerRequest = new MovePlayerRequest(LOBBY_CODE, CITY_ID, CARD_ID);
-        assertNotEquals(movePlayerRequest, new Object());
+        assertNotEquals(new Object(), movePlayerRequest);
     }
 
     /**

@@ -5,7 +5,7 @@ import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.lobby.event.ShowLobbyOverviewViewEvent;
 import de.uol.swp.client.options.event.ShowOptionsViewEvent;
-import de.uol.swp.common.exception.UnsopportedMethodExeption;
+import de.uol.swp.common.exception.UnsupportedMethodException;
 import de.uol.swp.common.lobby.message.request.LobbyListRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.response.LoginSuccessfulResponse;
@@ -29,7 +29,7 @@ public class MainMenuPresenter extends AbstractPresenter {
 
     public static final String FXML = "/fxml/MainMenuView.fxml";
 
-    private static final String URL = "https://www.brettspielversand" + ".de/mediafiles/spieleanleitungen/zman/114-0021_Pandemic_Iberia_Anleitung.pdf";
+    private static final String URL = "https://images-cdn.zmangames.com" + "/us-east-1/filer_public/c3/62/c362beb7-bb07-4834-92f9-693de3f4eda5/zm7120_pandemic_iberia_rules.pdf";
 
     private static final ShowLobbyOverviewViewEvent showLobbyOverviewViewMessage = new ShowLobbyOverviewViewEvent();
 
@@ -88,7 +88,7 @@ public class MainMenuPresenter extends AbstractPresenter {
      * @param event The ActionEvent created by pressing the rules button
      */
     @FXML
-    void onRulesButtonPressed(ActionEvent event) throws UnsopportedMethodExeption {
+    void onRulesButtonPressed(ActionEvent event) throws UnsupportedMethodException {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop()
                                                    .isSupported(Desktop.Action.BROWSE)) {
             try {
@@ -98,7 +98,7 @@ public class MainMenuPresenter extends AbstractPresenter {
                 e.printStackTrace();
             }
         } else {
-            throw new UnsopportedMethodExeption("Desktop browsing not supported.");
+            throw new UnsupportedMethodException("Desktop browsing not supported.");
         }
     }
 

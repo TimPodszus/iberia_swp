@@ -1,20 +1,41 @@
 services:
   db:
-    image: git.swp-ibs.de:5050/swp/2024/ga/iberia
+    image: timpodszus/iberia-db
     restart: always
-    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: iberia2024
+
     ports:
       - '3306:3306'
     expose:
       - '3306'
     volumes:
-      - my-db:/var/lib/mysqlvolumes
+      - my-db:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    image: timpodszus/iberia-swp
+    restart: always
+    ports:
+      - '8899:8899'
+    expose:
+      - '8899'
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+  watchtower:
+    image: containrrr/watchtower
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=600
+      - WATCHTOWER_CLEANUP=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   my-db:
-
-
-
-
-
-
-

@@ -7,17 +7,24 @@ import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.infection.data.IInfection;
 
 import java.util.List;
+import de.uol.swp.server.game.exceptions.GameException;
 
 public interface IPlagueManagement {
     /**
      * Researches a plague in the game if the player meets the necessary conditions.
      *
-     * @param plagueToResearch the plague to be researched
-     * @param game             the current game instance
+     * @param game the current game instance
      * @throws PlagueManagementException if the plague cannot be researched due to game conditions
      */
-    void researchPlague(PlagueName plagueToResearch, IGame game) throws PlagueManagementException;
+    void researchPlague(IGame game) throws PlagueManagementException, IllegalGameStateException, GameException;
 
+    /**
+     * Determines whether a plague can be researched in the given game.
+     *
+     * @param game The current game instance where the research should be evaluated.
+     * @return {@code true} if a plague can be researched, otherwise {@code false}.
+     */
+    boolean canResearchPlague(IGame game);
     /**
      * Treats a plague in a specified city within the game.
      *

@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
 
-
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -19,7 +18,7 @@ public class DatabaseConnection {
     private static final Dotenv dotenv = Dotenv.configure()
                                                .directory("./")
                                                .load();
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/iberia_db";
+    private static final String JDBC_URL = "jdbc:mysql://db:3306/iberia_db";
     private static final String USERNAME = "root";
     private static final String PASSWORD = dotenv.get("MYSQL_ROOT_PASSWORD");
 
