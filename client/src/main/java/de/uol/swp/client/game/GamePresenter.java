@@ -14,6 +14,7 @@ import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.data.InfectionCardDTO;
 import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.city.message.response.HospitalFoundationEventResponse;
 import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.connection.dto.IConnectionDTO;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
@@ -209,6 +210,8 @@ public class GamePresenter extends AbstractPresenter {
 
     private boolean isDismissibleDialog;
 
+    private boolean currentlyHandlingHospitalFoundationEventCard;
+
     @FXML
     private ChatDetailPresenter chatController;
 
@@ -361,6 +364,14 @@ public class GamePresenter extends AbstractPresenter {
 
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
+
+            if (isGameState(StateType.EVENT_STATE) && currentlyHandlingHospitalFoundationEventCard) {
+                LOG.debug("City with ID {} selected for hospital foundation", cityId);
+                gameService.sendHospitalFoundationEventRequest(lobbyId, cityId);
+                this.currentlyHandlingHospitalFoundationEventCard = false;
+                return;
+            }
+
             LOG.trace("Player wants to move to city {}", cityId);
             RoleEnum role = gameDTO.getCurrentPlayer()
                                    .getRole()
@@ -505,13 +516,13 @@ public class GamePresenter extends AbstractPresenter {
         LOG.debug("Region {} clicked", regionId);
 
         if (isGameState(StateType.PLAYER_TURN_STATE) && source.getStyleClass()
-                                                                 .contains(REGION_HIGHLIGHTED_CLASS)) {
+                                                              .contains(REGION_HIGHLIGHTED_CLASS)) {
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
         } else if ((isGameState(StateType.EVENT_STATE) || isGameState(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
                                                                                                                                    .contains(
                                                                                                                                            REGION_HIGHLIGHTED_CLASS)) {
             handleTreatWaterEvent();
-        } else if(gameDTO.getState().equals(StateType.PLACE_PREVENTION_MARKER_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
+        } else if (gameDTO.getState().equals(StateType.PLACE_PREVENTION_MARKER_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
             gameService.sendPlacePreventionMarkerRequest(lobbyId, regionId);
             resetRegionStyle();
         }
@@ -633,9 +644,9 @@ public class GamePresenter extends AbstractPresenter {
     private void onResearchPlague(ActionEvent event) {
         LOG.debug("Research plague action triggered");
         if (isGameState(StateType.PLAYER_TURN_STATE) && researchPlagueButton.isSelected()) {
-                gameService.sendResearchPlagueRequest(lobbyId);
-                researchPlagueButton.setSelected(false);
-            }
+            gameService.sendResearchPlagueRequest(lobbyId);
+            researchPlagueButton.setSelected(false);
+        }
     }
 
     /**
@@ -671,7 +682,7 @@ public class GamePresenter extends AbstractPresenter {
                                                           .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
                                                                                                  .getCurrentPosition()
                                                                                                  .getId())
-                                                          .collect(Collectors.toList());
+                                                          .toList();
             cardsToExchange.put(
                     gameDTO.getCurrentPlayer()
                            .getUsername(), currentPlayerCityCard
@@ -1201,7 +1212,6 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Updates the player's hand cards.
      * Removes all current hand cards and adds the new ones.
-     *
      */
     private void updatePlayerHandCards() {
         removePlayerHandCards();
@@ -1739,6 +1749,28 @@ public class GamePresenter extends AbstractPresenter {
             node.getStyleClass()
                 .add(REGION_HIGHLIGHTED_CLASS);
         }
+    }
+
+    /**
+     * Handles the HospitalFoundationEventResponse.
+     * <p>
+     * This method is called when an HospitalFoundationEventResponse is received.
+     * It updates the available cities on the game map by highlighting them.
+     *
+     * @param response the HospitalFoundationEventResponse containing the available cities
+     */
+    @Subscribe
+    public void onHospitalFoundationEventResponse(HospitalFoundationEventResponse response) {
+        LOG.debug("[LobbyID: {}] Received HospitalFoundationEventResponse", response.getLobbyId());
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
+        this.currentlyHandlingHospitalFoundationEventCard = true;
+        LOG.debug("Received available cities to build a hospital");
+        resetHighlightetCities();
+        highlightAvailableHospitalLocations(response.getCityIds());
     }
 
     /**
