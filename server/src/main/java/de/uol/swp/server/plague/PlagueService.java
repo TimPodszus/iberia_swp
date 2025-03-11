@@ -75,6 +75,7 @@ public class PlagueService extends AbstractService {
         plagueManagement.researchPlague(name, game);
 
         sendToAll(new PlagueResearchedMessage(name));
+        sendServerMessageEvent(game.getGameId(), "Die Plage " + name.toString() + " wurde erforscht");
     }
 
     /**
@@ -177,5 +178,10 @@ public class PlagueService extends AbstractService {
         IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(lobby.getLobbyId(),
+                "In der Stadt " + game.getCurrentPlayer().getCurrentPosition().getName() + " wurde ein " + "Seuchenwürfel der " +
+                        "Plage " + request.getPlagueName()
+                                                                                                                         .toString() + " entfernt."
+        );
     }
 }

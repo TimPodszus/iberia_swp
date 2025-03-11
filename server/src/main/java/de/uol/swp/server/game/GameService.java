@@ -113,7 +113,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
             post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
             sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
             sendServerMessageEvent(request.getLobbyId(),
-                    "Das Spiel in der Lobby " + request.getLobbyId() + " wurde erfolgreich erstellt. Es geht nun los! Viel Spaß!"
+                    "Das Spiel in der Lobby " + lobby.getName() + " wurde erfolgreich erstellt. Es geht nun los! Viel Spaß!"
             );
         }
     }
@@ -147,14 +147,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null && lobby != null) {
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-            sendServerMessageEvent(game.getGameId(),
-                    game.getCurrentPlayer()
-                        .getUser()
-                        .getUsername() + " wurde erfolgreich in der Stadt " + cityManagement.getCity(game.getGameId(),
-                            request.getCityId()
-                    ) + " positioniert."
-            );
-
         }
     }
 
@@ -266,9 +258,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
-        sendServerMessageEvent(request.getLobbyId(),
-                user.getUsername() + " hat seine Reise nach " + destination.getName() + " fortgesetzt."
-        );
         LOG.info("[LobbyId: {}] Player has been moved. Sending board update event", request.getLobbyId());
 
         if (game.getState() instanceof EventState eventState && eventState.getEventCard() instanceof StateMobilizationEventCard eventCard) {

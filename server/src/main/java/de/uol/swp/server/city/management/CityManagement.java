@@ -320,6 +320,10 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             playerTurnState.reduceActionsRemaining(game);
         }
+        sendServerMessageEvent(
+                lobbyId,
+                "Krankenhaus wurde in der Stadt  " + city.getName() + " gebaut."
+        );
     }
 
     public void buildHospitalWithEventCard(String lobbyId, Integer cityId) {

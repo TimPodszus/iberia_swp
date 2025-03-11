@@ -63,9 +63,5 @@ public class CityService extends AbstractService {
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
-        sendServerMessageEvent(
-                request.getLobbyId(),
-                "Krankenhaus wurde erfolgreich auf der Stadt mit der Id " + request.getCityId() + " gebaut."
-        );
     }
 }

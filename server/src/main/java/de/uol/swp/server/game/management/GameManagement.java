@@ -237,7 +237,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             );
             ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
             sendServerMessageEvent(game.getGameId(),
-                    requestPlayer.getUser().getUsername() + " hat seine Startposition festgelegt."
+                    requestPlayer.getUser().getUsername() + " hat seine Startposition festgelegt: " + game.getCityRepository()
+                                                                                                          .getCityNameById(request.getCityId())
             );
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
@@ -248,7 +249,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             game.setCurrentPlayerIndex(0);
             sendServerMessageEvent(
                     game.getGameId(),
-                    "Alle Spieler haben ihre Startpositionen festgelegt. Der erste Spieler ist nun am Zug und kann Aktionen ausführen."
+                    "Alle Spieler haben ihre Startpositionen festgelegt. Der Spieler der die Karte mit dem " +
+                            "niedrigsten Gründungsjahr einer Stadt hat fängt an und kann" +
+                            " Aktionen ausführen."
             );
         }
         return game;
