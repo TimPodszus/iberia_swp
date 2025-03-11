@@ -1,4 +1,4 @@
-package de.uol.swp.common.plague.response;
+package de.uol.swp.common.plague.message.response;
 
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.infection.IInfectionDTO;

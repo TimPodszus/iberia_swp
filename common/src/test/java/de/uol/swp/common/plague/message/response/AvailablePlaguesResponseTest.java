@@ -1,9 +1,8 @@
-package de.uol.swp.common.plague;
+package de.uol.swp.common.plague.message.response;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.infection.InfectionDTO;
-import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;

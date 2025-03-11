@@ -33,8 +33,9 @@ import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.dto.IPlagueDTO;
-import de.uol.swp.common.plague.response.AvailablePlaguesResponse;
-import de.uol.swp.common.plague.response.TreatPlagueResponse;
+import de.uol.swp.common.plague.message.response.AvailablePlaguesResponse;
+import de.uol.swp.common.plague.message.response.MigrationOverseasResponse;
+import de.uol.swp.common.plague.message.response.TreatPlagueResponse;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
@@ -2118,6 +2119,27 @@ public class GamePresenter extends AbstractPresenter {
                 });
             });
         }
+    }
+
+    /**
+     * Handles the response after playing a MigrationOverseas card.
+     * Opens a dialog for the player to select a city to treat.
+     *
+     * @param response The response confirming the water treatment.
+     */
+    @Subscribe
+    public void onMigrationOverseasResponse(MigrationOverseasResponse response) {
+        LOG.debug("[LobbyId: {}] MigrationOverseasResponse received", response.getLobbyId());
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+        List<ICityDTO> availableCities = response.getAvailableCities();
+        Platform.runLater(() -> {
+            SelectCityToTreatDialog dialog = new SelectCityToTreatDialog(availableCities);
+            Optional<ICityDTO> selectedCity = dialog.showAndWait();
+            selectedCity.ifPresent(city -> gameService.sendAvailablePlaguesRequest(lobbyId, city.getId()));
+        });
     }
 
     /**

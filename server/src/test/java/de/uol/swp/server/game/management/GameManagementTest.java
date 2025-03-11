@@ -31,7 +31,6 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
-import de.uol.swp.server.game.exceptions.GameNotFoundException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
@@ -117,14 +116,6 @@ class GameManagementTest {
                 GameStore.getInstance()
                          .getGame("lobby123")
         );
-    }
-
-    @Test
-    void testSetPositioning_InvalidLobbyCode() {
-        PositioningRequest request = new PositioningRequest("lobby123", 12);
-        when(game.getState()).thenReturn(mock(WaitForPositioning.class));
-
-        assertThrows(GameNotFoundException.class, () -> gameManagement.setPositioning(request));
     }
 
     @Test

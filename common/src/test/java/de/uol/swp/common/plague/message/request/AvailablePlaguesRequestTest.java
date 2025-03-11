@@ -1,6 +1,5 @@
-package de.uol.swp.common.plague;
+package de.uol.swp.common.plague.message.request;
 
-import de.uol.swp.common.plague.request.AvailablePlaguesRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
