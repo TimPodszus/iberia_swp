@@ -12,6 +12,7 @@ import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
+import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -30,11 +31,13 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.BuildExtraTrainTrackState;
 import de.uol.swp.server.game.states.DrawCardState;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.EventState;
+import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
@@ -109,11 +112,11 @@ public class GameService extends AbstractService implements GameStateChangeListe
         }
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null) {
-        game.setGameStateChangeListener(this);
-        LOG.debug("Game created for lobby {}", request.getLobbyId());
-        post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
-        sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-    }
+            game.setGameStateChangeListener(this);
+            LOG.debug("Game created for lobby {}", request.getLobbyId());
+            post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
+            sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        }
     }
 
     /**
@@ -436,7 +439,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error("[LobbyId: {}] Session not found for user",
+                                                   LOG.error(
+                                                           "[LobbyId: {}] Session not found for user",
                                                            request.getLobbyId()
                                                    );
                                                    return new SessionNotFoundException();
@@ -465,7 +469,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IPlayer targetPlayer = game.getPlayer(event.getTargetPlayer());
         if (request.isAccepted()) {
             try {
-                gameManagement.shareKnowledgeRequestAccepted(currentPlayer,
+                gameManagement.shareKnowledgeRequestAccepted(
+                        currentPlayer,
                         targetPlayer,
                         event.getLobbyId(),
                         event,
@@ -510,27 +515,31 @@ public class GameService extends AbstractService implements GameStateChangeListe
     }
 
     @Subscribe
-    public void onCardsExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request)  {
-        try{
-        LOG.info("Received CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
-        int cardToDiscardID = request.getCardsToExchange()
-                                     .get(gameManagement.getGame(request.getLobbyId())
-                                                        .getCurrentPlayer()
-                                                        .getUser()
-                                                        .getUsername())
-                                     .getId();
-        int cardToReceiveID = request.getCardsToExchange()
-                                     .get("Discard Pile")
-                                     .getId();
+    public void onCardsExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request) {
+        try {
+            LOG.info("Received CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
+            int cardToDiscardID = request.getCardsToExchange()
+                                         .get(gameManagement.getGame(request.getLobbyId())
+                                                            .getCurrentPlayer()
+                                                            .getUser()
+                                                            .getUsername())
+                                         .getId();
+            int cardToReceiveID = request.getCardsToExchange()
+                                         .get("Discard Pile")
+                                         .getId();
 
-        sendServerMessageEvent(request.getLobbyId(),
-                "Spieler" + gameManagement.getGame(request.getLobbyId()).getCurrentPlayer().getUser().getUsername() + "hat eine Karte mit dem Ablagestapel getauscht");
-        gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, request.getLobbyId(), this);}
-        catch(CardNotFoundException exception){
+            sendServerMessageEvent(
+                    request.getLobbyId(),
+                    "Spieler" + gameManagement.getGame(request.getLobbyId())
+                                              .getCurrentPlayer()
+                                              .getUser()
+                                              .getUsername() + "hat eine Karte mit dem Ablagestapel getauscht"
+            );
+            gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, request.getLobbyId(), this);
+        } catch (CardNotFoundException exception) {
             LOG.error("Card not found");
             sendStatusResponse(request, false, "Karte nicht gefunden");
-        }
-        catch (PlayerManagementException exception){
+        } catch (PlayerManagementException exception) {
             LOG.error("Player not found");
             sendStatusResponse(request, false, "Spieler nicht gefunden");
         }
@@ -558,17 +567,17 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
     }
 
-/**
- * Sends a board update event to all players in the lobby after a card exchange with the discard pile.
- *
- * @param lobbyId the ID of the lobby
- */
-public void sendBoardUpdateAfterCardExchangeWithDiscardPile(String lobbyId) {
-    sendToAllInLobby(
-            lobbyManagement.getLobby(lobbyId),
-            new BoardUpdateEvent(lobbyId, GameMapper.toDTO(gameManagement.getGame(lobbyId)))
-    );
-}
+    /**
+     * Sends a board update event to all players in the lobby after a card exchange with the discard pile.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    public void sendBoardUpdateAfterCardExchangeWithDiscardPile(String lobbyId) {
+        sendToAllInLobby(
+                lobbyManagement.getLobby(lobbyId),
+                new BoardUpdateEvent(lobbyId, GameMapper.toDTO(gameManagement.getGame(lobbyId)))
+        );
+    }
 
     /**
      * Handles the end turn request from a player. This method retrieves the user from the session,
@@ -596,5 +605,23 @@ public void sendBoardUpdateAfterCardExchangeWithDiscardPile(String lobbyId) {
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+    }
+
+    @Subscribe
+    public void onUserLeavedGameRequest(UserLeavedGameRequest event) {
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        IUser user = UserMapper.toUser(event.getSession()
+                                            .orElseThrow(SessionNotFoundException::new)
+                                            .getUser());
+        try {
+            gameManagement.removePlayer(event.getLobbyId(), user);
+        } catch (LobbyIsEmptyException e) {
+            post(new LobbyClosedEvent(game.getGameId()));
+
+            return;
+        }
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
 }

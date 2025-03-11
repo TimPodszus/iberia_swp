@@ -14,6 +14,7 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -159,5 +160,9 @@ public interface IGameManagement {
      * @throws IllegalGameStateException if the turn cannot be ended due to the current game state
      */
     void endTurn(String lobbyId, IUser user) throws IllegalGameStateException;
+
+    void removePlayer(String lobbyCode, IUser user) throws LobbyIsEmptyException;
+
+    void removeGame(String lobbyCode);
 }
 

@@ -2,6 +2,7 @@ package de.uol.swp.server.lobby;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
+import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.lobby.message.event.RemovedFromLobbyEvent;
 import de.uol.swp.common.lobby.message.request.*;
 import de.uol.swp.common.lobby.message.response.*;
@@ -289,5 +290,10 @@ public class LobbyService extends AbstractService {
 
         sendToAllInLobby(lobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(lobby)));
         LOG.debug("[LobbyId: {}] Sent lobby updated event", request.getLobbyId());
+    }
+
+    @Subscribe
+    public void onLobbyClosedEvent(LobbyClosedEvent event) {
+        lobbyManagement.removeLobby(event.getLobbyId());
     }
 }

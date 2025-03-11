@@ -16,6 +16,7 @@ import de.uol.swp.client.main.event.ShowMainMenuEvent;
 import de.uol.swp.client.options.OptionsPresenter;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.request.UserLeavedGameRequest;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.lobby.message.event.RemovedFromLobbyEvent;
 import de.uol.swp.common.lobby.message.response.LobbyCreatedResponse;
@@ -60,6 +61,7 @@ public class SceneManager {
     private static final int DEFAULT_HEIGHT = 720;
 
     private final Stage primaryStage;
+    private final EventBus eventBus;
     private Scene loginScene;
     private String lastTitle;
     private Scene registrationScene;
@@ -77,6 +79,7 @@ public class SceneManager {
             EventBus eventBus, Provider<FXMLLoader> loaderProvider, @Assisted Stage primaryStage
     ) throws IOException {
         eventBus.register(this);
+        this.eventBus = eventBus;
         this.primaryStage = primaryStage;
         this.loaderProvider = loaderProvider;
         initViews();
@@ -233,24 +236,6 @@ public class SceneManager {
     @Subscribe
     public void onShowLastSceneEvent(ShowLastSceneEvent event) {
         showScene(lastScene, lastTitle);
-    }
-
-    /**
-     * Initializes the game screen view.
-     * <p>
-     * If the gameScreenScene is null, it gets set to a new scene containing
-     * a pane showing the game screen view as specified by the GameScreenPresenter
-     * FXML file.
-     *
-     * @throws IOException if the FXML file cannot be loaded
-     * @see GamePresenter
-     */
-    private Scene createGameScreenScene() throws IOException {
-        Parent rootPane = initPresenter(GamePresenter.FXML);
-        Scene gameScreenScene = new Scene(rootPane, 1280, 720);
-        gameScreenScene.getStylesheets()
-                       .add(STYLE_SHEET);
-        return gameScreenScene;
     }
 
     /**
@@ -624,6 +609,7 @@ public class SceneManager {
             stage.setTitle("Lobby");
             stage.setScene(lobbyScene);
             stage.show();
+            stage.setOnCloseRequest(windowEvent -> onLobbyWindowClosed(lobbyId, stage));
 
             lobbyScenes.put(lobbyId, new LobbySceneData(lobbyId, stage, lobbyScene, gameScene));
         });
@@ -722,5 +708,11 @@ public class SceneManager {
             stage.setMaximized(true);
             stage.show();
         });
+    }
+
+    private void onLobbyWindowClosed(String lobbyId, Stage stage) {
+        stage.close();
+        lobbyScenes.remove(lobbyId);
+        eventBus.post(new UserLeavedGameRequest(lobbyId));
     }
 }

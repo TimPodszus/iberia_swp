@@ -75,5 +75,7 @@ public interface ILobbyManagement {
      * @param user    the user who wants to leave the lobby
      */
     void leaveLobby(String lobbyID, IUser user);
+
+    void removeLobby(String lobbyId);
 }
 
