@@ -98,7 +98,7 @@ public class PlagueService extends AbstractService {
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         LOG.debug("Sending new BoardUpdateEvent after successful plague research");
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
-        sendServerMessageEvent(game.getGameId(), "Die Plage " + name.toString() + " wurde erforscht");
+        sendServerMessageEvent(game.getGameId(), "Eine neue Plage wurde erforscht");
     }
 
     /**
