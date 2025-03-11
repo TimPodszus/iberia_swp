@@ -27,9 +27,9 @@ public class StateMobilizationEventCardTest extends EventBusBasedTest {
     public void testPlayerMoved() {
         StateMobilizationEventCard stateMobilizationEventCard = new StateMobilizationEventCard(1);
         IUser user1 = new User("user1", "password");
-        IPlayer player = new Player(user1);
+        IPlayer player = new Player(user1, "gameId");
         IUser user2 = new User("user2", "password");
-        IPlayer player2 = new Player(user2);
+        IPlayer player2 = new Player(user2, "gameId");
         List<IPlayer> players = new ArrayList<>(List.of(player, player2));
         stateMobilizationEventCard.setPlayersToMove(players);
 

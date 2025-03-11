@@ -62,7 +62,7 @@ public class CardManagementTest {
     @Test
     void testPlayCard() throws CardNotPlayableException {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayerCardDiscardPile()).thenReturn(new ArrayList<>());
 
@@ -86,7 +86,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCard() throws CardNotPlayableException {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
 
         EventCard card = mock(EventCard.class);
@@ -108,7 +108,7 @@ public class CardManagementTest {
     @Test
     void testPlayCard_inWaitForPositioningState() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getState()).thenReturn(new WaitForPositioning());
         EventCard card = mock(EventCard.class);
@@ -125,7 +125,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCardWithWrongId() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         player.setCards(new ArrayList<>(List.of()));
 
@@ -138,7 +138,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCardWithStateMobilization() throws CardNotPlayableException {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayers()).thenReturn(List.of(player));
 
@@ -165,7 +165,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCardWithAnotherDay() throws CardNotPlayableException {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(new PlayerTurnState());
@@ -191,7 +191,7 @@ public class CardManagementTest {
     @Test
     void testPlayEventCardWithAnotherDayNotInPlayerTurnState() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(EventState.class));
@@ -254,7 +254,7 @@ public class CardManagementTest {
         TreatWaterEventCard card = mock(TreatWaterEventCard.class);
         when(card.getId()).thenReturn(1);
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         player.getCards().add(card);
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
         when(game.getPlayer("user")).thenReturn(player);
@@ -270,7 +270,7 @@ public class CardManagementTest {
         TreatWaterEventCard card = mock(TreatWaterEventCard.class);
         when(card.getId()).thenReturn(1);
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         player.getCards().add(card);
         when(game.getState()).thenReturn(mock(DrawCardState.class));
         when(game.getPlayer("user")).thenReturn(player);
