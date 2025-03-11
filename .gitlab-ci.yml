@@ -16,9 +16,9 @@ build-job:
   stage: build
   script:
     - echo "Starting Maven build for all modules..."
-    - echo "$CI_DOTENV_SQL_PASSWORD" > ./server/resources/.env
-    - cat ./server/resources/.env
-    - ls ./server/resources
+    - echo "$CI_DOTENV_SQL_PASSWORD" > /builds/swp/2024/ga/iberia/server/resources/.env
+    - cat /builds/swp/2024/ga/iberia/server/resources/.env
+    - ls /builds/swp/2024/ga/iberia/server/resources/
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     paths:
