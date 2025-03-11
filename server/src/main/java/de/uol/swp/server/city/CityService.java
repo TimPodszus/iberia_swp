@@ -104,13 +104,14 @@ public class CityService extends AbstractService {
                                                    );
                                                    return new SessionNotFoundException();
                                                });
+
         HospitalFoundationEventResponse response = new HospitalFoundationEventResponse(
                 event.getLobbyId(),
                 game.getCityRepository()
                     .getCityIdsForPlague(plagueName)
         );
         response.setSession(session);
-        bus.post(response);
+        sendResponseWithDelay(response);
     }
 
     /**
