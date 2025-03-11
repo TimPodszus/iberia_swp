@@ -29,7 +29,6 @@ import java.util.UUID;
  */
 public class LobbyManagement implements ILobbyManagement {
     private static final Logger LOG = LogManager.getLogger(LobbyManagement.class);
-    private static final int MAX_PLAYERS_IN_LOBBY = 5;
     private final ILobbyStore lobbyStore;
 
     /**
@@ -103,7 +102,7 @@ public class LobbyManagement implements ILobbyManagement {
             LOG.error("[LobbyId: {}] Lobby not found", lobbyId);
             throw new LobbyNotFoundException("No lobby found to join");
         }
-        if (lobby.getUsers().size() >= MAX_PLAYERS_IN_LOBBY) {
+        if (lobby.getUsers().size() >= lobby.getMaxUsers()) {
             LOG.error("[LobbyId: {}] Lobby is full", lobbyId);
             throw new LobbyIsFullException("Lobby is full");
         }
