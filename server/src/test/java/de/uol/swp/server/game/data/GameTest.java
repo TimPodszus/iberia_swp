@@ -76,7 +76,7 @@ class GameTest {
     void testGetCurrentPlayer() {
         IUser user = new User("testUser", "testPassword");
         game.getPlayers()
-            .add(new Player(user));
+            .add(new Player(user, "123"));
         assertNotNull(game.getCurrentPlayer());
     }
 

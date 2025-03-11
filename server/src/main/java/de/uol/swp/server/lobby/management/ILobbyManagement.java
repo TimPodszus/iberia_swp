@@ -1,7 +1,9 @@
 package de.uol.swp.server.lobby.management;
 
 import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.exceptions.LobbyIsFullException;
 import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
+import de.uol.swp.server.lobby.exceptions.UserAlreadyInLobbyException;
 import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
@@ -46,8 +48,10 @@ public interface ILobbyManagement {
      *
      * @param lobbyId the ID of the lobby to join
      * @throws LobbyNotFoundException if the lobby, with the given id, could not be found
+     * @throws LobbyIsFullException   if the lobby is already full
+     * @throws UserAlreadyInLobbyException if the user is already in the lobby
      */
-    void joinLobby(String lobbyId, IUser user) throws LobbyNotFoundException;
+    void joinLobby(String lobbyId, IUser user) throws LobbyNotFoundException, LobbyIsFullException, UserAlreadyInLobbyException;
 
     /**
      * Updates an existing lobby.

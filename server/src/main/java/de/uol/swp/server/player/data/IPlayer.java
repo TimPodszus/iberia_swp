@@ -2,6 +2,7 @@ package de.uol.swp.server.player.data;
 
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.player.PositionChangeListener;
 import de.uol.swp.server.role.IRole;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -79,4 +80,18 @@ public interface IPlayer {
      * @return the card or null if the card is not in the player's hand
      */
     ICard getCard(int cardId);
+
+    /**
+     * Gets the game ID of the player.
+     *
+     * @return the game ID
+     */
+    String getGameId();
+
+    /**
+     * Sets the position change listener for the player.
+     *
+     * @param positionChangeListener the listener to set
+     */
+    void setPositionChangeListener(PositionChangeListener positionChangeListener);
 }

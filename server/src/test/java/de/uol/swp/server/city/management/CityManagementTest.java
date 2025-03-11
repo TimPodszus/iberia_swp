@@ -226,7 +226,7 @@ public class CityManagementTest {
     @Test
     void testBuildHospitalSucceeds() throws GameException {
         IUser user = new User("username", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         player.setCurrentPosition(game.getCityRepository()
                                       .getCityByName(CityName.PALMA_DE_MALLORCA));
         game.getPlayers()
@@ -257,7 +257,7 @@ public class CityManagementTest {
     @Test
     void testBuildHospitalWithEventCardWithWrongColor() {
         IUser user = new User("username", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         player.setCurrentPosition(game.getCityRepository()
                                       .getCityByName(CityName.PALMA_DE_MALLORCA));
         game.getPlayers()

@@ -1775,7 +1775,8 @@
                   </ImageView>
                </children>
             </StackPane>
-            <StackPane id="prevMarkRegion9" layoutX="358.0" layoutY="782.0" mouseTransparent="true" styleClass="prev-mark">
+            <StackPane id="prevMarkRegion10" layoutX="358.0" layoutY="782.0" mouseTransparent="true"
+                       styleClass="prev-mark">
                <children>
                   <Circle fill="#fce3c3" radius="15.0" stroke="BLACK" strokeType="INSIDE" />
                   <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">

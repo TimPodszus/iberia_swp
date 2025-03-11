@@ -4,7 +4,9 @@ import com.google.inject.Inject;
 import de.uol.swp.common.lobby.dto.LobbyDTO;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
+import de.uol.swp.server.lobby.exceptions.LobbyIsFullException;
 import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
+import de.uol.swp.server.lobby.exceptions.UserAlreadyInLobbyException;
 import de.uol.swp.server.lobby.store.ILobbyStore;
 import de.uol.swp.server.lobby.store.LobbyStore;
 import de.uol.swp.server.usermanagement.IUser;
@@ -93,12 +95,20 @@ public class LobbyManagement implements ILobbyManagement {
     }
 
     @Override
-    public void joinLobby(String lobbyId, IUser user) throws LobbyNotFoundException {
+    public void joinLobby(String lobbyId, IUser user) throws LobbyNotFoundException, LobbyIsFullException, UserAlreadyInLobbyException {
         LOG.debug("[LobbyId: {}] User {} is joining lobby", lobbyId, user.getUsername());
         ILobby lobby = lobbyStore.findLobby(lobbyId);
         if (lobby == null) {
             LOG.error("[LobbyId: {}] Lobby not found", lobbyId);
             throw new LobbyNotFoundException("No lobby found to join");
+        }
+        if (lobby.getUsers().size() >= lobby.getMaxUsers()) {
+            LOG.error("[LobbyId: {}] Lobby is full", lobbyId);
+            throw new LobbyIsFullException("Lobby is full");
+        }
+        if (lobby.getUsers().contains(user)) {
+            LOG.warn("[LobbyId: {}] User {} is already in lobby", lobbyId, user.getUsername());
+            throw new UserAlreadyInLobbyException("User is already in lobby");
         }
         lobby.addUser(user);
         LOG.info("[LobbyId: {}] A User joined lobby", lobbyId);

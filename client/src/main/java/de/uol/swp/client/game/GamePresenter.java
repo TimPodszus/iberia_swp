@@ -38,6 +38,7 @@ import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
+import de.uol.swp.common.player.message.event.RegionsForPreventionMarkerEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
@@ -93,6 +94,9 @@ public class GamePresenter extends AbstractPresenter {
     private static final String CITY_ID = "#city";
     private static final String CITY_CLASS = "city";
     private static final String CITY_HIGHLIGHTED_CLASS = "city-highlighted";
+    private static final String PILE_CLASS = "pile";
+    private static final String PILE_HIGHLIGHTED_CLASS = "pile-highlighted";
+
     private static final Logger LOG = LogManager.getLogger(GamePresenter.class);
 
     private String lobbyId;
@@ -193,7 +197,6 @@ public class GamePresenter extends AbstractPresenter {
 
     @FXML
     private Button roleButtonTwo;
-
 
     private double mouseX;
 
@@ -516,25 +519,11 @@ public class GamePresenter extends AbstractPresenter {
                                                               .contains(REGION_HIGHLIGHTED_CLASS)) {
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
         } else if ((isGameState(StateType.EVENT_STATE) || isGameState(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
-                                                                                                                             .contains(
-                                                                                                                                     REGION_HIGHLIGHTED_CLASS)) {
-            Platform.runLater(() -> {
-                TreatWaterEventDialog dialog = new TreatWaterEventDialog(
-                        isDismissibleDialog,
-                        gameDTO.getWaterTreatmentsLeft(),
-                        gameDTO.getState()
-                );
-                dialog.showAndWaitForResult()
-                      .thenAccept(selectedValue -> {
-                          if (selectedValue != null) {
-                              LOG.debug("Player has selected {} water treatments", selectedValue);
-                              gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
-                          } else {
-                              LOG.debug("Player has not selected any water treatments");
-                              gameService.sendTreatWaterEventRequest(lobbyId, regionId, 0, true);
-                          }
-                      });
-            });
+                                                                                                                                   .contains(
+                                                                                                                                           REGION_HIGHLIGHTED_CLASS)) {
+            handleTreatWaterEvent();
+        } else if (gameDTO.getState().equals(StateType.PLACE_PREVENTION_MARKER_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
+            gameService.sendPlacePreventionMarkerRequest(lobbyId, regionId);
             resetRegionStyle();
         }
     }
@@ -1259,6 +1248,7 @@ public class GamePresenter extends AbstractPresenter {
         for (IRegionDTO region : regions) {
             int regionId = region.getId();
             setWaterTreatments(regionId, region.getWaterTreatments());
+            setPrevMarker(regionId, region.isPreventionMarker());
         }
     }
 
@@ -1284,6 +1274,17 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updateInfectionCardDrawPile(List<InfectionCardDTO> infectionCardDrawPileList) {
         setInfectionCardDrawPileCounter(infectionCardDrawPileList.size());
+        if (isGameState(StateType.INFECTION_STATE) && isPlayersTurn()) {
+            this.infectionCardDrawPile.getStyleClass()
+                                      .removeAll(PILE_CLASS);
+            this.infectionCardDrawPile.getStyleClass()
+                                      .add(PILE_HIGHLIGHTED_CLASS);
+        } else {
+            this.infectionCardDrawPile.getStyleClass()
+                                      .remove(PILE_HIGHLIGHTED_CLASS);
+            this.infectionCardDrawPile.getStyleClass()
+                                      .add(PILE_CLASS);
+        }
     }
 
     /**
@@ -1308,6 +1309,17 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void updatePlayerCardDrawPile(List<ICardDTO> playerCardDrawPileList) {
         setPlayerCardDrawPileCounter(playerCardDrawPileList.size());
+        if (isGameState(StateType.DRAW_CARD_STATE) && isPlayersTurn()) {
+            this.playerCardDrawPile.getStyleClass()
+                                   .removeAll(PILE_CLASS);
+            this.playerCardDrawPile.getStyleClass()
+                                   .add(PILE_HIGHLIGHTED_CLASS);
+        } else {
+            this.playerCardDrawPile.getStyleClass()
+                                   .removeAll(PILE_HIGHLIGHTED_CLASS);
+            this.playerCardDrawPile.getStyleClass()
+                                   .add(PILE_CLASS);
+        }
     }
 
     /**
@@ -1419,10 +1431,12 @@ public class GamePresenter extends AbstractPresenter {
      * @param escalationStage the current escalation stage
      */
     private void updateEscalationStage(int escalationStage) {
-        if (gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1)) instanceof Circle) {
-            gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1))
-                      .getStyleClass()
-                      .removeAll("escalation-stage-active");
+        for (int i = 0; i <= escalationStage; i++) {
+            if (gameScreen.lookup(ESCALATION_STAGE_ID + i) instanceof Circle) {
+                gameScreen.lookup(ESCALATION_STAGE_ID + i)
+                          .getStyleClass()
+                          .removeAll("escalation-stage-active");
+            }
         }
 
         if (gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage) instanceof Circle) {
@@ -1828,6 +1842,35 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
+     * Handles the TreatWaterEvent.
+     * <p>
+     * This method is called when a TreatWaterEvent is received. It displays a dialog
+     * asking the user how many water treatments they want to use. If the user confirms,
+     * a treat water event request is sent with the selected value. If the user cancels,
+     * a treat water event request is sent with 0 water treatments.
+     */
+    private void handleTreatWaterEvent() {
+        Platform.runLater(() -> {
+            TreatWaterEventDialog dialog = new TreatWaterEventDialog(
+                    isDismissibleDialog,
+                    gameDTO.getWaterTreatmentsLeft(),
+                    gameDTO.getState()
+            );
+            dialog.showAndWaitForResult()
+                  .thenAccept(selectedValue -> {
+                      if (selectedValue != null) {
+                          LOG.debug("[LobbyId: {}] Player has selected {} water treatments",lobbyId, selectedValue);
+                          gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
+                      } else {
+                          LOG.debug("[LobbyId: {}] Player has not selected any water treatments", lobbyId);
+                          gameService.sendTreatWaterEventRequest(lobbyId, regionId, 0, true);
+                      }
+                  });
+        });
+        resetRegionStyle();
+    }
+
+    /**
      * Handles the ShareRideEvent.
      * <p>
      * This method is called when a ShareRideEvent is received. It displays a confirmation dialog
@@ -1901,6 +1944,11 @@ public class GamePresenter extends AbstractPresenter {
         Platform.runLater(dialog::showEndGameDialog);
     }
 
+    /**
+     * Handles the CardsToSortResponse.
+     * Opens a dialog for the player to sort the cards.
+     * @param response the CardsToSortResponse containing the cards to sort
+     */
     @Subscribe
     public void onCardsToSortResponse(CardsToSortResponse response) {
         if (!response.getLobbyId()
@@ -1914,11 +1962,36 @@ public class GamePresenter extends AbstractPresenter {
         });
     }
 
+    /**
+     * Handles the response containing the regions to treat water.
+     * Highlights the regions where water can be treated.
+     *
+     * @param eventResponse The response containing the regions to treat water
+     */
     @Subscribe
     public void onTreatWaterEventResponse(TreatWaterEventResponse eventResponse) {
         List<IRegionDTO> regions = gameDTO.getRegions();
         isDismissibleDialog = eventResponse.isDismissible();
         for (IRegionDTO region : regions) {
+            Node stackPane = mapPane.lookup(REGION_ID + region.getId());
+            stackPane.getStyleClass()
+                     .add(REGION_HIGHLIGHTED_CLASS);
+        }
+    }
+
+    /**
+     * Handles the RegionsForPreventionMarkerEvent.
+     * Highlights the regions where a prevention marker can be placed.
+     * @param event the RegionsForPreventionMarkerEvent containing the regions
+     */
+    @Subscribe
+    public void onRegionsForPreventionMarkerEvent(RegionsForPreventionMarkerEvent event){
+        if (!event.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+        LOG.debug("[LobbyId: {}] Received RegionsForPreventionMarkerEvent", lobbyId);
+        for (IRegionDTO region : event.getRegions()) {
             Node stackPane = mapPane.lookup(REGION_ID + region.getId());
             stackPane.getStyleClass()
                      .add(REGION_HIGHLIGHTED_CLASS);

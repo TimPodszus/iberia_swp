@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class Lobby implements ILobby {
+    private static final int MAX_USERS_IN_LOBBY = 5;
     private final String lobbyId;
     private final String name;
     private final List<IUser> users;
@@ -55,5 +56,10 @@ public class Lobby implements ILobby {
     @Override
     public int hashCode() {
         return lobbyId.hashCode();
+    }
+
+    @Override
+    public int getMaxUsers() {
+        return MAX_USERS_IN_LOBBY;
     }
 }

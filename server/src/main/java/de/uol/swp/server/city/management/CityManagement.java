@@ -21,6 +21,7 @@ import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.region.management.IRegionManagement;
 import de.uol.swp.server.region.management.RegionManagementException;
 import org.apache.logging.log4j.LogManager;
@@ -98,6 +99,9 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                     amount
             );
             infectCity(game, findCity(game, infectionCard), plagueName, amount, true);
+            if (game.getState() instanceof InfectionState infectionState) {
+                infectionState.increaseInfectedCities(game);
+            }
             gameManagement.discardInfectionCard(game, infectionCard);
             LOG.debug(
                     "Infection card discarded: {}",
@@ -130,7 +134,8 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
     ) throws CityManagementException, RegionManagementException {
         validateParameters(game, city, plagueName, amount);
 
-        if (regionManagement.reduceWaterTreatments(game, city, amount) <= 0) {
+        if (isCitySurroundedByPreventionMarker(game, city) || regionManagement.reduceWaterTreatments(game, city,
+                amount) <= 0) {
             return;
         }
 
@@ -139,10 +144,6 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                              .getPlagueByName(plagueName);
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
-
-        if (game.getState() instanceof InfectionState infectionState) {
-            infectionState.increaseInfectedCities(game);
-        }
     }
 
     /**
@@ -375,5 +376,16 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                                          .findFirst();
         return player.equals(game.getCurrentPlayer()) && !city.isHospitalBuilt() && cityCard.isPresent();
 
+    }
+
+    /**
+     * Checks if a city is surrounded by a prevention marker.
+     *
+     * @param city    the city to check
+     * @return true if the city is surrounded by prevention markers, false otherwise
+     */
+    private boolean isCitySurroundedByPreventionMarker(IGame game,ICity city) {
+        List<IRegion> regions = game.getRegionRepository().getRegionsByCityName(city.getName());
+        return regions.stream().anyMatch(IRegion::isPreventionMarker);
     }
 }
