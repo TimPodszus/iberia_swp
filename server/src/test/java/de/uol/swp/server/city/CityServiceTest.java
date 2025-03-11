@@ -184,7 +184,7 @@ public class CityServiceTest extends EventBusBasedTest {
 
         HospitalFoundationEvent event = new HospitalFoundationEvent(LOBBY_CODE, user.getUsername());
 
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, LOBBY_CODE);
         game.getPlayers()
             .add(player);
         game.getPlayer(user.getUsername())
@@ -206,7 +206,7 @@ public class CityServiceTest extends EventBusBasedTest {
 
         HospitalFoundationEvent event = new HospitalFoundationEvent(LOBBY_CODE, user.getUsername());
 
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, LOBBY_CODE);
         game.getPlayers()
             .add(player);
         game.getPlayer(user.getUsername())
@@ -231,7 +231,7 @@ public class CityServiceTest extends EventBusBasedTest {
         when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(new Lobby(LOBBY_CODE, "Test", List.of(user), user, 2));
         HospitalFoundationEventRequest request = new HospitalFoundationEventRequest(LOBBY_CODE, 1);
         request.setSession(session);
-        
+
         postAndWait(request);
 
         assertInstanceOf(PlayerTurnState.class, game.getState());
