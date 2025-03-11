@@ -118,38 +118,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
     }
 
     /**
-     * Handles incoming requests to set a players position. This method initializes the position
-     * through the GameManagement class, checks if the positioning was successful,
-     * and sends an appropriate status response to the requester.
-     *
-     * @param request the game PositioningRequest containing necessary initialization parameters
-     */
-    @Subscribe
-    public void onPositionRequest(PositioningRequest request) {
-        IGame game;
-        try {
-            game = gameManagement.setPositioning(request);
-        } catch (IllegalGameStateException e) {
-            LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
-            sendStatusResponse(
-                    request,
-                    false,
-                    "Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand"
-            );
-            return;
-        } catch (GameException e) {
-            LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
-            sendStatusResponse(request, false, "Position konnte nicht gesetzt werden");
-            return;
-        }
-
-        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        if (game != null && lobby != null) {
-            sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-        }
-    }
-
-    /**
      * Handles incoming requests to build a train track. This method retrieves the user from the session,
      * and then delegates the train track building to the GameManagement class.
      *

@@ -2,7 +2,9 @@ package de.uol.swp.server.player.data;
 
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.player.PositionChangeListener;
 import de.uol.swp.server.role.IRole;
+import de.uol.swp.server.role.Nurse;
 import de.uol.swp.server.usermanagement.IUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,8 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Test class for the {@link Player} class.
@@ -32,7 +33,7 @@ class PlayerTest {
         mockRole = mock(IRole.class);
         mockCity = mock(ICity.class);
         mockCards = new ArrayList<>();
-        player = new Player(mockUser);
+        player = new Player(mockUser, "gameId");
     }
 
     @Test
@@ -102,5 +103,25 @@ class PlayerTest {
         player.addCard(card);
 
         assertTrue(player.getCards().contains(card));
+    }
+
+    @Test
+    void testSetPositionChangeListener() {
+        PositionChangeListener listener = mock(PositionChangeListener.class);
+        player.setPositionChangeListener(listener);
+        assertEquals(listener, player.getPositionChangeListener());
+    }
+
+    @Test
+    void testSetCurrentPosition_WithNurseRole() {
+        PositionChangeListener listener = mock(PositionChangeListener.class);
+        player.setPositionChangeListener(listener);
+        player.setRole(new Nurse());
+        ICity oldCity = mock(ICity.class);
+        ICity newCity = mock(ICity.class);
+        player.setCurrentPosition(oldCity);
+        player.setCurrentPosition(newCity);
+
+        verify(listener).onPositionChanged(player, oldCity, newCity);
     }
 }

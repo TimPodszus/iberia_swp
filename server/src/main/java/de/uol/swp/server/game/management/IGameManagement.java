@@ -36,9 +36,9 @@ public interface IGameManagement {
      *
      * @param request The request with where the position is to be set
      * @throws GameException             if setting the positioning fails
-     * @throws IllegalGameStateException if the game is in a state that does not allow positioning
+     * @throws IllegalStateException if the game is in a state that does not allow positioning
      */
-    IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException;
+    void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException;
 
     /**
      * Draws a player card. The specific behavior of this method should be defined.
