@@ -242,7 +242,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             game.setState(new EndGameState(false));
             sendServerMessageEvent(
                     game.getGameId(),
-                    "Das Spiel ist beendet! Es sind nicht genügend Würfel übrig – Ihr habt verloren. ✂️"
+                    "Das Spiel ist beendet! Es sind nicht genügend Infektionswürfel übrig – Ihr habt verloren. ✂️"
             );
         }
 
@@ -335,7 +335,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         }
         sendServerMessageEvent(
                 lobbyId,
-                "Krankenhaus wurde in der Stadt  " + city.getName() + " gebaut."
+                "In " + city.getName() + " wurde ein Krankenhaus gebaut."
         );
     }
 

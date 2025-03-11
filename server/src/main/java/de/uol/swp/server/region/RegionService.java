@@ -161,8 +161,7 @@ public class RegionService extends AbstractService {
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
         sendServerMessageEvent(game.getGameId(),
                 game.getCurrentPlayer().getUser().getUsername()+ " hat " + request.getAmount() + " " +
-                        "Wasseraufbereitungsmarker in der Region " + game.getRegionRepository().getRegionByID(request.getRegionId())+
-                        " platziert.");
+                        "Wasseraufbereitungsmarker platziert.");
         LOG.info("[LobbyId: {}] Increased water treatments. Send BoardUpdate to all players", request.getLobbyId());
     }
 

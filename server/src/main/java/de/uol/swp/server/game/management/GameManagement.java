@@ -240,7 +240,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             );
             ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
             sendServerMessageEvent(game.getGameId(),
-                    requestPlayer.getUser().getUsername() + " hat seine Startposition festgelegt: " + game.getCityRepository()
+                    requestPlayer.getUser().getUsername() + " startet von " + game.getCityRepository()
                                                                                                           .getCityNameById(request.getCityId())
             );
         } catch (PlayerManagementException e) {
@@ -252,9 +252,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             game.setCurrentPlayerIndex(0);
             sendServerMessageEvent(
                     game.getGameId(),
-                    "Alle Spieler haben ihre Startpositionen festgelegt. Der Spieler der die Karte mit dem " +
-                            "niedrigsten Gründungsjahr einer Stadt hat fängt an und kann" +
-                            " Aktionen ausführen."
+                    game.getCurrentPlayer() +" darf anfangen"
             );
         }
         return game;
@@ -520,8 +518,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
         if (citiesConnectedByLand) {
             movePlayerByLand(game, player, city);
-            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " hat sich mit der Kutsche oder dem Zug " +
-                    "nach "
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " hat sich nach "
                     + city.getName().getDisplayName() + " bewegt.");
         } else {
             movePlayerBySea(game, player, city, card);

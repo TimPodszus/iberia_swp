@@ -106,12 +106,15 @@ public class ChatDetailPresenter extends AbstractPresenter {
     }
 
     private void requestChatHistory() {
+        LOG.debug("[LobbyId: {}] Requesting chat history", lobbyId);
         chatService.requestChatHistory(lobbyId);
     }
 
     @Subscribe
     public void onGetChatResponse(GetChatResponse response) {
+        LOG.debug("[LobbyId: {}] Received chat history response", response.getLobbyId());
         if (!response.getLobbyId().equals(lobbyId)) {
+            LOG.error("[LobbyId: {}] Chat history response does not match current lobby", lobbyId);
             return;
         }
 
@@ -126,6 +129,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
 
     @FXML
     public void initialize() {
+        LOG.debug("Initializing ChatDetailPresenter");
         chatContainer.maxWidthProperty()
                      .bind(chatScrollPane.widthProperty());
         chatContainer.setPadding(new Insets(4));
@@ -149,6 +153,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
                 event.consume();
             }
         });
+        LOG.debug("ChatDetailPresenter initialized successfully");
     }
 
 }

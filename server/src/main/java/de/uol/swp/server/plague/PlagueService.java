@@ -2,6 +2,7 @@ package de.uol.swp.server.plague;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;

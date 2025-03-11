@@ -82,7 +82,7 @@ public class LobbyService extends AbstractService {
         LOG.debug("[LobbyId: {}] Sent lobby created response", createdLobby.getLobbyId());
         sendServerMessageEvent(
                 createdLobby.getLobbyId(),
-                "Die Lobby mit dem Namen " + createdLobby.getName() + " wurde erfolgreich durch den Spieler " + createdLobby.getOwner().getUsername() + " erstellt. Viel Spaß!"
+                "Die Lobby wurde erstellt."
         );
     }
 
@@ -143,7 +143,7 @@ public class LobbyService extends AbstractService {
         sendToAllInLobby(lobby, new UserJoinedLobbyMessage(lobby.getLobbyId(), user));
         sendServerMessageEvent(
                 lobby.getLobbyId(),
-                user.getUsername() + " ist der Lobby " + lobby.getName() + " beigetreten. Willkommen!"
+                user.getUsername() + " ist der Lobby beigetreten. Willkommen!"
         );
     }
 

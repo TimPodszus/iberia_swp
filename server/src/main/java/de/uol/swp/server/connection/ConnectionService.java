@@ -175,7 +175,7 @@ public class ConnectionService extends AbstractService {
         );
         sendServerMessageEvent(
                 event.getLobbyId(),
-                "Die Karte staatliche Mobilmachung wurde gespielt! Jeder Spieler darf sich einmal kostenlos bewegen."
+                "Die Karte staatliche Mobilmachung wurde gespielt! Jeder Spieler darf sich einmal bewegen."
         );
 
         IGame game = connectionManagement.getGame(event.getLobbyId());
