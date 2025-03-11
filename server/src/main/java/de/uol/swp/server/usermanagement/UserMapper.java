@@ -3,7 +3,9 @@ package de.uol.swp.server.usermanagement;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class UserMapper {
 
@@ -37,26 +39,5 @@ public class UserMapper {
             userDTOs.add(toDTO(user));
         }
         return userDTOs;
-    }
-    public static Collection<IUser> toUser(Collection<IUserDTO> userDTOs) {
-        Collection<IUser> users = new ArrayList<>();
-        for (IUserDTO userDTO : userDTOs) {
-            users.add(toUser(userDTO));
-        }
-        return users;
-    }
-    public static Set<IUserDTO> toUserDTOs(Set<IUser> users) {
-        Set<IUserDTO> userDTOs = new HashSet<>();
-        for (IUser user : users) {
-            userDTOs.add(toDTO(user));
-        }
-        return userDTOs;
-    }
-    public static Set<IUser> toUsers(Set<IUserDTO> userDTOs) {
-        Set<IUser> users = new HashSet<>();
-        for (IUserDTO userDTO : userDTOs) {
-            users.add(toUser(userDTO));
-        }
-        return users;
     }
 }

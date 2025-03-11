@@ -258,6 +258,24 @@ class GameManagementTest {
     }
 
     @Test
+    void testDrawInfectionCard_InfectionState_FavorableTimeEventCardPlayed() {
+        InfectionCard infectionCard = new InfectionCard(
+                1,
+                "InfectionCard",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        when(game.isFavorableTimeEventCardPlayed()).thenReturn(true);
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard)));
+        when(game.getState()).thenReturn(new InfectionState());
+
+        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
+
+        assertNull(drawnCard, "Expected no card to be returned in InfectionState");
+        verify(cityManagement, times(1)).infectCityWithOwnPlague(game, infectionCard, 1);
+        verify(game, times(1)).setFavorableTimeEventCardPlayed(false);
+    }
+
+    @Test
     void testDrawInfectionCard_InvalidState() {
         InfectionCard infectionCard = new InfectionCard(
                 1,

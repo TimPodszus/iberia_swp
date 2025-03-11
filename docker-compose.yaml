@@ -2,7 +2,9 @@ services:
   db:
     image: timpodszus/iberia-db
     restart: always
-    env_file: ./server/src/main/resources/.env
+    environment:
+      MYSQL_ROOT_PASSWORD: iberia2024
+
     ports:
       - '3306:3306'
     expose:
@@ -27,6 +29,13 @@ services:
         condition: service_healthy
     links:
       - db
+  watchtower:
+    image: containrrr/watchtower
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=600
+      - WATCHTOWER_CLEANUP=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   my-db:
