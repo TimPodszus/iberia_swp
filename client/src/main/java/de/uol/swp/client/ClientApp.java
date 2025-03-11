@@ -1,15 +1,11 @@
 package de.uol.swp.client;
 
 
-import java.net.ConnectException;
-
-import de.uol.swp.client.user.UserStore;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import de.uol.swp.client.di.ClientModule;
 import de.uol.swp.client.user.ClientUserService;
+import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.Configuration;
 import de.uol.swp.common.user.exception.RegistrationExceptionMessage;
 import de.uol.swp.common.user.response.LoginSuccessfulResponse;
@@ -19,7 +15,10 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
+import java.net.ConnectException;
 import java.util.List;
 
 /**
@@ -62,7 +61,7 @@ public class ClientApp extends Application implements ConnectionListener {
         List<String> args = p.getRaw();
 
         if (args.size() != 2) {
-            host = "localhost";
+            host = "swp-ibs.de";
             port = Configuration.getDefaultPort();
             LOG.info("Usage: {} host port", ClientConnection.class.getSimpleName());
             LOG.info("Using default port {} {}", port, host);
