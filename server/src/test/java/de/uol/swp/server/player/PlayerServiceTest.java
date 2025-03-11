@@ -1,6 +1,7 @@
 package de.uol.swp.server.player;
 
 import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
@@ -13,6 +14,7 @@ import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.connection.ConnectionRepository;
@@ -207,6 +209,10 @@ public class PlayerServiceTest extends EventBusBasedTest {
         when(game.getPlagueRepository()).thenReturn(mockPlagueRepository);
         when(mockPlagueRepository.getPlagues()).thenReturn(Collections.emptyList());
 
+        ICity mockCity = mock(ICity.class);
+        when(mockCity.getName()).thenReturn(CityName.ALICANTE);
+        when(mockCityRepository.getCity(1)).thenReturn(mockCity);
+
         when(playerManagement.getGame(LOBBY_ID)).thenReturn(game);
         doNothing().when(playerManagement).setPlayerLocation(eq(LOBBY_ID), anyString(), anyInt());
         doNothing().when(gameManagement).unlockGameInWaitForConfirmation(LOBBY_ID);
@@ -251,6 +257,10 @@ public class PlayerServiceTest extends EventBusBasedTest {
         when(mockPlagueRepository.getPlagues()).thenReturn(Collections.emptyList());
         when(playerManagement.getGame(LOBBY_ID)).thenReturn(game);
 
+        ICity mockCity = mock(ICity.class);
+        when(mockCity.getName()).thenReturn(CityName.ALICANTE);
+        when(mockCityRepository.getCity(anyInt())).thenReturn(mockCity);
+
         ShareRideRequest shareRideRequest = new ShareRideRequest(LOBBY_ID);
         shareRideRequest.setSession(session);
 
@@ -263,6 +273,20 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Test
     void onDrawInfectionCardRequest_Success() throws CityManagementException, InterruptedException {
+        IGame game = mock(IGame.class);
+        CityRepository mockCityRepository = mock(CityRepository.class);
+        when(game.getCityRepository()).thenReturn(mockCityRepository);
+        when(mockCityRepository.getCities()).thenReturn(Collections.emptyList());
+        IPlayer mockPlayer = mock(IPlayer.class);
+        IUser mockUser = mock(IUser.class);
+        when(game.getCurrentPlayer()).thenReturn(mockPlayer);
+        when(mockPlayer.getUser()).thenReturn(mockUser);
+        when(mockUser.getUsername()).thenReturn("TestPlayer");
+
+        ICity mockCity = mock(ICity.class);
+        when(mockCity.getName()).thenReturn(CityName.ALICANTE);
+        when(mockCityRepository.getCity(anyInt())).thenReturn(mockCity);
+
         DrawInfectionCardRequest drawInfectionCardRequest = new DrawInfectionCardRequest(LOBBY_ID);
         drawInfectionCardRequest.setSession(session);
 
