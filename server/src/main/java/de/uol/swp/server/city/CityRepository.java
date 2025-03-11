@@ -131,6 +131,12 @@ public class CityRepository {
                      .orElse(null);
     }
 
+    /**
+     * Retrieves the name of a city by its ID.
+     *
+     * @param cityId the ID of the city
+     * @return the name of the city with the specified ID
+     */
     public CityName getCityNameById(int cityId) {
         return cities.stream()
                      .filter(city -> city.getId() == cityId)
@@ -139,6 +145,12 @@ public class CityRepository {
                      .orElse(null);
     }
 
+    /**
+     * Retrieves a list of city IDs for a specific plague.
+     *
+     * @param plagueName the name of the plague
+     * @return a list of city IDs for the specified plague
+     */
     public List<Integer> getCityIdsForPlague(PlagueName plagueName) {
         return cities.stream()
                      .filter(city -> city.getPlagueName()

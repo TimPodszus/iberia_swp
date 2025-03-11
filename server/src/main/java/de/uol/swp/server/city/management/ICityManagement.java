@@ -57,8 +57,9 @@ public interface ICityManagement {
     /**
      * Builds a hospital in the specified city using an event card.
      *
-     * @param lobbyId the ID of the lobby where the hospital is to be built
-     * @param cityId  the ID of the city where the hospital is to be built
+     * @param lobbyId  the ID of the lobby where the hospital is to be built
+     * @param cityId   the ID of the city where the hospital is to be built
+     * @param userName the name of the user requesting the hospital build
      */
     void buildHospitalWithEventCard(String lobbyId, Integer cityId, String userName);
 

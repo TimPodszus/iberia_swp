@@ -493,6 +493,7 @@ public class GameService {
      * @param lobbyId the ID of the lobby
      */
     public void sendHospitalFoundationEventRequest(String lobbyId, Integer cityId) {
+        LOG.debug("[LobbyID: {}] Sending HospitalFoundationEventRequest", lobbyId);
         eventBus.post(new HospitalFoundationEventRequest(lobbyId, cityId));
     }
 }

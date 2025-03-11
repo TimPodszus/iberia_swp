@@ -359,15 +359,16 @@ public class GamePresenter extends AbstractPresenter {
             return;
         }
 
-        if (isGameState(StateType.EVENT_STATE) && currentlyHandlingHospitalFoundationEventCard) {
-            LOG.debug("City with ID {} selected for hospital foundation", cityId);
-            gameService.sendHospitalFoundationEventRequest(lobbyId, cityId);
-            this.currentlyHandlingHospitalFoundationEventCard = false;
-            return;
-        }
-
         if (source.getStyleClass()
                   .contains(CITY_HIGHLIGHTED_CLASS)) {
+
+            if (isGameState(StateType.EVENT_STATE) && currentlyHandlingHospitalFoundationEventCard) {
+                LOG.debug("City with ID {} selected for hospital foundation", cityId);
+                gameService.sendHospitalFoundationEventRequest(lobbyId, cityId);
+                this.currentlyHandlingHospitalFoundationEventCard = false;
+                return;
+            }
+
             LOG.trace("Player wants to move to city {}", cityId);
             RoleEnum role = gameDTO.getCurrentPlayer()
                                    .getRole()
@@ -435,10 +436,13 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.CARRIAGE
-        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
+                TransportMode.TRAIN
+        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
+                cityId,
+                TransportMode.NONE
+        );
     }
 
     /**
@@ -1710,6 +1714,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onHospitalFoundationEventResponse(HospitalFoundationEventResponse response) {
+        LOG.debug("[LobbyID: {}] Received HospitalFoundationEventResponse", response.getLobbyId());
         if (!response.getLobbyId()
                      .equals(this.lobbyId)) {
             return;

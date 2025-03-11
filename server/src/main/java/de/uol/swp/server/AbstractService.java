@@ -136,6 +136,11 @@ public class AbstractService {
         post(serverMessage);
     }
 
+    /**
+     * Posts a response on the EventBus with delay
+     *
+     * @param response the response to post
+     */
     protected void sendResponseWithDelay(AbstractGameResponse response) {
         ScheduledExecutorService scheduler = null;
         try {
