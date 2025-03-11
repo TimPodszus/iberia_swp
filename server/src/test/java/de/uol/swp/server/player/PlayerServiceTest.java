@@ -273,28 +273,20 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Test
     void onDrawInfectionCardRequest_Success() throws CityManagementException, InterruptedException {
-        IGame game = mock(IGame.class);
-        CityRepository mockCityRepository = mock(CityRepository.class);
-        when(game.getCityRepository()).thenReturn(mockCityRepository);
-        when(mockCityRepository.getCities()).thenReturn(Collections.emptyList());
-        IPlayer mockPlayer = mock(IPlayer.class);
-        IUser mockUser = mock(IUser.class);
-        when(game.getCurrentPlayer()).thenReturn(mockPlayer);
-        when(mockPlayer.getUser()).thenReturn(mockUser);
-        when(mockUser.getUsername()).thenReturn("TestPlayer");
+        IPlayer player = new Player(user);
+        player.setRole(new Sailor());
 
-        ICity mockCity = mock(ICity.class);
-        when(mockCity.getName()).thenReturn(CityName.ALICANTE);
-        when(mockCityRepository.getCity(anyInt())).thenReturn(mockCity);
+        game.getPlayers()
+            .add(player);
+        game.setCurrentPlayerIndex(0);
 
         DrawInfectionCardRequest drawInfectionCardRequest = new DrawInfectionCardRequest(LOBBY_ID);
         drawInfectionCardRequest.setSession(session);
 
         InfectionCard infectionCard = mock(InfectionCard.class);
-        IPlayer player = new Player(user);
-        player.setRole(new Sailor());
-        game.getPlayers()
-            .add(player);
+        ICity city = mock(ICity.class);
+        when(city.getName()).thenReturn(CityName.ALICANTE);
+        when(infectionCard.getCity()).thenReturn(city);
 
         when(gameManagement.drawInfectionCard(game)).thenReturn(infectionCard);
 
