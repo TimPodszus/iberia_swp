@@ -6,11 +6,15 @@ import de.uol.swp.common.chat.messages.PlayerSentChatMessage;
 import de.uol.swp.common.chat.messages.SentChatMessage;
 import de.uol.swp.common.chat.response.GetChatResponse;
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
@@ -71,18 +75,29 @@ public class ChatDetailPresenter extends AbstractPresenter {
     @Subscribe
     public void onAbstractChatMessage(SentChatMessage chatMessage) {
         LOG.debug("[LobbyId: {}] Received chat message", lobbyId);
-        Platform.runLater(() -> {
-            if (chatMessage instanceof PlayerSentChatMessage playerMessage) {
-                if (playerMessage.getSender().equals(currentUsername)) {
-                    chatContainer.getChildren().add(new CurrentPlayerMessage(playerMessage.getMessage()));
-                } else {
-                    chatContainer.getChildren().add(new PlayerMessage(playerMessage.getSender(), playerMessage.getMessage()));
-                }
+        Platform.runLater(() -> addNewChatMessage(chatMessage));
+    }
+
+    private void addNewChatMessage(SentChatMessage message) {
+        if (message instanceof PlayerSentChatMessage playerSentChatMessage) {
+            if (playerSentChatMessage.getSender()
+                                     .equals(currentUsername)) {
+                CurrentPlayerMessage currentPlayerMessage = new CurrentPlayerMessage(playerSentChatMessage.getMessage());
+                chatContainer.getChildren()
+                             .add(currentPlayerMessage);
             } else {
-                chatContainer.getChildren().add(new ServerMessage(chatMessage.getMessage()));
+                PlayerMessage playerMessage = new PlayerMessage(playerSentChatMessage.getSender(),
+                        playerSentChatMessage.getMessage()
+                );
+                chatContainer.getChildren()
+                             .add(playerMessage);
             }
-            chatScrollPane.setVvalue(1.0);
-        });
+        } else {
+            ServerMessage serverMessage = new ServerMessage(message.getMessage());
+            chatContainer.getChildren()
+                         .add(serverMessage);
+        }
+        chatScrollPane.setVvalue(1.0);
     }
 
     public void setLobbyId(String lobbyId) {
@@ -103,15 +118,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
         Platform.runLater(() -> {
             chatContainer.getChildren().clear();
             for (SentChatMessage message : response.getChatMessages()) {
-                if (message instanceof PlayerSentChatMessage playerMessage) {
-                    if (playerMessage.getSender().equals(currentUsername)) {
-                        chatContainer.getChildren().add(new CurrentPlayerMessage(playerMessage.getMessage()));
-                    } else {
-                        chatContainer.getChildren().add(new PlayerMessage(playerMessage.getSender(), playerMessage.getMessage()));
-                    }
-                } else {
-                    chatContainer.getChildren().add(new ServerMessage(message.getMessage()));
-                }
+                addNewChatMessage(message);
             }
             chatScrollPane.setVvalue(1.0);
         });
@@ -119,6 +126,23 @@ public class ChatDetailPresenter extends AbstractPresenter {
 
     @FXML
     public void initialize() {
+        chatContainer.maxWidthProperty()
+                     .bind(chatScrollPane.widthProperty());
+        chatContainer.setPadding(new Insets(4));
+        chatContainer.getChildren()
+                     .addListener((ListChangeListener<Node>) change -> {
+                         while (change.next()) {
+                             if (change.wasAdded()) {
+                                 for (Node node : change.getList()) {
+                                     if (node instanceof HBox hBox) {
+                                         hBox.maxWidthProperty()
+                                             .bind(chatContainer.widthProperty()
+                                                                .subtract(4));
+                                     }
+                                 }
+                             }
+                         }
+                     });
         chatInput.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER && !event.isShiftDown()) {
                 onSendChat();
