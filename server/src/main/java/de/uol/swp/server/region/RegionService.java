@@ -28,6 +28,7 @@ import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
+import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
 import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import org.apache.logging.log4j.LogManager;
@@ -163,11 +164,18 @@ public class RegionService extends AbstractService {
     public void onTreatWaterEvent(TreatWaterEvent event) {
         LOG.debug("[Lobby: {}] Got TreatWaterEvent", event.getLobbyId());
         TreatWaterEventResponse response = new TreatWaterEventResponse(false);
-        event.getSession()
-             .ifPresentOrElse(response::setSession, () -> {
-                 LOG.error("[LobbyId: {}] Session not present in TreatWaterEvent", event.getLobbyId());
-                 throw new SessionNotFoundException();
-             });
+        IUser user = regionManagement.getGame(event.getLobbyId())
+                                     .getPlayer(event.getUsername())
+                                     .getUser();
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow(() -> {
+                                                   LOG.error(
+                                                           "[LobbyId: {}] Session not found for user",
+                                                           event.getLobbyId()
+                                                   );
+                                                   return new SessionNotFoundException();
+                                               });
+        response.setSession(session);
         post(response);
         LOG.info("[LobbyId: {}] Sent TreatWaterEventResponse", event.getLobbyId());
     }

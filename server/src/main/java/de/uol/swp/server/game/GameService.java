@@ -20,6 +20,7 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
+import de.uol.swp.server.cards.events.FavorableTimeEvent;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -109,11 +110,11 @@ public class GameService extends AbstractService implements GameStateChangeListe
         }
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         if (game != null) {
-        game.setGameStateChangeListener(this);
-        LOG.debug("Game created for lobby {}", request.getLobbyId());
-        post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
-        sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-    }
+            game.setGameStateChangeListener(this);
+            LOG.debug("Game created for lobby {}", request.getLobbyId());
+            post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
+            sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        }
     }
 
     /**
@@ -404,7 +405,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error("[LobbyId: {}] Session not found for user",
+                                                   LOG.error(
+                                                           "[LobbyId: {}] Session not found for user",
                                                            request.getLobbyId()
                                                    );
                                                    return new SessionNotFoundException();
@@ -433,7 +435,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IPlayer targetPlayer = game.getPlayer(event.getTargetPlayer());
         if (request.isAccepted()) {
             try {
-                gameManagement.shareKnowledgeRequestAccepted(currentPlayer,
+                gameManagement.shareKnowledgeRequestAccepted(
+                        currentPlayer,
                         targetPlayer,
                         event.getLobbyId(),
                         event,
@@ -477,28 +480,50 @@ public class GameService extends AbstractService implements GameStateChangeListe
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
 
+    /**
+     * test
+     * Handles the FavorableTimeEvent.
+     *
+     * @param event the event containing the lobby ID and the username of the player to increase the actions
+     */
     @Subscribe
-    public void onCardsExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request)  {
-        try{
-        LOG.info("Received CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
-        int cardToDiscardID = request.getCardsToExchange()
-                                     .get(gameManagement.getGame(request.getLobbyId())
-                                                        .getCurrentPlayer()
-                                                        .getUser()
-                                                        .getUsername())
-                                     .getId();
-        int cardToReceiveID = request.getCardsToExchange()
-                                     .get("Discard Pile")
-                                     .getId();
+    public void onFavorableTimeEvent(FavorableTimeEvent event) {
+        LOG.debug("[Lobby: {}] Received FavorableTimeEvent", event.getLobbyId());
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        game.setFavorableTimeEventCardPlayed(true);
+        game.setState(game.getPreviousState());
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+        sendServerMessageEvent(event.getLobbyId(), "Spieler hat die Ereigniskarte 'Günstige Zeit' gespielt");
+        sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
+    }
 
-        sendServerMessageEvent(request.getLobbyId(),
-                "Spieler" + gameManagement.getGame(request.getLobbyId()).getCurrentPlayer().getUser().getUsername() + "hat eine Karte mit dem Ablagestapel getauscht");
-        gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, request.getLobbyId(), this);}
-        catch(CardNotFoundException exception){
+    @Subscribe
+    public void onCardsExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request) {
+        try {
+            LOG.info("Received CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
+            int cardToDiscardID = request.getCardsToExchange()
+                                         .get(gameManagement.getGame(request.getLobbyId())
+                                                            .getCurrentPlayer()
+                                                            .getUser()
+                                                            .getUsername())
+                                         .getId();
+            int cardToReceiveID = request.getCardsToExchange()
+                                         .get("Discard Pile")
+                                         .getId();
+
+            sendServerMessageEvent(
+                    request.getLobbyId(),
+                    "Spieler" + gameManagement.getGame(request.getLobbyId())
+                                              .getCurrentPlayer()
+                                              .getUser()
+                                              .getUsername() + "hat eine Karte mit dem Ablagestapel getauscht"
+            );
+            gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, request.getLobbyId(), this);
+        } catch (CardNotFoundException exception) {
             LOG.error("Card not found");
             sendStatusResponse(request, false, "Karte nicht gefunden");
-        }
-        catch (PlayerManagementException exception){
+        } catch (PlayerManagementException exception) {
             LOG.error("Player not found");
             sendStatusResponse(request, false, "Spieler nicht gefunden");
         }
@@ -526,17 +551,17 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
     }
 
-/**
- * Sends a board update event to all players in the lobby after a card exchange with the discard pile.
- *
- * @param lobbyId the ID of the lobby
- */
-public void sendBoardUpdateAfterCardExchangeWithDiscardPile(String lobbyId) {
-    sendToAllInLobby(
-            lobbyManagement.getLobby(lobbyId),
-            new BoardUpdateEvent(lobbyId, GameMapper.toDTO(gameManagement.getGame(lobbyId)))
-    );
-}
+    /**
+     * Sends a board update event to all players in the lobby after a card exchange with the discard pile.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    public void sendBoardUpdateAfterCardExchangeWithDiscardPile(String lobbyId) {
+        sendToAllInLobby(
+                lobbyManagement.getLobby(lobbyId),
+                new BoardUpdateEvent(lobbyId, GameMapper.toDTO(gameManagement.getGame(lobbyId)))
+        );
+    }
 
     /**
      * Handles the end turn request from a player. This method retrieves the user from the session,

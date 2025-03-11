@@ -405,8 +405,8 @@ public class GamePresenter extends AbstractPresenter {
                                 LOG.info("Player has not selected a player to take with him. Moving alone.");
                             }
                     );
+                    return;
                 }
-                return;
             }
 
             gameService.movePlayerToCity(this.lobbyId, cityId);
@@ -1249,6 +1249,9 @@ public class GamePresenter extends AbstractPresenter {
         if (!infectionCardDiscardPileList.isEmpty()) {
             InfectionCardDTO infectionCard = infectionCardDiscardPileList.get(infectionCardDiscardPileList.size() - 1);
             setInfectionCardDiscardPile(CardFactory.createCard(infectionCard));
+        } else {
+            infectionCardDiscardPile.getChildren()
+                                    .clear();
         }
     }
 
@@ -1394,10 +1397,12 @@ public class GamePresenter extends AbstractPresenter {
      * @param escalationStage the current escalation stage
      */
     private void updateEscalationStage(int escalationStage) {
-        if (gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1)) instanceof Circle) {
-            gameScreen.lookup(ESCALATION_STAGE_ID + (escalationStage - 1))
-                      .getStyleClass()
-                      .removeAll("escalation-stage-active");
+        for (int i = 0; i <= escalationStage; i++) {
+            if (gameScreen.lookup(ESCALATION_STAGE_ID + i) instanceof Circle) {
+                gameScreen.lookup(ESCALATION_STAGE_ID + i)
+                          .getStyleClass()
+                          .removeAll("escalation-stage-active");
+            }
         }
 
         if (gameScreen.lookup(ESCALATION_STAGE_ID + escalationStage) instanceof Circle) {

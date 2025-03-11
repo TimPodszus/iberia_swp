@@ -16,7 +16,7 @@ public class CardRepositoryTest {
     public void testGetCards() {
         CardRepository cardRepository = new CardRepository(new CityRepository());
         assertEquals(
-                100,
+                102,
                 cardRepository.getCards()
                               .size()
         );

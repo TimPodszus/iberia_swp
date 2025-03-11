@@ -14,22 +14,30 @@ import lombok.Getter;
 @Getter
 public class InfectionState implements IGameState {
     private int infectedCities = 0;
+
     public StateType getStateType() {
         return StateType.INFECTION_STATE;
     }
 
     public void increaseInfectedCities(IGame game) {
         infectedCities++;
-        int citiesToInfect = switch (game.getInfectionCounter()) {
+
+        if (amountOfCitiesToInfect(game) == infectedCities) {
+            game.setState(new PlayerTurnState());
+            game.incrementCurrentPlayerIndex(game.getPlayers()
+                                                 .size());
+        }
+    }
+
+    private int amountOfCitiesToInfect(IGame game) {
+        return switch (game.getInfectionCounter()) {
             case 4, 5 -> 3;
             case 6, 7 -> 4;
             default -> 2;
         };
-        if (citiesToInfect == infectedCities) {
-            game.setState(new PlayerTurnState());
-            int currentPlayerIndex = game.getCurrentPlayerIndex();
-            int nextPlayerIndex = currentPlayerIndex == game.getPlayers().size() - 1 ? 0 : currentPlayerIndex + 1;
-            game.setCurrentPlayerIndex(nextPlayerIndex);
-        }
+    }
+
+    public void setInfectedCitiesToOnlyDrawOneMoreCard(IGame game) {
+        infectedCities = amountOfCitiesToInfect(game) - 1;
     }
 }

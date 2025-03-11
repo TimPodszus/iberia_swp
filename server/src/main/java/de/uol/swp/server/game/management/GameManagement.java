@@ -131,9 +131,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             for (int i = 0; i < cardsToDraw; i++) {
                 playerManagement.drawPlayerCard(game.getGameId(), player);
             }
-            int currentPlayerIndex = game.getCurrentPlayerIndex();
-            int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;
-            game.setCurrentPlayerIndex(nextPlayerIndex);
+            game.incrementCurrentPlayerIndex(users.size());
         }
     }
 
@@ -263,9 +261,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (infectionCardDrawPile.isEmpty()) {
             throw new IllegalStateException("Infection card draw pile is empty");
         }
-        if (game.getState() instanceof InfectionState) {
-            cityManagement.infectCityWithOwnPlague(game, infectionCardDrawPile.remove(0), 1);
-            return null;
+        InfectionCard card = null;
+        if (game.getState() instanceof InfectionState infectionState) {
+            if (game.isFavorableTimeEventCardPlayed()) {
+                card = infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1);
+                infectionState.setInfectedCitiesToOnlyDrawOneMoreCard(game);
+                game.setFavorableTimeEventCardPlayed(false);
+            } else {
+                card = infectionCardDrawPile.remove(0);
+            }
         } else if (game.getState() instanceof StartState) {
             return infectionCardDrawPile.remove(0);
         } else {
@@ -275,6 +279,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             );
             return null;
         }
+        cityManagement.infectCityWithOwnPlague(game, card, 1);
+        return null;
     }
 
     /**
@@ -325,17 +331,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private boolean roleActionOneAvailable(String lobbyCode) {
         IGame game = getGame(lobbyCode);
         if (game.getCurrentPlayer()
-                              .getRole()
-                              .getName()
-                              .equals(RoleEnum.POLITICIAN)) {
+                .getRole()
+                .getName()
+                .equals(RoleEnum.POLITICIAN)) {
             return game.getCurrentPlayer()
-                                     .getCards()
-                                     .stream()
-                                     .anyMatch(CityCard.class::isInstance);
+                       .getCards()
+                       .stream()
+                       .anyMatch(CityCard.class::isInstance);
         } else if (game.getCurrentPlayer()
                        .getRole()
                        .getName()
-                       .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)){
+                       .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)) {
             return !game.getPlayerCardDrawPile()
                         .isEmpty();
         }
@@ -397,7 +403,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     private boolean isInfectionTreatable(String lobbyCode) {
-        ICity city = getGame(lobbyCode).getCurrentPlayer().getCurrentPosition();
+        ICity city = getGame(lobbyCode).getCurrentPlayer()
+                                       .getCurrentPosition();
         return city.getInfections()
                    .stream()
                    .anyMatch(infection -> infection.getSeverity() > 0);
@@ -459,21 +466,24 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IPlayer player = getPlayerForMove(game, user);
 
         Map<Integer, DestinationInfo> availableDestinations = retrieveAvailableDestinations(game, player);
-        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId())
-                && (availableDestinations.get(city.getId())
-                                         .getTransportModes()
-                                         .contains(TransportMode.CARRIAGE) ||
-                    availableDestinations.get(city.getId())
-                                         .getTransportModes()
-                                         .contains(TransportMode.TRAIN) ||
-                    availableDestinations.get(city.getId())
-                                         .getTransportModes()
-                                         .contains(TransportMode.NONE));
+        boolean citiesConnectedByLand = availableDestinations.containsKey(city.getId()) && (availableDestinations.get(
+                                                                                                                         city.getId())
+                                                                                                                 .getTransportModes()
+                                                                                                                 .contains(
+                                                                                                                         TransportMode.CARRIAGE) || availableDestinations.get(
+                                                                                                                                                                                 city.getId())
+                                                                                                                                                                         .getTransportModes()
+                                                                                                                                                                         .contains(
+                                                                                                                                                                                 TransportMode.TRAIN) || availableDestinations.get(
+                                                                                                                                                                                                                                      city.getId())
+                                                                                                                                                                                                                              .getTransportModes()
+                                                                                                                                                                                                                              .contains(
+                                                                                                                                                                                                                                      TransportMode.NONE));
 
-        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId())
-                && availableDestinations.get(city.getId())
-                                        .getTransportModes()
-                                        .contains(TransportMode.SHIP);
+        boolean citiesConnectedBySea = availableDestinations.containsKey(city.getId()) && availableDestinations.get(city.getId())
+                                                                                                               .getTransportModes()
+                                                                                                               .contains(
+                                                                                                                       TransportMode.SHIP);
 
         if (!citiesConnectedByLand && !citiesConnectedBySea) {
             LOG.error(
@@ -499,7 +509,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             movePlayerBySea(game, player, city, card);
         }
     }
-
 
 
     /**

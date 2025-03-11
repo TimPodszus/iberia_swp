@@ -31,7 +31,7 @@ public class TreatWaterEventDialog extends Stage {
     }
 
     private void initialize() {
-        VBox vbox = new VBox(10);
+        VBox vbox = new VBox(5);
         HBox buttonBox = new HBox(10);
 
         Label selectionLabel = new Label("Wähle die Anzahl");
@@ -75,8 +75,10 @@ public class TreatWaterEventDialog extends Stage {
             }
         });
 
-        Scene scene = new Scene(vbox, 100, 100);
+        Scene scene = new Scene(vbox, 150, 150);
         this.setScene(scene);
+
+        this.setOnCloseRequest(event -> result.complete(null));
     }
 
     public CompletableFuture<Integer> showAndWaitForResult() {
