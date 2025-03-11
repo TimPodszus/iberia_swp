@@ -103,4 +103,11 @@ public interface ILobby extends Serializable {
      * @return an integer hash code value
      */
     int hashCode();
+
+    /**
+     * Getter for the maximum number of users allowed in the lobby.
+     *
+     * @return An integer representing the maximum number of users.
+     */
+    int getMaxUsers();
 }
