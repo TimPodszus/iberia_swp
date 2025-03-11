@@ -404,8 +404,8 @@ public class GamePresenter extends AbstractPresenter {
                                 LOG.info("Player has not selected a player to take with him. Moving alone.");
                             }
                     );
+                    return;
                 }
-                return;
             }
 
             gameService.movePlayerToCity(this.lobbyId, cityId);

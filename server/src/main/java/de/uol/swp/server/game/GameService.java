@@ -20,6 +20,7 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
+import de.uol.swp.server.cards.events.FavorableTimeEvent;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -511,6 +512,24 @@ public class GameService extends AbstractService implements GameStateChangeListe
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
 
+    /**
+     * test
+     * Handles the FavorableTimeEvent.
+     *
+     * @param event the event containing the lobby ID and the username of the player to increase the actions
+     */
+    @Subscribe
+    public void onFavorableTimeEvent(FavorableTimeEvent event) {
+        LOG.debug("[Lobby: {}] Received FavorableTimeEvent", event.getLobbyId());
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        game.setFavorableTimeEventCardPlayed(true);
+        game.setState(game.getPreviousState());
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+        sendServerMessageEvent(event.getLobbyId(), "Spieler hat die Ereigniskarte 'Günstige Zeit' gespielt");
+        sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
+    }
+
     @Subscribe
     public void onCardsExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request) {
         try {
@@ -527,10 +546,10 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
             sendServerMessageEvent(
                     request.getLobbyId(),
-                    "Spieler " + gameManagement.getGame(request.getLobbyId())
-                                               .getCurrentPlayer()
-                                               .getUser()
-                                               .getUsername() + " hat eine Karte mit dem Ablagestapel getauscht"
+                    "Spieler" + gameManagement.getGame(request.getLobbyId())
+                                              .getCurrentPlayer()
+                                              .getUser()
+                                              .getUsername() + "hat eine Karte mit dem Ablagestapel getauscht"
             );
             gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, request.getLobbyId(), this);
         } catch (CardNotFoundException exception) {

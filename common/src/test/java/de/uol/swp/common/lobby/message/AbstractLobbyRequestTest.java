@@ -1,9 +1,9 @@
 package de.uol.swp.common.lobby.message;
 
-import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Test for the abstract lobby request
@@ -13,22 +13,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class AbstractLobbyRequestTest {
 
-    final String lobbyId = "Test";
-    final UserDTO user = new UserDTO("Marco", "Marco");
-    final UserDTO user1 = new UserDTO("Marco1", "Marco1");
-
-
     /**
-     * Test for creation of the AbstractLobbyRequests
-     * This test checks if the lobbyName and the user of the AbstractLobbyRequest gets
-     * set correctly during the creation of the request
-     *
-     * @since 2023-05-14
+     * Tests the equals and hashCode methods of AbstractLobbyRequest.
      */
     @Test
-    void createAbstractLobbyRequest() {
-        AbstractLobbyRequest request = new AbstractLobbyRequest(lobbyId);
+    void testEqualsAndHashCode() {
+        AbstractLobbyRequest request1 = new AbstractLobbyRequest("lobby1");
+        AbstractLobbyRequest request2 = new AbstractLobbyRequest("lobby1");
+        AbstractLobbyRequest request3 = new AbstractLobbyRequest("lobby2");
 
-        assertEquals(lobbyId, request.getLobbyId());
+        assertEquals(request1, request1);
+        assertEquals(request1, request2);
+
+        assertNotEquals(request1, request3);
+        assertNotEquals(request1, null);
+        assertNotEquals(request1, new Object());
+
+        assertEquals(request1.hashCode(), request2.hashCode());
+        assertNotEquals(request1.hashCode(), request3.hashCode());
     }
 }

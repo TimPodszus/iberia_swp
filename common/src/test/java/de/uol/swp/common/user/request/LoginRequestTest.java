@@ -3,7 +3,7 @@ package de.uol.swp.common.user.request;
 import de.uol.swp.common.passwordHashing.PasswordHashing;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test for the login request
@@ -50,6 +50,20 @@ public class LoginRequestTest {
 
         assertEquals("Marco1", request.getUsername());
         assertEquals(PasswordHashing.hashPassword("Test1"), request.getPassword());
+    }
+
+    /**
+     * Tests the authorizationNeeded and hashCode methods of LoginRequest.
+     */
+    @Test
+    void testAuthorizationNeededAndHashCode() {
+        LoginRequest request1 = new LoginRequest("user1", "password123");
+        LoginRequest request2 = new LoginRequest("user1", "password123");
+        LoginRequest request3 = new LoginRequest("user2", "password456");
+
+        assertFalse(request1.authorizationNeeded(), "authorizationNeeded should return false");
+        assertEquals(request1.hashCode(), request2.hashCode());
+        assertNotEquals(request1.hashCode(), request3.hashCode());
     }
 
 }
