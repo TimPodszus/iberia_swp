@@ -57,3 +57,6 @@ deploy-job:
     - docker push "$CI_REGISTRY_IMAGE"
   dependencies:
     - build-job
+  only:
+    - master
+    - development
