@@ -221,15 +221,18 @@ public class CityServiceTest extends EventBusBasedTest {
     @Test
     void testOnHospitalFoundationRequest_Successful() throws InterruptedException {
         IUser user = new User("testUser", "testPassword");
+        Session session = UUIDSession.create(user);
         IGame game = new Game(2, LOBBY_CODE);
         game.setState(new PlayerTurnState());
         game.setState(new EventState(mock(EventCard.class)));
         when(gameManagement.getGame(LOBBY_CODE)).thenReturn(game);
         doNothing().when(cityManagement)
-                   .buildHospitalWithEventCard(LOBBY_CODE, 1);
+                   .buildHospitalWithEventCard(LOBBY_CODE, 1, user.getUsername());
         when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(new Lobby(LOBBY_CODE, "Test", List.of(user), user, 2));
-
-        postAndWait(new HospitalFoundationEventRequest(LOBBY_CODE, 1));
+        HospitalFoundationEventRequest request = new HospitalFoundationEventRequest(LOBBY_CODE, 1);
+        request.setSession(session);
+        
+        postAndWait(request);
 
         assertInstanceOf(PlayerTurnState.class, game.getState());
         assertInstanceOf(BoardUpdateEvent.class, this.event);

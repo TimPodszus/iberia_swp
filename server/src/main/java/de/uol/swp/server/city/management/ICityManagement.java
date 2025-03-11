@@ -60,7 +60,7 @@ public interface ICityManagement {
      * @param lobbyId the ID of the lobby where the hospital is to be built
      * @param cityId  the ID of the city where the hospital is to be built
      */
-    void buildHospitalWithEventCard(String lobbyId, Integer cityId);
+    void buildHospitalWithEventCard(String lobbyId, Integer cityId, String userName);
 
     /**
      * Checks if a hospital can be built in the specified city by the specified user.

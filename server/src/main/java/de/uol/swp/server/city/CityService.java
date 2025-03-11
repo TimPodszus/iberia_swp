@@ -123,7 +123,14 @@ public class CityService extends AbstractService {
     public void onHospitalFoundationRequest(HospitalFoundationEventRequest event) {
         LOG.debug("[Lobby: {}] Got HospitalFoundationEventRequest.", event.getLobbyId());
         IGame game = gameManagement.getGame(event.getLobbyId());
-        cityManagement.buildHospitalWithEventCard(event.getLobbyId(), event.getCityId());
+        cityManagement.buildHospitalWithEventCard(
+                event.getLobbyId(),
+                event.getCityId(),
+                event.getSession()
+                     .orElseThrow()
+                     .getUser()
+                     .getUsername()
+        );
         game.setState(game.getPreviousState());
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
