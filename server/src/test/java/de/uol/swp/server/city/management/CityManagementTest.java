@@ -270,7 +270,7 @@ public class CityManagementTest {
 
         assertThrows(
                 CityManagementException.class,
-                () -> cityManagement.buildHospitalWithEventCard(LOBBY_CODE, cityId)
+                () -> cityManagement.buildHospitalWithEventCard(LOBBY_CODE, cityId, user.getUsername())
         );
     }
 }

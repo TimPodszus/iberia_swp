@@ -122,7 +122,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param plagueName        the name of the plague to infect the city with
      * @param amount            the amount of infection cubes to add
      * @param triggerEscalation whether to trigger escalation if the infection severity exceeds the threshold
-     * @throws CityManagementException if any parameter is invalid or an error occurs during infection
+     * @throws CityManagementException   if any parameter is invalid or an error occurs during infection
      * @throws RegionManagementException if an error occurs when reducing water treatments
      */
     private void infectCity(
@@ -321,17 +321,17 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                 cityCard.get()
                         .getId()
         );
-        buildHospitalWithEventCard(lobbyId, cityId);
+        buildHospitalWithEventCard(lobbyId, cityId, username);
 
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             playerTurnState.reduceActionsRemaining(game);
         }
     }
 
-    public void buildHospitalWithEventCard(String lobbyId, Integer cityId) {
+    public void buildHospitalWithEventCard(String lobbyId, Integer cityId, String username) {
         IGame game = getGame(lobbyId);
         ICity targetCity = getCity(lobbyId, cityId);
-        ICity currentCity = game.getCurrentPlayer()
+        ICity currentCity = game.getPlayer(username)
                                 .getCurrentPosition();
 
         if (!targetCity.getPlagueName()
