@@ -100,4 +100,10 @@ public class ChatManagementTest {
 
         assertThrows(IllegalAccessException.class, () -> chatManagement.getChatMessages("lobbyId", user));
     }
+
+    @Test
+    void testRemoveChat() {
+        chatManagement.removeChat("lobbyId");
+        verify(chatStore, times(1)).removeChat("lobbyId");
+    }
 }

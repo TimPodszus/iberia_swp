@@ -607,6 +607,15 @@ public class GameService extends AbstractService implements GameStateChangeListe
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
     }
 
+    /**
+     * Handles the event when a user leaves the game.
+     * <p>
+     * This method is called when a user attempts to leave the game. It removes the user from the lobby and the game.
+     * If the lobby becomes empty, a `LobbyClosedEvent` is posted. If the lobby is not found, a fatal log is recorded.
+     * Finally, a `BoardUpdateEvent` is sent to all players in the lobby.
+     *
+     * @param event the event containing the lobby ID and session of the user leaving the game
+     */
     @Subscribe
     public void onUserLeavedGameRequest(UserLeavedGameRequest event) {
         IGame game = gameManagement.getGame(event.getLobbyId());

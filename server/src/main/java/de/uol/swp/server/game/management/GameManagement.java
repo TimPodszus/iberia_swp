@@ -907,8 +907,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         } else {
             for (ICard card : player.getCards()) {
                 game.getPlayerCardDiscardPile().add(card);
-                player.getCards().remove(card);
             }
+            player.getCards().clear();
 
             LOG.info("[LobbyID: {}] Cards of Player {} have been discarded", lobbyId, user.getUsername());
             sendServerMessageEvent(lobbyId, "Die Karten von " + user.getUsername() + " wurden abgelegt");

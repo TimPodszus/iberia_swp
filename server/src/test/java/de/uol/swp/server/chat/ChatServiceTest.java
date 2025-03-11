@@ -7,6 +7,7 @@ import de.uol.swp.common.chat.request.GetChatRequest;
 import de.uol.swp.common.chat.request.SendChatRequest;
 import de.uol.swp.common.chat.response.GetChatResponse;
 import de.uol.swp.common.game.message.response.StatusResponse;
+import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.chat.data.PlayerChatMessage;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -191,5 +193,14 @@ public class ChatServiceTest extends EventBusBasedTest {
         assertInstanceOf(ServerSentChatMessage.class, event);
         assertEquals("lobbyId", ((ServerSentChatMessage) event).getLobbyId());
         assertEquals("message", ((ServerSentChatMessage) event).getMessage());
+    }
+
+    @Test
+    void testOnLobbyClosed() {
+        LobbyClosedEvent event = new LobbyClosedEvent("lobbyId");
+
+        post(event);
+
+        verify(chatManagement).removeChat("lobbyId");
     }
 }
