@@ -1,5 +1,6 @@
 package de.uol.swp.server.chat;
 
+import de.uol.swp.common.city.CityName;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.player.data.IPlayer;
 import lombok.NoArgsConstructor;
@@ -141,6 +142,28 @@ public class ServerMessageProvider {
             case 3 -> "Mind the gap! " + playerName + " reist per Eilzug nach " + cityName + ".";
             default ->
                     "Der Zug fährt los! Und mit ihm macht sich " + playerName + " auf den Weg nach " + cityName + ".";
+        };
+    }
+
+    /**
+     * Returns a random message for a new train connection between two cities.
+     *
+     * @param startCity The city where the train connection starts
+     * @param endCity   The city where the train connection ends
+     * @return A random message for a new train connection between two cities
+     */
+    public static String trainConnectionMessage(CityName startCity, CityName endCity) {
+        int randomNumber = random.nextInt(4);
+        String startCityName = startCity.getDisplayName();
+        String endCityName = endCity.getDisplayName();
+        return switch (randomNumber) {
+            case 1 -> "Die Bahnverbindung zwischen " + startCityName + " und " + endCityName + " wird ausgebaut!";
+            case 2 ->
+                    "Es wird eine neue Bahnverbindung zwischen " + startCityName + " und " + endCityName + " eröffnet!";
+            case 3 ->
+                    "Die Menschen in " + startCityName + " und " + endCityName + " freuen sich über die neue " + "Zugverbindung!";
+            default ->
+                    "Ab sofort gibt es stündlich eine Zugverbindung zwischen " + startCityName + " und " + endCityName + "!";
         };
     }
 }

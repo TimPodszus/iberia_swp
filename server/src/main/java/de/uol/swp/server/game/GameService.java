@@ -21,6 +21,7 @@ import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
 import de.uol.swp.server.cards.events.FavorableTimeEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -129,11 +130,10 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                    LOG.error("[LobbyID: {}] Session not found", request.getLobbyId());
                                    return new SessionNotFoundException("Session not found");
                                });
+        IConnection connection = connectionManagement.getConnection(request.getLobbyId(), request.getConnectionId());
 
         try {
-            gameManagement.buildTrainTrack(UserMapper.toUser(user),
-                    request.getLobbyId(),
-                    connectionManagement.getConnection(request.getLobbyId(), request.getConnectionId())
+            gameManagement.buildTrainTrack(UserMapper.toUser(user), request.getLobbyId(), connection
             );
         } catch (GameException e) {
             LOG.error("[LobbyID: {}] Building train track failed", request.getLobbyId());
@@ -167,19 +167,12 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
-        sendServerMessageEvent(request.getLobbyId(),
-                "Eine neue Zugverbindung wurde von " + game.getCurrentPlayer()
-                                                           .getUser()
-                                                           .getUsername() + " zwischen der Stadt " + game.getConnectionRepository()
-                                                                                                         .getConnectionByID(
-                                                                                                                 request.getConnectionId())
-                                                                                                         .getCityNames()
-                                                                                                         .get(0) + " und " + game.getConnectionRepository()
-                                                                                                                                 .getConnectionByID(
-                                                                                                                                         request.getConnectionId())
-                                                                                                                                 .getCityNames()
-                                                                                                                                 .get(1) + " gebaut."
-        );
+        sendServerMessageEvent(request.getLobbyId(), ServerMessageProvider.trainConnectionMessage(
+                connection.getCityNames()
+                          .get(0),
+                connection.getCityNames()
+                          .get(1)
+        ));
     }
 
     /**
