@@ -158,6 +158,9 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      */
     private void initializeScreen() {
         chatController.setLobbyId(lobbyDTO.getLobbyId());
+        chatController.setCurrentUsername(UserStore.getInstance()
+                                                   .getUser()
+                                                   .getUsername());
 
         Platform.runLater(() -> {
             setFields();

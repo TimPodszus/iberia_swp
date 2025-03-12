@@ -1,6 +1,7 @@
 package de.uol.swp.client.chat.detail;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.chat.request.GetChatRequest;
 import de.uol.swp.common.chat.request.SendChatRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,5 +35,10 @@ public class ChatService {
     public void sendChatMessage(String lobbyId, String message) {
         LOG.debug("[LobbyId: {}] Sending SendChatRequest with message: {}", lobbyId, message);
         eventBus.post(new SendChatRequest(lobbyId, message));
+    }
+
+    public void requestChatHistory(String lobbyId) {
+        LOG.debug("[LobbyId: {}] Requesting chat history", lobbyId);
+        eventBus.post(new GetChatRequest(lobbyId));
     }
 }

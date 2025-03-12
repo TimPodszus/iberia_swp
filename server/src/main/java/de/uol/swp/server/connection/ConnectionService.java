@@ -155,6 +155,11 @@ public class ConnectionService extends AbstractService {
                 "[Lobby: {}] Got StateMobilizationEvent. Sending available destinations to every user",
                 event.getLobbyId()
         );
+        sendServerMessageEvent(
+                event.getLobbyId(),
+                "Die Karte staatliche Mobilmachung wurde gespielt! Jeder Spieler darf sich einmal bewegen."
+        );
+
         IGame game = connectionManagement.getGame(event.getLobbyId());
 
         for (IPlayer player : game.getPlayers()) {

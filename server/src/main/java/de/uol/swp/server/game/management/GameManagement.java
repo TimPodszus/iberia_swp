@@ -240,6 +240,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     requestPlayer
             );
             waitForPositioningState.setPositionedPlayersCount(waitForPositioningState.getPositionedPlayersCount() + 1);
+            sendServerMessageEvent(game.getGameId(),
+                    requestPlayer.getUser().getUsername() + " startet von " + game.getCityRepository()
+                                                                                                          .getCityNameById(request.getCityId())
+            );
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
         }
@@ -247,6 +251,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                                        .size()) {
             game.setState(new PlayerTurnState());
             game.setCurrentPlayerIndex(0);
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    game.getCurrentPlayer() +" darf anfangen"
+            );
         }
     }
 
@@ -456,6 +464,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 .getUser()
                 .equals(user) && game.getState() instanceof PlayerTurnState) {
             LOG.info("[LobbyID: {}] Ending turn for player {}", lobbyId, user.getUsername());
+            sendServerMessageEvent(
+                    lobbyId,
+                    user.getUsername() + " hat seinen Zug beendet. Als nächstes müssen Karten vom Stapel gezogen " +
+                            "werden."
+            );
             game.setState(new DrawCardState());
         } else {
             throw new IllegalGameStateException("Player is not allowed to end turn");
@@ -509,15 +522,19 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getDisplayName()
             );
             throw new GameException("There is no available connection between " + player.getCurrentPosition()
-                                                                                        .getName()
-                                                                                        .getDisplayName() + " and " + city.getName()
-                                                                                                                          .getDisplayName());
+                                                                                                  .getName()
+                                                                                                  .getDisplayName() + " and " + city.getName()
+                                                                                                                                    .getDisplayName());
         }
 
         if (citiesConnectedByLand) {
             movePlayerByLand(game, player, city);
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " hat sich nach "
+                    + city.getName().getDisplayName() + " bewegt.");
         } else {
             movePlayerBySea(game, player, city, card);
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " ist mit dem Schiff nach "
+                    + city.getName().getDisplayName() + " gereist.");
         }
     }
 

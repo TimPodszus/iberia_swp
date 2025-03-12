@@ -19,8 +19,8 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
-import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.cards.events.FavorableTimeEvent;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -111,6 +111,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
             LOG.debug("Game created for lobby {}", request.getLobbyId());
             post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
             sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+            sendServerMessageEvent(request.getLobbyId(), "Das Spiel geht los! Viel Spaß!");
         }
     }
 
@@ -131,8 +132,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                });
 
         try {
-            gameManagement.buildTrainTrack(
-                    UserMapper.toUser(user),
+            gameManagement.buildTrainTrack(UserMapper.toUser(user),
                     request.getLobbyId(),
                     connectionManagement.getConnection(request.getLobbyId(), request.getConnectionId())
             );
@@ -152,8 +152,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGame game = gameManagement.getGame(request.getLobbyId());
         if (game.getState() instanceof BuildExtraTrainTrackState state) {
             List<IConnection> connections = state.getConnections();
-            BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(
-                    request.getLobbyId(),
+            BuildableTrainTracksResponse response = new BuildableTrainTracksResponse(request.getLobbyId(),
                     true,
                     ConnectionMapper.toDTOList(connections)
             );
@@ -169,6 +168,19 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(request.getLobbyId(),
+                "Eine neue Zugverbindung wurde von " + game.getCurrentPlayer()
+                                                           .getUser()
+                                                           .getUsername() + " zwischen der Stadt " + game.getConnectionRepository()
+                                                                                                         .getConnectionByID(
+                                                                                                                 request.getConnectionId())
+                                                                                                         .getCityNames()
+                                                                                                         .get(0) + " und " + game.getConnectionRepository()
+                                                                                                                                 .getConnectionByID(
+                                                                                                                                         request.getConnectionId())
+                                                                                                                                 .getCityNames()
+                                                                                                                                 .get(1) + "gebaut."
+        );
     }
 
     /**
@@ -209,8 +221,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         if (!request.getUsername()
                     .isEmpty()) {
             this.sendShareRideEvent(request, destination);
-            LOG.debug(
-                    "[LobbyID: {}] Send share ride event and asked {} if he wants to be picked up",
+            LOG.debug("[LobbyID: {}] Send share ride event and asked {} if he wants to be picked up",
                     request.getLobbyId(),
                     request.getUsername()
             );
@@ -290,8 +301,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         IUser user = UserMapper.toUser(session.getUser());
         List<GameActions> actions = gameManagement.getAvailableActions(request.getLobbyId(), user);
-        AvailableActionsResponse response = new AvailableActionsResponse(
-                request.getLobbyId(),
+        AvailableActionsResponse response = new AvailableActionsResponse(request.getLobbyId(),
                 true,
                 "Retrieving all available actions was successful",
                 actions
@@ -318,8 +328,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                   .equals(request.getUsername()))
                                     .findFirst()
                                     .orElseThrow(() -> {
-                                        LOG.error(
-                                                "[LobbyID: {}] User could not be found in lobby",
+                                        LOG.error("[LobbyID: {}] User could not be found in lobby",
                                                 request.getLobbyId()
                                         );
                                         return new SessionNotFoundException("User not found");
@@ -336,6 +345,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
         event.setReceiver(List.of(session));
         post(event);
         LOG.info("[LobbyID: {}] Asked player if he wants to be picked up", request.getLobbyId());
+        sendServerMessageEvent(request.getLobbyId(),
+                "Spieler " + request.getUsername() + " bietet eine Mitfahrgelegenheit nach " + destination.getName() + " an."
+        );
         gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
     }
 
@@ -368,8 +380,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         LOG.debug("Current player: {}, Target player: {}", currentPlayerUsername, targetPlayerUsername);
 
-        ShareKnowledgeEvent shareKnowledgeEvent = new ShareKnowledgeEvent(
-                request.getLobbyId(),
+        ShareKnowledgeEvent shareKnowledgeEvent = new ShareKnowledgeEvent(request.getLobbyId(),
                 currentPlayerUsername,
                 targetPlayerUsername,
                 cardsToExchange.get(currentPlayerUsername),
@@ -382,8 +393,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
-                                                   LOG.error(
-                                                           "[LobbyId: {}] Session not found for user",
+                                                   LOG.error("[LobbyId: {}] Session not found for user",
                                                            request.getLobbyId()
                                                    );
                                                    return new SessionNotFoundException();
@@ -393,6 +403,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
         shareKnowledgeEvent.setReceiver(List.of(session));
         bus.post(shareKnowledgeEvent);
         LOG.info("Posted ShareKnowledgeEvent to event bus for lobby {}", request.getLobbyId());
+        sendServerMessageEvent(request.getLobbyId(),
+                "Spieler " + currentPlayerUsername + " möchte mit " + targetPlayerUsername + " Karten tauschen."
+        );
     }
 
     /**
@@ -412,8 +425,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IPlayer targetPlayer = game.getPlayer(event.getTargetPlayer());
         if (request.isAccepted()) {
             try {
-                gameManagement.shareKnowledgeRequestAccepted(
-                        currentPlayer,
+                gameManagement.shareKnowledgeRequestAccepted(currentPlayer,
                         targetPlayer,
                         event.getLobbyId(),
                         event,
@@ -426,6 +438,10 @@ public class GameService extends AbstractService implements GameStateChangeListe
         } else {
             postShareKnowledgeResponse(event, false);
         }
+
+        sendServerMessageEvent(request.getLobbyId(),
+                "Spieler " + event.getTargetPlayer() + " hat den Wissensaustausch " + (request.isAccepted() ? "akzeptiert." : "abgelehnt.")
+        );
     }
 
     @Override
@@ -433,12 +449,19 @@ public class GameService extends AbstractService implements GameStateChangeListe
         ILobby lobby = lobbyManagement.getLobby(game.getGameId());
         if (game.getState() instanceof EndGameState endGameState) {
             sendToAllInLobby(lobby, new EndGameEvent(game.getGameId(), endGameState.isVictory()));
+            sendServerMessageEvent(game.getGameId(),
+                    "Das Spiel ist beendet! " + (endGameState.isVictory() ? "Ihr habt gewonnen! 🎉" : "Ihr habt verloren. ✂️")
+            );
         }
         if (game.getState() instanceof DrawCardState && game.getPlayerCardDrawPile()
                                                             .isEmpty()) {
             game.setState(new EndGameState(false));
             LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
+            sendServerMessageEvent(game.getGameId(),
+                    "Das Spiel ist beendet! Der Nachziehstapel ist leer – ihr habt verloren. ✂️"
+            );
         }
+
     }
 
     /**
@@ -473,6 +496,12 @@ public class GameService extends AbstractService implements GameStateChangeListe
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
         sendServerMessageEvent(event.getLobbyId(), "Spieler hat die Ereigniskarte 'Günstige Zeit' gespielt");
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
+        sendServerMessageEvent(event.getLobbyId(),
+                event.getUsername() + " hat die Eventkarte 'Ein weiterer Tag' gespielt und erhält 2 zusätzliche " +
+                        "Aktionen " +
+                        "in diesem Zug."
+        );
+
     }
 
     @Subscribe
@@ -489,8 +518,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                          .get("Discard Pile")
                                          .getId();
 
-            sendServerMessageEvent(
-                    request.getLobbyId(),
+            sendServerMessageEvent(request.getLobbyId(),
                     "Spieler" + gameManagement.getGame(request.getLobbyId())
                                               .getCurrentPlayer()
                                               .getUser()
@@ -516,10 +544,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
     public void postShareKnowledgeResponse(ShareKnowledgeEvent event, boolean success) {
 
-        sendToAllInLobby(
-                lobbyManagement.getLobby(event.getLobbyId()),
-                new KnowledgeSharedEvent(
-                        event.getLobbyId(),
+        sendToAllInLobby(lobbyManagement.getLobby(event.getLobbyId()),
+                new KnowledgeSharedEvent(event.getLobbyId(),
                         success,
                         GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()))
                 )
@@ -534,8 +560,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
      * @param lobbyId the ID of the lobby
      */
     public void sendBoardUpdateAfterCardExchangeWithDiscardPile(String lobbyId) {
-        sendToAllInLobby(
-                lobbyManagement.getLobby(lobbyId),
+        sendToAllInLobby(lobbyManagement.getLobby(lobbyId),
                 new BoardUpdateEvent(lobbyId, GameMapper.toDTO(gameManagement.getGame(lobbyId)))
         );
     }
@@ -566,5 +591,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(request.getLobbyId(),
+                user.getUsername() + " hat den Zug beendet. Es ist jetzt der nächste Spieler an der Reihe."
+        );
+
     }
 }

@@ -21,6 +21,8 @@ import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.management.GameManagementException;
 import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.PlaceExtraWaterTreatmentState;
 import de.uol.swp.server.lobby.data.ILobby;
@@ -157,6 +159,9 @@ public class RegionService extends AbstractService {
         IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(game.getGameId(),
+                game.getCurrentPlayer().getUser().getUsername()+ " hat " + request.getAmount() + " " +
+                        "Wasseraufbereitungsmarker platziert.");
         LOG.info("[LobbyId: {}] Increased water treatments. Send BoardUpdate to all players", request.getLobbyId());
     }
 
@@ -203,6 +208,11 @@ public class RegionService extends AbstractService {
             regionManagement.increaseWaterTreatment(request.getRegionId(), game, request.getAmount());
             game.setState(game.getPreviousState());
         }
+        sendServerMessageEvent(request.getLobbyId(),
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername() + " hat erfolgreich Wasseraufbereitung in einer Region " + "durchgeführt, um die Ausbruchswahrscheinlichkeit in den anliegenden Städten zu verringern"
+        );
 
         IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());

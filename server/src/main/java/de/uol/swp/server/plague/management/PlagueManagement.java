@@ -162,6 +162,10 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
         if (allResearched) {
             LOG.info("All plagues researched! Transitioning to EndGameState.");
             game.setState(new EndGameState(true));
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    "Herzlichen Glückwunsch! Alle Plagen wurden erforscht. Ihr habt das Spiel gewonnen! 🎉"
+            );
         }
     }
 
