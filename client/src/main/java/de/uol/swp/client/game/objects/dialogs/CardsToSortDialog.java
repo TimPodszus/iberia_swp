@@ -6,7 +6,6 @@ import de.uol.swp.common.cards.data.ICardDTO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ClipboardContent;
@@ -20,7 +19,7 @@ import javafx.stage.StageStyle;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CardsToSortDialog extends Dialog<List<ICardDTO>> {
+public class CardsToSortDialog extends AbstractDialog<List<ICardDTO>> {
     private static final String TITLE = "Kartendialog";
     private static final String SORT_CARDS_HEADER = "Karten sortieren";
     private final boolean dismissible;
@@ -41,7 +40,7 @@ public class CardsToSortDialog extends Dialog<List<ICardDTO>> {
         super.setTitle(TITLE);
 
         VBox headerBox = new VBox();
-        headerBox.setSpacing(5);
+        headerBox.getStyleClass().add(VBOX_STYLE);
 
         Label header = new Label(SORT_CARDS_HEADER);
         header.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -53,10 +52,10 @@ public class CardsToSortDialog extends Dialog<List<ICardDTO>> {
         super.getDialogPane().setHeader(headerBox);
 
         VBox mainBox = new VBox();
-        mainBox.setSpacing(10);
+        mainBox.getStyleClass().add(VBOX_STYLE);
 
         cardBox = new HBox();
-        cardBox.setSpacing(10);
+        cardBox.getStyleClass().add(HBOX_STYLE);
 
         for (AbstractCard card : this.displayedPlayerCards) {
             card.setOnDragDetected(event -> {
@@ -118,6 +117,7 @@ public class CardsToSortDialog extends Dialog<List<ICardDTO>> {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(cardBox);
+        scrollPane.getStyleClass().add(SCROLL_PANE);
         mainBox.getChildren().add(scrollPane);
         super.getDialogPane()
              .setContent(scrollPane);
@@ -127,10 +127,12 @@ public class CardsToSortDialog extends Dialog<List<ICardDTO>> {
         super.getDialogPane()
              .getButtonTypes()
              .add(ButtonType.OK);
+        super.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add(APPROVE_BUTTON);
         if (this.dismissible) {
             super.getDialogPane()
                  .getButtonTypes()
                  .add(ButtonType.CANCEL);
+            super.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add(DENY_BUTTON);
         }
 
         super.setResultConverter(dialogButton -> {
