@@ -12,11 +12,8 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
-import de.uol.swp.server.game.states.EndGameState;
-import de.uol.swp.server.game.states.StartState;
-import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
-import de.uol.swp.server.game.states.InfectionState;
 import de.uol.swp.server.infection.data.IInfection;
 import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
@@ -59,7 +56,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param amount        the amount of infection cubes to add
      */
     public void infectCityWithOwnPlague(IGame game, InfectionCard infectionCard, int amount) {
-        if (game.getState() instanceof InfectionState || game.getState() instanceof StartState) {
+        if (game.getState() instanceof InfectionState || game.getState() instanceof StartState || game.getState() instanceof DrawCardState) {
             try {
                 PlagueName plagueName = findCity(game, infectionCard).getPlagueName();
                 infectCity(game, infectionCard, plagueName, amount);
