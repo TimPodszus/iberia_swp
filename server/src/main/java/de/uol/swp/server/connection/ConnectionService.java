@@ -115,6 +115,10 @@ public class ConnectionService extends AbstractService {
         );
         response.setSession(session);
         sendResponseWithDelay(response);
+        sendServerMessageEvent(
+                event.getLobbyId(),
+                "Die Ereigniskarte Tag und Nacht unterwegs wurde gespielt. " + user.getUsername() + " darf sich auf dem Spielplan frei bewegen."
+        );
     }
 
     /**

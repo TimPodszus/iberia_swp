@@ -10,6 +10,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
@@ -98,6 +99,11 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                     "[LobbyID: {}] Epidemic card drawn. Infection counter increased to {}",
                     lobbyCode,
                     game.getInfectionCounter()
+            );
+            sendServerMessageEvent(game.getGameId(),
+                    ServerMessageProvider.epidemicMessage(infectionCard.getCity()
+                                                                       .getName()
+                                                                       .getDisplayName())
             );
         } else {
             addCard(

@@ -146,7 +146,8 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
 
-        String serverMessage = ServerMessageProvider.infectionMessage(plagueName.toString(),
+        String serverMessage = ServerMessageProvider.infectionMessage(
+                plagueName.getDisplayName(),
                 city.getName().getDisplayName());
         sendServerMessageEvent(game.getGameId(), serverMessage);
     }
@@ -240,6 +241,12 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         plague.setCubesRemaining(plague.getCubesRemaining() - cubesUsed);
 
         if (wouldEscalate && triggerEscalation) {
+            sendServerMessageEvent(game.getGameId(), ServerMessageProvider.outbreakMessage(
+                    city.getName()
+                        .getDisplayName(),
+                    plague.getName()
+                          .getDisplayName()
+            ));
             escalation(game, city.getName(), city.getPlagueName());
         }
 
@@ -341,8 +348,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             playerTurnState.reduceActionsRemaining(game);
         }
         sendServerMessageEvent(
-                lobbyId,
-                "In " + city.getName() + " wurde ein Krankenhaus gebaut."
+                lobbyId, ServerMessageProvider.hospitalBuildMessage(city)
         );
     }
 

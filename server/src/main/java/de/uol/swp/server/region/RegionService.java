@@ -17,6 +17,7 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.TreatWaterEvent;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -183,6 +184,7 @@ public class RegionService extends AbstractService {
         response.setSession(session);
         post(response);
         LOG.info("[LobbyId: {}] Sent TreatWaterEventResponse", event.getLobbyId());
+        sendServerMessageEvent(event.getLobbyId(), ServerMessageProvider.waterTreatmentMessage(user.getUsername()));
     }
 
     @Subscribe
@@ -209,9 +211,8 @@ public class RegionService extends AbstractService {
             game.setState(game.getPreviousState());
         }
         sendServerMessageEvent(request.getLobbyId(),
-                game.getCurrentPlayer()
-                    .getUser()
-                    .getUsername() + " hat erfolgreich Wasseraufbereitung in einer Region " + "durchgeführt, um die Ausbruchswahrscheinlichkeit in den anliegenden Städten zu verringern"
+                ServerMessageProvider.waterTreatmentMessage(session.getUser()
+                                                                   .getUsername())
         );
 
         IGameDTO gameDTO = GameMapper.toDTO(game);
