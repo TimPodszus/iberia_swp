@@ -2,7 +2,6 @@ package de.uol.swp.server.game.states;
 
 import de.uol.swp.common.game.StateType;
 import de.uol.swp.server.connection.data.IConnection;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,9 +14,14 @@ import java.util.List;
  */
 @Setter
 @Getter
-@AllArgsConstructor
 public class BuildExtraTrainTrackState extends PlayerTurnState {
     private List<IConnection> connections;
+
+    public BuildExtraTrainTrackState(List<IConnection> connections, int actionsRemaining) {
+        super();
+        this.connections = connections;
+        this.actionsRemaining = actionsRemaining;
+    }
 
     /**
      * Retrieves the type of this state.
