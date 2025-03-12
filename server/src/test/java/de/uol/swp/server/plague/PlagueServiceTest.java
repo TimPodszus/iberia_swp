@@ -235,7 +235,8 @@ public class PlagueServiceTest extends EventBusBasedTest {
 
     @Test
     void testOnTreatPlagueRequest_EventState() {
-        game.setState(new TreatExtraPlagueState());
+        game.setState(new PlayerTurnState());
+        game.setState(new TreatExtraPlagueState(4));
         ICity testCity = new City(1, PlagueName.CHOLERA, CityName.PORTO, -136, true);
         testCity.getInfections().add(new Infection(3, PlagueName.CHOLERA));
         when(player.getCurrentPosition()).thenReturn(testCity);
@@ -244,7 +245,7 @@ public class PlagueServiceTest extends EventBusBasedTest {
 
         plagueService.onTreatPlagueRequest(new TreatPlagueRequest("lobby123", 1, PlagueName.CHOLERA));
 
-        assertInstanceOf(StartState.class, game.getState());
+        assertInstanceOf(PlayerTurnState.class, game.getState());
 
         game.setState(new EventState(mock(EventCard.class)));
         when(plagueManagement.getCitesWithPlagues(game)).thenReturn(availableCities);
