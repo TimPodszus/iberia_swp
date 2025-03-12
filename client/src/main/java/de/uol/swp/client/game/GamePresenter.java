@@ -350,6 +350,8 @@ public class GamePresenter extends AbstractPresenter {
             LOG.debug("Setting initial position to city {}", cityId);
             gameService.setPosition(gameDTO.getGameId(), cityId);
             LOG.info("Initial position set");
+
+            return;
         }
 
         if (buildHospitalButton.isSelected()) {

@@ -900,9 +900,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     user.getUsername() + " hat das Spiel verlassen. Das Spiel wurde aufgrund von zu wenigen Spielern beendet"
             );
 
-            game.getPlayers()
-                .remove(player);
-            game.setState(new EndGameState(false));
+            game.getPlayers().remove(player);
+            if (!(game.getState() instanceof EndGameState)) {
+                game.setState(new EndGameState(false));
+            }
         } else {
             for (ICard card : player.getCards()) {
                 game.getPlayerCardDiscardPile()
