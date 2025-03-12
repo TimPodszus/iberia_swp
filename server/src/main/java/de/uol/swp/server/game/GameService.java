@@ -575,9 +575,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         sendServerMessageEvent(event.getLobbyId(), "Spieler hat die Ereigniskarte 'Günstige Zeit' gespielt");
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
         sendServerMessageEvent(event.getLobbyId(),
-                event.getUsername() + " hat die Eventkarte 'Ein weiterer Tag' gespielt und erhält 2 zusätzliche " +
-                        "Aktionen " +
-                        "in diesem Zug."
+                event.getUsername() + " hat die Eventkarte 'Günstige Zeit' gespielt und in der nächsten " + "Infektionsphase wird nur die unterste Karte vom Infektionsstapel gezogen"
         );
 
     }

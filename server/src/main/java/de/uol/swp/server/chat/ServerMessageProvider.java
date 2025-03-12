@@ -1,6 +1,7 @@
 package de.uol.swp.server.chat;
 
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.player.data.IPlayer;
 import lombok.NoArgsConstructor;
 
 import java.util.Random;
@@ -62,6 +63,12 @@ public class ServerMessageProvider {
         };
     }
 
+    /**
+     * Returns a random message for a new hospital in a city.
+     *
+     * @param city The city where the hospital is built
+     * @return A random message for a new hospital in a city
+     */
     public static String hospitalBuildMessage(ICity city) {
         int randomNumber = random.nextInt(4);
         String cityName = city.getName()
@@ -71,6 +78,69 @@ public class ServerMessageProvider {
             case 2 -> "Die Behörden in " + cityName + " investieren in den Bau eines neuen Krankenhauses!";
             case 3 -> "Die Bewohner in " + cityName + " freuen sich über den Bau eines neuen Krankenhauses!";
             default -> "Die Stadt " + cityName + " erhält ein neues Krankenhaus!";
+        };
+    }
+
+    /**
+     * Returns a random message for sailing to another city.
+     *
+     * @param player The player who sails to another city
+     * @param city   The city where the player sails to
+     * @return A random message for sailing to another city
+     */
+    public static String sailMessage(IPlayer player, ICity city) {
+        int randomNumber = random.nextInt(4);
+        String cityName = city.getName()
+                              .getDisplayName();
+        String playerName = player.getUser()
+                                  .getUsername();
+        return switch (randomNumber) {
+            case 1 -> "Leinen los! " + playerName + " segelt nach " + cityName + ".";
+            case 2 -> "Ahoi! " + playerName + " macht sich auf den Weg nach " + cityName + ".";
+            case 3 -> "Auf in fremde Gewässer! " + playerName + " segelt nach " + cityName + ".";
+            default -> "Segel setzen! " + playerName + " macht sich auf den Weg nach " + cityName + ".";
+        };
+    }
+
+    /**
+     * Returns a random message for traveling by carriage to another city.
+     *
+     * @param player The player who travels by carriage to another city
+     * @param city   The city where the player travels to
+     * @return A random message for traveling by carriage to another city
+     */
+    public static String carriageMessage(IPlayer player, ICity city) {
+        int randomNumber = random.nextInt(3);
+        String cityName = city.getName()
+                              .getDisplayName();
+        String playerName = player.getUser()
+                                  .getUsername();
+        return switch (randomNumber) {
+            case 1 -> "Die Pferde sind gesattelt! " + playerName + " reist per Kutsche nach " + cityName + ".";
+            case 2 -> "Kutsche fährt vor! " + playerName + " macht sich auf den Weg nach " + cityName + ".";
+            default -> playerName + " reist per Kutsche nach " + cityName + ".";
+        };
+    }
+
+    /**
+     * Returns a random message for traveling by train to another city.
+     *
+     * @param player The player who travels by train to another city
+     * @param city   The city where the player travels to
+     * @return A random message for traveling by train to another city
+     */
+    public static String trainMessage(IPlayer player, ICity city) {
+        int randomNumber = random.nextInt(4);
+        String cityName = city.getName()
+                              .getDisplayName();
+        String playerName = player.getUser()
+                                  .getUsername();
+        return switch (randomNumber) {
+            case 1 -> "All aboard! " + playerName + " nimmt den Zug nach " + cityName + ".";
+            case 2 -> "Einsteigen bitte! " + playerName + " fährt mit dem Zug nach " + cityName + ".";
+            case 3 -> "Mind the gap! " + playerName + " reist per Eilzug nach " + cityName + ".";
+            default ->
+                    "Der Zug fährt los! Und mit ihm macht sich " + playerName + " auf den Weg nach " + cityName + ".";
         };
     }
 }
