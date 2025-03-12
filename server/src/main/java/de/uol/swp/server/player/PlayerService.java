@@ -20,7 +20,6 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.ICard;
-import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -140,11 +139,6 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         post(response);
         IGame game = playerManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-        sendServerMessageEvent(request.getLobbyId(),
-                game.getCurrentPlayer()
-                    .getUser()
-                    .getUsername() + " hat erfolgreich eine Spielerkarte gezogen."
-        );
     }
 
     /**
