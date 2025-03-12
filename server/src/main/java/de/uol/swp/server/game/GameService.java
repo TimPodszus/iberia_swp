@@ -14,7 +14,7 @@ import de.uol.swp.common.game.message.event.StartGameEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
-import de.uol.swp.common.game.message.response.CardExchangeConfirmationResponse;
+import de.uol.swp.common.game.message.response.CardExchangeConfirmationRequest;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -358,7 +358,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
     }
 
     @Subscribe
-    public void onAvailableShareKnowledgePlayersRequest(AvailableShareKnowledgePlayersRequest request) {
+    public void onAvailableShareKnowledgePlayersRequest(de.uol.swp.common.game.message.request.AvailableShareKnowledgePlayersRequest request) {
         LOG.debug("Got AvailableShareKnowledgePlayersRequest for lobby {}", request.getLobbyId());
         IGame game = gameManagement.getGame(request.getLobbyId());
 
@@ -400,18 +400,20 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                  .findFirst()
                                                  .orElseThrow(() -> new PlayerManagementException("Player not found"));
                 ICardDTO currentCityCard = CardMapper.toDTO(playerWithCityCard.getCard(currentCity.getId()));
-                Session session = authenticationService.getSession(playerWithCityCard.getUser())
-                                                       .orElseThrow(() -> new SessionNotFoundException(
-                                                               "Session not found"));
+                List<Session> session = authenticationService.getSession(playerWithCityCard.getUser())
+                                                             .stream()
+                                                             .toList();
 
-                CardExchangeConfirmationRequest requestToAsk = new CardExchangeConfirmationRequest(
+                CardExchangeConfirmationEvent requestToAsk = new CardExchangeConfirmationEvent(
                         request.getLobbyId(),
                         false,
                         PlayerMapper.toDTO(game.getCurrentPlayer()),
                         currentCityCard,
                         PlayerMapper.toDTO(playerWithCityCard)
                 );
-                requestToAsk.setSession(session);
+                LOG.debug("Sending CardExchangeConfirmationRequest for session {}", session);
+                requestToAsk.setReceiver(session);
+                gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
                 post(requestToAsk);
 
             }
@@ -424,9 +426,17 @@ public class GameService extends AbstractService implements GameStateChangeListe
     }
 
     @Subscribe
-    public void onCardExchangeConfirmationResponse(CardExchangeConfirmationResponse response) {
+    public void onCardExchangeConfirmationRequest(CardExchangeConfirmationRequest response) {
+        gameManagement.unlockGameInWaitForConfirmation(response.getLobbyId());
         LOG.debug("Got CardExchangeConfirmationRequest for lobby {}", response.getLobbyId());
         gameManagement.giveCard(response.getCardExchangeConfirmationRequest());
+        sendToAllInLobby(
+                lobbyManagement.getLobby(response.getLobbyId()),
+                new BoardUpdateEvent(
+                        response.getLobbyId(),
+                        GameMapper.toDTO(gameManagement.getGame(response.getLobbyId()))
+                )
+        );
     }
 
 

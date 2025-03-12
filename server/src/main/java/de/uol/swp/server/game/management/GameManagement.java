@@ -6,7 +6,7 @@ import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.TransportMode;
-import de.uol.swp.common.game.message.request.CardExchangeConfirmationRequest;
+import de.uol.swp.common.game.message.request.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
@@ -928,7 +928,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void giveCard(CardExchangeConfirmationRequest request) {
+    public void giveCard(CardExchangeConfirmationEvent request) {
         IGame game = getGame(request.getLobbyId());
 
         IPlayer confirmingPlayer = game.getPlayer(request.getReceivingPlayer()

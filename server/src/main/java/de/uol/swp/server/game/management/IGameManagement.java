@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.game.GameActions;
-import de.uol.swp.common.game.message.request.CardExchangeConfirmationRequest;
+import de.uol.swp.common.game.message.request.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.data.ICard;
@@ -159,6 +159,6 @@ public interface IGameManagement {
      */
     void removeGame(String lobbyCode);
 
-    void giveCard(CardExchangeConfirmationRequest cardExchangeConfirmationRequest);
+    void giveCard(CardExchangeConfirmationEvent cardExchangeConfirmationRequest);
 }
 

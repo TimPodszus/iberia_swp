@@ -1,14 +1,14 @@
 package de.uol.swp.common.game.message.request;
 
 import de.uol.swp.common.cards.data.ICardDTO;
-import de.uol.swp.common.game.message.AbstractGameRequest;
+import de.uol.swp.common.game.message.AbstractGameEvent;
 import de.uol.swp.common.player.IPlayerDTO;
 import lombok.Getter;
 
 import java.util.Objects;
 
 @Getter
-public class CardExchangeConfirmationRequest extends AbstractGameRequest {
+public class CardExchangeConfirmationEvent extends AbstractGameEvent {
 
     boolean isGiveRequest;
 
@@ -17,14 +17,14 @@ public class CardExchangeConfirmationRequest extends AbstractGameRequest {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        CardExchangeConfirmationRequest that = (CardExchangeConfirmationRequest) o;
+        CardExchangeConfirmationEvent that = (CardExchangeConfirmationEvent) o;
         return isGiveRequest == that.isGiveRequest && Objects.equals(
                 requestingPlayer,
                 that.requestingPlayer
-        ) && Objects.equals(requestingCard, that.requestingCard) && Objects.equals(
-                receivingPlayer,
-                that.receivingPlayer
-        );
+        ) && Objects.equals(
+                requestingCard,
+                that.requestingCard
+        ) && Objects.equals(receivingPlayer, that.receivingPlayer);
     }
 
     @Override
@@ -36,7 +36,7 @@ public class CardExchangeConfirmationRequest extends AbstractGameRequest {
     ICardDTO requestingCard;
     IPlayerDTO receivingPlayer;
 
-    public CardExchangeConfirmationRequest(
+    public CardExchangeConfirmationEvent(
             String lobbyId,
             boolean isGiveRequest,
             IPlayerDTO requestingPlayer,

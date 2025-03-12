@@ -14,7 +14,7 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
-import de.uol.swp.common.game.message.response.CardExchangeConfirmationResponse;
+import de.uol.swp.common.game.message.response.CardExchangeConfirmationRequest;
 import de.uol.swp.common.plague.message.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.message.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.message.request.TreatPlagueRequest;
@@ -144,15 +144,18 @@ public class GameService {
 
 
     @Subscribe
-    public void onCardExchangeConfirmationRequest(CardExchangeConfirmationRequest request) {
+    public void onCardExchangeConfirmationEvent(CardExchangeConfirmationEvent request) {
         LOG.debug("Received CardExchangeConfirmationRequest: {}", request);
         Platform.runLater(() -> {
-            boolean accepted = showConfirmationDialog("Do you want to share the card " + request.getRequestingCard() + " with " + request.getRequestingPlayer() + "?");
-            CardExchangeConfirmationResponse response = new CardExchangeConfirmationResponse(
+            boolean accepted = showConfirmationDialog("Do you want to share the card " + request.getRequestingCard()
+                                                                                                .getTitle() + " " + "with " + request.getRequestingPlayer()
+                                                                                                                                     .getUsername() + "?");
+            CardExchangeConfirmationRequest response = new CardExchangeConfirmationRequest(
                     request.getLobbyId(),
                     accepted,
                     request
             );
+            LOG.debug("Sending CardExchangeConfirmationResponse: {}", response);
             eventBus.post(response);
         });
 
@@ -162,13 +165,16 @@ public class GameService {
     @Subscribe
     public void onAvailableShareKnowledgePlayersResponse(AvailableShareKnowledgePlayersResponse response) {
         LOG.debug("Current player has the current city card");
-        PlayerSelectionDialog dialog = new PlayerSelectionDialog(response.getPlayers(), response.getRole());
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(player -> {
-            LOG.debug("Player selected: {}", player);
-            eventBus.post(new ShareKnowledgeRequest(response.getLobbyId(), player));
+        Platform.runLater(() -> {
+            PlayerSelectionDialog dialog = new PlayerSelectionDialog(response.getPlayers(), response.getRole());
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(player -> {
+                LOG.debug("Player selected: {}", player);
+                eventBus.post(new ShareKnowledgeRequest(response.getLobbyId(), player));
+            });
         });
+
+
     }
 
     /**
@@ -232,7 +238,7 @@ public class GameService {
      */
     public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
         LOG.debug("Share knowledge button is selected");
-        eventBus.post(new AvailableShareKnowledgePlayersRequest(lobbyId));
+        eventBus.post(new de.uol.swp.common.game.message.request.AvailableShareKnowledgePlayersRequest(lobbyId));
 
 
     }
