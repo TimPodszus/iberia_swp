@@ -344,7 +344,6 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             game.setState(game.getPreviousState());
         }
         LOG.debug("[LobbyId: {}] PlacePreventionMarkerRequest processed successfully", request.getLobbyId());
-        sendServerMessageEvent(request.getLobbyId(), "Präventionsmarker wurde erfolgreich platziert");
         sendStatusResponse(request, true, "Präventionsmarker wurde erfolgreich platziert");
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
