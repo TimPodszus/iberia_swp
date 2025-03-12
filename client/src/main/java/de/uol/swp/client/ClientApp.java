@@ -61,7 +61,7 @@ public class ClientApp extends Application implements ConnectionListener {
         List<String> args = p.getRaw();
 
         if (args.size() != 2) {
-            host = "swp-ibs.de";
+            host = "192.168.2.15";
             port = Configuration.getDefaultPort();
             LOG.info("Usage: {} host port", ClientConnection.class.getSimpleName());
             LOG.info("Using default port {} {}", port, host);
