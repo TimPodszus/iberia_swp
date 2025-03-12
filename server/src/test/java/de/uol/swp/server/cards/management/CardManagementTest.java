@@ -220,7 +220,8 @@ public class CardManagementTest {
         when(game.getPlayer("user")).thenReturn(player);
         ICity currentPosition = new City(1, PlagueName.CHOLERA, CityName.ALICANTE, 1, true);
         when(player.getCurrentPosition()).thenReturn(currentPosition);
-        ICard card = new CityCard(1,
+        ICard card = new CityCard(
+                1,
                 currentPosition.getName()
                                .getDisplayName(),
                 currentPosition
@@ -337,7 +338,7 @@ public class CardManagementTest {
         List<ICard> allCards = cardManagement.getCardsFromPlayerDiscardPile(LOBBY_ID, ICard.class);
         List<CityCard> cityCards = cardManagement.getCardsFromPlayerDiscardPile(LOBBY_ID, CityCard.class);
 
-        assertEquals(102, allCards.size());
+        assertEquals(105, allCards.size());
         assertEquals(48, cityCards.size());
     }
 
