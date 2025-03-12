@@ -299,7 +299,7 @@ public class RegionServiceTest extends EventBusBasedTest {
         TreatWaterEvent treatWaterEvent = new TreatWaterEvent("lobby1", "user1");
         IGame game = mock(IGame.class);
         IUser user = new User("user1", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "lobby1");
         Session session = UUIDSession.create(user);
         when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
 

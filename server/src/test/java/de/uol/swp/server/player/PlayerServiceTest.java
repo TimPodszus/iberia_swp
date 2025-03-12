@@ -4,11 +4,14 @@ import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
+import de.uol.swp.common.player.message.event.RegionsForPreventionMarkerEvent;
 import de.uol.swp.common.player.message.request.*;
 import de.uol.swp.common.player.message.response.CardsToSortResponse;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.EventBusBasedTest;
@@ -16,6 +19,7 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.City;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.communication.UUIDSession;
@@ -25,6 +29,8 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.PlacePreventionMarkerState;
+import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.lobby.data.ILobby;
@@ -36,6 +42,7 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.IRole;
+import de.uol.swp.server.role.Nurse;
 import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
@@ -49,6 +56,7 @@ import org.mockito.*;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.*;
@@ -106,6 +114,15 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Subscribe
     public void onSortedCardsRequest(SortedCardsRequest event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onPlacePreventionMarkerRequest (PlacePreventionMarkerRequest event) {
+        super.handleEvent(event);
+    }
+    @Subscribe
+    public void onRegionsForPreventionMarkerEvent(RegionsForPreventionMarkerEvent event) {
         super.handleEvent(event);
     }
 
@@ -301,7 +318,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
         Session session1 = UUIDSession.create(user1);
         drawInfectionCardRequest.setSession(session1);
 
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "validGameId");
         game.getPlayers()
             .add(player);
         player.setRole(new Sailor());
@@ -342,7 +359,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
     void onCardsAmountChanged_ExceedsLimit_SendsDiscardPlayerCardEvent() throws NoSuchFieldException, IllegalAccessException {
         playerService = Mockito.spy(new PlayerService(getBus(), playerManagement, gameManagement, lobbyManagement));
 
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, LOBBY_ID);
         game.getPlayers()
             .add(player);
 
@@ -418,5 +435,112 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
         verify(playerManagement, times(1)).sortCards(LOBBY_ID, user, cards);
         assertInstanceOf(StatusResponse.class, super.event);
+    }
+
+    @Test
+    void testOnPlacePreventionMarkerRequest_WaitForPositioning() throws InterruptedException {
+        PlacePreventionMarkerRequest request = new PlacePreventionMarkerRequest(LOBBY_ID, 1);
+
+        when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
+        game.setState(new PlacePreventionMarkerState());
+
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).placePreventionMarker(LOBBY_ID, 1);
+        assertInstanceOf(BoardUpdateEvent.class, super.event);
+    }
+
+    @Test
+    void testOnPlacePreventionMarkerRequest_WaitForPositioningFullFilled() throws InterruptedException {
+        PlacePreventionMarkerRequest request = new PlacePreventionMarkerRequest(LOBBY_ID, 1);
+        IPlayer player = mock(IPlayer.class);
+        when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
+        WaitForPositioning waitForPositioning = new WaitForPositioning();
+        waitForPositioning.setPositionedPlayersCount(1);
+        game.setState(waitForPositioning);
+        game.setState(new PlacePreventionMarkerState());
+        game.getPlayers().add(player);
+        when(player.getUser()).thenReturn(user);
+        when(player.getRole()).thenReturn(new Nurse());
+        postAndWait(request);
+
+        verify(playerManagement, times(1)).placePreventionMarker(LOBBY_ID, 1);
+        assertInstanceOf(BoardUpdateEvent.class, super.event);
+    }
+
+    @Test
+    void testOnPositionChanged() {
+        IPlayer player = mock(IPlayer.class);
+        ICity oldPosition = mock(ICity.class);
+        ICity newPosition = mock(ICity.class);
+        IRegionDTO regionDTO = mock(IRegionDTO.class);
+        List<IRegionDTO> regions = List.of(regionDTO);
+
+        when(player.getUser()).thenReturn(user);
+        when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
+        when(playerManagement.determineRegionsForNurse(player, oldPosition, newPosition)).thenReturn(regions);
+        when(player.getGameId()).thenReturn(LOBBY_ID);
+        when(playerManagement.getGame(LOBBY_ID)).thenReturn(game);
+
+        playerService.onPositionChanged(player, oldPosition, newPosition);
+
+        verify(playerManagement).determineRegionsForNurse(player, oldPosition, newPosition);
+        verify(playerManagement).getGame(LOBBY_ID);
+        assertInstanceOf(PlacePreventionMarkerState.class, game.getState());
+        assertInstanceOf(RegionsForPreventionMarkerEvent.class, super.event);
+    }
+
+    @Test
+    void testOnPositionRequest() throws GameException, InterruptedException, IllegalGameStateException {
+        PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
+        request.setSession(session);
+
+        IPlayer player = mock(IPlayer.class);
+        when(player.getUser()).thenReturn(user);
+        when(player.getRole()).thenReturn(new Sailor());
+        game.getPlayers().add(player);
+        when(lobbyManagement.getLobby(LOBBY_ID)).thenReturn(mock(ILobby.class));
+
+        postAndWait(request);
+
+        verify(player).setPositionChangeListener(playerService);
+        verify(gameManagement).setPositioning(request);
+        verify(lobbyManagement).getLobby(LOBBY_ID);
+        assertInstanceOf(BoardUpdateEvent.class, super.event);
+    }
+
+    @Test
+    void testOnPositionRequest_GameException() throws GameException, InterruptedException, IllegalGameStateException {
+        PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
+        request.setSession(session);
+
+        IPlayer player = mock(IPlayer.class);
+        when(player.getUser()).thenReturn(user);
+        when(player.getRole()).thenReturn(new Sailor());
+        game.getPlayers().add(player);
+        doThrow(new GameException("Test exception")).when(gameManagement).setPositioning(request);
+
+        postAndWait(request);
+
+        verify(gameManagement).setPositioning(request);
+        assertInstanceOf(StatusResponse.class, super.event);
+        assertEquals("Position konnte nicht gesetzt werden", ((StatusResponse) super.event).getDescription());
+    }
+
+    @Test
+    void testOnPositionRequest_IllegalGameStateException() throws InterruptedException, IllegalGameStateException, GameException {
+        PositioningRequest request = new PositioningRequest(LOBBY_ID, 1);
+        request.setSession(session);
+        IPlayer player = mock(IPlayer.class);
+        when(player.getUser()).thenReturn(user);
+        when(player.getRole()).thenReturn(new Sailor());
+        game.getPlayers().add(player);
+        doThrow(new IllegalGameStateException("Test exception")).when(gameManagement).setPositioning(request);
+
+        postAndWait(request);
+
+        verify(gameManagement).setPositioning(request);
+        assertInstanceOf(StatusResponse.class, super.event);
+        assertEquals("Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand", ((StatusResponse) super.event).getDescription());
     }
 }

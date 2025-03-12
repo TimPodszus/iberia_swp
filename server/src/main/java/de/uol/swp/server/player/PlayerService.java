@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
@@ -11,8 +12,12 @@ import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
 import de.uol.swp.common.player.message.request.*;
 import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.player.message.response.DrawPlayerCardResponse;
+import de.uol.swp.common.player.message.request.PlacePreventionMarkerRequest;
+import de.uol.swp.common.player.message.event.RegionsForPreventionMarkerEvent;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
@@ -21,16 +26,22 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
+import de.uol.swp.server.game.states.PlacePreventionMarkerState;
+import de.uol.swp.server.game.states.PlayerTurnState;
+import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
-import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -41,8 +52,9 @@ import java.util.Optional;
 /**
  * Service class for handling player-related operations.
  */
-public class PlayerService extends AbstractService implements CardsAmountChangeListener {
+public class PlayerService extends AbstractService implements CardsAmountChangeListener, PositionChangeListener {
     public static final Logger LOG = LogManager.getLogger(PlayerService.class);
+
     IPlayerManagement playerManagement;
     IGameManagement gameManagement;
     ILobbyManagement lobbyManagement;
@@ -54,11 +66,8 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      * @param playerManagement the player management instance for player operations
      */
     @Inject
-    public PlayerService(
-            EventBus bus,
-            IPlayerManagement playerManagement,
-            IGameManagement gameManagement,
-            ILobbyManagement lobbyManagement
+    public PlayerService(EventBus bus, IPlayerManagement playerManagement, IGameManagement gameManagement,
+                         ILobbyManagement lobbyManagement
     ) {
         super(bus);
         this.playerManagement = playerManagement;
@@ -66,6 +75,48 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         this.lobbyManagement = lobbyManagement;
 
         playerManagement.setCardsAmountChangeListener(this);
+
+    }
+
+    /**
+     * Handles incoming requests to set a players position. This method initializes the position
+     * through the GameManagement class, checks if the positioning was successful,
+     * and sends an appropriate status response to the requester.
+     *
+     * @param request the game PositioningRequest containing necessary initialization parameters
+     */
+    @Subscribe
+    public void onPositionRequest(PositioningRequest request) {
+        LOG.debug("[LobbyId: {}] PositioningRequest received", request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
+        Session session = request.getSession()
+                                 .orElseThrow(() -> new SessionNotFoundException("Session not present"));
+
+        try {
+            IPlayer player = game.getPlayer(session.getUser()
+                                                   .getUsername());
+            player.setPositionChangeListener(this);
+            gameManagement.setPositioning(request);
+            sendServerMessageEvent(
+                    request.getLobbyId(),
+                    "Position von" + player.getUser()
+                                           .getUsername() + " wurde erfolgreich " + "gesetzt"
+            );
+        } catch (IllegalGameStateException e) {
+            LOG.error("[LobbyId: {}] Could not set positioning, wrong GameState", request.getLobbyId());
+            sendStatusResponse(
+                    request,
+                    false,
+                    "Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand"
+            );
+            return;
+        } catch (GameException e) {
+            LOG.error("[LobbyId: {}] Could not set positioning", request.getLobbyId());
+            sendStatusResponse(request, false, "Position konnte nicht gesetzt werden");
+            return;
+        }
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
     /**
@@ -82,7 +133,8 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             ICardDTO card = playerManagement.drawPlayerCard(request.getLobbyId(), UserMapper.toUser(session.getUser()));
             response = new DrawPlayerCardResponse(request.getLobbyId(), true, "Card drawn successfully", card);
         } catch (IllegalGameStateException e) {
-            sendStatusResponse(request,
+            sendStatusResponse(
+                    request,
                     false,
                     "Du bist nicht an der Reihe oder es ist nicht möglich im momentanen Spielstatus eine Karte zu ziehen"
             );
@@ -107,6 +159,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      */
     @Subscribe
     public void onDrawInfectionCardRequest(DrawInfectionCardRequest request) {
+        LOG.debug("[LobbyId: {}] DrawInfectionCardRequest received", request.getLobbyId());
         Session session = request.getSession()
                                  .orElseThrow(SessionNotFoundException::new);
         IGame game = playerManagement.getGame(request.getLobbyId());
@@ -133,6 +186,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      */
     @Subscribe
     public void onShareRideRequest(ShareRideRequest request) {
+        LOG.debug("[LobbyId: {}] ShareRideRequest received", request.getLobbyId());
         IGame game = playerManagement.getGame(request.getLobbyId());
         String cityName = game.getCityRepository()
                               .getCity(request.getCityId())
@@ -168,13 +222,14 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      */
     @Subscribe
     public void onDiscardPlayerCardRequest(DiscardPlayerCardRequest request) {
-        LOG.debug("DiscardPlayerCardRequest received");
+        LOG.debug("[LobbyId: {}] DrawPlayerCardRequest received", request.getLobbyId());
         IGame game = playerManagement.getGame(request.getLobbyId());
         Session session = request.getSession()
                                  .orElseThrow(SessionNotFoundException::new);
 
         try {
-            playerManagement.discardPlayerCard(request.getLobbyId(),
+            playerManagement.discardPlayerCard(
+                    request.getLobbyId(),
                     session.getUser()
                            .getUsername(),
                     request.getCard()
@@ -185,7 +240,8 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         } catch (GameException e) {
             LOG.error("Error discarding a player card: {}", e.getMessage());
-            StatusResponse response = new StatusResponse(request.getLobbyId(),
+            StatusResponse response = new StatusResponse(
+                    request.getLobbyId(),
                     false,
                     "Error discarding a player card: " + e.getMessage()
             );
@@ -235,26 +291,20 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      */
     @Subscribe
     public void onGetCardsToSortRequest(GetCardsToSortRequest request) {
-        LOG.debug("GetCardsToSortRequest received");
+        LOG.debug("[LobbyId: {}] GetCardsToSortRequest received", request.getLobbyId());
         AbstractResponseMessage response;
         Optional<Session> session = request.getSession();
         try {
-            List<ICardDTO> cards = playerManagement.getCardsToSort(request.getLobbyId(),
+            List<ICardDTO> cards = playerManagement.getCardsToSort(
+                    request.getLobbyId(),
                     UserMapper.toUser(Objects.requireNonNull(session.map(Session::getUser)
                                                                     .orElse(null)))
             );
             LOG.debug("GetCardsToSortRequest processed successfully");
-            response = new CardsToSortResponse(request.getLobbyId(),
-                    true,
-                    "Karten wurden erfolgreich ermittelt",
-                    cards
-            );
+            response = new CardsToSortResponse(request.getLobbyId(), true, "Karten wurden erfolgreich ermittelt", cards);
         } catch (GameException | IllegalGameStateException e) {
             LOG.error("Error retrieving cards: {}", e.getMessage());
-            response = new StatusResponse(request.getLobbyId(),
-                    false,
-                    "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie"
-            );
+            response = new StatusResponse(request.getLobbyId(), false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
         }
         response.setSession(session.orElse(null));
         post(response);
@@ -267,30 +317,77 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
      */
     @Subscribe
     public void onSortedCardsRequest(SortedCardsRequest request) {
-        LOG.debug("SortedCardsRequest received");
+        LOG.debug("[LobbyId: {}] SortedCardsRequest received", request.getLobbyId());
         IGame game = playerManagement.getGame(request.getLobbyId());
         Optional<Session> session = request.getSession();
         try {
-            playerManagement.sortCards(request.getLobbyId(),
+            playerManagement.sortCards(
+                    request.getLobbyId(),
                     UserMapper.toUser(Objects.requireNonNull(session.map(Session::getUser)
                                                                     .orElse(null))),
                     request.getCards()
             );
             IGameDTO gameDTO = GameMapper.toDTO(game);
             ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-            LOG.debug("SortedCardsRequest processed successfully");
+            LOG.debug("[LobbyId: {}] SortedCardsRequest processed successfully", request.getLobbyId());
             sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
             sendStatusResponse(request, true, "Karten wurden erfolgreich sortiert");
-            sendServerMessageEvent(
-                    request.getLobbyId(),
-                    "Die Wissenschaftlerin der königlichen Akademie hat die Karten auf dem Nachziehstapel sortiert"
-            );
+            sendServerMessageEvent(request.getLobbyId(), "Die Wissenschaftlerin der königlichen Akademie hat die Karten auf dem Nachziehstapel sortiert");
         } catch (IllegalGameStateException e) {
-            LOG.error("Error sorting cards: {}", e.getMessage());
             sendStatusResponse(request,
                     false,
                     "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie"
             );
+            LOG.error("[LobbyId: {}] Error sorting cards: {}", e.getMessage(), request.getLobbyId());
+            sendStatusResponse(request, false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
         }
+    }
+
+    /**
+     * Handles the PlacePreventionMarkerRequest event.
+     *
+     * @param request the request to place a prevention marker
+     */
+    @Subscribe
+    public void onPlacePreventionMarkerRequest(PlacePreventionMarkerRequest request) {
+        LOG.debug("[LobbyId: {}] PlacePreventionMarkerRequest received", request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+
+        playerManagement.placePreventionMarker(request.getLobbyId(), request.getRegionId());
+        if(game.getPreviousState() instanceof WaitForPositioning waitForPositioningState && waitForPositioningState.getPositionedPlayersCount() == game.getPlayers().size()) {
+            game.setState(new PlayerTurnState());
+        } else {
+            game.setState(game.getPreviousState());
+        }
+        LOG.debug("[LobbyId: {}] PlacePreventionMarkerRequest processed successfully", request.getLobbyId());
+        sendServerMessageEvent(request.getLobbyId(), "Präventionsmarker wurde erfolgreich platziert");
+        sendStatusResponse(request, true, "Präventionsmarker wurde erfolgreich platziert");
+        sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+    }
+
+    /**
+     * Handles the event when a player's position changes.
+     *
+     * @param player      the player whose position has changed
+     * @param oldPosition the old position of the player
+     * @param newPosition the new position of the player
+     */
+    @Override
+    public void onPositionChanged(IPlayer player, ICity oldPosition, ICity newPosition) {
+        LOG.debug("[LobbyId: {}] Nurse position change received", player.getGameId());
+        Session session = authenticationService.getSession(player.getUser())
+                                               .orElseThrow(() -> new SessionNotFoundException("Session not present"));
+        LOG.error("[LobbyId: {}] Session not present", player.getGameId());
+        List<IRegionDTO> regions = playerManagement.determineRegionsForNurse(player, oldPosition, newPosition);
+        IGame game = playerManagement.getGame(player.getGameId());
+        game.setState(new PlacePreventionMarkerState());
+        LOG.debug("[LobbyId: {}] Regions for nurse determined successfully", player.getGameId());
+        RegionsForPreventionMarkerEvent event = new RegionsForPreventionMarkerEvent(
+                player.getGameId(),
+                regions
+        );
+        event.setReceiver(List.of(session));
+        post(event);
     }
 }

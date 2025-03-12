@@ -1,5 +1,6 @@
-package de.uol.swp.common.city.request;
+package de.uol.swp.common.city.message.request;
 
+import de.uol.swp.common.city.message.request.BuildHospitalRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

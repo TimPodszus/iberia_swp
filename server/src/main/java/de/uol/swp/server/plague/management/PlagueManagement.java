@@ -1,14 +1,17 @@
 package de.uol.swp.server.plague.management;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.TreatExtraPlagueState;
 import de.uol.swp.server.infection.data.IInfection;
@@ -206,7 +209,7 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
                 .getPlagueByName(plagueToTreat)
                 .increaseCubes(1);
             playerTurnState.reduceActionsRemaining(game);
-        } else if (game.getState() instanceof TreatExtraPlagueState) {
+        } else if (game.getState() instanceof TreatExtraPlagueState || game.getState() instanceof EventState) {
             LOG.debug("Treating extra plague cube of {} in city {}", plagueToTreat, city.getName());
             city.removePlagueCubes(plagueToTreat, 1);
             game.getPlagueRepository()
@@ -249,6 +252,23 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
                                                 .stream()
                                                 .anyMatch(infection -> infection.getSeverity() >= 1))
                             .toList();
+    }
+
+    /**
+     * @param game the current game instance
+     * @return a list of cities that have at least one plague cube
+     */
+    @Override
+    public List<ICityDTO> getCitesWithPlagues(IGame game) {
+        List<ICity> availableCities = game.getCityRepository()
+                                          .getCities()
+                                          .stream()
+                                          .filter(city -> city.getInfections()
+                                                              .stream()
+                                                              .anyMatch(infection -> infection.getSeverity() > 0))
+                                          .toList();
+        LOG.debug("[LobbyId: {}] Found {} cities with plagues", game.getGameId(), availableCities.size());
+        return CityMapper.toDTOList(availableCities);
     }
 }
 

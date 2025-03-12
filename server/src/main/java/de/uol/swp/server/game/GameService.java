@@ -51,9 +51,6 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible for managing game-related requests such as creating games.
@@ -115,37 +112,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
             post(new CreateGameResponse(request.getLobbyId(), true, "Game erstellt"));
             sendToAllInLobby(lobby, new StartGameEvent(request.getLobbyId(), GameMapper.toDTO(game)));
             sendServerMessageEvent(request.getLobbyId(), "Das Spiel geht los! Viel Spaß!");
-        }
-    }
-
-    /**
-     * Handles incoming requests to set a players position. This method initializes the position
-     * through the GameManagement class, checks if the positioning was successful,
-     * and sends an appropriate status response to the requester.
-     *
-     * @param request the game PositioningRequest containing necessary initialization parameters
-     */
-    @Subscribe
-    public void onPositionRequest(PositioningRequest request) {
-        IGame game;
-        try {
-            game = gameManagement.setPositioning(request);
-        } catch (IllegalGameStateException e) {
-            LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
-            sendStatusResponse(request,
-                    false,
-                    "Position konnte nicht gesetzt werden. Spiel ist in einem ungültigen Zustand"
-            );
-            return;
-        } catch (GameException e) {
-            LOG.error("Could not set positioning for lobby {}", request.getLobbyId());
-            sendStatusResponse(request, false, "Position konnte nicht gesetzt werden");
-            return;
-        }
-
-        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
-        if (game != null && lobby != null) {
-            sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
         }
     }
 
@@ -280,55 +246,41 @@ public class GameService extends AbstractService implements GameStateChangeListe
      * @param remainingPlayers the remaining players, who have not moved yet
      */
     private void sendAvailableDestinationsToRemainingPlayers(String lobbyId, List<IPlayer> remainingPlayers) {
-        ScheduledExecutorService scheduler = null;
-        try {
-            // Warning is wrong, scheduler is shutdown in finally block. A close method does not exist.
-            scheduler = Executors.newScheduledThreadPool(1);
-            LOG.debug(
-                    "[LobbyID: {}] State mobilization is ongoing. Sending available destinations for remaining players to move",
-                    lobbyId
+        for (IPlayer player : remainingPlayers) {
+            LOG.trace(
+                    "[LobbyID: {}] {} has not moved yet. Sending available destinations for him",
+                    lobbyId,
+                    player.getUser()
+                          .getUsername()
             );
-            scheduler.schedule(() -> {
-                for (IPlayer player : remainingPlayers) {
-                    LOG.trace("[LobbyID: {}] {} has not moved yet. Sending available destinations for him",
-                            lobbyId,
-                            player.getUser()
-                                  .getUsername()
-                    );
-                    Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
-                            lobbyId,
-                            player.getUser()
-                                  .getUsername()
-                    );
-                    AvailableDestinationsResponse response = new AvailableDestinationsResponse(lobbyId,
-                            availableDestinations
-                    );
-                    Session session = authenticationService.getSession(player.getUser())
-                                                           .orElse(null);
+            Map<Integer, DestinationInfo> availableDestinations = connectionManagement.getAvailableDestinations(
+                    lobbyId,
+                    player.getUser()
+                          .getUsername()
+            );
+            AvailableDestinationsResponse response = new AvailableDestinationsResponse(lobbyId, availableDestinations);
+            Session session = authenticationService.getSession(player.getUser())
+                                                   .orElse(null);
 
-                    if (session == null) {
-                        LOG.error("[LobbyID: {}] Session not found for user {}",
-                                lobbyId,
-                                player.getUser()
-                                      .getUsername()
-                        );
-                        break;
-                    }
-
-                    response.setSession(session);
-                    post(response);
-                    LOG.trace("[LobbyID: {}] Sent {} available destinations for {}",
-                            lobbyId,
-                            availableDestinations.size(),
-                            player.getUser()
-                                  .getUsername()
-                    );
-                }
-            }, DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
-        } finally {
-            if (scheduler != null) {
-                scheduler.shutdown();
+            if (session == null) {
+                LOG.error(
+                        "[LobbyID: {}] Session not found for user {}",
+                        lobbyId,
+                        player.getUser()
+                              .getUsername()
+                );
+                break;
             }
+
+            response.setSession(session);
+            sendResponseWithDelay(response);
+            LOG.trace(
+                    "[LobbyID: {}] Sent {} available destinations for {}",
+                    lobbyId,
+                    availableDestinations.size(),
+                    player.getUser()
+                          .getUsername()
+            );
         }
         LOG.info("[LobbyID: {}] Sent available destinations for remaining players to move", lobbyId);
     }

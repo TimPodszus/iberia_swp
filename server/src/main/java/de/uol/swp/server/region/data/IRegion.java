@@ -47,8 +47,13 @@ public interface IRegion {
     List<ICity> getSurroundingCities();
 
     /**
+     * Sets the prevention marker for the region.
+     * @param preventionMarker the new value of the prevention marker
+     */
+    void setPreventionMarker(boolean preventionMarker);
+
+    /**
      * Checks if the region has a prevention marker.
-     *
      * @return true if the region has a prevention marker, false otherwise
      */
     boolean isPreventionMarker();

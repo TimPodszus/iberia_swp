@@ -1,10 +1,9 @@
-package de.uol.swp.common.plague;
+package de.uol.swp.common.plague.message.response;
 
 import de.uol.swp.common.city.CityDTO;
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
-import de.uol.swp.common.plague.response.TreatPlagueResponse;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

@@ -119,7 +119,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      */
     void createPlayers(List<IUser> users, IGame game) throws IllegalGameStateException {
         for (IUser user : users) {
-            Player player = new Player(user);
+            Player player = new Player(user, game.getGameId());
 
             game.getPlayers()
                 .add(player);
@@ -203,12 +203,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Updates the game state if all players have been positioned.
      *
      * @param request The request with where the position is to be set
+     * @throws GameException If the game is not in a state that allows setting positioning
+     * @throws IllegalGameStateException If the game is not in a state that allows setting positioning
      */
-    public IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
+    public void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
         IGame game = getGame(request.getLobbyId());
-        IGameState gameState = game.getState();
 
-        if (!(gameState instanceof WaitForPositioning)) {
+        if (!(game.getState() instanceof WaitForPositioning waitForPositioningState)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows setting positioning", game.getGameId());
             throw new IllegalGameStateException("Game is not in a state that allows setting positioning");
         }
@@ -230,7 +231,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         try {
             assert requestPlayer != null;
             if (requestPlayer.getCurrentPosition() != null) {
-                return game;
+                return;
             }
             playerManagement.setStartingPosition(
                     game.getGameId(),
@@ -238,7 +239,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getCityNameById(request.getCityId()),
                     requestPlayer
             );
-            ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
+            waitForPositioningState.setPositionedPlayersCount(waitForPositioningState.getPositionedPlayersCount() + 1);
             sendServerMessageEvent(game.getGameId(),
                     requestPlayer.getUser().getUsername() + " startet von " + game.getCityRepository()
                                                                                                           .getCityNameById(request.getCityId())
@@ -246,8 +247,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
         }
-        if (((WaitForPositioning) gameState).getPositionedPlayersCount() == game.getPlayers()
-                                                                                .size()) {
+        if (game.getState() instanceof WaitForPositioning && waitForPositioningState.getPositionedPlayersCount() == game.getPlayers()
+                                                                       .size()) {
             game.setState(new PlayerTurnState());
             game.setCurrentPlayerIndex(0);
             sendServerMessageEvent(
@@ -255,7 +256,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     game.getCurrentPlayer() +" darf anfangen"
             );
         }
-        return game;
     }
 
     /**
@@ -377,12 +377,23 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     /**
      * Checks if train tracks can be built in the specified lobby.
+     * If the current player is in a city where train tracks can be built and has enough tracks left, the action is possible.
      *
      * @param lobbyId the code of the lobby
      * @return true if train tracks can be built, false otherwise
      */
     private boolean areTrainTracksBuildable(String lobbyId) {
         IGame game = super.getGame(lobbyId);
+        IPlayer player = game.getCurrentPlayer();
+        if (connectionManagement.getBuildableTrainTracks(
+                                        lobbyId,
+                                        player.getCurrentPosition()
+                                              .getId()
+                                )
+                                .isEmpty()) {
+            return false;
+        }
+
         return game.getTracksLeft() >= 0;
     }
 
@@ -653,13 +664,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 city.getName()
                     .getDisplayName()
         );
-        player.setCurrentPosition(city);
-        LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
 
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             playerTurnState.reduceActionsRemaining(game);
             LOG.info("[LobbyId: {}] Decreased actions remaining", game.getGameId());
+            player.setCurrentPosition(city);
+            LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
         } else if (game.getState() instanceof EventState eventState) {
+            player.setCurrentPosition(city);
+            LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
             if (eventState.getEventCard() instanceof StateMobilizationEventCard stateMobilizationEventCard) {
                 LOG.info("[LobbyId: {}] Decreasing players to move.", game.getGameId());
                 stateMobilizationEventCard.playerMoved(player);

@@ -2,8 +2,10 @@ package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -151,4 +153,21 @@ public interface IPlayerManagement {
      * @throws IllegalGameStateException if the player is not in the correct state to sort cards
      */
     void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws IllegalGameStateException;
+
+    /**
+     * Determines the regions for a nurse player.
+     *
+     * @param player the player whose regions are being determined
+     * @param oldPosition the old position of the player
+     * @return the list of regions for the player
+     */
+    List<IRegionDTO> determineRegionsForNurse(IPlayer player, ICity oldPosition, ICity newPosition);
+
+    /**
+     * Places a prevention marker in a region.
+     *
+     * @param lobbyId  the ID of the lobby
+     * @param regionId the ID of the region
+     */
+     void placePreventionMarker(String lobbyId, int regionId);
 }
