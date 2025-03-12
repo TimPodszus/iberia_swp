@@ -2,6 +2,7 @@ package de.uol.swp.server.player;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
@@ -14,6 +15,7 @@ import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagementException;
 import de.uol.swp.server.communication.UUIDSession;
@@ -273,24 +275,11 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
     @Test
     void onDrawInfectionCardRequest_Success() throws CityManagementException, InterruptedException {
-        IGame game = mock(IGame.class);
-        CityRepository mockCityRepository = mock(CityRepository.class);
-        when(game.getCityRepository()).thenReturn(mockCityRepository);
-        when(mockCityRepository.getCities()).thenReturn(Collections.emptyList());
-        IPlayer mockPlayer = mock(IPlayer.class);
-        IUser mockUser = mock(IUser.class);
-        when(game.getCurrentPlayer()).thenReturn(mockPlayer);
-        when(mockPlayer.getUser()).thenReturn(mockUser);
-        when(mockUser.getUsername()).thenReturn("TestPlayer");
-
-        ICity mockCity = mock(ICity.class);
-        when(mockCity.getName()).thenReturn(CityName.ALICANTE);
-        when(mockCityRepository.getCity(anyInt())).thenReturn(mockCity);
-
         DrawInfectionCardRequest drawInfectionCardRequest = new DrawInfectionCardRequest(LOBBY_ID);
         drawInfectionCardRequest.setSession(session);
 
         InfectionCard infectionCard = mock(InfectionCard.class);
+        when(infectionCard.getCity()).thenReturn(new City(1, PlagueName.CHOLERA, CityName.BARCELONA, 1234, false));
         IPlayer player = new Player(user);
         player.setRole(new Sailor());
         game.getPlayers()

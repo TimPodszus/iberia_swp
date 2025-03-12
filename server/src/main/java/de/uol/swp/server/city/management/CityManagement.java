@@ -7,6 +7,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.AbstractManagement;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -142,6 +143,10 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                              .getPlagueByName(plagueName);
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
+
+        String serverMessage = ServerMessageProvider.infectionMessage(plagueName.toString(),
+                city.getName().getDisplayName());
+        sendServerMessageEvent(game.getGameId(), serverMessage);
     }
 
     /**
