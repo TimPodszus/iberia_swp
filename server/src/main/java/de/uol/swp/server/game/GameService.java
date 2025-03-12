@@ -446,62 +446,101 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
     @Override
     public void onGameStateChange(IGame game) {
-        ILobby lobby = lobbyManagement.getLobby(game.getGameId());
         if (game.getState() instanceof EndGameState endGameState) {
-            sendToAllInLobby(lobby, new EndGameEvent(game.getGameId(), endGameState.isVictory()));
-            sendServerMessageEvent(game.getGameId(),
-                    "Das Spiel ist beendet! " + (endGameState.isVictory() ? "Ihr habt gewonnen! 🎉" : "Ihr habt verloren. ✂️")
-            );
+            changedToEndGameState(game, endGameState);
         }
         if (game.getState() instanceof DrawCardState drawCardState) {
-            if (game.getPlayerCardDrawPile()
-                    .isEmpty()) {
-                game.setState(new EndGameState(false));
-                LOG.info("[LobbyID: {}] Nachziehstapel ist leer", lobby.getLobbyId());
-                sendServerMessageEvent(game.getGameId(),
-                        "Das Spiel ist beendet! Der Nachziehstapel ist leer – ihr habt verloren. ✂️"
-                );
-            } else if (drawCardState.getCardsDrawn() < MAX_CARDS_DRAWABLE) {
-                if (game.getPreviousState() instanceof PlayerTurnState) {
-                    sendServerMessageEvent(game.getGameId(),
-                            "Der Zug ist beendet. Ziehe " + (MAX_CARDS_DRAWABLE - drawCardState.getCardsDrawn()) + " " + "Spielerkarten aus dem Nachziehstapel."
-                    );
-                } else {
-                    sendServerMessageEvent(game.getGameId(),
-                            "Es müssen noch Karten nachgezogen werden. Bitte ziehe " + (MAX_CARDS_DRAWABLE - drawCardState.getCardsDrawn()) + " " + "Spielerkarten " + "aus dem Nachziehstapel."
-                    );
-                }
-            }
+            changedToDrawCardState(game, drawCardState);
         }
         if (game.getState() instanceof InfectionState infectionState && infectionState.getInfectedCities() < infectionState.amountOfCitiesToInfect(
                 game)) {
-            if (game.getPreviousState() instanceof EventState) {
-                sendServerMessageEvent(game.getGameId(),
-                        "Die Infektionsphase wird fortgesetzt. Bitte ziehe " + (infectionState.amountOfCitiesToInfect(
-                                game) - infectionState.getInfectedCities()) + " Infektionskarten."
-                );
-            } else {
-                sendServerMessageEvent(game.getGameId(),
-                        "Die Infektionsphase beginnt. Bitte ziehe " + (infectionState.amountOfCitiesToInfect(game) - infectionState.getInfectedCities()) + " Infektionskarten."
-                );
-            }
+            changedToInfectionState(game, infectionState);
         }
         if (game.getState() instanceof PlayerTurnState) {
-            if (game.getPreviousState() instanceof EventState) {
+            changedToPlayerTurnState(game);
+        }
+    }
+
+    /**
+     * Handles the change to the EndGameState.
+     *
+     * @param game         the game
+     * @param endGameState the EndGameState
+     */
+    private void changedToEndGameState(IGame game, EndGameState endGameState) {
+        ILobby lobby = lobbyManagement.getLobby(game.getGameId());
+        sendToAllInLobby(lobby, new EndGameEvent(game.getGameId(), endGameState.isVictory()));
+        sendServerMessageEvent(game.getGameId(),
+                "Das Spiel ist beendet! " + (endGameState.isVictory() ? "Ihr habt gewonnen! 🎉" : "Ihr habt verloren. ✂️")
+        );
+    }
+
+    /**
+     * Handles the change to the DrawCardState.
+     *
+     * @param game          the game
+     * @param drawCardState the DrawCardState
+     */
+    private void changedToDrawCardState(IGame game, DrawCardState drawCardState) {
+        if (game.getPlayerCardDrawPile()
+                .isEmpty()) {
+            game.setState(new EndGameState(false));
+            LOG.info("[LobbyID: {}] Nachziehstapel ist leer", game.getGameId());
+            sendServerMessageEvent(game.getGameId(),
+                    "Das Spiel ist beendet! Der Nachziehstapel ist leer – ihr habt verloren. ✂️"
+            );
+        } else if (drawCardState.getCardsDrawn() < MAX_CARDS_DRAWABLE) {
+            if (game.getPreviousState() instanceof PlayerTurnState) {
                 sendServerMessageEvent(game.getGameId(),
-                        game.getCurrentPlayer()
-                            .getUser()
-                            .getUsername() + " ist immer noch an der Reihe."
+                        "Der Zug ist beendet. Ziehe " + (MAX_CARDS_DRAWABLE - drawCardState.getCardsDrawn()) + " " + "Spielerkarten aus dem Nachziehstapel."
                 );
             } else {
                 sendServerMessageEvent(game.getGameId(),
-                        game.getCurrentPlayer()
-                            .getUser()
-                            .getUsername() + " ist an der Reihe."
+                        "Es müssen noch Karten nachgezogen werden. Bitte ziehe " + (MAX_CARDS_DRAWABLE - drawCardState.getCardsDrawn()) + " " + "Spielerkarten " + "aus dem Nachziehstapel."
                 );
             }
         }
     }
+
+    /**
+     * Handles the change to the InfectionState.
+     *
+     * @param game           the game
+     * @param infectionState the InfectionState
+     */
+    private void changedToInfectionState(IGame game, InfectionState infectionState) {
+        if (game.getPreviousState() instanceof EventState) {
+            sendServerMessageEvent(game.getGameId(),
+                    "Die Infektionsphase wird fortgesetzt. Bitte ziehe " + (infectionState.amountOfCitiesToInfect(game) - infectionState.getInfectedCities()) + " Infektionskarten."
+            );
+        } else {
+            sendServerMessageEvent(game.getGameId(),
+                    "Die Infektionsphase beginnt. Bitte ziehe " + (infectionState.amountOfCitiesToInfect(game) - infectionState.getInfectedCities()) + " Infektionskarten."
+            );
+        }
+    }
+
+    /**
+     * Handles the change to the PlayerTurnState.
+     *
+     * @param game the game
+     */
+    private void changedToPlayerTurnState(IGame game) {
+        if (game.getPreviousState() instanceof EventState) {
+            sendServerMessageEvent(game.getGameId(),
+                    game.getCurrentPlayer()
+                        .getUser()
+                        .getUsername() + " ist immer noch an der Reihe."
+            );
+        } else {
+            sendServerMessageEvent(game.getGameId(),
+                    game.getNextPlayer()
+                        .getUser()
+                        .getUsername() + " ist an der Reihe."
+            );
+        }
+    }
+
 
     /**
      * Handles the AnotherDayEvent.

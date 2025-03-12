@@ -9,6 +9,7 @@ import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
 
@@ -253,4 +254,11 @@ public interface IGame {
      * @param numSubDecks the number of subdecks
      */
     List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks);
+
+    /**
+     * Gets the player which is at turn next.
+     *
+     * @return the next player
+     */
+    IPlayer getNextPlayer();
 }

@@ -15,6 +15,7 @@ import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.RoleRepository;
+import de.uol.swp.server.usermanagement.IUser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -275,5 +276,11 @@ public class Game implements IGame {
 
     public void incrementCurrentPlayerIndex(Integer userAmount) {
         this.setCurrentPlayerIndex(currentPlayerIndex == userAmount - 1 ? 0 : currentPlayerIndex + 1);
+    }
+
+    @Override
+    public IPlayer getNextPlayer() {
+        int nextPlayerIndex = currentPlayerIndex == players.size() - 1 ? 0 : currentPlayerIndex + 1;
+        return players.get(nextPlayerIndex);
     }
 }
