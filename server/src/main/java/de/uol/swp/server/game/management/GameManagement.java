@@ -242,7 +242,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             waitForPositioningState.setPositionedPlayersCount(waitForPositioningState.getPositionedPlayersCount() + 1);
             sendServerMessageEvent(game.getGameId(),
                     requestPlayer.getUser().getUsername() + " startet von " + game.getCityRepository()
-                                                                                                          .getCityNameById(request.getCityId())
+                                                                                  .getCityNameById(request.getCityId())
+                                                                                  .getDisplayName()
             );
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
@@ -251,10 +252,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                                        .size()) {
             game.setState(new PlayerTurnState());
             game.setCurrentPlayerIndex(0);
-            sendServerMessageEvent(
-                    game.getGameId(),
-                    game.getCurrentPlayer() +" darf anfangen"
-            );
         }
     }
 
