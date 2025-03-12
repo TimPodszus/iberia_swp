@@ -526,16 +526,16 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
         if (citiesConnectedByLand) {
-            movePlayerByLand(game, player, city);
             String serverMessage = availableDestinations.get(city.getId())
                                                         .getTransportModes()
                                                         .contains(TransportMode.TRAIN) ? ServerMessageProvider.trainMessage(player,
                     city
             ) : ServerMessageProvider.carriageMessage(player, city);
             sendServerMessageEvent(lobbyId, serverMessage);
+            movePlayerByLand(game, player, city);
         } else {
-            movePlayerBySea(game, player, city, card);
             sendServerMessageEvent(lobbyId, ServerMessageProvider.sailMessage(player, city));
+            movePlayerBySea(game, player, city, card);
         }
     }
 
