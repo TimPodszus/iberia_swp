@@ -2061,8 +2061,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAvailablePlaguesResponse(AvailablePlaguesResponse response) {
-        if (!response.getLobbyId()
-                     .equals(lobbyId)) {
+        if (!lobbyId.equals(response.getLobbyId())) {
             return;
         }
 
@@ -2092,8 +2091,7 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onTreatPlagueResponse(TreatPlagueResponse response) {
-        if (!response.getLobbyId()
-                     .equals(lobbyId)) {
+        if (!lobbyId.equals(response.getLobbyId())) {
             return;
         }
 
@@ -2119,6 +2117,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onMigrationOverseasResponse(MigrationOverseasResponse response) {
+        if (!lobbyId.equals(response.getLobbyId())) {
+            return;
+        }
+
         LOG.debug("[LobbyId: {}] MigrationOverseasResponse received", response.getLobbyId());
         if (!response.getLobbyId()
                      .equals(this.lobbyId)) {
@@ -2174,8 +2176,8 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onGameResponse(AbstractGameResponse response) {
-        if (!response.getLobbyId()
-                     .equals(lobbyId) || response.isSuccess()) {
+        if (response.isSuccess() || !response.getLobbyId()
+                                             .equals(lobbyId)) {
             return;
         }
         LOG.debug("[LobbyId: {}] Got failed game response", lobbyId);

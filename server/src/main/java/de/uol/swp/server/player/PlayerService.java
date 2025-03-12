@@ -97,11 +97,6 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
                                                    .getUsername());
             player.setPositionChangeListener(this);
             gameManagement.setPositioning(request);
-            sendServerMessageEvent(
-                    request.getLobbyId(),
-                    "Position von" + player.getUser()
-                                           .getUsername() + " wurde erfolgreich " + "gesetzt"
-            );
         } catch (IllegalGameStateException e) {
             LOG.error("[LobbyId: {}] Could not set positioning, wrong GameState", request.getLobbyId());
             sendStatusResponse(
@@ -169,14 +164,8 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             sendStatusResponse(request, false, "Du bist nicht an der Reihe");
             return;
         }
-        InfectionCard infectionCard = gameManagement.drawInfectionCard(game);
+        gameManagement.drawInfectionCard(game);
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-
-        sendServerMessageEvent(request.getLobbyId(),
-                "Der Spieler " + session.getUser()
-                                        .getUsername() + " hat eine Infektionskarte gezogen. " + "Die Infektionsrate " + "steigt und die Stadt " + infectionCard.getCity()
-                                                                                                                                                                .getName() + " wurde " + "infiziert. " + "Achtet auf mögliche Epidemien!"
-        );
     }
 
     /**

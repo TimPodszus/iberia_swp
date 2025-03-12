@@ -29,7 +29,7 @@ public class InfectionState implements IGameState {
         }
     }
 
-    private int amountOfCitiesToInfect(IGame game) {
+    public int amountOfCitiesToInfect(IGame game) {
         return switch (game.getInfectionCounter()) {
             case 4, 5 -> 3;
             case 6, 7 -> 4;

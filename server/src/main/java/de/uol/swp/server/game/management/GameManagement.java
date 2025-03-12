@@ -203,7 +203,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Updates the game state if all players have been positioned.
      *
      * @param request The request with where the position is to be set
-     * @throws GameException             If the game is not in a state that allows setting positioning
+     * @throws GameException If the game is not in a state that allows setting positioning
      * @throws IllegalGameStateException If the game is not in a state that allows setting positioning
      */
     public void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
@@ -240,11 +240,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     requestPlayer
             );
             waitForPositioningState.setPositionedPlayersCount(waitForPositioningState.getPositionedPlayersCount() + 1);
-            sendServerMessageEvent(
-                    game.getGameId(),
-                    requestPlayer.getUser()
-                                 .getUsername() + " startet von " + game.getCityRepository()
-                                                                        .getCityNameById(request.getCityId())
+            sendServerMessageEvent(game.getGameId(),
+                    requestPlayer.getUser().getUsername() + " startet von " + game.getCityRepository()
+                                                                                  .getCityNameById(request.getCityId())
+                                                                                  .getDisplayName()
             );
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
