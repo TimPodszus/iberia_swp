@@ -1,5 +1,6 @@
 package de.uol.swp.server.chat;
 
+import de.uol.swp.server.city.data.ICity;
 import lombok.NoArgsConstructor;
 
 import java.util.Random;
@@ -58,6 +59,18 @@ public class ServerMessageProvider {
                     " Die umliegenden Städte verzeichnen auch erste Fälle.";
             default -> "Die Behörden in " + cityName + " melden einen Ausbruch von " + plagueName + ". Die Krankheit " +
                     "breitet sich schnell aus und umliegende Städte sind betroffen.";
+        };
+    }
+
+    public static String hospitalBuildMessage(ICity city) {
+        int randomNumber = random.nextInt(4);
+        String cityName = city.getName()
+                              .getDisplayName();
+        return switch (randomNumber) {
+            case 1 -> "In " + cityName + " wird ein neues Krankenhaus gebaut!";
+            case 2 -> "Die Behörden in " + cityName + " investieren in den Bau eines neuen Krankenhauses!";
+            case 3 -> "Die Bewohner in " + cityName + " freuen sich über den Bau eines neuen Krankenhauses!";
+            default -> "Die Stadt " + cityName + " erhält ein neues Krankenhaus!";
         };
     }
 }
