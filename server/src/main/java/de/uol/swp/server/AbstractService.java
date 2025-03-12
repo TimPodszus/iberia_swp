@@ -1,7 +1,6 @@
 package de.uol.swp.server;
 
 import com.google.inject.Inject;
-import de.uol.swp.common.city.message.response.HospitalFoundationEventResponse;
 import de.uol.swp.common.game.message.AbstractGameRequest;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.response.StatusResponse;
@@ -30,10 +29,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2019-10-08
  */
 public class AbstractService {
-
-    protected static final String USER_NOT_LOGGED_IN = "User not logged in";
-
-    protected static final int DEFAULT_MESSAGE_DELAY_MILLIS = 200;
+    protected static final int DEFAULT_MESSAGE_DELAY_MILLIS = 400;
     /**
      * The EventBus instance used for posting and handling events.
      * This is a protected final field, ensuring it is initialized once and cannot be changed.

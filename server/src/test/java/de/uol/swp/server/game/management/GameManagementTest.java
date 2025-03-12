@@ -29,9 +29,7 @@ import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.exceptions.GameException;
-import de.uol.swp.server.game.exceptions.GameInitializationException;
-import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.*;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.plague.management.IPlagueManagement;
@@ -722,6 +720,7 @@ class GameManagementTest {
         when(city.getId()).thenReturn(1);
         when(city.getName()).thenReturn(ALICANTE);
         when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(List.of(connection));
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 34)).thenReturn(List.of(connection));
 
         gameManagement.buildTrainTrack(user, LOBBY_CODE, connection);
 
@@ -739,7 +738,7 @@ class GameManagementTest {
         IPlayer player = mock(IPlayer.class);
         ICity city = mock(ICity.class);
 
-        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection)));
+        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection), 4));
         when(game.getCurrentPlayer()).thenReturn(player);
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
         when(game.getPreviousState()).thenReturn(new PlayerTurnState());
@@ -1144,5 +1143,60 @@ class GameManagementTest {
         when(game.getState()).thenReturn(new DrawCardState());
 
         assertThrows(IllegalGameStateException.class, () -> gameManagement.endTurn(game.getGameId(), user));
+    }
+
+    @Test
+    void testRemovePlayer_emptyLobby() {
+        IPlayer player = mock(IPlayer.class);
+        IUser user = new User("test", "test");
+        when(player.getUser()).thenReturn(user);
+        List<IPlayer> players = new ArrayList<>(List.of(player));
+        when(game.getPlayers()).thenReturn(players);
+
+        assertThrows(LobbyIsEmptyException.class, () -> gameManagement.removePlayer(LOBBY_CODE, user));
+    }
+
+    @Test
+    void testRemovePlayer_gameEnds() throws LobbyIsEmptyException{
+        IPlayer player = mock(IPlayer.class);
+        IPlayer player2 = mock(IPlayer.class);
+        IUser user = new User("test", "test");
+        when(player.getUser()).thenReturn(user);
+        List<IPlayer> players = new ArrayList<>(List.of(player, player2));
+        when(game.getPlayers()).thenReturn(players);
+
+        gameManagement.removePlayer(LOBBY_CODE, user);
+
+        verify(game).setState(any(EndGameState.class));
+    }
+
+    @Test
+    void testRemovePlayer_discardCards() throws LobbyIsEmptyException {
+        IPlayer player = mock(IPlayer.class);
+        IPlayer player2 = mock(IPlayer.class);
+        IPlayer player3 = mock(IPlayer.class);
+        ICard card = mock(ICard.class);
+        ICard card2 = mock(ICard.class);
+        List<ICard> discardPile = new ArrayList<>();
+        IUser user = new User("test", "test");
+        when(player.getUser()).thenReturn(user);
+        List<IPlayer> players = new ArrayList<>(List.of(player, player2, player3));
+        when(game.getPlayers()).thenReturn(players);
+        when(game.getPlayer(user.getUsername())).thenReturn(player);
+        when(game.getPlayerCardDiscardPile()).thenReturn(discardPile);
+        when(player.getCards()).thenReturn(new ArrayList<>(List.of(card, card2)));
+
+        gameManagement.removePlayer(LOBBY_CODE, user);
+
+        assertEquals(2, discardPile.size());
+        assertTrue(player.getCards().isEmpty());
+        assertEquals(2, game.getPlayers().size());
+    }
+
+    @Test
+    void testRemoveGame() {
+        gameManagement.removeGame(LOBBY_CODE);
+
+        assertNull(GameStore.getInstance().getGame(LOBBY_CODE));
     }
 }

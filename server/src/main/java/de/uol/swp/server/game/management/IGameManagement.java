@@ -14,6 +14,7 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
@@ -160,5 +161,21 @@ public interface IGameManagement {
      * @throws IllegalGameStateException if the turn cannot be ended due to the current game state
      */
     void endTurn(String lobbyId, IUser user) throws IllegalGameStateException;
+
+    /**
+     * Removes a player from the specified lobby.
+     *
+     * @param lobbyCode the code of the lobby from which the player is to be removed
+     * @param user      the user representing the player to be removed
+     * @throws LobbyIsEmptyException if the lobby is empty after removing the player
+     */
+    void removePlayer(String lobbyCode, IUser user) throws LobbyIsEmptyException;
+
+    /**
+     * Removes the game associated with the specified lobby code.
+     *
+     * @param lobbyCode the code of the lobby whose game is to be removed
+     */
+    void removeGame(String lobbyCode);
 }
 

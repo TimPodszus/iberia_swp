@@ -1,19 +1,25 @@
 package de.uol.swp.server.cards;
 
 import com.google.inject.Inject;
+import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.cards.request.GetCardRequest;
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
+import de.uol.swp.common.game.message.event.CardSelectionEvent;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
+import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.cards.data.eventcards.ForTheGoodCauseEventCard;
+import de.uol.swp.server.cards.events.ForTheGoodCauseEvent;
 import de.uol.swp.server.cards.events.SecondChanceEvent;
 import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.cards.management.CardNotPlayableException;
 import de.uol.swp.server.cards.management.ICardManagement;
 import de.uol.swp.server.game.GameMapper;
-import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.usermanagement.IUser;
@@ -23,6 +29,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CardService extends AbstractService {
     private static final Logger LOG = LogManager.getLogger(CardService.class);
@@ -83,8 +92,10 @@ public class CardService extends AbstractService {
         BoardUpdateEvent event = new BoardUpdateEvent(request.getLobbyId(), game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, event);
-        sendServerMessageEvent(request.getLobbyId(),
-                user.getUsername() + " hat eine Eventkarte gespielt, die das Spielgeschehen drastisch verändern könnte.");
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                user.getUsername() + " hat eine Eventkarte gespielt, die das Spielgeschehen drastisch verändern könnte."
+        );
     }
 
     /**
@@ -109,9 +120,10 @@ public class CardService extends AbstractService {
         } catch (CardNotFoundException e) {
             cardManagement.returnLastPlayedCard(event.getLobbyId(), user.getUsername());
 
-            StatusResponse response = new StatusResponse(event.getLobbyId(),
+            StatusResponse response = new StatusResponse(
+                    event.getLobbyId(),
                     false,
-                    "CityCard not found in discard pile"
+                    "Stadtkarte konnte nicht im Ablagestapel gefunden werden"
             );
             response.setSession(session);
             post(response);
@@ -122,7 +134,79 @@ public class CardService extends AbstractService {
         BoardUpdateEvent boardUpdateEvent = new BoardUpdateEvent(event.getLobbyId(), game);
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
         sendToAllInLobby(lobby, boardUpdateEvent);
-        sendServerMessageEvent(event.getLobbyId(), user.getUsername() + "hat die Eventkarte zweite Chance ausgespielt" +
-                ".");
+        sendServerMessageEvent(
+                event.getLobbyId(),
+                user.getUsername() + "hat die Eventkarte zweite Chance ausgespielt" + "."
+        );
+    }
+
+    /**
+     * Handles the ForTheGoodCauseEvent by retrieving event cards from the player's discard pile,
+     * converting them to DTOs, and creating a CardSelectionEvent to send to the user.
+     * The event card ForTheGoodCause is excluded from the list of cards, to prevent the user from getting into a loop.
+     *
+     * @param event the ForTheGoodCauseEvent containing the lobby ID and username
+     */
+    @Subscribe
+    public void onForTheGoodCauseEvent(ForTheGoodCauseEvent event) {
+        LOG.debug("[LobbyId: {}] Received ForTheGoodCauseEvent", event.getLobbyId());
+        List<EventCard> cards = cardManagement.getCardsFromPlayerDiscardPile(event.getLobbyId(), EventCard.class);
+
+        List<ICardDTO> cardDtos = new ArrayList<>();
+        for (EventCard eventCard : cards) {
+            if (eventCard instanceof ForTheGoodCauseEventCard) {
+                break;
+            }
+            cardDtos.add(CardMapper.toDTO(eventCard));
+        }
+        CardSelectionEvent cardSelectionEvent = new CardSelectionEvent(event.getLobbyId(), cardDtos);
+
+        IUser user = userManagement.getUser(event.getUsername());
+        Session session = authenticationService.getSession(user)
+                                               .orElseThrow(() -> {
+                                                   LOG.error("[LobbyId: {}] Session not found", event.getLobbyId());
+                                                   return new SessionNotFoundException();
+                                               });
+        cardSelectionEvent.setReceiver(List.of(session));
+        post(cardSelectionEvent);
+        LOG.info("[LobbyId: {}] Sent CardSelectionEvent to user", event.getLobbyId());
+    }
+
+    /**
+     * Handles the GetCardRequest by retrieving the card with the specified ID from the discard pile
+     *
+     * @param request the GetCardRequest containing the lobby ID, card ID, and session
+     */
+    @Subscribe
+    public void onGetCardRequest(GetCardRequest request) {
+        LOG.debug("[LobbyId: {}] Received GetCardRequest", request.getLobbyId());
+        Session session = request.getSession()
+                                 .orElseThrow(() -> {
+                                     LOG.error("[LobbyId: {}] Session missing in GetCardRequest", request.getLobbyId());
+                                     return new SessionNotFoundException("Session missing in GetCardRequest");
+                                 });
+
+        try {
+            cardManagement.getCardForPlayer(
+                    request.getLobbyId(),
+                    session.getUser()
+                           .getUsername(),
+                    request.getCardId()
+            );
+        } catch (CardNotFoundException e) {
+            sendStatusResponse(request, false, "Karte konnte im Ablagestapel nicht gefunden werden");
+
+            return;
+        } catch (IllegalGameStateException e) {
+            sendStatusResponse(request, false, "Spiel ist nicht im korrekten Zustand");
+
+            return;
+        }
+
+        IGameDTO game = GameMapper.toDTO(cardManagement.getGame(request.getLobbyId()));
+        BoardUpdateEvent event = new BoardUpdateEvent(request.getLobbyId(), game);
+        ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
+        sendToAllInLobby(lobby, event);
+        LOG.info("[LobbyId: {}] Got card for player. Sending BoardUpdateEvent", request.getLobbyId());
     }
 }

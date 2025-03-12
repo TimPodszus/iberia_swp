@@ -1,6 +1,6 @@
 package de.uol.swp.client.game.objects;
 
-import de.uol.swp.client.game.ImageEnum;
+import de.uol.swp.common.game.ImageEnum;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;

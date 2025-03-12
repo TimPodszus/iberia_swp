@@ -4,7 +4,6 @@ import de.uol.swp.common.city.ICityDTO;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.ListView;
 
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import java.util.Map;
  * Dialog that allows the user to select a city for treatment.
  * This dialog displays a list of city names, and the user can select one to treat.
  */
-public class SelectCityToTreatDialog extends Dialog<ICityDTO> {
+public class SelectCityToTreatDialog extends AbstractDialog<ICityDTO> {
 
     @FXML
     private final ListView<String> cityListView;
@@ -42,6 +41,8 @@ public class SelectCityToTreatDialog extends Dialog<ICityDTO> {
         getDialogPane().setContent(cityListView);
         getDialogPane().getButtonTypes()
                        .addAll(ButtonType.OK, ButtonType.CANCEL);
+        super.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add(APPROVE_BUTTON);
+        super.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add(DENY_BUTTON);
 
         setResultConverter(dialogButton -> {
             if (dialogButton == ButtonType.OK) {

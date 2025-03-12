@@ -185,7 +185,9 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
 
     @Override
     public void treatPlague(
-            PlagueName plagueToTreat, ICity city, IGame game
+            PlagueName plagueToTreat,
+            ICity city,
+            IGame game
     ) throws IllegalGameStateException, PlagueNotFoundException {
         LOG.debug(
                 "Attempting to treat plague {} in city {} for game {}",

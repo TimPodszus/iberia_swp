@@ -5,7 +5,6 @@ import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.common.cards.data.ICardDTO;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.StageStyle;
@@ -17,7 +16,7 @@ import java.util.List;
  * A dialog for showing a list of player cards.
  * When cardsSelectable is true, the user can select a card.
  */
-public class CardDialog extends Dialog<ICardDTO> {
+public class CardDialog extends AbstractDialog<ICardDTO> {
     private static final String TITLE = "Kartendialog";
     private static final String SELECT_CARDS_HEADER = "Karte auswählen";
     private final boolean cardsSelectable;
@@ -64,6 +63,7 @@ public class CardDialog extends Dialog<ICardDTO> {
         }
 
         HBox cardBox = new HBox();
+        cardBox.getStyleClass().add(HBOX_STYLE);
         for (AbstractCard card : this.displayedPlayerCards) {
             if (this.cardsSelectable) {
                 card.setOnMouseClicked(mouseEvent -> onCardClicked(card.getCardId()));
@@ -74,6 +74,8 @@ public class CardDialog extends Dialog<ICardDTO> {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(cardBox);
+        scrollPane.getStyleClass().add(SCROLL_PANE);
+        scrollPane.setFitToWidth(true);
         super.getDialogPane()
              .setContent(scrollPane);
     }
@@ -101,11 +103,13 @@ public class CardDialog extends Dialog<ICardDTO> {
             super.getDialogPane()
                  .getButtonTypes()
                  .add(ButtonType.OK);
+            super.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add(APPROVE_BUTTON);
         }
         if (this.dismissible || !this.cardsSelectable) {
             super.getDialogPane()
                  .getButtonTypes()
                  .add(ButtonType.CANCEL);
+            super.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add(DENY_BUTTON);
         }
 
         if (cardsSelectable) {

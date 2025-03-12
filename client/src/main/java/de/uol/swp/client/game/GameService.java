@@ -5,6 +5,7 @@ import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.cards.request.GetCardRequest;
 import de.uol.swp.common.cards.request.PlayCardRequest;
 import de.uol.swp.common.city.message.request.BuildHospitalRequest;
 import de.uol.swp.common.city.message.request.HospitalFoundationEventRequest;
@@ -511,5 +512,16 @@ public class GameService {
             LOG.debug("Card exchange result: {}", map);
             eventBus.post(new CardsExchangeWithDiscardPileRequest(map, lobbyId));
         });
+    }
+
+    /**
+     * Sends a request to get a card from the card stack.
+     *
+     * @param lobbyId the ID of the lobby where the card is to be drawn
+     * @param cardId  the ID of the card to be drawn
+     */
+    public void sendGetCardRequest(String lobbyId, int cardId) {
+        eventBus.post(new GetCardRequest(lobbyId, cardId));
+        LOG.info("[Lobby: {}] Sent GetCardRequest", lobbyId);
     }
 }

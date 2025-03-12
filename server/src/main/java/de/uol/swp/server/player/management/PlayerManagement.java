@@ -10,6 +10,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
@@ -98,6 +99,11 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                     "[LobbyID: {}] Epidemic card drawn. Infection counter increased to {}",
                     lobbyCode,
                     game.getInfectionCounter()
+            );
+            sendServerMessageEvent(game.getGameId(),
+                    ServerMessageProvider.epidemicMessage(infectionCard.getCity()
+                                                                       .getName()
+                                                                       .getDisplayName())
             );
         } else {
             addCard(
@@ -420,7 +426,6 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
     public List<IRegionDTO> determineRegionsForNurse(IPlayer player, ICity oldPosition, ICity newPosition) {
         LOG.debug("[LobbyId: {}] Determine Regions for Nurse", player.getGameId());
         IGame game = getGame(player.getGameId());
-        removePreventionMarker(game, oldPosition);
         return RegionMapper.toDTOList(game.getRegionRepository().getRegionsByCityName(newPosition.getName()));
     }
 
@@ -434,6 +439,7 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
     public void placePreventionMarker(String lobbyId, int regionId) {
         LOG.debug("[LobbyId: {}] Place Prevention Marker in Region {}", lobbyId, regionId);
         IGame game = getGame(lobbyId);
+        removePreventionMarker(game);
         IRegion region = game.getRegionRepository()
                              .getRegionByID(regionId);
         region.setPreventionMarker(true);
@@ -443,16 +449,14 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
      * Removes the prevention marker from the old position of the player.
      *
      * @param game       The game
-     * @param oldPosition The old position of the player
      */
-    private void removePreventionMarker(IGame game, ICity oldPosition) {
-        if(oldPosition == null) {
-            LOG.debug("[LobbyId: {}] Cant remove Prevention Marker from Old Position", game.getGameId());
-            return;
-        }
-        LOG.debug("[LobbyId: {}] Remove Prevention Marker from Old Position {}", game.getGameId(), oldPosition.getName());
-        List<IRegion> regions = game.getRegionRepository()
-                                    .getRegionsByCityName(oldPosition.getName());
-        regions.forEach(region -> region.setPreventionMarker(false));
+    private void removePreventionMarker(IGame game) {
+        LOG.debug("[LobbyId: {}] Remove Prevention Marker", game.getGameId());
+        game.getRegionRepository()
+            .getRegions()
+            .stream()
+            .filter(IRegion::isPreventionMarker)
+            .findFirst()
+            .ifPresent(region -> region.setPreventionMarker(false));
     }
 }

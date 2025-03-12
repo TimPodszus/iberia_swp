@@ -18,7 +18,7 @@ public class ChatStore implements IChatStore {
 
     @Override
     public List<IChatMessage> getChatMessages(String lobbyId) {
-        return chatMessages.get(lobbyId);
+        return new ArrayList<>(chatMessages.get(lobbyId));
     }
 
     @Override

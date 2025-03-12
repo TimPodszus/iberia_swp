@@ -1,4 +1,4 @@
-package de.uol.swp.client.game;
+package de.uol.swp.common.game;
 
 import java.util.Objects;
 

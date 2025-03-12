@@ -3,17 +3,11 @@ package de.uol.swp.server.cards.management;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
-import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
-import de.uol.swp.server.cards.data.eventcards.EventCard;
-import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
-import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
+import de.uol.swp.server.cards.data.eventcards.*;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.EventState;
-import de.uol.swp.server.game.states.InfectionState;
-import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.states.WaitForPositioning;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.player.data.IPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,9 +43,10 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
         List<ICard> discardPile = game.getPlayerCardDiscardPile();
 
         Optional<CityCard> cardForPlayersHand = discardPile.stream()
-                                        .filter(card -> card instanceof CityCard cityCard && cityCard.getCity().equals(currentPosition))
-                                        .map(CityCard.class::cast)
-                                        .findFirst();
+                                                           .filter(card -> card instanceof CityCard cityCard && cityCard.getCity()
+                                                                                                                        .equals(currentPosition))
+                                                           .map(CityCard.class::cast)
+                                                           .findFirst();
 
         if (cardForPlayersHand.isPresent()) {
             game.getPlayer(username)
@@ -61,9 +56,12 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
             LOG.debug("[LobbyId: {}] CityCard added to player's hand", game.getGameId());
         } else {
             game.setState(game.getPreviousState());
-            LOG.debug("[LobbyId: {}] CityCard for city {} not found in discard pile for player {}",
-                    currentPosition.getId(), game.getGameId(),
-                    username);
+            LOG.debug(
+                    "[LobbyId: {}] CityCard for city {} not found in discard pile for player {}",
+                    currentPosition.getId(),
+                    game.getGameId(),
+                    username
+            );
             throw new CardNotFoundException("CityCard not found in discard pile");
         }
     }
@@ -72,11 +70,13 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
     public void returnLastPlayedCard(String lobbyId, String username) {
         IGame game = super.getGame(lobbyId);
         ICard cardToReturn = game.getPlayerCardDiscardPile()
-                                 .get(game.getPlayerCardDiscardPile().size() - 1);
+                                 .get(game.getPlayerCardDiscardPile()
+                                          .size() - 1);
 
         game.getPlayerCardDiscardPile()
             .remove(cardToReturn);
-        game.getPlayer(username).addCard(cardToReturn);
+        game.getPlayer(username)
+            .addCard(cardToReturn);
 
         LOG.debug("[LobbyId: {}] returned last played card to player's hand", game.getGameId());
     }
@@ -122,11 +122,8 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
             return isAnotherDayEventCardPlayable(game);
         } else if (playedCard instanceof TreatWaterEventCard) {
             return isTreatWaterEventCardPlayable(game);
-        } else if (isStateCorrect(game)) {
-            return true;
         } else {
-            LOG.warn("[LobbyId: {}] Card with id {} is not playable in the current state", game.getGameId(), cardId);
-            return false;
+            return isStateCorrect(game);
         }
     }
 
@@ -157,7 +154,13 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
     }
 
     public boolean isStateCorrect(IGame game) {
-        return game.getState() instanceof PlayerTurnState || game.getState() instanceof InfectionState || game.getState() instanceof DrawCardState;
+        if (game.getState() instanceof PlayerTurnState || game.getState() instanceof InfectionState || game.getState() instanceof DrawCardState) {
+            return true;
+        } else {
+
+            LOG.warn("[LobbyId: {}] Card is not playable in the current state", game.getGameId());
+            return false;
+        }
     }
 
     /**
@@ -168,5 +171,62 @@ public class CardManagement extends AbstractManagement implements ICardManagemen
     private void setGameInEventCardState(IGame game, EventCard eventCard) {
         LOG.debug("[LobbyId: {}] Setting game in EventState", game.getGameId());
         game.setState(new EventState(eventCard));
+    }
+
+    @Override
+    public <T extends ICard> List<T> getCardsFromPlayerDiscardPile(String lobbyId, Class<T> type) {
+        LOG.debug(
+                "[LobbyId: {}] Getting cards with type {} from player card discard pile",
+                lobbyId,
+                type.getSimpleName()
+        );
+        IGame game = super.getGame(lobbyId);
+        List<ICard> playerCardDiscardPile = game.getPlayerCardDiscardPile();
+        List<T> cards = new ArrayList<>();
+        for (ICard discardedCard : playerCardDiscardPile) {
+            if (type.isInstance(discardedCard)) {
+                cards.add(type.cast(discardedCard));
+            }
+        }
+        LOG.info("[LobbyId: {}] Returning cards with specified type from player card discard pile", lobbyId);
+        return cards;
+    }
+
+    @Override
+    public void getCardForPlayer(
+            String lobbyId,
+            String username,
+            int cardId
+    ) throws IllegalGameStateException, CardNotFoundException {
+        IGame game = super.getGame(lobbyId);
+        if (!(game.getState() instanceof EventState eventState && eventState.getEventCard() instanceof ForTheGoodCauseEventCard)) {
+            LOG.error("[LobbyId: {}] Game is not in correct state to get card for player", lobbyId);
+            throw new IllegalGameStateException("Game is not in correct state to get card for player");
+        }
+
+        LOG.debug("[LobbyId: {}] Getting card {} for {}", lobbyId, cardId, username);
+        List<EventCard> cards = this.getCardsFromPlayerDiscardPile(lobbyId, EventCard.class);
+        ICard card = cards.stream()
+                          .filter(eventCard -> eventCard.getId() == cardId)
+                          .findFirst()
+                          .orElseThrow(() -> {
+                              LOG.error("[LobbyId: {}] Card not found in player card discard pile", lobbyId);
+                              return new CardNotFoundException("Card not found in player card discard pile");
+                          });
+
+        game.getPlayerCardDiscardPile()
+            .remove(card);
+
+        game.getPlayer(username)
+            .addCard(card);
+        sendServerMessageEvent(
+                lobbyId,
+                username + " hat die Ereigniskarte 'Zum guten Zweck' gespielt und hat sich " + card.getTitle() + " aus dem Ablagestapel genommen."
+        );
+        game.setState(game.getPreviousState());
+        LOG.info(
+                "[LobbyId: {}] Card from player discard pile added to player's hand. Eventcard is handled, game will resume in last active state",
+                lobbyId
+        );
     }
 }

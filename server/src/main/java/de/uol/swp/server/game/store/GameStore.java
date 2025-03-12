@@ -54,4 +54,9 @@ public class GameStore implements IGameStore {
     public void addGame(String lobbyId, IGame game) {
         games.put(lobbyId, game);
     }
+
+    @Override
+    public void removeGame(String lobbyId) {
+        games.remove(lobbyId);
+    }
 }
