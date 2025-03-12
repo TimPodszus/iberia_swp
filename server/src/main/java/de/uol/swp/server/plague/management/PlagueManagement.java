@@ -11,6 +11,7 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.EndGameState;
+import de.uol.swp.server.game.states.EventState;
 import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.TreatExtraPlagueState;
 import de.uol.swp.server.infection.data.IInfection;
@@ -210,7 +211,7 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
                 .getPlagueByName(plagueToTreat)
                 .increaseCubes(1);
             playerTurnState.reduceActionsRemaining(game);
-        } else if (game.getState() instanceof TreatExtraPlagueState) {
+        } else if (game.getState() instanceof TreatExtraPlagueState || game.getState() instanceof EventState) {
             LOG.debug("Treating extra plague cube of {} in city {}", plagueToTreat, city.getName());
             city.removePlagueCubes(plagueToTreat, 1);
             game.getPlagueRepository()
