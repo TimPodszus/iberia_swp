@@ -61,9 +61,11 @@ public class RegionManagement extends AbstractManagement implements IRegionManag
 
         if (totalWaterTreatments >= amount) {
             decreaseWaterTreatmentsInRegions(regions, amount);
+            game.setWaterTreatmentsLeft(game.getWaterTreatmentsLeft() + amount);
             return 0;
         } else {
             decreaseWaterTreatmentsInAllRegions(regions);
+            game.setWaterTreatmentsLeft(game.getWaterTreatmentsLeft() + totalWaterTreatments);
             return amount - totalWaterTreatments;
         }
     }
