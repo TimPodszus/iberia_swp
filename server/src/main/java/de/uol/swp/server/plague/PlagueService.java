@@ -256,5 +256,9 @@ public class PlagueService extends AbstractService {
         MigrationOverseasResponse response = new MigrationOverseasResponse(event.getLobbyId(), true, availableCities);
         response.setSession(session);
         post(response);
+        sendServerMessageEvent(
+                event.getLobbyId(),
+                user.getUsername() + " hat die Ereigniskarte 'Migration nach Übersee' gespielt und darf bis zu zwei Seuchenwürfel entfernen."
+        );
     }
 }

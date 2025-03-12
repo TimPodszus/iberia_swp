@@ -549,6 +549,10 @@ public class GameService extends AbstractService implements GameStateChangeListe
         IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
+        sendServerMessageEvent(
+                event.getLobbyId(),
+                event.getUsername() + " hat die Ereigniskarte 'Ein weiterer Tag' gespielt und darf zwei weitere Züge machen."
+        );
     }
 
     /**

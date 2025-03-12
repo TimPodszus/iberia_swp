@@ -166,4 +166,19 @@ public class ServerMessageProvider {
                     "Ab sofort gibt es stündlich eine Zugverbindung zwischen " + startCityName + " und " + endCityName + "!";
         };
     }
+
+    /**
+     * Returns a random message for a new water treatment in a city.
+     *
+     * @param username The username of the player who treats the water
+     * @return A random message for a new water treatment in a city
+     */
+    public static String waterTreatmentMessage(String username) {
+        int randomNumber = random.nextInt(2);
+        if (randomNumber == 1) {
+            return username + " hat Wasser in einer Region gereinigt und die Ausbruchswahrscheinlichkeit in " + "anliegenden Städten reduziert!";
+        } else {
+            return "Die Ausbruchswahrscheinlichkeit in anliegenden Städten wurde durch " + username + "s " + "Wasserreinigung in der Region reduziert!";
+        }
+    }
 }
