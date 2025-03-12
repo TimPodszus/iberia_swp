@@ -297,7 +297,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
 
         InfectionCard infectionCard = mock(InfectionCard.class);
         when(infectionCard.getCity()).thenReturn(new City(1, PlagueName.CHOLERA, CityName.BARCELONA, 1234, false));
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, drawInfectionCardRequest.getLobbyId());
         player.setRole(new Sailor());
         game.getPlayers()
             .add(player);
