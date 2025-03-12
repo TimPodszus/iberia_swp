@@ -951,7 +951,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             );
 
             game.getPlayers().remove(player);
-            game.setState(new EndGameState(false));
+            if (!(game.getState() instanceof EndGameState)) {
+                game.setState(new EndGameState(false));
+            }
         } else {
             for (ICard card : player.getCards()) {
                 game.getPlayerCardDiscardPile().add(card);
