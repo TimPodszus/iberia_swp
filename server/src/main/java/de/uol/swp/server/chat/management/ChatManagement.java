@@ -57,4 +57,9 @@ public class ChatManagement implements IChatManagement {
         LOG.info("[LobbyId: {}] Chat messages retrieved", lobbyId);
         return chatMessages;
     }
+
+    public void removeChat(String lobbyId) {
+        LOG.debug("[LobbyId: {}] Removing chat from chat store", lobbyId);
+        chatStore.removeChat(lobbyId);
+    }
 }

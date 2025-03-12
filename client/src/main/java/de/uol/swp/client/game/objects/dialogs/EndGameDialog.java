@@ -5,6 +5,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class EndGameDialog {
 
@@ -31,10 +32,10 @@ public class EndGameDialog {
             if (response == leaveGameButton) {
                 Platform.runLater(() -> {
                     Stage stage = (Stage) gameScreen.getScene().getWindow();
-                    stage.close(); // Close the game scene
+                    stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
                 });
             } else if (response == returnToGameButton) {
-                alert.close(); // Close the dialog
+                alert.close();
             }
         });
     }

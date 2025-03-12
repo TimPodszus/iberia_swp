@@ -8,7 +8,6 @@ import de.uol.swp.client.game.objects.cards.AbstractCard;
 import de.uol.swp.client.game.objects.cards.EventCard;
 import de.uol.swp.client.game.objects.cards.RoleCard;
 import de.uol.swp.client.game.objects.dialogs.*;
-import de.uol.swp.client.options.event.ShowOptionsViewEvent;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
@@ -61,6 +60,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -738,15 +739,16 @@ public class GamePresenter extends AbstractPresenter {
     }
 
     /**
-     * Handles the options clicked event.
-     * Posts a ShowOptionViewEvent to the event bus.
+     * Handles the leave game clicked event.
+     * Closes the game screen.
      *
      * @param event the action event
      */
     @FXML
-    private void onOptionsClickedEvent(ActionEvent event) {
-        LOG.debug("Options button clicked");
-        eventBus.post(new ShowOptionsViewEvent());
+    private void onLeaveGameClicked(ActionEvent event) {
+        LOG.debug("Leave Game button clicked");
+        Stage stage = (Stage) gameScreen.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
     /**

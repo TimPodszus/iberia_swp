@@ -8,6 +8,7 @@ import de.uol.swp.common.chat.request.GetChatRequest;
 import de.uol.swp.common.chat.request.SendChatRequest;
 import de.uol.swp.common.chat.response.GetChatResponse;
 import de.uol.swp.common.game.message.response.StatusResponse;
+import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.chat.data.IChatMessage;
@@ -137,4 +138,8 @@ public class ChatService extends AbstractService {
         }
     }
 
+    @Subscribe
+    public void onLobbyClosedEvent(LobbyClosedEvent event) {
+        chatManagement.removeChat(event.getLobbyId());
+    }
 }

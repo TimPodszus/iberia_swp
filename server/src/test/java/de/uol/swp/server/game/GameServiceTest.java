@@ -9,6 +9,7 @@ import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.game.message.response.StatusResponse;
+import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -35,10 +36,12 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
+import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.plague.data.PlagueRepository;
 import de.uol.swp.server.player.data.IPlayer;
@@ -157,6 +160,11 @@ public class GameServiceTest extends EventBusBasedTest {
 
     @Subscribe
     public void onEndTurnRequest(EndTurnRequest event) {
+        super.handleEvent(event);
+    }
+
+    @Subscribe
+    public void onLobbyClosedEvent(LobbyClosedEvent event) {
         super.handleEvent(event);
     }
 
@@ -776,5 +784,68 @@ public class GameServiceTest extends EventBusBasedTest {
         gameService.sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
 
         verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+    }
+
+    @Test
+    void testOnUserLeavedGameRequest() throws LobbyIsEmptyException, LobbyNotFoundException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        UserLeavedGameRequest userLeavedGameRequest = new UserLeavedGameRequest("lobbyId");
+        userLeavedGameRequest.setSession(session);
+
+        IGame testGame = new Game(2, "lobbyId");
+        when(gameManagement.getGame("lobbyId")).thenReturn(testGame);
+        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+
+        post(userLeavedGameRequest);
+
+        verify(gameManagement, times(1)).removePlayer("lobbyId", user);
+        verify(lobbyManagement, times(1)).removeUser("lobbyId", user.getUsername());
+        assertInstanceOf(BoardUpdateEvent.class, event);
+    }
+
+    @Test
+    void testOnUserLeavedGameRequest_emptyLobby() throws LobbyIsEmptyException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        UserLeavedGameRequest userLeavedGameRequest = new UserLeavedGameRequest("lobbyId");
+        userLeavedGameRequest.setSession(session);
+
+        IGame testGame = new Game(2, "lobbyId");
+        when(gameManagement.getGame("lobbyId")).thenReturn(testGame);
+        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+
+        doThrow(LobbyIsEmptyException.class).when(gameManagement).removePlayer("lobbyId", user);
+
+        post(userLeavedGameRequest);
+
+        assertInstanceOf(LobbyClosedEvent.class, event);
+    }
+
+    @Test
+    void testOnUserLeavedGameRequest_lobbyNotFound() throws LobbyNotFoundException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
+
+        UserLeavedGameRequest userLeavedGameRequest = new UserLeavedGameRequest("lobbyId");
+        userLeavedGameRequest.setSession(session);
+
+        IGame testGame = new Game(2, "lobbyId");
+        when(gameManagement.getGame("lobbyId")).thenReturn(testGame);
+        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+
+        doThrow(LobbyNotFoundException.class).when(lobbyManagement).removeUser("lobbyId", user.getUsername());
+
+        post(userLeavedGameRequest);
+
+        assertInstanceOf(StatusResponse.class, event);
     }
 }
