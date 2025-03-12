@@ -17,6 +17,7 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.management.CardNotFoundException;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.data.IConnection;
@@ -525,21 +526,20 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
         if (citiesConnectedByLand) {
+            String serverMessage = availableDestinations.get(city.getId())
+                                                        .getTransportModes()
+                                                        .contains(TransportMode.TRAIN) ? ServerMessageProvider.trainMessage(player,
+                    city
+            ) : ServerMessageProvider.carriageMessage(player, city);
+            sendServerMessageEvent(lobbyId, serverMessage);
             movePlayerByLand(game, player, city);
-            sendServerMessageEvent(
-                    lobbyId,
-                    player.getUser()
-                          .getUsername() + " hat sich nach " + city.getName()
-                                                                   .getDisplayName() + " bewegt."
-            );
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " hat sich nach "
+                    + city.getName().getDisplayName() + " bewegt.");
         } else {
+            sendServerMessageEvent(lobbyId, ServerMessageProvider.sailMessage(player, city));
             movePlayerBySea(game, player, city, card);
-            sendServerMessageEvent(
-                    lobbyId,
-                    player.getUser()
-                          .getUsername() + " ist mit dem Schiff nach " + city.getName()
-                                                                             .getDisplayName() + " gereist."
-            );
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " ist mit dem Schiff nach "
+                    + city.getName().getDisplayName() + " gereist.");
         }
     }
 

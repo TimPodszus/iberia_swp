@@ -74,6 +74,11 @@ public class ChatDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAbstractChatMessage(SentChatMessage chatMessage) {
+        if (!chatMessage.getLobbyId()
+                        .equals(lobbyId)) {
+            return;
+        }
+
         LOG.debug("[LobbyId: {}] Received chat message", lobbyId);
         Platform.runLater(() -> addNewChatMessage(chatMessage));
     }
@@ -97,7 +102,7 @@ public class ChatDetailPresenter extends AbstractPresenter {
             chatContainer.getChildren()
                          .add(serverMessage);
         }
-        chatScrollPane.setVvalue(1.0);
+        chatScrollPane.setVvalue(chatScrollPane.getVmax());
     }
 
     public void setLobbyId(String lobbyId) {

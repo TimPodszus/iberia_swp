@@ -348,8 +348,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             playerTurnState.reduceActionsRemaining(game);
         }
         sendServerMessageEvent(
-                lobbyId,
-                "In " + city.getName() + " wurde ein Krankenhaus gebaut."
+                lobbyId, ServerMessageProvider.hospitalBuildMessage(city)
         );
     }
 

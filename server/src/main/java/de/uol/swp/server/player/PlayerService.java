@@ -20,7 +20,6 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.ICard;
-import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -140,11 +139,6 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         post(response);
         IGame game = playerManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
-        sendServerMessageEvent(request.getLobbyId(),
-                game.getCurrentPlayer()
-                    .getUser()
-                    .getUsername() + " hat erfolgreich eine Spielerkarte gezogen."
-        );
     }
 
     /**
@@ -177,11 +171,11 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
     public void onShareRideRequest(ShareRideRequest request) {
         LOG.debug("[LobbyId: {}] ShareRideRequest received", request.getLobbyId());
         IGame game = playerManagement.getGame(request.getLobbyId());
-        String cityName = game.getCityRepository()
-                              .getCity(request.getCityId())
-                              .getName()
-                              .getDisplayName();
         if (request.isConfirmed()) {
+            String cityName = game.getCityRepository()
+                                  .getCity(request.getCityId())
+                                  .getName()
+                                  .getDisplayName();
             Session session = request.getSession()
                                      .orElseThrow(SessionNotFoundException::new);
             playerManagement.setPlayerLocation(request.getLobbyId(),
@@ -197,7 +191,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             sendServerMessageEvent(request.getLobbyId(),
                     "Der Spieler " + game.getCurrentPlayer()
                                          .getUser()
-                                         .getUsername() + " hat das Mitfahrangebot nach " + cityName + " abgelehnt."
+                                         .getUsername() + " hat das Mitfahrangebot abgelehnt."
             );
         }
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
@@ -350,7 +344,6 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             game.setState(game.getPreviousState());
         }
         LOG.debug("[LobbyId: {}] PlacePreventionMarkerRequest processed successfully", request.getLobbyId());
-        sendServerMessageEvent(request.getLobbyId(), "Präventionsmarker wurde erfolgreich platziert");
         sendStatusResponse(request, true, "Präventionsmarker wurde erfolgreich platziert");
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }

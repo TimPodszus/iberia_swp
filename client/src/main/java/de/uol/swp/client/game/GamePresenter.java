@@ -860,7 +860,7 @@ public class GamePresenter extends AbstractPresenter {
 
         if (!marker) {
             stackPane.getStyleClass()
-                     .remove("prev-mark-visible");
+                     .removeAll("prev-mark-visible");
             stackPane.getStyleClass()
                      .add("prev-mark");
         } else {
