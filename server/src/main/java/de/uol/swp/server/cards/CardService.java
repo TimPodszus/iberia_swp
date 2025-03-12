@@ -13,6 +13,7 @@ import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.cards.management.CardNotPlayableException;
 import de.uol.swp.server.cards.management.ICardManagement;
 import de.uol.swp.server.game.GameMapper;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.usermanagement.IUser;
@@ -82,6 +83,8 @@ public class CardService extends AbstractService {
         BoardUpdateEvent event = new BoardUpdateEvent(request.getLobbyId(), game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, event);
+        sendServerMessageEvent(request.getLobbyId(),
+                user.getUsername() + " hat eine Eventkarte gespielt, die das Spielgeschehen drastisch verändern könnte.");
     }
 
     /**
@@ -106,8 +109,7 @@ public class CardService extends AbstractService {
         } catch (CardNotFoundException e) {
             cardManagement.returnLastPlayedCard(event.getLobbyId(), user.getUsername());
 
-            StatusResponse response = new StatusResponse(
-                    event.getLobbyId(),
+            StatusResponse response = new StatusResponse(event.getLobbyId(),
                     false,
                     "CityCard not found in discard pile"
             );
@@ -120,5 +122,7 @@ public class CardService extends AbstractService {
         BoardUpdateEvent boardUpdateEvent = new BoardUpdateEvent(event.getLobbyId(), game);
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
         sendToAllInLobby(lobby, boardUpdateEvent);
+        sendServerMessageEvent(event.getLobbyId(), user.getUsername() + "hat die Eventkarte zweite Chance ausgespielt" +
+                ".");
     }
 }

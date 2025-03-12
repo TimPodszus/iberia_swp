@@ -7,6 +7,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.AbstractManagement;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -144,6 +145,10 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                              .getPlagueByName(plagueName);
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
+
+        String serverMessage = ServerMessageProvider.infectionMessage(plagueName.toString(),
+                city.getName().getDisplayName());
+        sendServerMessageEvent(game.getGameId(), serverMessage);
     }
 
     /**
@@ -242,7 +247,12 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                 .getPlagueByName(plague.getName())
                 .getCubesRemaining() < 0) {
             game.setState(new EndGameState(false));
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    "Das Spiel ist beendet! Es sind nicht genügend Infektionswürfel übrig – Ihr habt verloren. ✂️"
+            );
         }
+
     }
 
     /**
@@ -265,6 +275,10 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             game.setEscalationStage(game.getEscalationStage() + 1);
             if (game.getEscalationStage() == 8) {
                 game.setState(new EndGameState(false));
+                sendServerMessageEvent(
+                        game.getGameId(),
+                        "Eine Eskalation zu viel. Das Spiel ist hiermit beendet. Ihr habt verloren. ✂️"
+                );
                 return;
             }
             CityName currentCity = citiesToProcess.poll();
@@ -326,6 +340,10 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             playerTurnState.reduceActionsRemaining(game);
         }
+        sendServerMessageEvent(
+                lobbyId,
+                "In " + city.getName() + " wurde ein Krankenhaus gebaut."
+        );
     }
 
     public void buildHospitalWithEventCard(String lobbyId, Integer cityId, String username) {

@@ -2,6 +2,7 @@ package de.uol.swp.server.plague;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.city.ICityDTO;
+import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
@@ -106,6 +107,7 @@ public class PlagueService extends AbstractService {
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         LOG.debug("Sending new BoardUpdateEvent after successful plague research");
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(game.getGameId(), "Eine neue Plage wurde erforscht");
     }
 
     /**
@@ -223,6 +225,11 @@ public class PlagueService extends AbstractService {
         IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(lobby.getLobbyId(),
+                "In der Stadt " + game.getCurrentPlayer().getCurrentPosition().getName() + " wurde ein " + "Seuchenwürfel der " +
+                        "Plage " + request.getPlagueName()
+                                                                                                                         .toString() + " entfernt."
+        );
     }
 
     /**

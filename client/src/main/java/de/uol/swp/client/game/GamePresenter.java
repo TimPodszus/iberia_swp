@@ -223,7 +223,10 @@ public class GamePresenter extends AbstractPresenter {
      */
     public void setLobbyId(String lobbyId) {
         this.lobbyId = lobbyId;
+        this.user = UserStore.getInstance()
+                             .getUser();
         this.chatController.setLobbyId(lobbyId);
+        this.chatController.setCurrentUsername(user.getUsername());
     }
 
     /**

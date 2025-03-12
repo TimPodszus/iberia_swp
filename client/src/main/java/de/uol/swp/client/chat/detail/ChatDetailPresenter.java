@@ -4,10 +4,18 @@ import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.common.chat.messages.PlayerSentChatMessage;
 import de.uol.swp.common.chat.messages.SentChatMessage;
+import de.uol.swp.common.chat.response.GetChatResponse;
+import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +29,10 @@ public class ChatDetailPresenter extends AbstractPresenter {
     private static final Logger LOG = LogManager.getLogger(ChatDetailPresenter.class);
 
     @FXML
-    private TextArea chatArea;
+    private VBox chatContainer;
+
+    @FXML
+    private ScrollPane chatScrollPane;
 
     @FXML
     private TextField chatInput;
@@ -32,8 +43,11 @@ public class ChatDetailPresenter extends AbstractPresenter {
     @Inject
     private ChatService chatService;
 
-    @Setter
+
     private String lobbyId;
+    @Setter
+    private String currentUsername;
+
 
     /**
      * Handles the action of sending a chat message.
@@ -60,10 +74,86 @@ public class ChatDetailPresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onAbstractChatMessage(SentChatMessage chatMessage) {
-        if (chatMessage instanceof PlayerSentChatMessage playerSentChatMessage) {
-            chatArea.appendText(playerSentChatMessage.getSender() + ": " + chatMessage.getMessage() + "\n");
-        } else {
-            chatArea.appendText("Server: " + chatMessage.getMessage() + "\n");
-        }
+        LOG.debug("[LobbyId: {}] Received chat message", lobbyId);
+        Platform.runLater(() -> addNewChatMessage(chatMessage));
     }
+
+    private void addNewChatMessage(SentChatMessage message) {
+        if (message instanceof PlayerSentChatMessage playerSentChatMessage) {
+            if (playerSentChatMessage.getSender()
+                                     .equals(currentUsername)) {
+                CurrentPlayerMessage currentPlayerMessage = new CurrentPlayerMessage(playerSentChatMessage.getMessage());
+                chatContainer.getChildren()
+                             .add(currentPlayerMessage);
+            } else {
+                PlayerMessage playerMessage = new PlayerMessage(playerSentChatMessage.getSender(),
+                        playerSentChatMessage.getMessage()
+                );
+                chatContainer.getChildren()
+                             .add(playerMessage);
+            }
+        } else {
+            ServerMessage serverMessage = new ServerMessage(message.getMessage());
+            chatContainer.getChildren()
+                         .add(serverMessage);
+        }
+        chatScrollPane.setVvalue(1.0);
+    }
+
+    public void setLobbyId(String lobbyId) {
+        this.lobbyId = lobbyId;
+        requestChatHistory();
+    }
+
+    private void requestChatHistory() {
+        LOG.debug("[LobbyId: {}] Requesting chat history", lobbyId);
+        chatService.requestChatHistory(lobbyId);
+    }
+
+    @Subscribe
+    public void onGetChatResponse(GetChatResponse response) {
+        LOG.debug("[LobbyId: {}] Received chat history response", response.getLobbyId());
+        if (!response.getLobbyId().equals(lobbyId)) {
+            LOG.error("[LobbyId: {}] Chat history response does not match current lobby", lobbyId);
+            return;
+        }
+
+        Platform.runLater(() -> {
+            chatContainer.getChildren().clear();
+            for (SentChatMessage message : response.getChatMessages()) {
+                addNewChatMessage(message);
+            }
+            chatScrollPane.setVvalue(1.0);
+        });
+    }
+
+    @FXML
+    public void initialize() {
+        LOG.debug("Initializing ChatDetailPresenter");
+        chatContainer.maxWidthProperty()
+                     .bind(chatScrollPane.widthProperty());
+        chatContainer.setPadding(new Insets(4));
+        chatContainer.getChildren()
+                     .addListener((ListChangeListener<Node>) change -> {
+                         while (change.next()) {
+                             if (change.wasAdded()) {
+                                 for (Node node : change.getList()) {
+                                     if (node instanceof HBox hBox) {
+                                         hBox.maxWidthProperty()
+                                             .bind(chatContainer.widthProperty()
+                                                                .subtract(4));
+                                     }
+                                 }
+                             }
+                         }
+                     });
+        chatInput.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER && !event.isShiftDown()) {
+                onSendChat();
+                event.consume();
+            }
+        });
+        LOG.debug("ChatDetailPresenter initialized successfully");
+    }
+
 }

@@ -9,11 +9,7 @@ import de.uol.swp.common.game.message.request.ShareRideRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.response.AbstractResponseMessage;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
-import de.uol.swp.common.player.message.request.DiscardPlayerCardRequest;
-import de.uol.swp.common.player.message.request.DrawInfectionCardRequest;
-import de.uol.swp.common.player.message.request.DrawPlayerCardRequest;
-import de.uol.swp.common.player.message.request.GetCardsToSortRequest;
-import de.uol.swp.common.player.message.request.SortedCardsRequest;
+import de.uol.swp.common.player.message.request.*;
 import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.player.message.response.DrawPlayerCardResponse;
 import de.uol.swp.common.player.message.request.PlacePreventionMarkerRequest;
@@ -24,6 +20,7 @@ import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -34,6 +31,8 @@ import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
+import de.uol.swp.server.player.data.CardsAmountChangeListener;
+import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -146,6 +145,11 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         post(response);
         IGame game = playerManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+        sendServerMessageEvent(request.getLobbyId(),
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername() + " hat erfolgreich eine Spielerkarte gezogen."
+        );
     }
 
     /**
@@ -165,8 +169,14 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             sendStatusResponse(request, false, "Du bist nicht an der Reihe");
             return;
         }
-        gameManagement.drawInfectionCard(game);
+        InfectionCard infectionCard = gameManagement.drawInfectionCard(game);
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
+
+        sendServerMessageEvent(request.getLobbyId(),
+                "Der Spieler " + session.getUser()
+                                        .getUsername() + " hat eine Infektionskarte gezogen. " + "Die Infektionsrate " + "steigt und die Stadt " + infectionCard.getCity()
+                                                                                                                                                                .getName() + " wurde " + "infiziert. " + "Achtet auf mögliche Epidemien!"
+        );
     }
 
     /**
@@ -177,19 +187,31 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
     @Subscribe
     public void onShareRideRequest(ShareRideRequest request) {
         LOG.debug("[LobbyId: {}] ShareRideRequest received", request.getLobbyId());
+        IGame game = playerManagement.getGame(request.getLobbyId());
+        String cityName = game.getCityRepository()
+                              .getCity(request.getCityId())
+                              .getName()
+                              .getDisplayName();
         if (request.isConfirmed()) {
             Session session = request.getSession()
                                      .orElseThrow(SessionNotFoundException::new);
-            playerManagement.setPlayerLocation(
-                    request.getLobbyId(),
+            playerManagement.setPlayerLocation(request.getLobbyId(),
                     session.getUser()
                            .getUsername(),
                     request.getCityId()
             );
+            sendServerMessageEvent(request.getLobbyId(),
+                    "Der Spieler " + session.getUser()
+                                            .getUsername() + " hat das Mitfahrangebot angenommen und ist nun in " + cityName + "."
+            );
+        } else {
+            sendServerMessageEvent(request.getLobbyId(),
+                    "Der Spieler " + game.getCurrentPlayer()
+                                         .getUser()
+                                         .getUsername() + " hat das Mitfahrangebot nach " + cityName + " abgelehnt."
+            );
         }
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
-
-        IGame game = playerManagement.getGame(request.getLobbyId());
         post(new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
     }
 
@@ -312,6 +334,10 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             sendStatusResponse(request, true, "Karten wurden erfolgreich sortiert");
             sendServerMessageEvent(request.getLobbyId(), "Die Wissenschaftlerin der königlichen Akademie hat die Karten auf dem Nachziehstapel sortiert");
         } catch (IllegalGameStateException e) {
+            sendStatusResponse(request,
+                    false,
+                    "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie"
+            );
             LOG.error("[LobbyId: {}] Error sorting cards: {}", e.getMessage(), request.getLobbyId());
             sendStatusResponse(request, false, "Es ist nicht dein Zug oder du bist kein Wissenschaftler an der Königlichen Akademie");
         }
