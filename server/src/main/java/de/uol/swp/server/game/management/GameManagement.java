@@ -9,6 +9,7 @@ import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
@@ -17,6 +18,7 @@ import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.management.CardNotFoundException;
+import de.uol.swp.server.chat.store.ChatStore;
 import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -28,8 +30,10 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.lobby.store.LobbyStore;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
@@ -929,7 +933,43 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         LOG.trace("ReducedActionsRemaining");
 
         gameService.sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
+    }
 
+    public void removePlayer(String lobbyId, IUser user) throws LobbyIsEmptyException {
+        IGame game = getGame(lobbyId);
+        IPlayer player = game.getPlayer(user.getUsername());
+        LOG.info("[LobbyID: {}] Player {} has left the game", lobbyId, user.getUsername());
 
+        if (game.getPlayers().size() == 1) {
+            this.removeGame(game.getGameId());
+            throw new LobbyIsEmptyException("Lobby is empty");
+        } else if (game.getPlayers().size() <= 2) {
+            LOG.info("[LobbyID: {}] Game has ended due to insufficient players", lobbyId);
+            sendServerMessageEvent(
+                    lobbyId,
+                    user.getUsername() + " hat das Spiel verlassen. Das Spiel wurde aufgrund von zu wenigen Spielern beendet"
+            );
+
+            game.getPlayers().remove(player);
+            game.setState(new EndGameState(false));
+        } else {
+            for (ICard card : player.getCards()) {
+                game.getPlayerCardDiscardPile().add(card);
+            }
+            player.getCards().clear();
+
+            LOG.info("[LobbyID: {}] Cards of Player {} have been discarded", lobbyId, user.getUsername());
+            sendServerMessageEvent(
+                    lobbyId,
+                    user.getUsername() + " hat das Spiel verlassen. Die Karten von " + user.getUsername() + " wurden abgelegt"
+            );
+
+            game.getPlayers().remove(player);
+        }
+    }
+
+    public void removeGame(String lobbyId) {
+        LOG.info("[LobbyID: {}] Game has been removed from game store", lobbyId);
+        GameStore.getInstance().removeGame(lobbyId);
     }
 }

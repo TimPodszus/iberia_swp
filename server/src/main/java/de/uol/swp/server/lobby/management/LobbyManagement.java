@@ -156,4 +156,10 @@ public class LobbyManagement implements ILobbyManagement {
         LOG.debug("Generated lobby code: {}", code);
         return code;
     }
+
+    @Override
+    public void removeLobby(String lobbyId) {
+        LOG.debug("[LobbyId: {}]: Removing lobby from lobby Store", lobbyId);
+        lobbyStore.removeLobby(lobbyId);
+    }
 }

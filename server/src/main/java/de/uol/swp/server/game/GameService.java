@@ -12,6 +12,7 @@ import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
+import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.player.message.request.MovePlayerRequest;
 import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
@@ -32,9 +33,11 @@ import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.IPlayerManagement;
@@ -659,5 +662,37 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 user.getUsername() + " hat den Zug beendet. Es ist jetzt der nächste Spieler an der Reihe."
         );
 
+    }
+
+    /**
+     * Handles the event when a user leaves the game.
+     * <p>
+     * This method is called when a user attempts to leave the game. It removes the user from the lobby and the game.
+     * If the lobby becomes empty, a `LobbyClosedEvent` is posted. If the lobby is not found, a fatal log is recorded.
+     * Finally, a `BoardUpdateEvent` is sent to all players in the lobby.
+     *
+     * @param event the event containing the lobby ID and session of the user leaving the game
+     */
+    @Subscribe
+    public void onUserLeavedGameRequest(UserLeavedGameRequest event) {
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        IUser user = UserMapper.toUser(event.getSession()
+                                            .orElseThrow(SessionNotFoundException::new)
+                                            .getUser());
+        try {
+            lobbyManagement.removeUser(event.getLobbyId(), user.getUsername());
+            gameManagement.removePlayer(event.getLobbyId(), user);
+        } catch (LobbyIsEmptyException e) {
+            post(new LobbyClosedEvent(game.getGameId()));
+
+            return;
+        } catch (LobbyNotFoundException e) {
+            LOG.fatal("[LobbyID: {}] Lobby not found", event.getLobbyId());
+            sendStatusResponse(event, false, "Lobby wurde nicht gefunden");
+            return;
+        }
+        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+        ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+        sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
 }

@@ -38,4 +38,6 @@ public interface IChatManagement {
      * @throws IllegalAccessException if the user is not allowed to access the chat messages
      */
     List<IChatMessage> getChatMessages(String lobbyId, IUser user) throws IllegalAccessException;
+
+    void removeChat(String lobbyId);
 }

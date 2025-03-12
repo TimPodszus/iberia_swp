@@ -22,4 +22,11 @@ public interface IGameStore {
      * @param game    the game instance to add
      */
     void addGame(String lobbyId, IGame game);
+
+    /**
+     * Removes a game instance from the store.
+     *
+     * @param lobbyId the ID of the lobby
+     */
+    void removeGame(String lobbyId);
 }
