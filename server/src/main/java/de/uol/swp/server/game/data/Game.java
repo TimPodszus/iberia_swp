@@ -277,10 +277,4 @@ public class Game implements IGame {
     public void incrementCurrentPlayerIndex(Integer userAmount) {
         this.setCurrentPlayerIndex(currentPlayerIndex == userAmount - 1 ? 0 : currentPlayerIndex + 1);
     }
-
-    @Override
-    public IPlayer getNextPlayer() {
-        int nextPlayerIndex = currentPlayerIndex == players.size() - 1 ? 0 : currentPlayerIndex + 1;
-        return players.get(nextPlayerIndex);
-    }
 }

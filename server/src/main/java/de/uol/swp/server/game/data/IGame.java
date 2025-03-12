@@ -254,11 +254,4 @@ public interface IGame {
      * @param numSubDecks the number of subdecks
      */
     List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks);
-
-    /**
-     * Gets the player which is at turn next.
-     *
-     * @return the next player
-     */
-    IPlayer getNextPlayer();
 }

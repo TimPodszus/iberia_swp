@@ -120,25 +120,5 @@ class GameTest {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> game.gameStartShuffle(0));
         assertEquals("Number of sub-decks must be greater than zero.", exception.getMessage());
     }
-
-    /**
-     * Tests the method getNextPlayer
-     */
-    @Test
-    void testGetNextPLayer() {
-        IPlayer player1 = mock(IPlayer.class);
-        IPlayer player2 = mock(IPlayer.class);
-        game.getPlayers()
-            .add(player1);
-        game.getPlayers()
-            .add(player2);
-        assertEquals(player1, game.getCurrentPlayer());
-        assertEquals(player2, game.getNextPlayer());
-
-        game.incrementCurrentPlayerIndex(2);
-
-        assertEquals(player2, game.getCurrentPlayer());
-        assertEquals(player1, game.getNextPlayer());
-    }
 }
 

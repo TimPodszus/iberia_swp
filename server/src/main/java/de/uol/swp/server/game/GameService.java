@@ -519,17 +519,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
      * @param game the game
      */
     private void changedToPlayerTurnState(IGame game) {
-        if (game.getPreviousState() instanceof EventState) {
-            sendServerMessageEvent(game.getGameId(),
-                    game.getCurrentPlayer()
-                        .getUser()
-                        .getUsername() + " ist immer noch an der Reihe."
-            );
-        } else {
-            sendServerMessageEvent(game.getGameId(),
-                    game.getNextPlayer()
-                        .getUser()
-                        .getUsername() + " ist an der Reihe."
+        if (!(game.getPreviousState() instanceof EventState)) {
+            sendServerMessageEvent(game.getGameId(), "Der nächste Spieler ist an der Reihe"
             );
         }
     }
