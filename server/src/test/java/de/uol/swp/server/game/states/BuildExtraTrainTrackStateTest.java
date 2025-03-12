@@ -25,7 +25,7 @@ class BuildExtraTrainTrackStateTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        state = new BuildExtraTrainTrackState(List.of(connection1, connection2));
+        state = new BuildExtraTrainTrackState(List.of(connection1, connection2), 4);
     }
 
     @Test

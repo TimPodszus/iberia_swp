@@ -22,14 +22,9 @@ import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.*;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.event.EndGameEvent;
-import de.uol.swp.common.game.message.event.ShareRideEvent;
-import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
-import de.uol.swp.common.game.message.response.CardExchangeResponse;
-import de.uol.swp.common.game.message.response.CardSelectionResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.dto.IPlagueDTO;
@@ -37,9 +32,9 @@ import de.uol.swp.common.plague.message.response.AvailablePlaguesResponse;
 import de.uol.swp.common.plague.message.response.MigrationOverseasResponse;
 import de.uol.swp.common.plague.message.response.TreatPlagueResponse;
 import de.uol.swp.common.player.IPlayerDTO;
-import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.player.message.event.DiscardPlayerCardEvent;
 import de.uol.swp.common.player.message.event.RegionsForPreventionMarkerEvent;
+import de.uol.swp.common.player.message.response.CardsToSortResponse;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.common.region.message.response.AvailableRegionsResponse;
 import de.uol.swp.common.region.message.response.CardsToDiscardForRegionResponse;
@@ -51,8 +46,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
@@ -443,13 +438,10 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.TRAIN
-        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
-                cityId,
-                TransportMode.NONE
-        );
+                TransportMode.CARRIAGE
+        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
     }
 
     /**
@@ -523,10 +515,12 @@ public class GamePresenter extends AbstractPresenter {
                                                               .contains(REGION_HIGHLIGHTED_CLASS)) {
             gameService.sendWaterTreatmentRegionRequest(lobbyId, regionId);
         } else if ((isGameState(StateType.EVENT_STATE) || isGameState(StateType.PLACE_EXTRA_WATER_TREATMENT_STATE)) && source.getStyleClass()
-                                                                                                                                   .contains(
-                                                                                                                                           REGION_HIGHLIGHTED_CLASS)) {
+                                                                                                                             .contains(
+                                                                                                                                     REGION_HIGHLIGHTED_CLASS)) {
             handleTreatWaterEvent();
-        } else if (gameDTO.getState().equals(StateType.PLACE_PREVENTION_MARKER_STATE) && source.getStyleClass().contains(REGION_HIGHLIGHTED_CLASS)){
+        } else if (gameDTO.getState()
+                          .equals(StateType.PLACE_PREVENTION_MARKER_STATE) && source.getStyleClass()
+                                                                                    .contains(REGION_HIGHLIGHTED_CLASS)) {
             gameService.sendPlacePreventionMarkerRequest(lobbyId, regionId);
             resetRegionStyle();
         }
@@ -1639,35 +1633,6 @@ public class GamePresenter extends AbstractPresenter {
         }
     }
 
-    /**
-     * Event handler for the CardSelectionResponse.
-     * This method is called when a CardSelectionResponse is received.
-     * It displays a dialog for the user to select a card.
-     *
-     * @param response the CardSelectionResponse containing the cards to be selected
-     */
-    @Subscribe
-    public void onCardSelectionResponse(CardSelectionResponse response) {
-        if (!response.getLobbyId()
-                     .equals(this.lobbyId)) {
-            return;
-        }
-
-        CardDialog dialog = new CardDialog(true, response.isDismissible(), response.getCards());
-        Optional<ICardDTO> result = dialog.showAndWait();
-    }
-
-    @Subscribe
-    public void onCardExchangeResponse(CardExchangeResponse response) {
-        if (!response.getLobbyId()
-                     .equals(this.lobbyId)) {
-            return;
-        }
-
-        CardExchangeDialog dialog = new CardExchangeDialog(user.getUsername(), response.getPlayerCards());
-        Optional<Map<String, ICardDTO>> result = dialog.showAndWait();
-    }
-
     @Subscribe
     public void onDiscardPlayerCardEvent(DiscardPlayerCardEvent event) {
         LOG.debug("DiscardPlayerCardEvent received");
@@ -1937,7 +1902,7 @@ public class GamePresenter extends AbstractPresenter {
             dialog.showAndWaitForResult()
                   .thenAccept(selectedValue -> {
                       if (selectedValue != null) {
-                          LOG.debug("[LobbyId: {}] Player has selected {} water treatments",lobbyId, selectedValue);
+                          LOG.debug("[LobbyId: {}] Player has selected {} water treatments", lobbyId, selectedValue);
                           gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
                       } else {
                           LOG.debug("[LobbyId: {}] Player has not selected any water treatments", lobbyId);
@@ -1991,6 +1956,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
+        if (!response.getLobbyId()
+                     .equals(this.lobbyId)) {
+            return;
+        }
+
         LOG.debug("Received ShareKnowledgeResponse");
         if (response.wasSuccessful()) {
             LOG.info("Knowledge shared");
@@ -2025,6 +1995,7 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Handles the CardsToSortResponse.
      * Opens a dialog for the player to sort the cards.
+     *
      * @param response the CardsToSortResponse containing the cards to sort
      */
     @Subscribe
@@ -2048,6 +2019,11 @@ public class GamePresenter extends AbstractPresenter {
      */
     @Subscribe
     public void onTreatWaterEventResponse(TreatWaterEventResponse eventResponse) {
+        if (!eventResponse.getLobbyId()
+                          .equals(lobbyId)) {
+            return;
+        }
+
         List<IRegionDTO> regions = gameDTO.getRegions();
         isDismissibleDialog = eventResponse.isDismissible();
         for (IRegionDTO region : regions) {
@@ -2060,12 +2036,13 @@ public class GamePresenter extends AbstractPresenter {
     /**
      * Handles the RegionsForPreventionMarkerEvent.
      * Highlights the regions where a prevention marker can be placed.
+     *
      * @param event the RegionsForPreventionMarkerEvent containing the regions
      */
     @Subscribe
-    public void onRegionsForPreventionMarkerEvent(RegionsForPreventionMarkerEvent event){
+    public void onRegionsForPreventionMarkerEvent(RegionsForPreventionMarkerEvent event) {
         if (!event.getLobbyId()
-                     .equals(this.lobbyId)) {
+                  .equals(this.lobbyId)) {
             return;
         }
         LOG.debug("[LobbyId: {}] Received RegionsForPreventionMarkerEvent", lobbyId);
@@ -2237,5 +2214,22 @@ public class GamePresenter extends AbstractPresenter {
                                        .equals(user.getUsername());
         LOG.trace("[LobbyId: {}] Is it the players turn: {}", lobbyId, isPlayersTurn);
         return isPlayersTurn;
+    }
+
+    @Subscribe
+    public void onCardSelectionEvent(CardSelectionEvent event) {
+        if (!event.getLobbyId()
+                  .equals(lobbyId)) {
+            return;
+        }
+        LOG.debug("[LobbyId: {}] Received CardSelectionEvent", event.getLobbyId());
+        Platform.runLater(() -> {
+            CardDialog dialog = new CardDialog(true, false, event.getCards());
+            Optional<ICardDTO> result = dialog.showAndWait();
+            result.ifPresent(card -> {
+                LOG.debug("[LobbyId: {}] Player selected card {}", lobbyId, card.getId());
+                gameService.sendGetCardRequest(lobbyId, card.getId());
+            });
+        });
     }
 }
