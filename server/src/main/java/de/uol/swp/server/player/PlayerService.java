@@ -177,11 +177,11 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
     public void onShareRideRequest(ShareRideRequest request) {
         LOG.debug("[LobbyId: {}] ShareRideRequest received", request.getLobbyId());
         IGame game = playerManagement.getGame(request.getLobbyId());
-        String cityName = game.getCityRepository()
-                              .getCity(request.getCityId())
-                              .getName()
-                              .getDisplayName();
         if (request.isConfirmed()) {
+            String cityName = game.getCityRepository()
+                                  .getCity(request.getCityId())
+                                  .getName()
+                                  .getDisplayName();
             Session session = request.getSession()
                                      .orElseThrow(SessionNotFoundException::new);
             playerManagement.setPlayerLocation(request.getLobbyId(),
@@ -197,7 +197,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
             sendServerMessageEvent(request.getLobbyId(),
                     "Der Spieler " + game.getCurrentPlayer()
                                          .getUser()
-                                         .getUsername() + " hat das Mitfahrangebot nach " + cityName + " abgelehnt."
+                                         .getUsername() + " hat das Mitfahrangebot abgelehnt."
             );
         }
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
