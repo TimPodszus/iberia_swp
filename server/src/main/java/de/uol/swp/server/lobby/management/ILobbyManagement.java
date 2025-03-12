@@ -76,6 +76,11 @@ public interface ILobbyManagement {
      */
     void leaveLobby(String lobbyID, IUser user);
 
+    /**
+     * Removes a lobby by its ID.
+     *
+     * @param lobbyId the ID of the lobby to remove
+     */
     void removeLobby(String lobbyId);
 }
 

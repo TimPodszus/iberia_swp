@@ -650,6 +650,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
             return;
         } catch (LobbyNotFoundException e) {
             LOG.fatal("[LobbyID: {}] Lobby not found", event.getLobbyId());
+            sendStatusResponse(event, false, "Lobby wurde nicht gefunden");
+            return;
         }
         IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());

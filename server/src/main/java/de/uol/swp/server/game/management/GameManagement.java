@@ -902,14 +902,16 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IGame game = getGame(lobbyId);
         IPlayer player = game.getPlayer(user.getUsername());
         LOG.info("[LobbyID: {}] Player {} has left the game", lobbyId, user.getUsername());
-        sendServerMessageEvent(lobbyId, user.getUsername() + " hat das Spiel verlassen");
 
         if (game.getPlayers().size() == 1) {
             this.removeGame(game.getGameId());
             throw new LobbyIsEmptyException("Lobby is empty");
         } else if (game.getPlayers().size() <= 2) {
             LOG.info("[LobbyID: {}] Game has ended due to insufficient players", lobbyId);
-            sendServerMessageEvent(lobbyId, "Das Spiel wurde aufgrund von zu wenigen Spielern beendet");
+            sendServerMessageEvent(
+                    lobbyId,
+                    user.getUsername() + " hat das Spiel verlassen. Das Spiel wurde aufgrund von zu wenigen Spielern beendet"
+            );
 
             game.getPlayers().remove(player);
             game.setState(new EndGameState(false));
@@ -920,7 +922,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             player.getCards().clear();
 
             LOG.info("[LobbyID: {}] Cards of Player {} have been discarded", lobbyId, user.getUsername());
-            sendServerMessageEvent(lobbyId, "Die Karten von " + user.getUsername() + " wurden abgelegt");
+            sendServerMessageEvent(
+                    lobbyId,
+                    user.getUsername() + " hat das Spiel verlassen. Die Karten von " + user.getUsername() + " wurden abgelegt"
+            );
 
             game.getPlayers().remove(player);
         }

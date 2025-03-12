@@ -162,8 +162,20 @@ public interface IGameManagement {
      */
     void endTurn(String lobbyId, IUser user) throws IllegalGameStateException;
 
+    /**
+     * Removes a player from the specified lobby.
+     *
+     * @param lobbyCode the code of the lobby from which the player is to be removed
+     * @param user      the user representing the player to be removed
+     * @throws LobbyIsEmptyException if the lobby is empty after removing the player
+     */
     void removePlayer(String lobbyCode, IUser user) throws LobbyIsEmptyException;
 
+    /**
+     * Removes the game associated with the specified lobby code.
+     *
+     * @param lobbyCode the code of the lobby whose game is to be removed
+     */
     void removeGame(String lobbyCode);
 }
 
