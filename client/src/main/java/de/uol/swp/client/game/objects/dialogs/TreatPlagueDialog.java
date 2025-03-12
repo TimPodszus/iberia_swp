@@ -2,11 +2,12 @@ package de.uol.swp.client.game.objects.dialogs;
 
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.infection.IInfectionDTO;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.StageStyle;
 
 import java.util.List;
@@ -15,12 +16,13 @@ import java.util.List;
  * Dialog that allows a player to choose a plague to treat.
  * This dialog presents a list of available plagues and enables the player to select one to treat.
  */
-public class TreatPlagueDialog extends Dialog<PlagueName> {
+public class TreatPlagueDialog extends AbstractDialog<PlagueName> {
 
     private static final String HEADER = "Treat Plague";
     private final boolean dismissible;
     private final List<IInfectionDTO> plagues;
     private PlagueName selectedPlague;
+    private final ToggleGroup group = new ToggleGroup();
 
     /**
      * Constructs a new TreatPlagueDialog.
@@ -48,18 +50,32 @@ public class TreatPlagueDialog extends Dialog<PlagueName> {
      * Sets up the content of the dialog, which includes buttons for each available plague.
      */
     private void setContent() {
-        HBox plagueBox = new HBox();
+        VBox plagueBox = new VBox();
+        plagueBox.getStyleClass().add(VBOX_STYLE);
         for (IInfectionDTO infection : this.plagues) {
             PlagueName plagueName = infection.getPlagueName();
-            Button plagueButton = new Button(plagueName.name());
+            ToggleButton plagueButton = new ToggleButton(plagueName.getDisplayName());
+            plagueButton.setToggleGroup(group);
             plagueButton.setOnAction(event -> onPlagueSelected(plagueName));
+
+            ImageView image = new ImageView(new Image(plagueName.getImage().getPath()));
+            image.setFitHeight(30);
+            image.setFitWidth(30);
+
+            HBox plagueInfo = new HBox();
+            plagueInfo.getStyleClass().add(HBOX_STYLE);
+            plagueInfo.getChildren()
+                      .addAll(image, plagueButton);
+
             plagueBox.getChildren()
-                     .add(plagueButton);
+                     .add(plagueInfo);
         }
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(plagueBox);
+        scrollPane.getStyleClass().add(SCROLL_PANE);
+        scrollPane.setFitToWidth(true);
         super.getDialogPane()
              .setContent(scrollPane);
     }
@@ -78,10 +94,16 @@ public class TreatPlagueDialog extends Dialog<PlagueName> {
      */
     private void setButtons() {
         super.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        Node okButton = getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setDisable(true);
+        okButton.getStyleClass().add(APPROVE_BUTTON);
+        group.selectedToggleProperty()
+             .addListener((obs, oldVal, newVal) -> okButton.setDisable(newVal == null));
+
         if (this.dismissible) {
             super.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+            super.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add(DENY_BUTTON);
         }
     }
-
 }
 
