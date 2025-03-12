@@ -1,7 +1,7 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
-import de.uol.swp.client.game.objects.dialogs.PlayerSelectionDialog;
+import de.uol.swp.client.game.objects.dialogs.PlayerSelectionForCardExchangeDialog;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.request.GetCardRequest;
@@ -12,9 +12,9 @@ import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
+import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
-import de.uol.swp.common.game.message.response.CardExchangeConfirmationRequest;
 import de.uol.swp.common.plague.message.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.message.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.message.request.TreatPlagueRequest;
@@ -166,7 +166,7 @@ public class GameService {
     public void onAvailableShareKnowledgePlayersResponse(AvailableShareKnowledgePlayersResponse response) {
         LOG.debug("Current player has the current city card");
         Platform.runLater(() -> {
-            PlayerSelectionDialog dialog = new PlayerSelectionDialog(response.getPlayers(), response.getRole());
+            PlayerSelectionForCardExchangeDialog dialog = new PlayerSelectionForCardExchangeDialog(response.getPlayers());
             Optional<String> result = dialog.showAndWait();
             result.ifPresent(player -> {
                 LOG.debug("Player selected: {}", player);

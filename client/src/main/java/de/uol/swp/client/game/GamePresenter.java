@@ -23,7 +23,6 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
-import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.dto.IPlagueDTO;
 import de.uol.swp.common.plague.message.response.AvailablePlaguesResponse;
@@ -438,13 +437,10 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.TRAIN
-        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
-                cityId,
-                TransportMode.NONE
-        );
+                TransportMode.CARRIAGE
+        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
     }
 
     /**
@@ -1953,32 +1949,6 @@ public class GamePresenter extends AbstractPresenter {
 
     }
 
-    /**
-     * Handles the KnowledgeSharedEvent.
-     * <p>
-     * This method is called when a KnowledgeSharedEvent is received. It updates the game board
-     * with the latest data from the event and logs the result of the knowledge sharing action.
-     *
-     * @param response the KnowledgeSharedEvent containing the game data
-     */
-    @Subscribe
-    public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
-        if (!response.getLobbyId()
-                     .equals(this.lobbyId)) {
-            return;
-        }
-
-        LOG.debug("Received ShareKnowledgeResponse");
-        if (response.wasSuccessful()) {
-            LOG.info("Knowledge shared");
-            LOG.trace("Updating board of Game {}", response.getGameDTO());
-            this.gameDTO = response.getGameDTO();
-            Platform.runLater(() -> updateBoard(response.getGameDTO()));
-        } else {
-            LOG.info("Knowledge not shared");
-        }
-
-    }
 
     /**
      * Handles the EndGameEvent.

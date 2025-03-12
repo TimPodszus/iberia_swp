@@ -1,7 +1,7 @@
-package de.uol.swp.common.game.message.response;
+package de.uol.swp.common.game.message.request;
 
 import de.uol.swp.common.game.message.AbstractGameRequest;
-import de.uol.swp.common.game.message.request.CardExchangeConfirmationEvent;
+import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import lombok.Getter;
 
 import java.util.Objects;

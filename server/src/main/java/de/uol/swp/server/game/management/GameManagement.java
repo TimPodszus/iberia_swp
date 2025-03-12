@@ -6,9 +6,10 @@ import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.TransportMode;
-import de.uol.swp.common.game.message.request.CardExchangeConfirmationEvent;
+import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.AbstractManagement;
@@ -955,5 +956,28 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
 
+    }
+
+    @Override
+    public void giveCard(ShareKnowledgeRequest request) {
+        IGame game = getGame(request.getLobbyId());
+
+        IPlayer receivingPlayer = game.getPlayer(request.getUsername());
+        IPlayer requestingPlayer = game.getCurrentPlayer();
+
+        ICard requestCard = game.getCurrentPlayer()
+                                .getCards()
+                                .stream()
+                                .filter(card -> card.getId() == game.getCurrentPlayer()
+                                                                    .getCurrentPosition()
+                                                                    .getId())
+                                .findFirst()
+                                .get();
+
+
+        receivingPlayer.getCards()
+                       .add(requestCard);
+        requestingPlayer.getCards()
+                        .remove(requestCard);
     }
 }

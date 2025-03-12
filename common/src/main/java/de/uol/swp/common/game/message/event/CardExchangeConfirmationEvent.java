@@ -1,4 +1,4 @@
-package de.uol.swp.common.game.message.request;
+package de.uol.swp.common.game.message.event;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.AbstractGameEvent;
@@ -21,10 +21,10 @@ public class CardExchangeConfirmationEvent extends AbstractGameEvent {
         return isGiveRequest == that.isGiveRequest && Objects.equals(
                 requestingPlayer,
                 that.requestingPlayer
-        ) && Objects.equals(
-                requestingCard,
-                that.requestingCard
-        ) && Objects.equals(receivingPlayer, that.receivingPlayer);
+        ) && Objects.equals(requestingCard, that.requestingCard) && Objects.equals(
+                receivingPlayer,
+                that.receivingPlayer
+        );
     }
 
     @Override

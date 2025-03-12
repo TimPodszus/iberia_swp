@@ -7,14 +7,10 @@ import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.game.message.event.BoardUpdateEvent;
-import de.uol.swp.common.game.message.event.EndGameEvent;
-import de.uol.swp.common.game.message.event.ShareRideEvent;
-import de.uol.swp.common.game.message.event.StartGameEvent;
+import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
-import de.uol.swp.common.game.message.response.CardExchangeConfirmationRequest;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
 import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.player.IPlayerDTO;
@@ -376,8 +372,13 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 List<IPlayerDTO> availablePlayers = PlayerMapper.toDTOList(game.getPlayers()
                                                                                .stream()
                                                                                .filter(player -> player.getCurrentPosition()
-                                                                                                       .equals(currentCity))
+                                                                                                       .equals(currentCity) && !player.getUser()
+                                                                                                                                      .getUsername()
+                                                                                                                                      .equals(game.getCurrentPlayer()
+                                                                                                                                                  .getUser()
+                                                                                                                                                  .getUsername()))
                                                                                .toList());
+                gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
                 AvailableShareKnowledgePlayersResponse response = new AvailableShareKnowledgePlayersResponse(
                         request.getLobbyId(),
                         availablePlayers,
@@ -426,10 +427,40 @@ public class GameService extends AbstractService implements GameStateChangeListe
     }
 
     @Subscribe
+    public void onShareKnowledgeRequest(ShareKnowledgeRequest request) {
+        LOG.debug("Got ShareKnowledgeRequest for lobby {}", request.getLobbyId());
+        gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
+        gameManagement.giveCard(request);
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                "Spieler " + request.getUsername() + " hat die Karte der Stadt " + "in der er steht" + " erhalten"
+        );
+        sendToAllInLobby(
+                lobbyManagement.getLobby(request.getLobbyId()),
+                new BoardUpdateEvent(
+                        request.getLobbyId(),
+                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
+                )
+        );
+    }
+
+    @Subscribe
     public void onCardExchangeConfirmationRequest(CardExchangeConfirmationRequest response) {
         gameManagement.unlockGameInWaitForConfirmation(response.getLobbyId());
         LOG.debug("Got CardExchangeConfirmationRequest for lobby {}", response.getLobbyId());
         gameManagement.giveCard(response.getCardExchangeConfirmationRequest());
+        sendServerMessageEvent(
+                response.getLobbyId(),
+                "Spieler " + response.getCardExchangeConfirmationRequest()
+                                     .getRequestingPlayer()
+                                     .getUsername() + " hat die Karte " + response.getCardExchangeConfirmationRequest()
+                                                                                  .getRequestingCard()
+                                                                                  .getTitle() + " von Spieler " + response.getCardExchangeConfirmationRequest()
+                                                                                                                          .getReceiver()
+                                                                                                                          .get(0)
+                                                                                                                          .getUser()
+                                                                                                                          .getUsername() + " bekommen."
+        );
         sendToAllInLobby(
                 lobbyManagement.getLobby(response.getLobbyId()),
                 new BoardUpdateEvent(

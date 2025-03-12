@@ -1,9 +1,10 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.game.GameActions;
-import de.uol.swp.common.game.message.request.CardExchangeConfirmationEvent;
+import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.management.CardNotFoundException;
@@ -160,5 +161,7 @@ public interface IGameManagement {
     void removeGame(String lobbyCode);
 
     void giveCard(CardExchangeConfirmationEvent cardExchangeConfirmationRequest);
+
+    void giveCard(ShareKnowledgeRequest shareKnowledgeRequest);
 }
 
