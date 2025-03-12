@@ -1,6 +1,7 @@
 package de.uol.swp.server.chat;
 
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.player.data.IPlayer;
 import lombok.NoArgsConstructor;
@@ -179,6 +180,25 @@ public class ServerMessageProvider {
             return username + " hat Wasser in einer Region gereinigt und die Ausbruchswahrscheinlichkeit in " + "anliegenden Städten reduziert!";
         } else {
             return "Die Ausbruchswahrscheinlichkeit in anliegenden Städten wurde durch " + username + "s " + "Wasserreinigung in der Region reduziert!";
+        }
+    }
+
+    /**
+     * Returns a random message for a new water treatment in a city.
+     *
+     * @param player The player who treats the plague
+     * @param plague The plague name
+     * @return A random message for a new plague treatment in a city
+     */
+    public static String treatPlagueMessage(IPlayer player, PlagueName plague) {
+        int randomNumber = random.nextInt(2);
+        String username = player.getUser()
+                                .getUsername();
+        String plagueName = plague.getDisplayName();
+        if (randomNumber == 1) {
+            return username + " hat die Seuche " + plagueName + " erfolgreich behandelt!";
+        } else {
+            return "Die Seuche " + plagueName + " wurde durch " + username + " erfolgreich behandelt!";
         }
     }
 }
