@@ -7,7 +7,6 @@ import de.uol.swp.common.game.RoleEnum;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
@@ -22,7 +21,7 @@ import java.util.List;
  * A dialog for selecting a card from a list of player cards.
  * Returns the selected card as result
  */
-public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, Integer>> {
+public class CardSelectionWaterTreatmentDialog extends AbstractDialog<Pair<CityCardDTO, Integer>> {
     private static final String HEADER = "Karte auswählen";
     private final boolean dismissible;
     private final List<CityCardDTO> cityCards;
@@ -54,8 +53,8 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         this.displayedPlayerCards = createCards();
         super.initStyle(StageStyle.DECORATED);
         super.setHeaderText(HEADER);
-        this.setContent();
         this.setButtons();
+        this.setContent();
         this.addToggleGroupListener();
         super.setResultConverter(dialogButton -> {
             if (dialogButton == ButtonType.OK) {
@@ -76,10 +75,12 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         super.getDialogPane()
              .getButtonTypes()
              .add(ButtonType.OK);
+        super.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add(APPROVE_BUTTON);
         if (this.dismissible) {
             super.getDialogPane()
                  .getButtonTypes()
                  .add(ButtonType.CANCEL);
+            super.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add(DENY_BUTTON);
         }
 
         okButton = (Button) super.getDialogPane()
@@ -100,10 +101,13 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
             }
         }
 
-        VBox mainBox = (VBox) super.getDialogPane()
-                                   .getContent();
+        VBox mainBox = new VBox();
+        mainBox.getStyleClass().add(VBOX_STYLE);
+        mainBox.setAlignment(Pos.CENTER);
         mainBox.getChildren()
                .addAll(titleLabel, buttonBox);
+        super.getDialogPane()
+             .setContent(mainBox);
     }
 
     /**
@@ -147,8 +151,9 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
      * Sets the content of the dialog, including the cards to be displayed.
      */
     private void setContent() {
-        HBox cardBox = new HBox(5);
-        cardBox.setAlignment(Pos.CENTER);
+        HBox cardBox = new HBox();
+        cardBox.getStyleClass()
+               .add(HBOX_STYLE);
         for (AbstractCard card : this.displayedPlayerCards) {
             card.setOnMouseClicked(mouseEvent -> onCardClicked(card.getCardId()));
             cardBox.getChildren()
@@ -157,13 +162,12 @@ public class CardSelectionWaterTreatmentDialog extends Dialog<Pair<CityCardDTO, 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(cardBox);
+        scrollPane.getStyleClass().add(SCROLL_PANE);
 
-        VBox mainBox = new VBox(10);
-        mainBox.setAlignment(Pos.CENTER);
+        VBox mainBox = (VBox) super.getDialogPane()
+                                   .getContent();
         mainBox.getChildren()
-               .add(scrollPane);
-        super.getDialogPane()
-             .setContent(mainBox);
+               .addAll(scrollPane);
     }
 
 

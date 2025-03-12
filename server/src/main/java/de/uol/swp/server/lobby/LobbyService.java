@@ -11,7 +11,9 @@ import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.lobby.data.ILobby;
+import de.uol.swp.server.lobby.exceptions.LobbyIsFullException;
 import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
+import de.uol.swp.server.lobby.exceptions.UserAlreadyInLobbyException;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
@@ -79,6 +81,10 @@ public class LobbyService extends AbstractService {
                           .ifPresent(response::setMessageContext);
         post(response);
         LOG.debug("[LobbyId: {}] Sent lobby created response", createdLobby.getLobbyId());
+        sendServerMessageEvent(
+                createdLobby.getLobbyId(),
+                "Die Lobby wurde erstellt."
+        );
     }
 
     /**
@@ -106,8 +112,25 @@ public class LobbyService extends AbstractService {
             lobbyManagement.joinLobby(request.getLobbyId(), UserMapper.toUser(user));
         } catch (LobbyNotFoundException e) {
             LOG.error("[LobbyId: {}] Lobby to join not found", request.getLobbyId());
-            ExceptionMessage exceptionMessage = new ExceptionMessage(
-                    "Lobby konnte nicht beigetreten werden. Keine Lobby mit der ID " + request.getLobbyId() + " gefunden.");
+            ExceptionMessage exceptionMessage = new ExceptionMessage("Der Lobby konnte nicht beigetreten werden. Keine Lobby mit der ID " + request.getLobbyId() + " gefunden.");
+            exceptionMessage.setSession(session);
+            request.getMessageContext()
+                   .ifPresent(exceptionMessage::setMessageContext);
+            post(exceptionMessage);
+
+            return;
+        } catch (LobbyIsFullException e) {
+            LOG.error("[LobbyId: {}] Lobby to join is full", request.getLobbyId());
+            ExceptionMessage exceptionMessage = new ExceptionMessage("Der Lobby konnte nicht beigetreten werden. Die Lobby ist bereits voll.");
+            exceptionMessage.setSession(session);
+            request.getMessageContext()
+                   .ifPresent(exceptionMessage::setMessageContext);
+            post(exceptionMessage);
+
+            return;
+        } catch (UserAlreadyInLobbyException e) {
+            LOG.error("[LobbyId: {}] Lobby join failed. User is already in Lobby", request.getLobbyId());
+            ExceptionMessage exceptionMessage = new ExceptionMessage("Der Lobby konnte nicht beigetreten werden. Du bist bereits in der Lobby.");
             exceptionMessage.setSession(session);
             request.getMessageContext()
                    .ifPresent(exceptionMessage::setMessageContext);
@@ -119,6 +142,10 @@ public class LobbyService extends AbstractService {
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         LOG.info("[LobbyId: {}] User joined lobby", request.getLobbyId());
         sendToAllInLobby(lobby, new UserJoinedLobbyMessage(lobby.getLobbyId(), user));
+        sendServerMessageEvent(
+                lobby.getLobbyId(),
+                user.getUsername() + " ist der Lobby beigetreten. Willkommen!"
+        );
     }
 
     /**
@@ -150,6 +177,7 @@ public class LobbyService extends AbstractService {
         request.getMessageContext()
                .ifPresent(response::setMessageContext);
         post(response);
+        sendServerMessageEvent(lobby.getLobbyId(), user.getUsername() + " hat die Lobby verlassen.");
         LOG.info("[LobbyId: {}] Sent user left lobby message", request.getLobbyId());
     }
 
@@ -287,7 +315,7 @@ public class LobbyService extends AbstractService {
         RemovedFromLobbyEvent removedFromLobbyEvent = new RemovedFromLobbyEvent(lobby.getLobbyId());
         removedFromLobbyEvent.setReceiver(List.of(session));
         post(removedFromLobbyEvent);
-
+        sendServerMessageEvent(lobby.getLobbyId(), user.getUsername() + " wurde aus der Lobby entfernt.");
         sendToAllInLobby(lobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(lobby)));
         LOG.debug("[LobbyId: {}] Sent lobby updated event", request.getLobbyId());
     }

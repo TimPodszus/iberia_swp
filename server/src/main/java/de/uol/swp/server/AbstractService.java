@@ -2,6 +2,7 @@ package de.uol.swp.server;
 
 import com.google.inject.Inject;
 import de.uol.swp.common.game.message.AbstractGameRequest;
+import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.message.AbstractServerMessage;
 import de.uol.swp.common.message.Message;
@@ -15,6 +16,9 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class is the base for creating a new Service.
@@ -25,10 +29,7 @@ import java.util.*;
  * @since 2019-10-08
  */
 public class AbstractService {
-
-    protected static final String USER_NOT_LOGGED_IN = "User not logged in";
-
-    protected static final int DEFAULT_MESSAGE_DELAY_MILLIS = 200;
+    protected static final int DEFAULT_MESSAGE_DELAY_MILLIS = 400;
     /**
      * The EventBus instance used for posting and handling events.
      * This is a protected final field, ensuring it is initialized once and cannot be changed.
@@ -129,5 +130,29 @@ public class AbstractService {
     protected void sendServerMessageEvent(String lobbyId, String message) {
         ServerMessageEvent serverMessage = new ServerMessageEvent(lobbyId, message);
         post(serverMessage);
+    }
+
+    /**
+     * Posts a response on the EventBus with delay
+     *
+     * @param response the response to post
+     */
+    protected void sendResponseWithDelay(AbstractGameResponse response) {
+        ScheduledExecutorService scheduler = null;
+        try {
+            // Warning is wrong, scheduler is shutdown in finally block. A close method does not exist.
+            scheduler = Executors.newScheduledThreadPool(1);
+            scheduler.schedule(() -> post(response), DEFAULT_MESSAGE_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+            LOG.debug(
+                    "[Lobby: {}] Sent {} with delay",
+                    response.getLobbyId(),
+                    response.getClass()
+                            .getSimpleName()
+            );
+        } finally {
+            if (scheduler != null) {
+                scheduler.shutdown();
+            }
+        }
     }
 }

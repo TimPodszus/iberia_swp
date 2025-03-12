@@ -11,6 +11,15 @@
 .pile {
     -fx-border-color: black;
     -fx-border-width: 1;
+    -fx-border-insets: -1;
+    -fx-background-color: lightgrey;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.pile-highlighted {
+    -fx-border-color: #77E44C;
+    -fx-border-width: 3;
+    -fx-border-insets: -3;
     -fx-background-color: lightgrey;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
@@ -196,4 +205,8 @@
     -fx-fill: rgb(119, 228, 76, 0.5);
     -fx-stroke: #77E44C;
     -fx-stroke-width: 3px;
+}
+
+.region-highlight:hover {
+    -fx-effect: dropshadow(gaussian, rgba(16, 133, 1, 0.7), 4, 0, 0, 1);
 }

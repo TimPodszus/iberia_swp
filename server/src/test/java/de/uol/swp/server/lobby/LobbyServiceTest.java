@@ -14,7 +14,9 @@ import de.uol.swp.server.EventBusBasedTest;
 import de.uol.swp.server.communication.UUIDSession;
 import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.data.Lobby;
+import de.uol.swp.server.lobby.exceptions.LobbyIsFullException;
 import de.uol.swp.server.lobby.exceptions.LobbyNotFoundException;
+import de.uol.swp.server.lobby.exceptions.UserAlreadyInLobbyException;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
@@ -327,7 +329,7 @@ public class LobbyServiceTest extends EventBusBasedTest {
      * @throws InterruptedException if the eventbus is interrupted
      */
     @Test
-    void testJoinLobby() throws LobbyNotFoundException, InterruptedException {
+    void testJoinLobby() throws LobbyNotFoundException, InterruptedException, UserAlreadyInLobbyException, LobbyIsFullException {
         when(lobbyManagement.getLobby("testcode")).thenReturn(lobby);
         IUser user = UserMapper.toUser(firstOwner);
         JoinLobbyRequest request = new JoinLobbyRequest("testcode");
@@ -343,11 +345,13 @@ public class LobbyServiceTest extends EventBusBasedTest {
     /**
      * Tests joining a lobby when the lobby is not found.
      *
+     * @throws UserAlreadyInLobbyException if the user is already in the lobby
+     * @throws LobbyIsFullException        if the lobby is full
      * @throws LobbyNotFoundException if the lobby is not found
      * @throws InterruptedException   if the eventbus is interrupted
      */
     @Test
-    void testJoinLobby_LobbyNotFound() throws InterruptedException, LobbyNotFoundException {
+    void testJoinLobby_LobbyNotFound() throws UserAlreadyInLobbyException, LobbyIsFullException, LobbyNotFoundException, InterruptedException {
         IUser user = UserMapper.toUser(firstOwner);
         JoinLobbyRequest request = new JoinLobbyRequest("testcode");
         Session session = UUIDSession.create(user);
@@ -355,6 +359,54 @@ public class LobbyServiceTest extends EventBusBasedTest {
 
         doThrow(new LobbyNotFoundException("Lobby not found")).when(lobbyManagement)
                                                               .joinLobby("testcode", user);
+
+        postAndWait(request);
+
+        assertInstanceOf(ExceptionMessage.class, event);
+        verify(lobbyManagement, never()).getLobby(anyString());
+    }
+
+    /**
+     * Tests joining a lobby when user already in lobby.
+     *
+     * @throws UserAlreadyInLobbyException if the user is already in the lobby
+     * @throws LobbyIsFullException        if the lobby is full
+     * @throws LobbyNotFoundException if the lobby is not found
+     * @throws InterruptedException   if the eventbus is interrupted
+     */
+    @Test
+    void testJoinLobby_UserAlreadyInLobby() throws UserAlreadyInLobbyException, LobbyIsFullException, LobbyNotFoundException, InterruptedException {
+        IUser user = UserMapper.toUser(firstOwner);
+        JoinLobbyRequest request = new JoinLobbyRequest("testcode");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+
+        doThrow(new UserAlreadyInLobbyException("User already in Lobby")).when(lobbyManagement)
+                                                                         .joinLobby("testcode", user);
+
+        postAndWait(request);
+
+        assertInstanceOf(ExceptionMessage.class, event);
+        verify(lobbyManagement, never()).getLobby(anyString());
+    }
+
+    /**
+     * Tests joining a lobby when the lobby is full.
+     *
+     * @throws UserAlreadyInLobbyException if the user is already in the lobby
+     * @throws LobbyIsFullException        if the lobby is full
+     * @throws LobbyNotFoundException if the lobby is not found
+     * @throws InterruptedException   if the eventbus is interrupted
+     */
+    @Test
+    void testJoinLobby_LobbyIsFull() throws UserAlreadyInLobbyException, LobbyIsFullException, LobbyNotFoundException, InterruptedException {
+        IUser user = UserMapper.toUser(firstOwner);
+        JoinLobbyRequest request = new JoinLobbyRequest("testcode");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+
+        doThrow(new LobbyIsFullException("Lobby is full")).when(lobbyManagement)
+                                                          .joinLobby("testcode", user);
 
         postAndWait(request);
 

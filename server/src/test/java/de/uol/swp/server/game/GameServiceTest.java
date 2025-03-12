@@ -375,83 +375,6 @@ public class GameServiceTest extends EventBusBasedTest {
     }
 
     /**
-     * Tests setting player positioning when the lobby is not found.
-     *
-     * @throws IllegalGameStateException if the game is in an illegal state
-     * @throws GameException             if there is an error in the game logic
-     */
-    @Test
-    void testOnPositionRequest_LobbyNotFound() throws IllegalGameStateException, GameException {
-        PositioningRequest positioningRequest = mock(PositioningRequest.class);
-        when(gameManagement.setPositioning(positioningRequest)).thenReturn(mock(IGame.class));
-        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(null);
-        when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
-
-        post(positioningRequest);
-
-        verify(gameManagement, times(1)).setPositioning(positioningRequest);
-        verify(lobbyManagement, times(1)).getLobby(LOBBY_CODE);
-        assertNull(event, "No event should be posted when the lobby is not found.");
-    }
-
-    /**
-     * Tests setting player positioning when the game is null.
-     *
-     * @throws IllegalGameStateException if the game is in an illegal state
-     * @throws GameException             if there is an error in the game logic
-     */
-    @Test
-    void testOnPositionRequest_GameIsNull() throws IllegalGameStateException, GameException {
-        PositioningRequest positioningRequest = mock(PositioningRequest.class);
-        when(gameManagement.setPositioning(positioningRequest)).thenReturn(mock(IGame.class));
-        when(gameManagement.setPositioning(positioningRequest)).thenReturn(null);
-        when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
-
-        post(positioningRequest);
-
-        verify(gameManagement, times(1)).setPositioning(positioningRequest);
-        assertNull(event, "No event should be posted when the game is null.");
-    }
-
-    /**
-     * Tests the onPositionRequest method when an IllegalGameStateException is thrown.
-     * Ensures that a StatusResponse event is posted with a failure status.
-     *
-     * @throws IllegalGameStateException if the game is in an illegal state
-     * @throws GameException             if there is an error in the game logic
-     * @throws InterruptedException      if the thread is interrupted
-     */
-    @Test
-    void testOnPositionRequest_IllegalGameState() throws IllegalGameStateException, GameException, InterruptedException {
-        PositioningRequest positioningRequest = new PositioningRequest(LOBBY_CODE, 2);
-        when(gameManagement.setPositioning(positioningRequest)).thenThrow(IllegalGameStateException.class);
-
-        postAndWait(positioningRequest);
-
-        assertInstanceOf(StatusResponse.class, event);
-        assertFalse(((StatusResponse) event).isSuccess());
-    }
-
-    /**
-     * Tests the onPositionRequest method when a GameException is thrown.
-     * Ensures that a StatusResponse event is posted with a failure status.
-     *
-     * @throws IllegalGameStateException if the game is in an illegal state
-     * @throws GameException             if there is an error in the game logic
-     * @throws InterruptedException      if the thread is interrupted
-     */
-    @Test
-    void testOnPositionRequest_GameException() throws IllegalGameStateException, GameException, InterruptedException {
-        PositioningRequest positioningRequest = new PositioningRequest(LOBBY_CODE, 2);
-        when(gameManagement.setPositioning(positioningRequest)).thenThrow(GameException.class);
-
-        postAndWait(positioningRequest);
-
-        assertInstanceOf(StatusResponse.class, event);
-        assertFalse(((StatusResponse) event).isSuccess());
-    }
-
-    /**
      * Tests setting player positioning when the game is not null.
      *
      * @throws GameInitializationException if the game cannot be initialized
@@ -525,9 +448,9 @@ public class GameServiceTest extends EventBusBasedTest {
         ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", true, event);
 
         IUser currentUser = new User("currentUser", "testPassword");
-        IPlayer currentPlayer = new Player(currentUser);
+        IPlayer currentPlayer = new Player(currentUser, "lobbyId");
         IUser targetUser = new User("targetUser", "testPassword");
-        IPlayer targetPlayer = new Player(targetUser);
+        IPlayer targetPlayer = new Player(targetUser, "lobbyId");
 
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
         when(game.getCurrentPlayer()).thenReturn(currentPlayer);
@@ -552,8 +475,8 @@ public class GameServiceTest extends EventBusBasedTest {
     @Test
     void onCardsExchangeRequestTest() {
         String lobbyId = "lobbyId";
-        IPlayer player1 = new Player(new User("player1", "password"));
-        IPlayer player2 = new Player(new User("player2", "password"));
+        IPlayer player1 = new Player(new User("player1", "password"), lobbyId);
+        IPlayer player2 = new Player(new User("player2", "password"), lobbyId);
         ILobby lobby = new Lobby(lobbyId, "test", List.of(player1.getUser(), player2.getUser()), player1.getUser(), 4);
         Session session = UUIDSession.create(player1.getUser());
         Session session2 = UUIDSession.create(player2.getUser());
@@ -630,6 +553,9 @@ public class GameServiceTest extends EventBusBasedTest {
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
         when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby("lobbyId", "Test", List.of(user), user, 4));
 
+        IPlayer player = mock(IPlayer.class);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
         gameService.onBuildTrainTrackRequest(request);
 
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
@@ -705,13 +631,16 @@ public class GameServiceTest extends EventBusBasedTest {
         IConnection connection = new Connection(1, List.of(CityName.ALICANTE, CityName.ALBACETE), true);
         when(connectionManagement.getConnection("lobbyId", 1)).thenReturn(connection);
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
-        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection)));
+        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection), 4));
         when(game.getCityRepository()).thenReturn(new CityRepository());
         when(game.getRegionRepository()).thenReturn(new RegionRepository(new CityRepository()));
         when(game.getPlagueRepository()).thenReturn(new PlagueRepository());
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
         when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby("lobbyId", "Test", List.of(user), user, 4));
 
+        IPlayer player = mock(IPlayer.class);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getUser()).thenReturn(user);
         gameService.onBuildTrainTrackRequest(request);
 
         verify(gameManagement, atLeast(1)).buildTrainTrack(user, "lobbyId", connection);
@@ -746,7 +675,7 @@ public class GameServiceTest extends EventBusBasedTest {
     @Test
     void testOnCardsExchangeWithDiscardPileRequest() throws PlayerManagementException, CardNotFoundException {
         Map<String, ICardDTO> map = new HashMap<>();
-        IPlayer player = new Player(new User("testuser", "testpassword"));
+        IPlayer player = new Player(new User("testuser", "testpassword"), "lobbyCode");
         ICard playerCard = new CityCard(1, "playerCard", mock(City.class));
         ICard discardPileCard = new CityCard(2, "discardPileCard", mock(City.class));
         List<ICard> playerCards = new ArrayList<>();
@@ -820,7 +749,7 @@ public class GameServiceTest extends EventBusBasedTest {
         Session session = UUIDSession.create(user);
         when(authenticationService.getSessions(Set.of(user))).thenReturn(List.of(session));
 
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "lobbyId");
         player.setRole(new CountryDoctor());
         game1.getPlayers()
              .add(player);

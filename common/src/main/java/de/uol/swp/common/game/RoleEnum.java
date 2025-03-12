@@ -17,7 +17,7 @@ public enum RoleEnum {
     ), RAILWAY_PERSON(
             "#705310",
             "Eisenbahner",
-            "Beim Schienenbau dürfen zwei Schienen platziert werden. Beim ZUgfahren," + " darf ein Mitspieler mitgenommen werden."
+            "Beim Schienenbau dürfen zwei Schienen platziert werden. Beim Zugfahren," + " darf ein Mitspieler " + "mitgenommen werden."
     ), SAILOR(
             "#52B3EA",
             "Seemann",

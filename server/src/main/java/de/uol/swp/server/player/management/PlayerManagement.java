@@ -3,24 +3,25 @@ package de.uol.swp.server.player.management;
 import com.google.inject.Inject;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.*;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.EpidemicCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.EndGameState;
-import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.states.StartState;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.region.RegionMapper;
+import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.role.ScientistAtTheRoyalAcademy;
 import de.uol.swp.server.usermanagement.IUser;
 import org.apache.logging.log4j.LogManager;
@@ -98,6 +99,11 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                     "[LobbyID: {}] Epidemic card drawn. Infection counter increased to {}",
                     lobbyCode,
                     game.getInfectionCounter()
+            );
+            sendServerMessageEvent(game.getGameId(),
+                    ServerMessageProvider.epidemicMessage(infectionCard.getCity()
+                                                                       .getName()
+                                                                       .getDisplayName())
             );
         } else {
             addCard(
@@ -406,5 +412,51 @@ public class PlayerManagement extends AbstractManagement implements IPlayerManag
                                  .equals(user))
                    .findFirst()
                    .orElse(null);
+    }
+
+    /**
+     * Determines the regions for the nurse player to put the preventionmarker.
+     *
+     * @param player the player whose regions are being determined
+     * @param oldPosition the old position of the player
+     * @param newPosition the new position of the player
+     * @return the list of regions for the player
+     */
+
+    public List<IRegionDTO> determineRegionsForNurse(IPlayer player, ICity oldPosition, ICity newPosition) {
+        LOG.debug("[LobbyId: {}] Determine Regions for Nurse", player.getGameId());
+        IGame game = getGame(player.getGameId());
+        return RegionMapper.toDTOList(game.getRegionRepository().getRegionsByCityName(newPosition.getName()));
+    }
+
+
+    /**
+     * Places a prevention marker in the specified region.
+     *
+     * @param lobbyId  the ID of the lobby
+     * @param regionId the ID of the region
+     */
+    public void placePreventionMarker(String lobbyId, int regionId) {
+        LOG.debug("[LobbyId: {}] Place Prevention Marker in Region {}", lobbyId, regionId);
+        IGame game = getGame(lobbyId);
+        removePreventionMarker(game);
+        IRegion region = game.getRegionRepository()
+                             .getRegionByID(regionId);
+        region.setPreventionMarker(true);
+    }
+
+    /**
+     * Removes the prevention marker from the old position of the player.
+     *
+     * @param game       The game
+     */
+    private void removePreventionMarker(IGame game) {
+        LOG.debug("[LobbyId: {}] Remove Prevention Marker", game.getGameId());
+        game.getRegionRepository()
+            .getRegions()
+            .stream()
+            .filter(IRegion::isPreventionMarker)
+            .findFirst()
+            .ifPresent(region -> region.setPreventionMarker(false));
     }
 }

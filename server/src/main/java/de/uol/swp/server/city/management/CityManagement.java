@@ -7,6 +7,7 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.AbstractManagement;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -21,6 +22,7 @@ import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.region.management.IRegionManagement;
 import de.uol.swp.server.region.management.RegionManagementException;
 import org.apache.logging.log4j.LogManager;
@@ -121,7 +123,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param plagueName        the name of the plague to infect the city with
      * @param amount            the amount of infection cubes to add
      * @param triggerEscalation whether to trigger escalation if the infection severity exceeds the threshold
-     * @throws CityManagementException if any parameter is invalid or an error occurs during infection
+     * @throws CityManagementException   if any parameter is invalid or an error occurs during infection
      * @throws RegionManagementException if an error occurs when reducing water treatments
      */
     private void infectCity(
@@ -133,7 +135,8 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
     ) throws CityManagementException, RegionManagementException {
         validateParameters(game, city, plagueName, amount);
 
-        if (regionManagement.reduceWaterTreatments(game, city, amount) <= 0) {
+        if (isCitySurroundedByPreventionMarker(game, city) || regionManagement.reduceWaterTreatments(game, city,
+                amount) <= 0) {
             return;
         }
 
@@ -142,6 +145,11 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                              .getPlagueByName(plagueName);
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
+
+        String serverMessage = ServerMessageProvider.infectionMessage(
+                plagueName.getDisplayName(),
+                city.getName().getDisplayName());
+        sendServerMessageEvent(game.getGameId(), serverMessage);
     }
 
     /**
@@ -233,6 +241,12 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         plague.setCubesRemaining(plague.getCubesRemaining() - cubesUsed);
 
         if (wouldEscalate && triggerEscalation) {
+            sendServerMessageEvent(game.getGameId(), ServerMessageProvider.outbreakMessage(
+                    city.getName()
+                        .getDisplayName(),
+                    plague.getName()
+                          .getDisplayName()
+            ));
             escalation(game, city.getName(), city.getPlagueName());
         }
 
@@ -240,7 +254,12 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                 .getPlagueByName(plague.getName())
                 .getCubesRemaining() < 0) {
             game.setState(new EndGameState(false));
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    "Das Spiel ist beendet! Es sind nicht genügend Infektionswürfel übrig – Ihr habt verloren. ✂️"
+            );
         }
+
     }
 
     /**
@@ -263,6 +282,10 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             game.setEscalationStage(game.getEscalationStage() + 1);
             if (game.getEscalationStage() == 8) {
                 game.setState(new EndGameState(false));
+                sendServerMessageEvent(
+                        game.getGameId(),
+                        "Eine Eskalation zu viel. Das Spiel ist hiermit beendet. Ihr habt verloren. ✂️"
+                );
                 return;
             }
             CityName currentCity = citiesToProcess.poll();
@@ -319,17 +342,20 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                 cityCard.get()
                         .getId()
         );
-        buildHospitalWithEventCard(lobbyId, cityId);
+        buildHospitalWithEventCard(lobbyId, cityId, username);
 
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             playerTurnState.reduceActionsRemaining(game);
         }
+        sendServerMessageEvent(
+                lobbyId, ServerMessageProvider.hospitalBuildMessage(city)
+        );
     }
 
-    public void buildHospitalWithEventCard(String lobbyId, Integer cityId) {
+    public void buildHospitalWithEventCard(String lobbyId, Integer cityId, String username) {
         IGame game = getGame(lobbyId);
         ICity targetCity = getCity(lobbyId, cityId);
-        ICity currentCity = game.getCurrentPlayer()
+        ICity currentCity = game.getPlayer(username)
                                 .getCurrentPosition();
 
         if (!targetCity.getPlagueName()
@@ -374,5 +400,16 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                                          .findFirst();
         return player.equals(game.getCurrentPlayer()) && !city.isHospitalBuilt() && cityCard.isPresent();
 
+    }
+
+    /**
+     * Checks if a city is surrounded by a prevention marker.
+     *
+     * @param city    the city to check
+     * @return true if the city is surrounded by prevention markers, false otherwise
+     */
+    private boolean isCitySurroundedByPreventionMarker(IGame game,ICity city) {
+        List<IRegion> regions = game.getRegionRepository().getRegionsByCityName(city.getName());
+        return regions.stream().anyMatch(IRegion::isPreventionMarker);
     }
 }

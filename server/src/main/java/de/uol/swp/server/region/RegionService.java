@@ -17,6 +17,7 @@ import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.events.TreatWaterEvent;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.game.GameMapper;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -91,7 +92,8 @@ public class RegionService extends AbstractService {
         LOG.debug("[LobbyId: {}] Got WaterTreatmentRegionRequest", request.getLobbyId());
         Session session = request.getSession()
                                  .orElseThrow(() -> {
-                                     LOG.error("[LobbyId: {}] Session not present in WaterTreatmentRegionRequest",
+                                     LOG.error(
+                                             "[LobbyId: {}] Session not present in WaterTreatmentRegionRequest",
                                              request.getLobbyId()
                                      );
                                      return new SessionNotFoundException();
@@ -111,7 +113,8 @@ public class RegionService extends AbstractService {
         LOG.debug("[LobbyId: {}] Got WaterTreatmentRequest", request.getLobbyId());
         Session session = request.getSession()
                                  .orElseThrow(() -> {
-                                     LOG.error("[LobbyId: {}] Session not present in WaterTreatmentRequest",
+                                     LOG.error(
+                                             "[LobbyId: {}] Session not present in WaterTreatmentRequest",
                                              request.getLobbyId()
                                      );
                                      return new SessionNotFoundException();
@@ -122,20 +125,23 @@ public class RegionService extends AbstractService {
         try {
             ICard card = null;
             if (request.getCard() != null) {
-                card = playerManagement.getCard(request.getLobbyId(),
+                card = playerManagement.getCard(
+                        request.getLobbyId(),
                         user.getUsername(),
                         request.getCard()
                                .getId()
                 );
             }
-            regionManagement.increaseWaterTreatmentsFromRegion(request.getLobbyId(),
+            regionManagement.increaseWaterTreatmentsFromRegion(
+                    request.getLobbyId(),
                     request.getRegionId(),
                     request.getAmount(),
                     card,
                     UserMapper.toUser(user)
             );
         } catch (IllegalGameStateException e) {
-            LOG.error("[LobbyId: {}] Game is in an invalid state, or player is not current player",
+            LOG.error(
+                    "[LobbyId: {}] Game is in an invalid state, or player is not current player",
                     request.getLobbyId()
             );
             sendStatusResponse(request, false, "Du bist nicht am Zug oder das Spiel ist in einem ungültigen Zustand");
@@ -157,13 +163,18 @@ public class RegionService extends AbstractService {
         IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
+        sendServerMessageEvent(
+                game.getGameId(),
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername() + " hat " + request.getAmount() + " " + "Wasseraufbereitungsmarker platziert."
+        );
         LOG.info("[LobbyId: {}] Increased water treatments. Send BoardUpdate to all players", request.getLobbyId());
     }
 
     @Subscribe
     public void onTreatWaterEvent(TreatWaterEvent event) {
-        LOG.debug("[Lobby: {}] Got TreatWaterEvent", event.getLobbyId());
-        TreatWaterEventResponse response = new TreatWaterEventResponse(false);
+        TreatWaterEventResponse response = new TreatWaterEventResponse(event.getLobbyId(), false);
         IUser user = regionManagement.getGame(event.getLobbyId())
                                      .getPlayer(event.getUsername())
                                      .getUser();
@@ -178,6 +189,7 @@ public class RegionService extends AbstractService {
         response.setSession(session);
         post(response);
         LOG.info("[LobbyId: {}] Sent TreatWaterEventResponse", event.getLobbyId());
+        sendServerMessageEvent(event.getLobbyId(), ServerMessageProvider.waterTreatmentMessage(user.getUsername()));
     }
 
     @Subscribe
@@ -194,7 +206,7 @@ public class RegionService extends AbstractService {
             regionManagement.increaseWaterTreatment(request.getRegionId(), game, request.getAmount());
             game.setState(game.getPreviousState());
             game.setState(new PlaceExtraWaterTreatmentState());
-            TreatWaterEventResponse response = new TreatWaterEventResponse(true);
+            TreatWaterEventResponse response = new TreatWaterEventResponse(request.getLobbyId(), true);
             response.setSession(session);
             post(response);
         } else if (request.isDismissed()) {
@@ -203,6 +215,12 @@ public class RegionService extends AbstractService {
             regionManagement.increaseWaterTreatment(request.getRegionId(), game, request.getAmount());
             game.setState(game.getPreviousState());
         }
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                game.getCurrentPlayer()
+                    .getUser()
+                    .getUsername() + " hat erfolgreich Wasseraufbereitung in einer Region " + "durchgeführt, um die Ausbruchswahrscheinlichkeit in den anliegenden Städten zu verringern"
+        );
 
         IGameDTO gameDTO = GameMapper.toDTO(game);
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());

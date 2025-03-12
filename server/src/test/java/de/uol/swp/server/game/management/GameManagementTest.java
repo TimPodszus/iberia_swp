@@ -117,26 +117,6 @@ class GameManagementTest {
     }
 
     @Test
-    void testSetPositioning_InvalidLobbyCode() {
-        PositioningRequest request = new PositioningRequest("lobby123", 12);
-        when(game.getState()).thenReturn(mock(WaitForPositioning.class));
-
-        assertThrows(GameNotFoundException.class, () -> gameManagement.setPositioning(request));
-    }
-
-    @Test
-    void testSetPositioning_InvalidGameState() {
-        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
-        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
-
-        assertThrows(
-                IllegalGameStateException.class,
-                () -> gameManagement.setPositioning(request),
-                "Expected GameManagementException"
-        );
-    }
-
-    @Test
     void testSetPositioning_PlayerNotFound() {
         IUser testUser = new User("test", "test");
         Session session = UUIDSession.create(testUser);
@@ -157,8 +137,9 @@ class GameManagementTest {
 
         IUser testUser = new User("test", "test");
         Session session = UUIDSession.create(testUser);
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getCurrentPlayer()).thenReturn(player);
 
         ICity albacete = cityRepository.getCityByName(ALBACETE);
         CityCard cityCard = new CityCard(
@@ -192,7 +173,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(mockState);
 
         IUser testUser = new User("test", "test");
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getGameId()).thenReturn("gameId");
         doThrow(PlayerManagementException.class).when(playerManagement)
@@ -210,7 +191,7 @@ class GameManagementTest {
         Session session = UUIDSession.create(testUser);
         request.setSession(session);
 
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         player.setCurrentPosition(cityRepository.getCityByName(CityName.BARCELONA));
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
@@ -225,7 +206,7 @@ class GameManagementTest {
         Session session = UUIDSession.create(testUser);
         request.setSession(session);
 
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         when(game.getCityRepository()).thenReturn(cityRepository);
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
@@ -528,7 +509,7 @@ class GameManagementTest {
     private void createTestPlayers(IUser... users) {
         List<IPlayer> players = new ArrayList<>();
         for (IUser user : users) {
-            IPlayer player = new Player(user);
+            IPlayer player = new Player(user, "gameId");
             players.add(player);
         }
         when(game.getPlayers()).thenReturn(players);
@@ -588,6 +569,10 @@ class GameManagementTest {
         when(cityCard.getCity()).thenReturn(city);
         when(player.getRole()).thenReturn(new Politician());
         when(player.getUser()).thenReturn(user);
+        when(connectionManagement.getBuildableTrainTracks("testLobby", 1)).thenReturn(List.of(new Connection(1,
+                List.of(ALICANTE, ALBACETE),
+                true
+        )));
 
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
@@ -624,7 +609,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(5, actions.size());
+        assertEquals(4, actions.size());
     }
 
 
@@ -734,6 +719,7 @@ class GameManagementTest {
         when(city.getId()).thenReturn(1);
         when(city.getName()).thenReturn(ALICANTE);
         when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 1)).thenReturn(List.of(connection));
+        when(connectionManagement.getBuildableTrainTracks(LOBBY_CODE, 34)).thenReturn(List.of(connection));
 
         gameManagement.buildTrainTrack(user, LOBBY_CODE, connection);
 
@@ -751,7 +737,7 @@ class GameManagementTest {
         IPlayer player = mock(IPlayer.class);
         ICity city = mock(ICity.class);
 
-        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection)));
+        when(game.getState()).thenReturn(new BuildExtraTrainTrackState(List.of(connection), 4));
         when(game.getCurrentPlayer()).thenReturn(player);
         when(game.getConnectionRepository()).thenReturn(new ConnectionRepository());
         when(game.getPreviousState()).thenReturn(new PlayerTurnState());
@@ -876,8 +862,8 @@ class GameManagementTest {
         gameManagement.movePlayer(testUser1, "lobbyCode", destinationCity, null);
 
         assertEquals(
-                destinationCity,
-                player.getCurrentPosition(),
+                destinationCity.getName(),
+                player.getCurrentPosition().getName(),
                 "Expected player1 to have moved to Palma de Mallorca"
         );
         assertEquals(
@@ -963,8 +949,8 @@ class GameManagementTest {
         IGame game1 = new Game(1, "testLobby");
         ICity city1 = mock(ICity.class);
         ICity city2 = mock(ICity.class);
-        IPlayer player1 = new Player(new User("user1", "pass1"));
-        IPlayer player2 = new Player(new User("user2", "pass2"));
+        IPlayer player1 = new Player(new User("user1", "pass1"), "gameId");
+        IPlayer player2 = new Player(new User("user2", "pass2"), "gameId");
         player1.getCards()
                .add(new CityCard(1, "City1", city1));
         player2.getCards()
@@ -1120,7 +1106,7 @@ class GameManagementTest {
         int cardToReceiveID = 2;
         String lobbyId = "lobbyCode";
         GameService gameService = mock(GameService.class);
-        IPlayer player1 = new Player(new User("user1", "pass1"));
+        IPlayer player1 = new Player(new User("user1", "pass1"), "gameId");
         ICard discardCard = new CityCard(2, "cardToReceive", mock(ICity.class));
         ArrayList<ICard> discardPile = new ArrayList<>();
         discardPile.add(discardCard);

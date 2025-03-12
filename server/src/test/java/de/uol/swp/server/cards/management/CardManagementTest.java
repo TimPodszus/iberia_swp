@@ -2,20 +2,16 @@ package de.uol.swp.server.cards.management;
 
 import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.game.PlagueName;
+import de.uol.swp.server.cards.CardRepository;
 import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
-import de.uol.swp.server.cards.data.eventcards.AnotherDayEventCard;
-import de.uol.swp.server.cards.data.eventcards.EventCard;
-import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
-import de.uol.swp.server.cards.data.eventcards.TreatWaterEventCard;
+import de.uol.swp.server.cards.data.eventcards.*;
+import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.City;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.states.DrawCardState;
-import de.uol.swp.server.game.states.EventState;
-import de.uol.swp.server.game.states.InfectionState;
-import de.uol.swp.server.game.states.PlayerTurnState;
-import de.uol.swp.server.game.states.WaitForPositioning;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
@@ -58,11 +54,13 @@ public class CardManagementTest {
 
     /**
      * Tests the playCard method for a regular card.
+     *
+     * @throws CardNotPlayableException if the card cannot be played
      */
     @Test
     void testPlayCard() throws CardNotPlayableException {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayerCardDiscardPile()).thenReturn(new ArrayList<>());
 
@@ -82,11 +80,13 @@ public class CardManagementTest {
 
     /**
      * Tests the playCard method for an event card.
+     *
+     * @throws CardNotPlayableException if the card cannot be played
      */
     @Test
     void testPlayEventCard() throws CardNotPlayableException {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
 
         EventCard card = mock(EventCard.class);
@@ -105,10 +105,13 @@ public class CardManagementTest {
         verify(game).setState(any(EventState.class));
     }
 
+    /**
+     * Tests the playCard method when the game is in the WaitForPositioning state.
+     */
     @Test
     void testPlayCard_inWaitForPositioningState() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getState()).thenReturn(new WaitForPositioning());
         EventCard card = mock(EventCard.class);
@@ -118,14 +121,13 @@ public class CardManagementTest {
         assertThrows(CardNotPlayableException.class, () -> cardManagement.playCard("1", "user", 1));
     }
 
-
     /**
      * Tests the playCard method for a card that is not in the player's hand.
      */
     @Test
     void testPlayEventCardWithWrongId() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         player.setCards(new ArrayList<>(List.of()));
 
@@ -133,12 +135,14 @@ public class CardManagementTest {
     }
 
     /**
-     * Tests the playCard method for a card that is not an event card.
+     * Tests the playCard method for a StateMobilizationEventCard.
+     *
+     * @throws CardNotPlayableException if the card cannot be played
      */
     @Test
     void testPlayEventCardWithStateMobilization() throws CardNotPlayableException {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayers()).thenReturn(List.of(player));
 
@@ -160,12 +164,14 @@ public class CardManagementTest {
     }
 
     /**
-     * Tests the playCard method for a card that is not an event card.
+     * Tests the playCard method for an AnotherDayEventCard.
+     *
+     * @throws CardNotPlayableException if the card cannot be played
      */
     @Test
     void testPlayEventCardWithAnotherDay() throws CardNotPlayableException {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(new PlayerTurnState());
@@ -186,12 +192,12 @@ public class CardManagementTest {
     }
 
     /**
-     * Tests the playCard method for a card that is not an event card.
+     * Tests the playCard method for an AnotherDayEventCard when the game is not in the PlayerTurnState.
      */
     @Test
     void testPlayEventCardWithAnotherDayNotInPlayerTurnState() {
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(EventState.class));
@@ -203,59 +209,74 @@ public class CardManagementTest {
         assertThrows(CardNotPlayableException.class, () -> cardManagement.playCard("1", "user", 1));
     }
 
+    /**
+     * Tests the playSecondChanceCard method when the card is present in the discard pile.
+     *
+     * @throws CardNotFoundException if the card is not found in the discard pile
+     */
     @Test
     void testPlaySecondChanceCard_cardIsPresent() throws CardNotFoundException {
         IPlayer player = mock(Player.class);
         when(game.getPlayer("user")).thenReturn(player);
         ICity currentPosition = new City(1, PlagueName.CHOLERA, CityName.ALICANTE, 1, true);
         when(player.getCurrentPosition()).thenReturn(currentPosition);
-        ICard card = new CityCard(1, currentPosition.getName().getDisplayName(), currentPosition);
-        when(game.getPlayerCardDiscardPile()).thenReturn(
-                new ArrayList<>(List.of(card))
+        ICard card = new CityCard(
+                1,
+                currentPosition.getName()
+                               .getDisplayName(),
+                currentPosition
         );
+        when(game.getPlayerCardDiscardPile()).thenReturn(new ArrayList<>(List.of(card)));
 
         cardManagement.playSecondChanceCard("1", "user");
 
         verify(player, times(1)).addCard(card);
-        assertTrue(game.getPlayerCardDiscardPile().isEmpty());
+        assertTrue(game.getPlayerCardDiscardPile()
+                       .isEmpty());
     }
 
+    /**
+     * Tests the playSecondChanceCard method when the card is not present in the discard pile.
+     */
     @Test
     void testPlaySecondChanceCard_cardIsNotPresent() {
         IPlayer player = mock(Player.class);
         when(game.getPlayer("user")).thenReturn(player);
         ICity currentPosition = new City(1, PlagueName.CHOLERA, CityName.ALICANTE, 1, true);
         when(player.getCurrentPosition()).thenReturn(currentPosition);
-        when(game.getPlayerCardDiscardPile()).thenReturn(
-                new ArrayList<>()
-        );
+        when(game.getPlayerCardDiscardPile()).thenReturn(new ArrayList<>());
 
         assertThrows(CardNotFoundException.class, () -> cardManagement.playSecondChanceCard("1", "user"));
     }
 
+    /**
+     * Tests the returnLastPlayedCard method.
+     */
     @Test
     void testReturnLastPlayedCard() {
         IPlayer player = mock(Player.class);
         when(game.getPlayer("user")).thenReturn(player);
         ICard card = mock(ICard.class);
-        when(game.getPlayerCardDiscardPile()).thenReturn(
-                new ArrayList<>(List.of(card))
-        );
+        when(game.getPlayerCardDiscardPile()).thenReturn(new ArrayList<>(List.of(card)));
 
         cardManagement.returnLastPlayedCard("1", "user");
 
-        assertTrue(game.getPlayerCardDiscardPile().isEmpty());
+        assertTrue(game.getPlayerCardDiscardPile()
+                       .isEmpty());
         verify(player).addCard(card);
     }
 
-
+    /**
+     * Tests the isCardPlayable method for a TreatWaterEventCard when it is playable.
+     */
     @Test
     void testIsCardPlayable_TreatWaterEventCard_Playable() {
         TreatWaterEventCard card = mock(TreatWaterEventCard.class);
         when(card.getId()).thenReturn(1);
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
-        player.getCards().add(card);
+        IPlayer player = new Player(user, "gameId");
+        player.getCards()
+              .add(card);
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getWaterTreatmentsLeft()).thenReturn(1);
@@ -265,13 +286,17 @@ public class CardManagementTest {
         assertTrue(result);
     }
 
+    /**
+     * Tests the isCardPlayable method for a TreatWaterEventCard when it is not playable.
+     */
     @Test
     void testIsCardPlayable_TreatWaterEventCard_NotPlayable() {
         TreatWaterEventCard card = mock(TreatWaterEventCard.class);
         when(card.getId()).thenReturn(1);
         IUser user = new User("user", "password");
-        IPlayer player = new Player(user);
-        player.getCards().add(card);
+        IPlayer player = new Player(user, "gameId");
+        player.getCards()
+              .add(card);
         when(game.getState()).thenReturn(mock(DrawCardState.class));
         when(game.getPlayer("user")).thenReturn(player);
         when(game.getWaterTreatmentsLeft()).thenReturn(0);
@@ -281,6 +306,9 @@ public class CardManagementTest {
         assertFalse(result);
     }
 
+    /**
+     * Tests the isStateCorrect method.
+     */
     @Test
     void testIsStateCorrect() {
         when(game.getState()).thenReturn(mock(PlayerTurnState.class));
@@ -294,5 +322,70 @@ public class CardManagementTest {
 
         when(game.getState()).thenReturn(mock(EventState.class));
         assertFalse(cardManagement.isStateCorrect(game));
+    }
+
+    /**
+     * Tests the getCardsFromPlayerDiscardPile method.
+     */
+    @Test
+    void testGetCardsFromDiscardPile() {
+        CardRepository cardRepository = new CardRepository(new CityRepository());
+        when(game.getPlayerCardDiscardPile()).thenReturn(cardRepository.getCards()
+                                                                       .values()
+                                                                       .stream()
+                                                                       .toList());
+
+        List<ICard> allCards = cardManagement.getCardsFromPlayerDiscardPile(LOBBY_ID, ICard.class);
+        List<CityCard> cityCards = cardManagement.getCardsFromPlayerDiscardPile(LOBBY_ID, CityCard.class);
+
+        assertEquals(105, allCards.size());
+        assertEquals(48, cityCards.size());
+    }
+
+    /**
+     * Tests the getCardForPlayer method.
+     *
+     * @throws IllegalGameStateException if the game is not in the correct state
+     * @throws CardNotFoundException     if the card is not found
+     */
+    @Test
+    void testGetCardForPlayer() throws IllegalGameStateException, CardNotFoundException {
+        IPlayer player = mock(Player.class);
+        when(game.getPlayer("user")).thenReturn(player);
+        EventCard card = new StateMobilizationEventCard(2);
+        when(game.getPlayerCardDiscardPile()).thenReturn(new ArrayList<>(List.of(card)));
+        EventState eventState = new EventState(new ForTheGoodCauseEventCard(1));
+        when(game.getState()).thenReturn(eventState);
+
+        cardManagement.getCardForPlayer("1", "user", 2);
+
+        verify(player).addCard(card);
+        assertTrue(game.getPlayerCardDiscardPile()
+                       .isEmpty());
+    }
+
+    /**
+     * Tests the getCardForPlayer method when the game is not in the correct state.
+     */
+    @Test
+    void testGetCardForPlayer_WrongState() {
+        when(game.getState()).thenReturn(new PlayerTurnState());
+
+        assertThrows(IllegalGameStateException.class, () -> cardManagement.getCardForPlayer("1", "user", 2));
+    }
+
+    /**
+     * Tests the getCardForPlayer method when the card is not found.
+     */
+    @Test
+    void testGetCardForPlayer_CardNotFound() {
+        IPlayer player = mock(Player.class);
+        when(game.getPlayer("user")).thenReturn(player);
+        EventCard card = new StateMobilizationEventCard(2);
+        when(game.getPlayerCardDiscardPile()).thenReturn(new ArrayList<>(List.of(card)));
+        EventState eventState = new EventState(new ForTheGoodCauseEventCard(1));
+        when(game.getState()).thenReturn(eventState);
+
+        assertThrows(CardNotFoundException.class, () -> cardManagement.getCardForPlayer("1", "user", 3));
     }
 }

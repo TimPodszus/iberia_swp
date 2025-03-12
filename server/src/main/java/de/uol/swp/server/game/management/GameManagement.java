@@ -19,6 +19,7 @@ import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.chat.store.ChatStore;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.data.IConnection;
@@ -123,7 +124,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      */
     void createPlayers(List<IUser> users, IGame game) throws IllegalGameStateException {
         for (IUser user : users) {
-            Player player = new Player(user);
+            Player player = new Player(user, game.getGameId());
 
             game.getPlayers()
                 .add(player);
@@ -207,12 +208,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Updates the game state if all players have been positioned.
      *
      * @param request The request with where the position is to be set
+     * @throws GameException If the game is not in a state that allows setting positioning
+     * @throws IllegalGameStateException If the game is not in a state that allows setting positioning
      */
-    public IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
+    public void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
         IGame game = getGame(request.getLobbyId());
-        IGameState gameState = game.getState();
 
-        if (!(gameState instanceof WaitForPositioning)) {
+        if (!(game.getState() instanceof WaitForPositioning waitForPositioningState)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows setting positioning", game.getGameId());
             throw new IllegalGameStateException("Game is not in a state that allows setting positioning");
         }
@@ -234,7 +236,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         try {
             assert requestPlayer != null;
             if (requestPlayer.getCurrentPosition() != null) {
-                return game;
+                return;
             }
             playerManagement.setStartingPosition(
                     game.getGameId(),
@@ -242,16 +244,21 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getCityNameById(request.getCityId()),
                     requestPlayer
             );
-            ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
+            waitForPositioningState.setPositionedPlayersCount(waitForPositioningState.getPositionedPlayersCount() + 1);
+            sendServerMessageEvent(game.getGameId(),
+                    requestPlayer.getUser().getUsername() + " startet von " + game.getCityRepository()
+                                                                                  .getCityNameById(request.getCityId())
+                                                                                  .getDisplayName()
+            );
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
         }
-        if (((WaitForPositioning) gameState).getPositionedPlayersCount() == game.getPlayers()
-                                                                                .size()) {
+        if (game.getState() instanceof WaitForPositioning && waitForPositioningState.getPositionedPlayersCount() == game.getPlayers()
+                                                                                                                        .size()) {
             game.setState(new PlayerTurnState());
             game.setCurrentPlayerIndex(0);
+            sendServerMessageEvent(game.getGameId(), game.getCurrentPlayer() + " darf anfangen");
         }
-        return game;
     }
 
     /**
@@ -373,12 +380,23 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     /**
      * Checks if train tracks can be built in the specified lobby.
+     * If the current player is in a city where train tracks can be built and has enough tracks left, the action is possible.
      *
      * @param lobbyId the code of the lobby
      * @return true if train tracks can be built, false otherwise
      */
     private boolean areTrainTracksBuildable(String lobbyId) {
         IGame game = super.getGame(lobbyId);
+        IPlayer player = game.getCurrentPlayer();
+        if (connectionManagement.getBuildableTrainTracks(
+                                        lobbyId,
+                                        player.getCurrentPosition()
+                                              .getId()
+                                )
+                                .isEmpty()) {
+            return false;
+        }
+
         return game.getTracksLeft() >= 0;
     }
 
@@ -449,6 +467,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 .getUser()
                 .equals(user) && game.getState() instanceof PlayerTurnState) {
             LOG.info("[LobbyID: {}] Ending turn for player {}", lobbyId, user.getUsername());
+            sendServerMessageEvent(
+                    lobbyId,
+                    user.getUsername() + " hat seinen Zug beendet. Als nächstes müssen Karten vom Stapel gezogen " + "werden."
+            );
             game.setState(new DrawCardState());
         } else {
             throw new IllegalGameStateException("Player is not allowed to end turn");
@@ -508,9 +530,20 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         }
 
         if (citiesConnectedByLand) {
+            String serverMessage = availableDestinations.get(city.getId())
+                                                        .getTransportModes()
+                                                        .contains(TransportMode.TRAIN) ? ServerMessageProvider.trainMessage(player,
+                    city
+            ) : ServerMessageProvider.carriageMessage(player, city);
+            sendServerMessageEvent(lobbyId, serverMessage);
             movePlayerByLand(game, player, city);
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " hat sich nach "
+                    + city.getName().getDisplayName() + " bewegt.");
         } else {
+            sendServerMessageEvent(lobbyId, ServerMessageProvider.sailMessage(player, city));
             movePlayerBySea(game, player, city, card);
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " ist mit dem Schiff nach "
+                    + city.getName().getDisplayName() + " gereist.");
         }
     }
 
@@ -640,13 +673,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 city.getName()
                     .getDisplayName()
         );
-        player.setCurrentPosition(city);
-        LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
 
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             playerTurnState.reduceActionsRemaining(game);
             LOG.info("[LobbyId: {}] Decreased actions remaining", game.getGameId());
+            player.setCurrentPosition(city);
+            LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
         } else if (game.getState() instanceof EventState eventState) {
+            player.setCurrentPosition(city);
+            LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
             if (eventState.getEventCard() instanceof StateMobilizationEventCard stateMobilizationEventCard) {
                 LOG.info("[LobbyId: {}] Decreasing players to move.", game.getGameId());
                 stateMobilizationEventCard.playerMoved(player);
@@ -686,6 +721,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             throw new GameException("Player is not the current player");
         }
 
+        RoleEnum roleName = game.getCurrentPlayer()
+                                .getRole()
+                                .getName();
+
         List<IConnection> buildableTrainTracks = getBuildableTrainTracks(lobbyId, game, player);
 
         if (!buildableTrainTracks.contains(connection)) {
@@ -706,7 +745,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             .getConnectionByID(connection.getId())
             .buildTrainTracks(true);
         game.setTracksLeft(game.getTracksLeft() - 1);
-        ((PlayerTurnState) gameState).reduceActionsRemaining(game);
         LOG.debug(
                 "[LobbyID: {}] {} builds train track between {} and {}",
                 lobbyId,
@@ -718,10 +756,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                           .get(1)
         );
 
-        if (game.getCurrentPlayer()
-                .getRole()
-                .getName() == RoleEnum.RAILWAY_PERSON) {
-            if (game.getState() instanceof PlayerTurnState && !(game.getState() instanceof BuildExtraTrainTrackState)) {
+        if (roleName == RoleEnum.RAILWAY_PERSON) {
+            if (game.getState() instanceof PlayerTurnState playerTurnState && !(playerTurnState instanceof BuildExtraTrainTrackState)) {
                 CityName cityName = connection.getCityNames()
                                               .stream()
                                               .filter(name -> !name.equals(player.getCurrentPosition()
@@ -729,13 +765,23 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                               .findFirst()
                                               .orElseThrow(() -> new GameException("Error while building train track"));
 
-                game.setState(new BuildExtraTrainTrackState(connectionManagement.getBuildableTrainTracks(
+                List<IConnection> buildableExtraTrainTracks = connectionManagement.getBuildableTrainTracks(
                         lobbyId,
                         cityName.getId()
-                )));
+                );
+
+                if (!buildableExtraTrainTracks.isEmpty()) {
+                    game.setState(new BuildExtraTrainTrackState(
+                            buildableExtraTrainTracks,
+                            playerTurnState.getActionsRemaining()
+                    ));
+                }
             } else {
                 game.setState(game.getPreviousState());
+                ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
             }
+        } else {
+            ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
         }
     }
 
