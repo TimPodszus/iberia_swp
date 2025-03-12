@@ -917,6 +917,6 @@ public class GameServiceTest extends EventBusBasedTest {
 
         post(userLeavedGameRequest);
 
-        assertInstanceOf(BoardUpdateEvent.class, event);
+        assertInstanceOf(StatusResponse.class, event);
     }
 }
