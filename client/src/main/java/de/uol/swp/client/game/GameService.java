@@ -14,10 +14,10 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import de.uol.swp.common.game.message.request.*;
+import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
 import de.uol.swp.common.plague.message.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.message.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.message.request.TreatPlagueRequest;
-import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.request.*;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
@@ -55,7 +55,7 @@ public class GameService {
      * Requests available destinations for the specified city.
      *
      * @param lobbyId the lobby code of the game for which available destinations are to be requested
-     * @param cityId    the ID of the city for which available destinations are to be requested
+     * @param cityId  the ID of the city for which available destinations are to be requested
      */
     public void requestAvailableDestination(String lobbyId, int cityId) {
         LOG.debug("[LobbyId: {}] Sending requestAvailableDestination", lobbyId);
@@ -122,8 +122,9 @@ public class GameService {
 
     /**
      * Sends a Request to set the position of the player.
+     *
      * @param lobbyId the ID of the lobby
-     * @param id the ID of the player
+     * @param id      the ID of the player
      */
     public void setPosition(String lobbyId, int id) {
         LOG.debug("[LobbyId: {}] Sending setPosition", lobbyId);
@@ -147,7 +148,7 @@ public class GameService {
      */
     @Subscribe
     public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
-        LOG.debug("Received ShareKnowledgeEvent: {} " , event);
+        LOG.debug("Received ShareKnowledgeEvent: {} ", event);
         Platform.runLater(() -> {
             boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
                                                                                               .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()
@@ -168,7 +169,7 @@ public class GameService {
      * Sends a request to get buildable train tracks for the specified city.
      *
      * @param lobbyId the code of the lobby
-     * @param cityId    the ID of the city
+     * @param cityId  the ID of the city
      */
     public void requestBuildableTrainTracks(String lobbyId, int cityId) {
         LOG.debug("[LobbyId: {}] Sending requestBuildableTrainTracks", lobbyId);
@@ -178,7 +179,7 @@ public class GameService {
     /**
      * Sends a request to build a train track.
      *
-     * @param lobbyId    the code of the lobby
+     * @param lobbyId      the code of the lobby
      * @param connectionId the ID of the connection
      */
     public void buildTrainTrack(String lobbyId, int connectionId) {
@@ -190,7 +191,7 @@ public class GameService {
      * Sends a request to share a ride to the specified city.
      *
      * @param lobbyId the code of the lobby
-     * @param cityId    the ID of the city to which the ride is to be shared
+     * @param cityId  the ID of the city to which the ride is to be shared
      */
     public void sendShareRideRequest(String lobbyId, int cityId) {
         LOG.debug("[LobbyId: {}] Sending ShareRideRequest", lobbyId);
@@ -223,57 +224,33 @@ public class GameService {
      * @param gameDTO the game data transfer object containing game state information
      * @param lobbyId the ID of the lobby where the request is to be sent
      */
-public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
-    LOG.debug("Share knowledge button is selected");
-    int currentCityId = gameDTO.getCurrentPlayer().getCurrentPosition().getId();
-    List<IPlayerDTO> playersInSameCity = gameDTO.getPlayers().stream()
-        .filter(player -> player.getCurrentPosition().getId() == currentCityId)
-        .toList();
+    public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
+        LOG.debug("Share knowledge button is selected");
+        eventBus.post(new AvailableShareKnowledgePlayersRequest(lobbyId));
 
-    boolean currentPlayerHasCityCard = gameDTO.getCurrentPlayer().getCards().stream()
-        .anyMatch(card -> card.getId() == currentCityId);
 
-    if (!currentPlayerHasCityCard) {
-        LOG.debug("Current player doesn't have the current city card");
-        String playerWithCityCard = playersInSameCity.stream()
-            .filter(player -> player.getCards().stream().anyMatch(card -> card.getId() == currentCityId))
-            .map(IPlayerDTO::getUsername)
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("No player with the city card found"));
-
-        gameDTO.getPlayer(playerWithCityCard).getCards().stream()
-            .filter(card -> card.getId() == currentCityId)
-            .findFirst()
-            .ifPresentOrElse(
-                card -> eventBus.post(new GiveCardRequest(card, gameDTO.getCurrentPlayer().getUsername(), lobbyId, true)),
-                () -> LOG.error("No card found")
-            );
-    } else {
-        LOG.debug("Current player has the current city card");
-        PlayerSelectionDialog dialog = new PlayerSelectionDialog(playersInSameCity);
-        dialog.showAndWait().ifPresentOrElse(
-            selectedPlayer -> {
-                LOG.debug("Selected player: {}", selectedPlayer);
-                gameDTO.getCurrentPlayer().getCards().stream()
-                    .filter(card -> card.getId() == currentCityId)
-                    .findFirst()
-                    .ifPresentOrElse(
-                        card -> eventBus.post(new GiveCardRequest(card, selectedPlayer, lobbyId, true)),
-                        () -> LOG.error("No card found")
-                    );
-            },
-            () -> LOG.debug("No player selected")
-        );
     }
-}
 
+    @Subscribe
+    public void onAvailableShareKnowledgePlayersResponse(AvailableShareKnowledgePlayersResponse response) {
+        LOG.debug("Current player has the current city card");
+        PlayerSelectionDialog dialog = new PlayerSelectionDialog(response.getPlayers(), response.getRole());
+        Optional<String> result = dialog.showAndWait();
+
+        result.ifPresent(player -> {
+            LOG.debug("Player selected: {}", player);
+            eventBus.post(new ShareKnowledgeEvent(response.getLobbyId(), player));
+        });
+
+
+    }
 
 
     /**
      * Sends a request to perform water treatment in the specified region.
      *
-     * @param lobbyId the code of the lobby
-     * @param regionId  the ID of the region where the water treatment is to be performed
+     * @param lobbyId  the code of the lobby
+     * @param regionId the ID of the region where the water treatment is to be performed
      */
     public void sendWaterTreatmentRegionRequest(String lobbyId, int regionId) {
         LOG.debug("[LobbyId: {}] Sending WaterTreatmentRegionRequest", lobbyId);
@@ -283,10 +260,10 @@ public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
     /**
      * Sends a request to perform water treatment in the specified region.
      *
-     * @param lobbyId the code of the lobby
-     * @param regionId  the ID of the region where the water treatment is to be performed
-     * @param amount    the amount of water treatments to be performed
-     * @param card      the city card to be used for the water treatment
+     * @param lobbyId  the code of the lobby
+     * @param regionId the ID of the region where the water treatment is to be performed
+     * @param amount   the amount of water treatments to be performed
+     * @param card     the city card to be used for the water treatment
      */
     public void sendWaterTreatmentRequest(String lobbyId, int regionId, int amount, CityCardDTO card) {
         LOG.debug("[LobbyId: {}] Sending WaterTreatmentRequest", lobbyId);
@@ -462,7 +439,7 @@ public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
     /**
      * Sends a Request to place a prevention marker in the specified region.
      *
-     * @param lobbyId The ID of the lobby where the prevention marker is to be placed
+     * @param lobbyId  The ID of the lobby where the prevention marker is to be placed
      * @param regionId The ID of the region where the prevention marker is to be placed
      */
     public void sendPlacePreventionMarkerRequest(String lobbyId, int regionId) {
@@ -535,4 +512,4 @@ public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
             eventBus.post(new CardsExchangeWithDiscardPileRequest(map, lobbyId));
         });
     }
-    }
+}
