@@ -17,6 +17,7 @@ import de.uol.swp.common.plague.message.response.TreatPlagueResponse;
 import de.uol.swp.common.user.Session;
 import de.uol.swp.server.AbstractService;
 import de.uol.swp.server.cards.events.MigrationOverseasEvent;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.GameMapper;
@@ -220,16 +221,12 @@ public class PlagueService extends AbstractService {
                 game.setState(game.getPreviousState());
             }
         }
-        sendServerMessageEvent(request.getLobbyId(), "Die Seuche in der Stadt " + city.getName() + " wurde behandelt.");
         IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
         sendServerMessageEvent(
                 lobby.getLobbyId(),
-                "In der Stadt " + game.getCurrentPlayer()
-                                      .getCurrentPosition()
-                                      .getName() + " wurde ein " + "Seuchenwürfel der " + "Plage " + request.getPlagueName()
-                                                                                                            .toString() + " entfernt."
+                ServerMessageProvider.treatPlagueMessage(game.getCurrentPlayer(), request.getPlagueName())
         );
     }
 
