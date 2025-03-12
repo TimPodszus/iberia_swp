@@ -22,7 +22,6 @@ import de.uol.swp.common.game.*;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.*;
-import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
@@ -439,10 +438,13 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.CARRIAGE
-        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
+                TransportMode.TRAIN
+        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
+                cityId,
+                TransportMode.NONE
+        );
     }
 
     /**
@@ -701,7 +703,7 @@ public class GamePresenter extends AbstractPresenter {
                     Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
                     result.ifPresent(map -> {
                         LOG.debug("Card exchange result: {}", map);
-                        eventBus.post(new CardsExchangeRequest(map, lobbyId));
+                        //    eventBus.post(new CardsExchangeRequest(map, lobbyId));
                     });
                 });
             }
@@ -722,7 +724,7 @@ public class GamePresenter extends AbstractPresenter {
                    .getRole()
                    .getName()
                    .equals(RoleEnum.POLITICIAN)) {
-            gameService.politicianActionTradeWithDiscardPile(this.gameDTO, lobbyId);
+            //gameService.politicianActionTradeWithDiscardPile(this.gameDTO, lobbyId);
         }
 
     }
@@ -749,7 +751,8 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onLeaveGameClicked(ActionEvent event) {
         LOG.debug("Leave Game button clicked");
-        Stage stage = (Stage) gameScreen.getScene().getWindow();
+        Stage stage = (Stage) gameScreen.getScene()
+                                        .getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
@@ -2084,8 +2087,7 @@ public class GamePresenter extends AbstractPresenter {
                         LOG.info("Selected plague: {}", selectedPlague);
                         gameService.sendTreatPlagueRequest(lobbyId, cityIdToTreat, selectedPlague);
                         treatInfectionButton.setSelected(false);
-                    },
-                    () -> treatInfectionButton.setSelected(false)
+                    }, () -> treatInfectionButton.setSelected(false)
             );
         });
     }

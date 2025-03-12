@@ -1,7 +1,7 @@
 package de.uol.swp.server.game.management;
 
 import de.uol.swp.common.game.GameActions;
-import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
+import de.uol.swp.common.game.message.request.CardExchangeConfirmationRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.data.ICard;
@@ -15,7 +15,6 @@ import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
-import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -109,24 +108,6 @@ public interface IGameManagement {
      */
     void unlockGameInWaitForConfirmation(String lobbyId);
 
-    /**
-     * Handles the acceptance of a share knowledge request.
-     *
-     * @param currentPlayer the player currently taking the action
-     * @param targetPlayer  the player with whom knowledge is being shared
-     * @param lobbyId       the ID of the lobby in which the game is happening
-     * @param event         the event representing the share knowledge request
-     * @param gameService   the game service
-     * @throws PlayerManagementException if an error occurs during the process
-     */
-    void shareKnowledgeRequestAccepted(
-            IPlayer currentPlayer,
-            IPlayer targetPlayer,
-            String lobbyId,
-            ShareKnowledgeEvent event,
-            GameService gameService
-    ) throws PlayerManagementException;
-
 
     /**
      * Increases the number of actions the current player has in the game.
@@ -177,5 +158,7 @@ public interface IGameManagement {
      * @param lobbyCode the code of the lobby whose game is to be removed
      */
     void removeGame(String lobbyCode);
+
+    void giveCard(CardExchangeConfirmationRequest cardExchangeConfirmationRequest);
 }
 

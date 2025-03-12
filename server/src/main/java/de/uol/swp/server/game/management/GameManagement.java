@@ -6,10 +6,10 @@ import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.TransportMode;
-import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
+import de.uol.swp.common.game.message.request.CardExchangeConfirmationRequest;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
+import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
@@ -17,8 +17,6 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
-import de.uol.swp.server.cards.management.CardNotFoundException;
-import de.uol.swp.server.chat.store.ChatStore;
 import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
@@ -33,7 +31,6 @@ import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
-import de.uol.swp.server.lobby.store.LobbyStore;
 import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
@@ -208,7 +205,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Updates the game state if all players have been positioned.
      *
      * @param request The request with where the position is to be set
-     * @throws GameException If the game is not in a state that allows setting positioning
+     * @throws GameException             If the game is not in a state that allows setting positioning
      * @throws IllegalGameStateException If the game is not in a state that allows setting positioning
      */
     public void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
@@ -245,10 +242,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     requestPlayer
             );
             waitForPositioningState.setPositionedPlayersCount(waitForPositioningState.getPositionedPlayersCount() + 1);
-            sendServerMessageEvent(game.getGameId(),
-                    requestPlayer.getUser().getUsername() + " startet von " + game.getCityRepository()
-                                                                                  .getCityNameById(request.getCityId())
-                                                                                  .getDisplayName()
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    requestPlayer.getUser()
+                                 .getUsername() + " startet von " + game.getCityRepository()
+                                                                        .getCityNameById(request.getCityId())
+                                                                        .getDisplayName()
             );
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
@@ -813,64 +812,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         LOG.debug("[LobbyID: {}] Game unlocked from wait-for-confirmation state", lobbyId);
     }
 
-    /**
-     * Handles the acceptance of a share knowledge request.
-     * This method exchanges the specified cards between the current player and the target player.
-     *
-     * @param currentPlayer The player who initiated the share knowledge request
-     * @param targetPlayer  The player who accepted the share knowledge request
-     * @param lobbyId       The ID of the lobby where the game is being played
-     * @param event         The event containing details of the share knowledge request
-     * @param gameService   The game service instance
-     * @throws PlayerManagementException If there is an error during the card exchange
-     */
-    public void shareKnowledgeRequestAccepted(
-            IPlayer currentPlayer, IPlayer targetPlayer, String lobbyId, ShareKnowledgeEvent event,
-
-            GameService gameService
-    ) throws PlayerManagementException {
-
-        LOG.info(
-                "Share knowledge request accepted by target player {}",
-                targetPlayer.getUser()
-                            .getUsername()
-        );
-        ICard targetPlayerCard = playerManagement.getCard(
-                event.getLobbyId(),
-                targetPlayer.getUser()
-                            .getUsername(),
-                event.getTargetPlayerCard()
-                     .getId()
-        );
-        ICard currentPlayerCard = playerManagement.getCard(
-                event.getLobbyId(),
-                currentPlayer.getUser()
-                             .getUsername(),
-                event.getCurrentPlayerCard()
-                     .getId()
-        );
-        currentPlayer.getCards()
-                     .remove(currentPlayerCard);
-        targetPlayer.getCards()
-                    .remove(targetPlayerCard);
-        currentPlayer.getCards()
-                     .add(targetPlayerCard);
-        targetPlayer.getCards()
-                    .add(currentPlayerCard);
-
-        LOG.debug(
-                "Cards exchanged between {} and {}",
-                currentPlayer.getUser()
-                             .getUsername(),
-                targetPlayer.getUser()
-                            .getUsername()
-        );
-        IGameState gameState = this.getGame(event.getLobbyId())
-                                   .getState();
-        ((PlayerTurnState) gameState).reduceActionsRemaining(this.getGame(event.getLobbyId()));
-        LOG.trace("ReducedActionsRemaining");
-        gameService.postShareKnowledgeResponse(event, true);
-    }
 
     /**
      * Increases the number of actions remaining for the current player in the game.
@@ -901,7 +842,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             int cardToReceiveID,
             String lobbyId,
             GameService gameService
-    ) throws GameManagementException, PlayerManagementException {
+    ) throws PlayerManagementException {
         IGame game = getGame(lobbyId);
         ICard cardToDiscard = playerManagement.getCard(
                 lobbyId,
@@ -910,22 +851,29 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     .getUsername(),
                 cardToDiscardID
         );
-        ICard cardToReceive = game.getPlayerCardDiscardPile()
-                                  .stream()
-                                  .filter(card -> card.getId() == cardToReceiveID)
-                                  .findFirst()
-                                  .orElseThrow(() -> new GameManagementException("Card not found in discard pile"));
+        try {
 
-        game.getCurrentPlayer()
-            .getCards()
-            .add(cardToReceive);
-        game.getPlayerCardDiscardPile()
-            .remove(cardToReceive);
-        game.getPlayerCardDiscardPile()
-            .add(cardToDiscard);
-        game.getCurrentPlayer()
-            .getCards()
-            .remove(cardToDiscard);
+
+            ICard cardToReceive = game.getPlayerCardDiscardPile()
+                                      .stream()
+                                      .filter(card -> card.getId() == cardToReceiveID)
+                                      .findFirst()
+                                      .orElseThrow(() -> new GameManagementException("Card not found in discard pile"));
+
+
+            game.getCurrentPlayer()
+                .getCards()
+                .add(cardToReceive);
+            game.getPlayerCardDiscardPile()
+                .remove(cardToReceive);
+            game.getPlayerCardDiscardPile()
+                .add(cardToDiscard);
+            game.getCurrentPlayer()
+                .getCards()
+                .remove(cardToDiscard);
+        } catch (GameManagementException e) {
+            new StatusResponse(lobbyId, false, "Card not found in discard pile");
+        }
         LOG.debug("Cards exchanged with discard pile");
         IGameState gameState = game.getState();
         ((PlayerTurnState) gameState).reduceActionsRemaining(game);
@@ -939,23 +887,28 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         IPlayer player = game.getPlayer(user.getUsername());
         LOG.info("[LobbyID: {}] Player {} has left the game", lobbyId, user.getUsername());
 
-        if (game.getPlayers().size() == 1) {
+        if (game.getPlayers()
+                .size() == 1) {
             this.removeGame(game.getGameId());
             throw new LobbyIsEmptyException("Lobby is empty");
-        } else if (game.getPlayers().size() <= 2) {
+        } else if (game.getPlayers()
+                       .size() <= 2) {
             LOG.info("[LobbyID: {}] Game has ended due to insufficient players", lobbyId);
             sendServerMessageEvent(
                     lobbyId,
                     user.getUsername() + " hat das Spiel verlassen. Das Spiel wurde aufgrund von zu wenigen Spielern beendet"
             );
 
-            game.getPlayers().remove(player);
+            game.getPlayers()
+                .remove(player);
             game.setState(new EndGameState(false));
         } else {
             for (ICard card : player.getCards()) {
-                game.getPlayerCardDiscardPile().add(card);
+                game.getPlayerCardDiscardPile()
+                    .add(card);
             }
-            player.getCards().clear();
+            player.getCards()
+                  .clear();
 
             LOG.info("[LobbyID: {}] Cards of Player {} have been discarded", lobbyId, user.getUsername());
             sendServerMessageEvent(
@@ -963,12 +916,44 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     user.getUsername() + " hat das Spiel verlassen. Die Karten von " + user.getUsername() + " wurden abgelegt"
             );
 
-            game.getPlayers().remove(player);
+            game.getPlayers()
+                .remove(player);
         }
     }
 
     public void removeGame(String lobbyId) {
         LOG.info("[LobbyID: {}] Game has been removed from game store", lobbyId);
-        GameStore.getInstance().removeGame(lobbyId);
+        GameStore.getInstance()
+                 .removeGame(lobbyId);
+    }
+
+    @Override
+    public void giveCard(CardExchangeConfirmationRequest request) {
+        IGame game = getGame(request.getLobbyId());
+
+        IPlayer confirmingPlayer = game.getPlayer(request.getReceivingPlayer()
+                                                         .getUsername());
+        IPlayer requestingPlayer = game.getPlayer(request.getRequestingPlayer()
+                                                         .getUsername());
+
+        try {
+            ICard requestCard = playerManagement.getCard(
+                    request.getLobbyId(),
+                    confirmingPlayer.getUser()
+                                    .getUsername(),
+                    request.getRequestingCard()
+                           .getId()
+
+            );
+
+            requestingPlayer.getCards()
+                            .add(requestCard);
+            confirmingPlayer.getCards()
+                            .remove(requestCard);
+        } catch (PlayerManagementException e) {
+            new StatusResponse(request.getLobbyId(), false, "Player not found");
+        }
+
+
     }
 }

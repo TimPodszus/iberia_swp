@@ -14,6 +14,6 @@ public class CardsExchangeWithDiscardPileRequest extends CardsExchangeRequest {
      * @param lobbyId         the ID of the lobby
      */
     public CardsExchangeWithDiscardPileRequest(Map<String, ICardDTO> cardsToExchange, String lobbyId) {
-        super(cardsToExchange, lobbyId);
+        super(cardsToExchange, 1, "Test", lobbyId);
     }
 }

@@ -2,7 +2,6 @@ package de.uol.swp.common.game.message.request;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.message.AbstractGameRequest;
-import de.uol.swp.common.player.IPlayerDTO;
 import lombok.Getter;
 
 import java.util.Map;
@@ -14,7 +13,7 @@ import java.util.Objects;
 @Getter
 public class CardsExchangeRequest extends AbstractGameRequest {
 
-   int cityId;
+    int cityId;
     String playerToTrade;
 
     /**
@@ -23,7 +22,12 @@ public class CardsExchangeRequest extends AbstractGameRequest {
      * @param cardsToExchange the map of cards to exchange
      * @param lobbyId         the ID of the lobby
      */
-    public CardsExchangeRequest(int cityId, String playerToTrade, String lobbyId) {
+    public CardsExchangeRequest(
+            Map<String, ICardDTO> cardsToExchange,
+            int cityId,
+            String playerToTrade,
+            String lobbyId
+    ) {
         super(lobbyId);
         this.cityId = cityId;
         this.playerToTrade = playerToTrade;
