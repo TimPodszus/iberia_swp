@@ -7,8 +7,10 @@ import de.uol.swp.server.cards.data.CityCard;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.AbstractManagement;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.EndGameState;
 import de.uol.swp.server.game.states.StartState;
@@ -20,7 +22,9 @@ import de.uol.swp.server.infection.management.IInfectionManagement;
 import de.uol.swp.server.plague.data.IPlague;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.management.PlayerManagement;
+import de.uol.swp.server.region.data.IRegion;
 import de.uol.swp.server.region.management.IRegionManagement;
+import de.uol.swp.server.region.management.RegionManagementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -96,15 +100,18 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                     amount
             );
             infectCity(game, findCity(game, infectionCard), plagueName, amount, true);
+            if (game.getState() instanceof InfectionState infectionState) {
+                infectionState.increaseInfectedCities(game);
+            }
             gameManagement.discardInfectionCard(game, infectionCard);
             LOG.debug(
                     "Infection card discarded: {}",
                     infectionCard.getCity()
                                  .getName()
             );
-        } catch (CityManagementException e) {
+        } catch (CityManagementException | RegionManagementException e) {
             LOG.error("Error infecting city: {}", e.getMessage());
-            throw e;
+            throw new CityManagementException("Error infecting city", e);
         }
     }
 
@@ -116,7 +123,8 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param plagueName        the name of the plague to infect the city with
      * @param amount            the amount of infection cubes to add
      * @param triggerEscalation whether to trigger escalation if the infection severity exceeds the threshold
-     * @throws CityManagementException if any parameter is invalid or an error occurs during infection
+     * @throws CityManagementException   if any parameter is invalid or an error occurs during infection
+     * @throws RegionManagementException if an error occurs when reducing water treatments
      */
     private void infectCity(
             IGame game,
@@ -124,10 +132,11 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             PlagueName plagueName,
             int amount,
             boolean triggerEscalation
-    ) throws CityManagementException {
+    ) throws CityManagementException, RegionManagementException {
         validateParameters(game, city, plagueName, amount);
 
-        if (regionManagement.reduceWaterTreatments(game, city, amount) <= 0) {
+        if (isCitySurroundedByPreventionMarker(game, city) || regionManagement.reduceWaterTreatments(game, city,
+                amount) <= 0) {
             return;
         }
 
@@ -137,9 +146,9 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
 
         increaseInfectionSeverity(game, infection, plague, amount, city, triggerEscalation);
 
-        if (game.getState() instanceof InfectionState infectionState) {
-            infectionState.increaseInfectedCities(game);
-        }
+        String serverMessage = ServerMessageProvider.infectionMessage(plagueName.toString(),
+                city.getName().getDisplayName());
+        sendServerMessageEvent(game.getGameId(), serverMessage);
     }
 
     /**
@@ -206,6 +215,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param amount            the amount to increase the infection severity by
      * @param city              the city to increase the infection severity in
      * @param triggerEscalation whether to trigger escalation if the infection severity exceeds the threshold
+     * @throws RegionManagementException if an error occurs when reducing water treatments
      */
     private void increaseInfectionSeverity(
             IGame game,
@@ -214,7 +224,7 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             int amount,
             ICity city,
             boolean triggerEscalation
-    ) {
+    ) throws RegionManagementException {
         int newSeverity;
 
         if (!triggerEscalation && infection.getSeverity() + amount > 3) {
@@ -237,7 +247,12 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                 .getPlagueByName(plague.getName())
                 .getCubesRemaining() < 0) {
             game.setState(new EndGameState(false));
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    "Das Spiel ist beendet! Es sind nicht genügend Infektionswürfel übrig – Ihr habt verloren. ✂️"
+            );
         }
+
     }
 
     /**
@@ -246,8 +261,9 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
      * @param game       the game instance
      * @param cityName   the name of the city to escalate
      * @param plagueName the name of the plague causing the escalation
+     * @throws RegionManagementException if an error occurs when reducing water treatments
      */
-    private void escalation(IGame game, CityName cityName, PlagueName plagueName) {
+    private void escalation(IGame game, CityName cityName, PlagueName plagueName) throws RegionManagementException {
 
         Queue<CityName> citiesToProcess = new LinkedList<>();
         citiesToProcess.add(cityName);
@@ -259,6 +275,10 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
             game.setEscalationStage(game.getEscalationStage() + 1);
             if (game.getEscalationStage() == 8) {
                 game.setState(new EndGameState(false));
+                sendServerMessageEvent(
+                        game.getGameId(),
+                        "Eine Eskalation zu viel. Das Spiel ist hiermit beendet. Ihr habt verloren. ✂️"
+                );
                 return;
             }
             CityName currentCity = citiesToProcess.poll();
@@ -288,9 +308,13 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
         }
     }
 
-    public void buildHospital(String lobbyId, String userName, Integer cityId) {
+    public void buildHospital(
+            String lobbyId,
+            String username,
+            Integer cityId
+    ) throws CityManagementException, GameException {
         IGame game = getGame(lobbyId);
-        IPlayer player = game.getPlayer(userName);
+        IPlayer player = game.getPlayer(username);
 
         ICity city = getCity(lobbyId, cityId);
 
@@ -300,23 +324,32 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                                                                                                                       .equals(city))
                                          .findFirst();
 
-        if (!isHospitalBuildable(lobbyId, userName)) {
+        if (!isHospitalBuildable(lobbyId, username)) {
             throw new CityManagementException("Hospital cannot be built");
         }
 
         // 'Optional.get()' without 'isPresent()' check -> already checked in isHospitalBuildable()
-        new PlayerManagement(this).discardCard(lobbyId, player, cityCard.get());
-        buildHospitalWithEventCard(lobbyId, cityId);
+        new PlayerManagement(this).discardPlayerCard(
+                lobbyId,
+                username,
+                cityCard.get()
+                        .getId()
+        );
+        buildHospitalWithEventCard(lobbyId, cityId, username);
 
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             playerTurnState.reduceActionsRemaining(game);
         }
+        sendServerMessageEvent(
+                lobbyId,
+                "In " + city.getName() + " wurde ein Krankenhaus gebaut."
+        );
     }
 
-    public void buildHospitalWithEventCard(String lobbyId, Integer cityId) {
+    public void buildHospitalWithEventCard(String lobbyId, Integer cityId, String username) {
         IGame game = getGame(lobbyId);
         ICity targetCity = getCity(lobbyId, cityId);
-        ICity currentCity = game.getCurrentPlayer()
+        ICity currentCity = game.getPlayer(username)
                                 .getCurrentPosition();
 
         if (!targetCity.getPlagueName()
@@ -361,5 +394,16 @@ public class CityManagement extends AbstractManagement implements ICityManagemen
                                          .findFirst();
         return player.equals(game.getCurrentPlayer()) && !city.isHospitalBuilt() && cityCard.isPresent();
 
+    }
+
+    /**
+     * Checks if a city is surrounded by a prevention marker.
+     *
+     * @param city    the city to check
+     * @return true if the city is surrounded by prevention markers, false otherwise
+     */
+    private boolean isCitySurroundedByPreventionMarker(IGame game,ICity city) {
+        List<IRegion> regions = game.getRegionRepository().getRegionsByCityName(city.getName());
+        return regions.stream().anyMatch(IRegion::isPreventionMarker);
     }
 }

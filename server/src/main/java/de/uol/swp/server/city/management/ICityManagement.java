@@ -4,6 +4,7 @@ import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 
 /**
  * Interface for managing city-related operations in the game.
@@ -51,15 +52,16 @@ public interface ICityManagement {
      * @param userName the name of the user requesting the hospital build
      * @param cityId   the ID of the city where the hospital is to be built
      */
-    void buildHospital(String lobbyId, String userName, Integer cityId);
+    void buildHospital(String lobbyId, String userName, Integer cityId) throws CityManagementException, GameException;
 
     /**
      * Builds a hospital in the specified city using an event card.
      *
-     * @param lobbyId the ID of the lobby where the hospital is to be built
-     * @param cityId  the ID of the city where the hospital is to be built
+     * @param lobbyId  the ID of the lobby where the hospital is to be built
+     * @param cityId   the ID of the city where the hospital is to be built
+     * @param userName the name of the user requesting the hospital build
      */
-    void buildHospitalWithEventCard(String lobbyId, Integer cityId);
+    void buildHospitalWithEventCard(String lobbyId, Integer cityId, String userName);
 
     /**
      * Checks if a hospital can be built in the specified city by the specified user.

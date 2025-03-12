@@ -2,9 +2,14 @@ package de.uol.swp.server.player.management;
 
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.city.CityName;
+import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.player.data.CardsAmountChangeListener;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.usermanagement.IUser;
 
@@ -16,14 +21,21 @@ import java.util.List;
 public interface IPlayerManagement {
 
     /**
+     * Sets the GameStateChangeListener.
+     *
+     * @param listener the new GameStateChangeListener
+     */
+    void setCardsAmountChangeListener(CardsAmountChangeListener listener);
+
+    /**
      * Draws a player card for a given user in a game.
      *
      * @param lobbyCode the code of the lobby
      * @param user      the user drawing the card
      * @return the drawn card
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if it is not the players turn to draw a card
      */
-    ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws PlayerManagementException;
+    ICardDTO drawPlayerCard(String lobbyCode, IUser user) throws IllegalGameStateException;
 
     /**
      * Draws a player card for a given player in a game.
@@ -31,9 +43,9 @@ public interface IPlayerManagement {
      * @param lobbyCode the code of the lobby
      * @param player    the player drawing the card
      * @return the drawn card
-     * @throws PlayerManagementException if an error occurs while drawing the card
+     * @throws IllegalGameStateException if it is not the players turn to draw a card
      */
-    ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws PlayerManagementException;
+    ICardDTO drawPlayerCard(String lobbyCode, IPlayer player) throws IllegalGameStateException;
 
     /**
      * Sets the starting position for a player in a specified city.
@@ -46,31 +58,33 @@ public interface IPlayerManagement {
     void setStartingPosition(String lobbyCode, CityName cityName, IPlayer player) throws PlayerManagementException;
 
     /**
-     * Adds a card to the player's hand.
+     * Adds a card to a player's hand in a specified lobby.
      *
-     * @param player the player to whom the card is being added
-     * @param card   the card to be added
+     * @param lobbyId  the ID of the lobby
+     * @param username the username of the player
+     * @param card     the card to be added
      */
-    void addCard(IPlayer player, ICard card);
+    void addCard(String lobbyId, String username, ICard card);
 
     /**
-     * Discards a single card from the player's hand.
+     * Discards a card for a player in a specified lobby.
      *
      * @param lobbyCode the code of the lobby
-     * @param player    the player discarding the card
-     * @param card      the card to be discarded
-     * @param <T>       the type of the card, extending ICard
+     * @param username  the username of the player
+     * @param cardId    the ID of the card to be discarded
+     * @throws GameException if an error occurs while discarding the card
      */
-    <T extends ICard> void discardCard(String lobbyCode, IPlayer player, T card);
+    void discardPlayerCard(String lobbyCode, String username, Integer cardId) throws GameException;
 
     /**
-     * Discards multiple cards from the player's hand.
+     * Discards multiple cards for a player in a specified lobby.
      *
      * @param lobbyCode the code of the lobby
-     * @param player    the player discarding the cards
-     * @param cards     the list of cards to be discarded
+     * @param username  the username of the player
+     * @param cardIds   the list of IDs of the cards to be discarded
+     * @throws GameException if an error occurs while discarding the cards
      */
-    void discardCards(String lobbyCode, IPlayer player, List<? extends ICard> cards);
+    void discardPlayerCards(String lobbyCode, String username, List<Integer> cardIds) throws GameException;
 
     /**
      * Retrieves a card for a player in a specified lobby.
@@ -90,7 +104,7 @@ public interface IPlayerManagement {
      * @param playerName the name of the player
      * @param cityId     the id of the city where the player is to be located
      */
-    void setPlayerLocation(String lobbyId, String playerName, int cityId) throws PlayerManagementException;
+    void setPlayerLocation(String lobbyId, String playerName, int cityId);
 
     /**
      * Shuffles the infection cards in the discard pile and adds them to the draw pile.
@@ -101,4 +115,59 @@ public interface IPlayerManagement {
      * Draws a player card from the DiscardPile. The specific behavior of this method should be defined.
      */
     InfectionCard drawBottomInfectionCard(IGame game) throws IllegalStateException;
+
+    /**
+     * Retrieves the cards that a player can sort.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param user    the user for whom the cards are to be sorted
+     * @return the list of cards to be sorted
+     * @throws GameException if an error occurs while retrieving the cards
+     * @throws IllegalGameStateException     if the player is not in the correct state to sort cards
+     */
+    List<ICardDTO> getCardsToSort(String lobbyId, IUser user) throws GameException, IllegalGameStateException;
+
+    /**
+     * Retrieves the game with the specified lobby code.
+     *
+     * @param lobbyId the id of the lobby in which the game is happening
+     * @return the game with the specified lobby code
+     */
+    IGame getGame(String lobbyId);
+
+    /**
+     * Retrieves the player with the specified user in the specified lobby.
+     *
+     * @param game the game in which the player is to be retrieved
+     * @param user the user for whom the player is to be retrieved
+     * @return the player with the specified user in the specified lobby
+     */
+    IPlayer getPlayerByUser(IUser user, IGame game);
+
+    /**
+     * Sorts the cards of the playerCardDrawPile in a lobby.
+     *
+     * @param lobbyId the ID of the lobby
+     * @param user    the user sorting the cards
+     * @param cards   the list of cards to be sorted
+     * @throws IllegalGameStateException if the player is not in the correct state to sort cards
+     */
+    void sortCards(String lobbyId, IUser user, List<ICardDTO> cards) throws IllegalGameStateException;
+
+    /**
+     * Determines the regions for a nurse player.
+     *
+     * @param player the player whose regions are being determined
+     * @param oldPosition the old position of the player
+     * @return the list of regions for the player
+     */
+    List<IRegionDTO> determineRegionsForNurse(IPlayer player, ICity oldPosition, ICity newPosition);
+
+    /**
+     * Places a prevention marker in a region.
+     *
+     * @param lobbyId  the ID of the lobby
+     * @param regionId the ID of the region
+     */
+     void placePreventionMarker(String lobbyId, int regionId);
 }

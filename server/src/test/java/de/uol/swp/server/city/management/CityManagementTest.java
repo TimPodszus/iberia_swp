@@ -9,13 +9,16 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.management.ConnectionManagement;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.management.GameManagement;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.infection.management.InfectionManagement;
+import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.region.management.RegionManagement;
+import de.uol.swp.server.region.management.RegionManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,12 +56,15 @@ public class CityManagementTest {
     private RegionManagement regionManagement;
     @Mock
     private ConnectionManagement connectionManagement;
+    @Mock
+    private IPlagueManagement plagueManagement;
     @InjectMocks
     private final GameManagement gameManagement = new GameManagement(
             playerManagement,
             cityManagement,
             connectionManagement,
-            regionManagement
+            regionManagement,
+            plagueManagement
     );
     private final InfectionManagement infectionManagement = new InfectionManagement();
 
@@ -66,7 +72,7 @@ public class CityManagementTest {
      * Sets up the test environment before each test.
      */
     @BeforeEach
-    void setUp() {
+    void setUp() throws RegionManagementException {
         MockitoAnnotations.openMocks(this);
         cityManagement = new CityManagement(regionManagement, gameManagement, infectionManagement);
         when(regionManagement.reduceWaterTreatments(any(IGame.class), any(ICity.class), anyInt())).thenReturn(1);
@@ -218,9 +224,9 @@ public class CityManagementTest {
     }
 
     @Test
-    void testBuildHospitalSucceeds() {
+    void testBuildHospitalSucceeds() throws GameException {
         IUser user = new User("username", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         player.setCurrentPosition(game.getCityRepository()
                                       .getCityByName(CityName.PALMA_DE_MALLORCA));
         game.getPlayers()
@@ -251,7 +257,7 @@ public class CityManagementTest {
     @Test
     void testBuildHospitalWithEventCardWithWrongColor() {
         IUser user = new User("username", "password");
-        IPlayer player = new Player(user);
+        IPlayer player = new Player(user, "gameId");
         player.setCurrentPosition(game.getCityRepository()
                                       .getCityByName(CityName.PALMA_DE_MALLORCA));
         game.getPlayers()
@@ -264,7 +270,7 @@ public class CityManagementTest {
 
         assertThrows(
                 CityManagementException.class,
-                () -> cityManagement.buildHospitalWithEventCard(LOBBY_CODE, cityId)
+                () -> cityManagement.buildHospitalWithEventCard(LOBBY_CODE, cityId, user.getUsername())
         );
     }
 }

@@ -24,6 +24,7 @@ import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.User;
+import de.uol.swp.server.usermanagement.exceptions.SessionNotFoundException;
 import de.uol.swp.server.usermanagement.management.ServerUserService;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.BeforeEach;
@@ -133,7 +134,8 @@ public class ConnectionServiceTest extends EventBusBasedTest {
         when(authenticationService.getSession(user)).thenReturn(java.util.Optional.empty());
         MovePlayerAnywhereEvent movePlayerAnywhereEvent = new MovePlayerAnywhereEvent("", "testuser");
 
-        assertThrows(GameException.class,
+        assertThrows(
+                SessionNotFoundException.class,
                 () -> connectionService.onMovePlayerAnywhereEvent(movePlayerAnywhereEvent),
                 "Expected a GameException"
         );

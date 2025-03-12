@@ -2,7 +2,9 @@ package de.uol.swp.server.player.data;
 
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.player.PositionChangeListener;
 import de.uol.swp.server.role.IRole;
+import de.uol.swp.server.role.Nurse;
 import de.uol.swp.server.usermanagement.IUser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,11 +20,19 @@ import java.util.List;
 public class Player implements IPlayer {
     @Setter
     private IRole role;
-    @Setter
     private ICity currentPosition;
     @Setter
     private List<ICard> cards = new ArrayList<>();
     private final IUser user;
+    private final String gameId;
+    @Setter
+    private PositionChangeListener positionChangeListener;
+
+
+    @Override
+    public void addCard(ICard card) {
+        cards.add(card);
+    }
 
     @Override
     public ICard playCard(int cardId) {
@@ -48,6 +58,14 @@ public class Player implements IPlayer {
             }
         }
         return null;
+    }
+
+    public void setCurrentPosition(ICity city) {
+        ICity oldPosition = this.currentPosition;
+        this.currentPosition = city;
+        if (positionChangeListener != null && this.getRole() instanceof Nurse) {
+            positionChangeListener.onPositionChanged(this, oldPosition, city);
+        }
     }
 }
 

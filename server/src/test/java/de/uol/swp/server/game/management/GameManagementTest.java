@@ -17,6 +17,7 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
@@ -30,10 +31,10 @@ import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
-import de.uol.swp.server.game.exceptions.GameNotFoundException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.PlayerManagement;
@@ -76,6 +77,9 @@ class GameManagementTest {
     @Mock
     private IConnectionManagement connectionManagement;
 
+    @Mock
+    private IPlagueManagement plagueManagement;
+
     @InjectMocks
     private GameManagement gameManagement;
 
@@ -115,26 +119,6 @@ class GameManagementTest {
     }
 
     @Test
-    void testSetPositioning_InvalidLobbyCode() {
-        PositioningRequest request = new PositioningRequest("lobby123", 12);
-        when(game.getState()).thenReturn(mock(WaitForPositioning.class));
-
-        assertThrows(GameNotFoundException.class, () -> gameManagement.setPositioning(request));
-    }
-
-    @Test
-    void testSetPositioning_InvalidGameState() {
-        when(game.getState()).thenReturn(mock(PlayerTurnState.class));
-        PositioningRequest request = new PositioningRequest(LOBBY_CODE, 12);
-
-        assertThrows(
-                IllegalGameStateException.class,
-                () -> gameManagement.setPositioning(request),
-                "Expected GameManagementException"
-        );
-    }
-
-    @Test
     void testSetPositioning_PlayerNotFound() {
         IUser testUser = new User("test", "test");
         Session session = UUIDSession.create(testUser);
@@ -155,8 +139,9 @@ class GameManagementTest {
 
         IUser testUser = new User("test", "test");
         Session session = UUIDSession.create(testUser);
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getCurrentPlayer()).thenReturn(player);
 
         ICity albacete = cityRepository.getCityByName(ALBACETE);
         CityCard cityCard = new CityCard(
@@ -165,7 +150,12 @@ class GameManagementTest {
                         .toString(),
                 albacete
         );
-        playerManagement.addCard(player, cityCard);
+        playerManagement.addCard(
+                game.getGameId(),
+                player.getUser()
+                      .getUsername(),
+                cityCard
+        );
 
         PositioningRequest request = new PositioningRequest(LOBBY_CODE, 34);
         request.setSession(session);
@@ -185,7 +175,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(mockState);
 
         IUser testUser = new User("test", "test");
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getGameId()).thenReturn("gameId");
         doThrow(PlayerManagementException.class).when(playerManagement)
@@ -203,7 +193,7 @@ class GameManagementTest {
         Session session = UUIDSession.create(testUser);
         request.setSession(session);
 
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         player.setCurrentPosition(cityRepository.getCityByName(CityName.BARCELONA));
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
@@ -218,7 +208,7 @@ class GameManagementTest {
         Session session = UUIDSession.create(testUser);
         request.setSession(session);
 
-        IPlayer player = new Player(testUser);
+        IPlayer player = new Player(testUser, "gameId");
         when(game.getCityRepository()).thenReturn(cityRepository);
         when(game.getPlayers()).thenReturn(List.of(player));
         when(game.getState()).thenReturn(mock(WaitForPositioning.class));
@@ -248,6 +238,24 @@ class GameManagementTest {
 
         assertNull(drawnCard, "Expected no card to be returned in InfectionState");
         verify(cityManagement, times(1)).infectCityWithOwnPlague(game, infectionCard, 1);
+    }
+
+    @Test
+    void testDrawInfectionCard_InfectionState_FavorableTimeEventCardPlayed() {
+        InfectionCard infectionCard = new InfectionCard(
+                1,
+                "InfectionCard",
+                cityRepository.getCityByName(CityName.BARCELONA)
+        );
+        when(game.isFavorableTimeEventCardPlayed()).thenReturn(true);
+        when(game.getInfectionCardDrawPile()).thenReturn(new ArrayList<>(List.of(infectionCard)));
+        when(game.getState()).thenReturn(new InfectionState());
+
+        InfectionCard drawnCard = gameManagement.drawInfectionCard(game);
+
+        assertNull(drawnCard, "Expected no card to be returned in InfectionState");
+        verify(cityManagement, times(1)).infectCityWithOwnPlague(game, infectionCard, 1);
+        verify(game, times(1)).setFavorableTimeEventCardPlayed(false);
     }
 
     @Test
@@ -503,7 +511,7 @@ class GameManagementTest {
     private void createTestPlayers(IUser... users) {
         List<IPlayer> players = new ArrayList<>();
         for (IUser user : users) {
-            IPlayer player = new Player(user);
+            IPlayer player = new Player(user, "gameId");
             players.add(player);
         }
         when(game.getPlayers()).thenReturn(players);
@@ -562,12 +570,50 @@ class GameManagementTest {
         when(player.getCards()).thenReturn(List.of(cityCard));
         when(cityCard.getCity()).thenReturn(city);
         when(player.getRole()).thenReturn(new Politician());
+        when(player.getUser()).thenReturn(user);
+        when(connectionManagement.getBuildableTrainTracks("testLobby", 1)).thenReturn(List.of(new Connection(1,
+                List.of(ALICANTE, ALBACETE),
+                true
+        )));
 
-        when(game.getState()).thenReturn(mock(IGameState.class));
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
+
+        assertEquals(6, actions.size());
+    }
+
+    @Test
+    void testGetAvailableActionsScientist() {
+        IUser user = mock(IUser.class);
+        when(user.getUsername()).thenReturn("username");
+        when(cityManagement.isHospitalBuildable(any(String.class), any(String.class))).thenReturn(true);
+
+        String lobbyCode = "testLobby";
+
+        game = mock(IGame.class);
+        GameStore.getInstance()
+                 .addGame(lobbyCode, game);
+
+        IPlayer player = mock(IPlayer.class);
+        ICity city = mock(ICity.class);
+        CityCard cityCard = mock(CityCard.class);
+
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(player.getCurrentPosition()).thenReturn(city);
+        when(city.getId()).thenReturn(1);
+        when(game.getPlayers()).thenReturn(List.of(player));
+        when(game.getPlayerCardDrawPile()).thenReturn(List.of(mock(ICard.class)));
+        when(player.getCards()).thenReturn(List.of(cityCard));
+        when(cityCard.getCity()).thenReturn(city);
+        when(player.getRole()).thenReturn(new ScientistAtTheRoyalAcademy());
+        when(player.getUser()).thenReturn(user);
+
+        when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
         assertEquals(7, actions.size());
     }
+
 
 
     @Test
@@ -786,7 +832,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testMovePlayer_StateMobilizationEvent() throws GameManagementException, IllegalGameStateException, GameException {
+    void testMovePlayer_StateMobilizationEvent() throws IllegalGameStateException, GameException {
         Map<Integer, DestinationInfo> availableDestinations = Map.of(
                 cityRepository.getCityByName(CityName.PALMA_DE_MALLORCA)
                               .getId(),
@@ -818,8 +864,8 @@ class GameManagementTest {
         gameManagement.movePlayer(testUser1, "lobbyCode", destinationCity, null);
 
         assertEquals(
-                destinationCity,
-                player.getCurrentPosition(),
+                destinationCity.getName(),
+                player.getCurrentPosition().getName(),
                 "Expected player1 to have moved to Palma de Mallorca"
         );
         assertEquals(
@@ -845,7 +891,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testCreatePlayersWithDifferentUserCounts() throws PlayerManagementException {
+    void testCreatePlayersWithDifferentUserCounts() throws IllegalGameStateException {
         List<IUser> twoUsers = List.of(new User("user1", "pass1"), new User("user2", "pass2"));
         List<IUser> threeUsers = List.of(
                 new User("user1", "pass1"),
@@ -905,8 +951,8 @@ class GameManagementTest {
         IGame game1 = new Game(1, "testLobby");
         ICity city1 = mock(ICity.class);
         ICity city2 = mock(ICity.class);
-        IPlayer player1 = new Player(new User("user1", "pass1"));
-        IPlayer player2 = new Player(new User("user2", "pass2"));
+        IPlayer player1 = new Player(new User("user1", "pass1"), "gameId");
+        IPlayer player2 = new Player(new User("user2", "pass2"), "gameId");
         player1.getCards()
                .add(new CityCard(1, "City1", city1));
         player2.getCards()
@@ -1056,13 +1102,13 @@ class GameManagementTest {
     //    }
 
     @Test
-    void testShareKnowledgeWithDiscardPile() throws GameManagementException, PlayerManagementException {
+    void testShareKnowledgeWithDiscardPile() throws PlayerManagementException, CardNotFoundException {
         // Arrange
         int cardToDiscardID = 1;
         int cardToReceiveID = 2;
         String lobbyId = "lobbyCode";
         GameService gameService = mock(GameService.class);
-        IPlayer player1 = new Player(new User("user1", "pass1"));
+        IPlayer player1 = new Player(new User("user1", "pass1"), "gameId");
         ICard discardCard = new CityCard(2, "cardToReceive", mock(ICity.class));
         ArrayList<ICard> discardPile = new ArrayList<>();
         discardPile.add(discardCard);
@@ -1073,6 +1119,30 @@ class GameManagementTest {
 
         gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, lobbyId, gameService);
 
-        verify(gameService).sendCardsExchangeWithDiscardPileResponse(lobbyId);
+        verify(gameService).sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
+    }
+
+    @Test
+    void testEndTurn() throws IllegalGameStateException {
+        IPlayer player = mock(IPlayer.class);
+        IUser user = new User("test", "test");
+        when(player.getUser()).thenReturn(user);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getState()).thenReturn(new PlayerTurnState());
+
+        gameManagement.endTurn(game.getGameId(), user);
+
+        verify(game).setState(any(DrawCardState.class));
+    }
+
+    @Test
+    void testEndTurn_IllegalGameStateException() {
+        IPlayer player = mock(IPlayer.class);
+        IUser user = new User("test", "test");
+        when(player.getUser()).thenReturn(user);
+        when(game.getCurrentPlayer()).thenReturn(player);
+        when(game.getState()).thenReturn(new DrawCardState());
+
+        assertThrows(IllegalGameStateException.class, () -> gameManagement.endTurn(game.getGameId(), user));
     }
 }

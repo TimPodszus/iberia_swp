@@ -11,6 +11,15 @@
 .pile {
     -fx-border-color: black;
     -fx-border-width: 1;
+    -fx-border-insets: -1;
+    -fx-background-color: lightgrey;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.pile-highlighted {
+    -fx-border-color: #77E44C;
+    -fx-border-width: 3;
+    -fx-border-insets: -3;
     -fx-background-color: lightgrey;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
 }
@@ -160,6 +169,20 @@
 }
 
 .water-mark-visible {
+    visibility: true;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.prev-mark {
+    visibility: false;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.prev-mark-visible {
     visibility: true;
     -fx-stroke: #3c3c3c;
     -fx-stroke-width: 1;

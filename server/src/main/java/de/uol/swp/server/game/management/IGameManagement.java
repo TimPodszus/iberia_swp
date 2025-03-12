@@ -6,6 +6,7 @@ import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.game.GameService;
@@ -20,6 +21,7 @@ import de.uol.swp.server.usermanagement.IUser;
 import java.util.List;
 
 public interface IGameManagement {
+
     /**
      * Creates and initializes a new game based on the provided request.
      *
@@ -36,7 +38,7 @@ public interface IGameManagement {
      * @throws GameException             if setting the positioning fails
      * @throws IllegalGameStateException if the game is in a state that does not allow positioning
      */
-    IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException;
+    void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException;
 
     /**
      * Draws a player card. The specific behavior of this method should be defined.
@@ -133,11 +135,30 @@ public interface IGameManagement {
      */
     void increaseCurrentPlayerActions(IGame game, int amount);
 
+    /**
+     * Shares knowledge by discarding a card and receiving another card.
+     *
+     * @param cardToDiscardID the ID of the card to be discarded
+     * @param cardToReceiveID the ID of the card to be received
+     * @param lobbyId         the ID of the lobby in which the game is happening
+     * @param service         the game service
+     * @throws CardNotFoundException     if the card to be discarded or received is not found
+     * @throws PlayerManagementException if an error occurs during the process
+     */
     void shareKnowledgeWithDiscardPile(
             int cardToDiscardID,
             int cardToReceiveID,
             String lobbyId,
             GameService service
-    ) throws GameManagementException, PlayerManagementException;
+    ) throws CardNotFoundException, PlayerManagementException;
+
+    /**
+     * Ends the turn for the current player in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby in which the game is happening
+     * @param user    the user representing the player whose turn is to be ended
+     * @throws IllegalGameStateException if the turn cannot be ended due to the current game state
+     */
+    void endTurn(String lobbyId, IUser user) throws IllegalGameStateException;
 }
 

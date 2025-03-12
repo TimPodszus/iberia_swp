@@ -16,6 +16,7 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
+import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.data.IConnection;
@@ -28,12 +29,12 @@ import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
+import de.uol.swp.server.plague.management.IPlagueManagement;
 import de.uol.swp.server.player.data.IPlayer;
 import de.uol.swp.server.player.data.Player;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.management.IRegionManagement;
-import de.uol.swp.server.role.CountryDoctor;
 import de.uol.swp.server.role.Role;
 import de.uol.swp.server.role.RoleRepository;
 import de.uol.swp.server.usermanagement.IUser;
@@ -55,18 +56,21 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     private final ICityManagement cityManagement;
     private final IRegionManagement regionManagement;
     private final IConnectionManagement connectionManagement;
+    private final IPlagueManagement plagueManagement;
 
     @Inject
     public GameManagement(
             IPlayerManagement playerManagement,
             ICityManagement cityManagement,
             IConnectionManagement connectionManagement,
-            IRegionManagement regionManagement
+            IRegionManagement regionManagement,
+            IPlagueManagement plagueManagement
     ) {
         this.playerManagement = playerManagement;
         this.cityManagement = cityManagement;
         this.connectionManagement = connectionManagement;
         this.regionManagement = regionManagement;
+        this.plagueManagement = plagueManagement;
     }
 
     /**
@@ -82,7 +86,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                  .addGame(request.getLobbyId(), game);
         try {
             initializing(game, UserMapper.toUser(request.getUsers()));
-        } catch (PlayerManagementException e) {
+        } catch (IllegalGameStateException e) {
             throw new GameInitializationException("Failed to initialize game", e);
         }
         return game;
@@ -94,8 +98,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param game  The game instance to initialize
      * @param users The list of users participating in the game
+     * @throws IllegalGameStateException If the game is not in a state that allows players to draw cards
      */
-    private void initializing(IGame game, List<IUser> users) throws PlayerManagementException {
+    private void initializing(IGame game, List<IUser> users) throws IllegalGameStateException {
         initiateInfections(game);
         createPlayers(users, game);
         game.gameStartShuffle(game.getDifficulty() + 3);
@@ -110,10 +115,11 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      *
      * @param users The list of users to create players for
      * @param game  The game instance to add players to
+     * @throws IllegalGameStateException If the game is not in a state that allows players to draw cards
      */
-    void createPlayers(List<IUser> users, IGame game) throws PlayerManagementException {
+    void createPlayers(List<IUser> users, IGame game) throws IllegalGameStateException {
         for (IUser user : users) {
-            Player player = new Player(user);
+            Player player = new Player(user, game.getGameId());
 
             game.getPlayers()
                 .add(player);
@@ -125,9 +131,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             for (int i = 0; i < cardsToDraw; i++) {
                 playerManagement.drawPlayerCard(game.getGameId(), player);
             }
-            int currentPlayerIndex = game.getCurrentPlayerIndex();
-            int nextPlayerIndex = currentPlayerIndex == users.size() - 1 ? 0 : currentPlayerIndex + 1;
-            game.setCurrentPlayerIndex(nextPlayerIndex);
+            game.incrementCurrentPlayerIndex(users.size());
         }
     }
 
@@ -199,12 +203,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * Updates the game state if all players have been positioned.
      *
      * @param request The request with where the position is to be set
+     * @throws GameException If the game is not in a state that allows setting positioning
+     * @throws IllegalGameStateException If the game is not in a state that allows setting positioning
      */
-    public IGame setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
+    public void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException {
         IGame game = getGame(request.getLobbyId());
-        IGameState gameState = game.getState();
 
-        if (!(gameState instanceof WaitForPositioning)) {
+        if (!(game.getState() instanceof WaitForPositioning waitForPositioningState)) {
             LOG.error("[LobbyID: {}] Game is not in a state that allows setting positioning", game.getGameId());
             throw new IllegalGameStateException("Game is not in a state that allows setting positioning");
         }
@@ -226,7 +231,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         try {
             assert requestPlayer != null;
             if (requestPlayer.getCurrentPosition() != null) {
-                return game;
+                return;
             }
             playerManagement.setStartingPosition(
                     game.getGameId(),
@@ -234,16 +239,23 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .getCityNameById(request.getCityId()),
                     requestPlayer
             );
-            ((WaitForPositioning) gameState).setPositionedPlayersCount(((WaitForPositioning) gameState).getPositionedPlayersCount() + 1);
+            waitForPositioningState.setPositionedPlayersCount(waitForPositioningState.getPositionedPlayersCount() + 1);
+            sendServerMessageEvent(game.getGameId(),
+                    requestPlayer.getUser().getUsername() + " startet von " + game.getCityRepository()
+                                                                                                          .getCityNameById(request.getCityId())
+            );
         } catch (PlayerManagementException e) {
             throw new GameException("Failed to set Position");
         }
-        if (((WaitForPositioning) gameState).getPositionedPlayersCount() == game.getPlayers()
-                                                                                .size()) {
+        if (game.getState() instanceof WaitForPositioning && waitForPositioningState.getPositionedPlayersCount() == game.getPlayers()
+                                                                       .size()) {
             game.setState(new PlayerTurnState());
             game.setCurrentPlayerIndex(0);
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    game.getCurrentPlayer() +" darf anfangen"
+            );
         }
-        return game;
     }
 
     /**
@@ -257,9 +269,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (infectionCardDrawPile.isEmpty()) {
             throw new IllegalStateException("Infection card draw pile is empty");
         }
-        if (game.getState() instanceof InfectionState) {
-            cityManagement.infectCityWithOwnPlague(game, infectionCardDrawPile.remove(0), 1);
-            return null;
+        InfectionCard card = null;
+        if (game.getState() instanceof InfectionState infectionState) {
+            if (game.isFavorableTimeEventCardPlayed()) {
+                card = infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1);
+                infectionState.setInfectedCitiesToOnlyDrawOneMoreCard(game);
+                game.setFavorableTimeEventCardPlayed(false);
+            } else {
+                card = infectionCardDrawPile.remove(0);
+            }
         } else if (game.getState() instanceof StartState) {
             return infectionCardDrawPile.remove(0);
         } else {
@@ -269,6 +287,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             );
             return null;
         }
+        cityManagement.infectCityWithOwnPlague(game, card, 1);
+        return null;
     }
 
     /**
@@ -283,49 +303,60 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         infectionCardDiscardPile.add(infectionCard);
     }
 
-    public List<GameActions> getAvailableActions(String lobbyCode, IUser user) {
+    public List<GameActions> getAvailableActions(String lobbyId, IUser user) {
         List<GameActions> actions = new ArrayList<>();
-        if (areTrainTracksBuildable(lobbyCode)) {
+        if (areTrainTracksBuildable(lobbyId)) {
             actions.add(GameActions.BUILD_TRAIN_TRACKS);
         }
-        if (cityManagement.isHospitalBuildable(lobbyCode, user.getUsername())) {
+        if (cityManagement.isHospitalBuildable(lobbyId, user.getUsername())) {
             actions.add(GameActions.BUILD_HOSPITAL);
         }
-        if (isKnowledgeShareable(lobbyCode)) {
+        if (isKnowledgeShareable(lobbyId)) {
             actions.add(GameActions.SHARE_KNOWLEDGE);
         }
-        if (isInfectionTreatable(lobbyCode)) {
+        if (isInfectionTreatable(lobbyId)) {
             actions.add(GameActions.TREAT_INFECTION);
         }
-        if (isPlagueResearchable()) {
+        if (isPlagueResearchable(lobbyId)) {
             actions.add(GameActions.RESEARCH_PLAGUE);
         }
-        if (isWaterTreatmentPlaceable(lobbyCode, user)) {
+        if (isWaterTreatmentPlaceable(lobbyId, user)) {
             actions.add(GameActions.TREAT_WATER);
         }
-        if (roleActionOneAvailable(lobbyCode, user)) {
+        if (roleActionOneAvailable(lobbyId)) {
             actions.add(GameActions.ROLE_ACTION_ONE);
         }
-        if (roleActionTwoAvailable(lobbyCode, user)) {
+        if (roleActionTwoAvailable(lobbyId)) {
             actions.add(GameActions.ROLE_ACTION_TWO);
+        }
+        if (isEndTurnPossible(lobbyId, user)) {
+            actions.add(GameActions.END_TURN);
         }
         return actions;
     }
 
-    private boolean roleActionOneAvailable(String lobbyCode, IUser user) {
-        if (getGame(lobbyCode).getCurrentPlayer()
-                              .getRole()
-                              .getName()
-                              .equals(RoleEnum.POLITICIAN)) {
-            return getGame(lobbyCode).getCurrentPlayer()
-                                     .getCards()
-                                     .stream()
-                                     .anyMatch(card -> card instanceof CityCard);
+
+    private boolean roleActionOneAvailable(String lobbyCode) {
+        IGame game = getGame(lobbyCode);
+        if (game.getCurrentPlayer()
+                .getRole()
+                .getName()
+                .equals(RoleEnum.POLITICIAN)) {
+            return game.getCurrentPlayer()
+                       .getCards()
+                       .stream()
+                       .anyMatch(CityCard.class::isInstance);
+        } else if (game.getCurrentPlayer()
+                       .getRole()
+                       .getName()
+                       .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)) {
+            return !game.getPlayerCardDrawPile()
+                        .isEmpty();
         }
         return false;
     }
 
-    private boolean roleActionTwoAvailable(String lobbyCode, IUser user) {
+    private boolean roleActionTwoAvailable(String lobbyCode) {
         if (getGame(lobbyCode).getCurrentPlayer()
                               .getRole()
                               .getName()
@@ -333,26 +364,37 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             boolean playerHasCurrentCityCard = getGame(lobbyCode).getCurrentPlayer()
                                                                  .getCards()
                                                                  .stream()
-                                                                 .anyMatch(card -> card instanceof CityCard);
+                                                                 .anyMatch(CityCard.class::isInstance);
 
             boolean currentCityCardIsOnDiscardPile = getGame(lobbyCode).getPlayerCardDiscardPile()
                                                                        .stream()
-                                                                       .anyMatch(card -> card instanceof CityCard);
+                                                                       .anyMatch(CityCard.class::isInstance);
 
             return playerHasCurrentCityCard || currentCityCardIsOnDiscardPile;
         }
         return false;
     }
 
+    /**
+     * Checks if train tracks can be built in the specified lobby.
+     * If the current player is in a city where train tracks can be built and has enough tracks left, the action is possible.
+     *
+     * @param lobbyId the code of the lobby
+     * @return true if train tracks can be built, false otherwise
+     */
+    private boolean areTrainTracksBuildable(String lobbyId) {
+        IGame game = super.getGame(lobbyId);
+        IPlayer player = game.getCurrentPlayer();
+        if (connectionManagement.getBuildableTrainTracks(
+                                        lobbyId,
+                                        player.getCurrentPosition()
+                                              .getId()
+                                )
+                                .isEmpty()) {
+            return false;
+        }
 
-    private boolean areTrainTracksBuildable(String lobbyCode) {
-        IGame game = super.getGame(lobbyCode);
         return game.getTracksLeft() >= 0;
-    }
-
-    private boolean isHospitalBuildable() {
-        //TODO: Implement logic in #85
-        return true;
     }
 
     /**
@@ -380,15 +422,16 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     private boolean isInfectionTreatable(String lobbyCode) {
-        ICity city = getGame(lobbyCode).getCurrentPlayer().getCurrentPosition();
+        ICity city = getGame(lobbyCode).getCurrentPlayer()
+                                       .getCurrentPosition();
         return city.getInfections()
                    .stream()
                    .anyMatch(infection -> infection.getSeverity() > 0);
     }
 
-    private boolean isPlagueResearchable() {
-        //TODO: Implement logic in #179
-        return true;
+    private boolean isPlagueResearchable(String lobbyId) {
+        IGame game = getGame(lobbyId);
+        return plagueManagement.canResearchPlague(game);
     }
 
     boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
@@ -400,9 +443,44 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return !availableRegions.isEmpty();
     }
 
+    /**
+     * Checks if the current player can end their turn in the specified lobby.
+     *
+     * @param lobbyCode the code of the lobby
+     * @param user      the user for whom the check is performed
+     * @return true if the current player can end their turn, false otherwise
+     */
+    private boolean isEndTurnPossible(String lobbyCode, IUser user) {
+        IGame game = getGame(lobbyCode);
+        return game.getCurrentPlayer()
+                   .getUser()
+                   .equals(user) && game.getState() instanceof PlayerTurnState;
+    }
+
+    @Override
+    public void endTurn(String lobbyId, IUser user) throws IllegalGameStateException {
+        IGame game = getGame(lobbyId);
+        if (game.getCurrentPlayer()
+                .getUser()
+                .equals(user) && game.getState() instanceof PlayerTurnState) {
+            LOG.info("[LobbyID: {}] Ending turn for player {}", lobbyId, user.getUsername());
+            sendServerMessageEvent(
+                    lobbyId,
+                    user.getUsername() + " hat seinen Zug beendet. Als nächstes müssen Karten vom Stapel gezogen " +
+                            "werden."
+            );
+            game.setState(new DrawCardState());
+        } else {
+            throw new IllegalGameStateException("Player is not allowed to end turn");
+        }
+    }
+
     @Override
     public void movePlayer(
-            IUser user, String lobbyId, ICity city, ICard card
+            IUser user,
+            String lobbyId,
+            ICity city,
+            ICard card
     ) throws GameException, IllegalGameStateException {
         IGame game = super.getGame(lobbyId);
 
@@ -450,10 +528,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
         if (citiesConnectedByLand) {
             movePlayerByLand(game, player, city);
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " hat sich nach "
+                    + city.getName().getDisplayName() + " bewegt.");
         } else {
             movePlayerBySea(game, player, city, card);
+            sendServerMessageEvent(lobbyId, player.getUser().getUsername() + " ist mit dem Schiff nach "
+                    + city.getName().getDisplayName() + " gereist.");
         }
     }
+
 
     /**
      * Validates if the game states allows moving players.
@@ -537,12 +620,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
      * @param city   the destination harbour city
      * @param card   the card used for the move
      */
-    private void movePlayerBySea(IGame game, IPlayer player, ICity city, ICard card) {
+    private void movePlayerBySea(IGame game, IPlayer player, ICity city, ICard card) throws GameException {
         boolean playerIsSailor = player.getRole()
                                        .getName()
                                        .equals(RoleEnum.SAILOR);
         if (!playerIsSailor) {
-            playerManagement.discardCard(game.getGameId(), player, card);
+            playerManagement.discardPlayerCard(
+                    game.getGameId(),
+                    player.getUser()
+                          .getUsername(),
+                    card.getId()
+            );
         }
 
         LOG.debug(
@@ -575,13 +663,15 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                 city.getName()
                     .getDisplayName()
         );
-        player.setCurrentPosition(city);
-        LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
 
         if (game.getState() instanceof PlayerTurnState playerTurnState) {
             playerTurnState.reduceActionsRemaining(game);
             LOG.info("[LobbyId: {}] Decreased actions remaining", game.getGameId());
+            player.setCurrentPosition(city);
+            LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
         } else if (game.getState() instanceof EventState eventState) {
+            player.setCurrentPosition(city);
+            LOG.info("[LobbyId: {}] Player has been moved", game.getGameId());
             if (eventState.getEventCard() instanceof StateMobilizationEventCard stateMobilizationEventCard) {
                 LOG.info("[LobbyId: {}] Decreasing players to move.", game.getGameId());
                 stateMobilizationEventCard.playerMoved(player);
@@ -602,7 +692,9 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     @Override
     public void buildTrainTrack(
-            IUser user, String lobbyId, IConnection connection
+            IUser user,
+            String lobbyId,
+            IConnection connection
     ) throws IllegalGameStateException, GameException {
         IGame game = super.getGame(lobbyId);
 
@@ -631,8 +723,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                               .get(1)
             );
             throw new GameException("Connection between " + connection.getCityNames()
-                                                                                .get(0) + " and " + connection.getCityNames()
-                                                                                                              .get(1) + " is not buildable");
+                                                                      .get(0) + " and " + connection.getCityNames()
+                                                                                                    .get(1) + " is not buildable");
         }
 
         game.getConnectionRepository()
@@ -660,8 +752,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                               .filter(name -> !name.equals(player.getCurrentPosition()
                                                                                  .getName()))
                                               .findFirst()
-                                              .orElseThrow(() -> new GameException(
-                                                      "Error while building train track"));
+                                              .orElseThrow(() -> new GameException("Error while building train track"));
 
                 game.setState(new BuildExtraTrainTrackState(connectionManagement.getBuildableTrainTracks(
                         lobbyId,
