@@ -176,6 +176,7 @@ public class LobbyService extends AbstractService {
         request.getMessageContext()
                .ifPresent(response::setMessageContext);
         post(response);
+        sendServerMessageEvent(lobby.getLobbyId(), user.getUsername() + " hat die Lobby verlassen.");
         LOG.info("[LobbyId: {}] Sent user left lobby message", request.getLobbyId());
     }
 
@@ -313,7 +314,7 @@ public class LobbyService extends AbstractService {
         RemovedFromLobbyEvent removedFromLobbyEvent = new RemovedFromLobbyEvent(lobby.getLobbyId());
         removedFromLobbyEvent.setReceiver(List.of(session));
         post(removedFromLobbyEvent);
-
+        sendServerMessageEvent(lobby.getLobbyId(), user.getUsername() + " wurde aus der Lobby entfernt.");
         sendToAllInLobby(lobby, new LobbyUpdatedEvent(LobbyMapper.toDTO(lobby)));
         LOG.debug("[LobbyId: {}] Sent lobby updated event", request.getLobbyId());
     }

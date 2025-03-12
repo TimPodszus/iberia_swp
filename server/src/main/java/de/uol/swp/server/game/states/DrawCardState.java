@@ -12,6 +12,7 @@ import lombok.Getter;
  */
 @Getter
 public class DrawCardState implements IGameState {
+    public static final int MAX_CARDS_DRAWABLE = 2;
     private int cardsDrawn = 0;
     public StateType getStateType() {
         return StateType.DRAW_CARD_STATE;
@@ -19,7 +20,7 @@ public class DrawCardState implements IGameState {
 
     public void increaseCardsDrawn(IGame game) {
         cardsDrawn++;
-        if(cardsDrawn == 2){
+        if (cardsDrawn == MAX_CARDS_DRAWABLE) {
             game.setState(new InfectionState());
         }
     }
