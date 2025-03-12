@@ -193,8 +193,9 @@ public class PlagueService extends AbstractService {
                                       .getRole() instanceof CountryDoctor;
         boolean isPlayerTurnState = game.getState() instanceof PlayerTurnState;
         boolean isEventState = game.getState() instanceof EventState;
+        boolean isNotTreatExtraState = !(game.getState() instanceof TreatExtraPlagueState);
 
-        if (isCountryDoctor && isPlayerTurnState || isEventState) {
+        if ((isCountryDoctor && isPlayerTurnState && isNotTreatExtraState) || isEventState) {
             List<ICityDTO> availableCities;
             if (isEventState) {
                 game.setState(game.getPreviousState());
@@ -205,7 +206,8 @@ public class PlagueService extends AbstractService {
                 LOG.debug("PlayerTurnState: sending nearby cities");
             }
             if (!availableCities.isEmpty()) {
-                game.setState(new TreatExtraPlagueState());
+                PlayerTurnState state = (PlayerTurnState) game.getState();
+                game.setState(new TreatExtraPlagueState(state.getActionsRemaining()));
 
                 response = new TreatPlagueResponse(request.getLobbyId(), true, availableCities, true);
                 request.getSession()
@@ -216,11 +218,11 @@ public class PlagueService extends AbstractService {
 
                 return;
             }
-        } else {
-            if (game.getState() instanceof TreatExtraPlagueState) {
-                game.setState(game.getPreviousState());
-            }
+        } else if (game.getState() instanceof TreatExtraPlagueState) {
+            game.setState(game.getPreviousState());
         }
+
+        ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
         IGameDTO gameDTO = GameMapper.toDTO(plagueManagement.getGame(request.getLobbyId()));
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), gameDTO));
