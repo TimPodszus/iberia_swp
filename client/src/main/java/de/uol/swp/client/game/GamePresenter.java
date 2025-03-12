@@ -2097,12 +2097,15 @@ public class GamePresenter extends AbstractPresenter {
         Platform.runLater(() -> {
             TreatPlagueDialog dialog = new TreatPlagueDialog(true, response.getAvailablePlagues());
             Optional<PlagueName> result = dialog.showAndWait();
-            result.ifPresent(selectedPlague -> {
-                LOG.info("Selected plague: {}", selectedPlague);
-                gameService.sendTreatPlagueRequest(lobbyId, cityIdToTreat, selectedPlague);
 
-                treatInfectionButton.setSelected(false);
-            });
+            result.ifPresentOrElse(
+                    selectedPlague -> {
+                        LOG.info("Selected plague: {}", selectedPlague);
+                        gameService.sendTreatPlagueRequest(lobbyId, cityIdToTreat, selectedPlague);
+                        treatInfectionButton.setSelected(false);
+                    },
+                    () -> treatInfectionButton.setSelected(false)
+            );
         });
     }
 

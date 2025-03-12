@@ -10,16 +10,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.StageStyle;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Dialog for exchanging cards between players.
  * Extends the JavaFX Dialog class and returns a map of selected cards.
  */
-public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
+public class CardExchangeDialog extends AbstractDialog<Map<String, ICardDTO>> {
 
     private static final String HEADER = "Karte auswählen";
     private final String username;
@@ -27,7 +24,7 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
     private final Map<String, List<ICardDTO>> playerCards;
     private final List<AbstractCard> displayedPlayerCards;
     private List<AbstractCard> displayedOpponentCards;
-    private final HBox opponentHBox = new HBox();
+    private final HBox opponentHBox = new HBox(20);
 
     private AbstractCard currentPlayerSelectedCard;
     private AbstractCard opponentSelectedCard;
@@ -44,6 +41,7 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
         this.displayedPlayerCards = createCards(username);
         super.initStyle(StageStyle.DECORATED);
         super.setHeaderText(HEADER);
+        opponentHBox.getStyleClass().add(HBOX_STYLE);
         this.setContent();
         this.setButtons();
         super.setResultConverter(dialogButton -> {
@@ -63,8 +61,10 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
      */
     private void setContent() {
         VBox vBox = new VBox();
+        vBox.getStyleClass().add(VBOX_STYLE);
 
         HBox currentPlayerHBox = new HBox();
+        currentPlayerHBox.getStyleClass().add(HBOX_STYLE);
         for (AbstractCard card : this.displayedPlayerCards) {
             card.setOnMouseClicked(mouseEvent -> this.onPlayerCardClicked(card.getCardId()));
             currentPlayerHBox.getChildren()
@@ -84,6 +84,7 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(vBox);
+        scrollPane.getStyleClass().add(SCROLL_PANE);
         super.getDialogPane()
              .setContent(scrollPane);
 
@@ -158,7 +159,9 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
                             .filter(player -> !player.equals(this.username))
                             .findFirst()
                             .ifPresent(player -> currentOpponent = player);
-            return new Label(currentOpponent);
+            Label label = new Label(currentOpponent);
+            label.getStyleClass().add(LABEL);
+            return label;
         }
     }
 
@@ -169,9 +172,11 @@ public class CardExchangeDialog extends Dialog<Map<String, ICardDTO>> {
         super.getDialogPane()
              .getButtonTypes()
              .add(ButtonType.OK);
+        super.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add(APPROVE_BUTTON);
         super.getDialogPane()
              .getButtonTypes()
              .add(ButtonType.CANCEL);
+        super.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add(DENY_BUTTON);
     }
 
     /**

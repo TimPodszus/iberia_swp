@@ -33,10 +33,10 @@
             </children>
          </VBox>
          <Button id="loginButton" defaultButton="true" layoutX="353.0" layoutY="272.0" mnemonicParsing="false"
-                 onAction="#onLoginButtonPressed" styleClass="login-button" text="Anmelden"
+                 onAction="#onLoginButtonPressed" styleClass="primary-button" text="Anmelden"
                  AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
          <Button id="registerButton" layoutX="69.0" layoutY="274.0" mnemonicParsing="false"
-                 onAction="#onRegisterButtonPressed" styleClass="register-button" text="Registrieren"
+                 onAction="#onRegisterButtonPressed" text="Registrieren"
                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
          <Label alignment="CENTER" layoutX="227.0" layoutY="144.0" style="-fx-font-size: 2em;" text="IBERIA" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0">
             <font>
