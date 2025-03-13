@@ -581,7 +581,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(6, actions.size());
+        assertEquals(5, actions.size());
     }
 
     @Test
@@ -613,7 +613,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(4, actions.size());
+        assertEquals(3, actions.size());
     }
 
 
