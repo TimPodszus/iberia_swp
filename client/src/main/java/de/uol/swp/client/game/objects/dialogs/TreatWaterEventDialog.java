@@ -1,88 +1,82 @@
 package de.uol.swp.client.game.objects.dialogs;
 
 import de.uol.swp.common.game.StateType;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
 
-import java.util.concurrent.CompletableFuture;
-
-public class TreatWaterEventDialog extends Stage {
+public class TreatWaterEventDialog extends AbstractDialog<Integer> {
     private static final String HEADER = "Platzierung der Wasseraufbereitung";
-    private final boolean isDismissible;
     private final int waterTreatmentsLeft;
     private final StateType stateType;
+    private final boolean isDismissible;
     private final ToggleGroup toggleGroup = new ToggleGroup();
-    private final Button okButton = new Button("OK");
-    private final Button exitButton = new Button("Exit");
-    private final CompletableFuture<Integer> result = new CompletableFuture<>();
 
     public TreatWaterEventDialog(boolean isDismissible, int waterTreatmentsLeft, StateType stateType) {
-        this.isDismissible = isDismissible;
         this.waterTreatmentsLeft = waterTreatmentsLeft;
         this.stateType = stateType;
-        initialize();
-        this.setTitle(HEADER);
+        this.isDismissible = isDismissible;
+
+        setHeaderText(HEADER);
+
+        initializeDialog();
+        initializeToggleButtons();
+        setDialogContent();
+        setDialogButtons();
+        initializeToggleGroup();
     }
 
-    private void initialize() {
-        VBox vbox = new VBox(5);
-        HBox buttonBox = new HBox(10);
+    private void initializeDialog() {
+        getDialogPane().setContent(new VBox(5));
+    }
 
-        Label selectionLabel = new Label("Wähle die Anzahl");
-        vbox.getChildren().add(selectionLabel);
+    private void initializeToggleButtons() {
+        HBox buttonBox = new HBox();
+        buttonBox.getStyleClass().add(HBOX_STYLE);
 
-        ToggleButton toggleButton1 = new ToggleButton(String.valueOf(1));
+        ToggleButton toggleButton1 = new ToggleButton("1");
         toggleButton1.setToggleGroup(toggleGroup);
         toggleButton1.setUserData(1);
-        buttonBox.getChildren()
-                 .add(toggleButton1);
+        buttonBox.getChildren().add(toggleButton1);
+
         if (waterTreatmentsLeft > 1 && stateType.equals(StateType.EVENT_STATE)) {
-            ToggleButton toggleButton2 = new ToggleButton(String.valueOf(2));
+            ToggleButton toggleButton2 = new ToggleButton("2");
             toggleButton2.setToggleGroup(toggleGroup);
             toggleButton2.setUserData(2);
-            buttonBox.getChildren()
-                     .add(toggleButton2);
+            buttonBox.getChildren().add(toggleButton2);
         }
 
-        okButton.setDisable(true);
-        toggleGroup.selectedToggleProperty()
-                   .addListener((observable, oldValue, newValue) -> okButton.setDisable(newValue == null));
-
-        vbox.getChildren()
-            .addAll(buttonBox, okButton);
-
-        if (isDismissible) {
-            exitButton.setOnAction(event -> {
-                result.complete(null);
-                this.close();
-            });
-            vbox.getChildren()
-                .add(exitButton);
-        }
-
-        okButton.setOnAction(event -> {
-            ToggleButton selectedButton = (ToggleButton) toggleGroup.getSelectedToggle();
-            if (selectedButton != null) {
-                int selectedValue = (int) selectedButton.getUserData();
-                result.complete(selectedValue);
-                this.close();
-            }
-        });
-
-        Scene scene = new Scene(vbox, 150, 150);
-        this.setScene(scene);
-
-        this.setOnCloseRequest(event -> result.complete(null));
+        ((VBox) getDialogPane().getContent()).getChildren().add(buttonBox);
     }
 
-    public CompletableFuture<Integer> showAndWaitForResult() {
-        this.show();
-        return result;
+    private void setDialogContent() {
+        Label selectionLabel = new Label("Wähle die Anzahl");
+        ((VBox) getDialogPane().getContent()).getChildren().add(0, selectionLabel);
+    }
+
+    private void setDialogButtons() {
+        getDialogPane().getButtonTypes().addAll(ButtonType.OK);
+        getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add(APPROVE_BUTTON);
+        if (isDismissible) {
+            getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+            getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add(DENY_BUTTON);
+        }
+    }
+
+    private void initializeToggleGroup() {
+        Button okButton = (Button) getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setDisable(true);
+
+        toggleGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) ->
+                okButton.setDisable(newVal == null)
+        );
+
+        setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                ToggleButton selectedButton = (ToggleButton) toggleGroup.getSelectedToggle();
+                return (selectedButton != null) ? (int) selectedButton.getUserData() : null;
+            }
+            return null;
+        });
     }
 }

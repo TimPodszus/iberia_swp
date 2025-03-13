@@ -3,6 +3,7 @@ package de.uol.swp.client.lobby.detail;
 import com.google.inject.Inject;
 import de.uol.swp.client.AbstractPresenter;
 import de.uol.swp.client.chat.detail.ChatDetailPresenter;
+import de.uol.swp.client.game.objects.dialogs.CustomAlert;
 import de.uol.swp.client.lobby.LobbyService;
 import de.uol.swp.client.user.UserStore;
 import de.uol.swp.common.lobby.dto.ILobbyDTO;
@@ -227,7 +228,7 @@ public class LobbyDetailPresenter extends AbstractPresenter {
      * @param username the username of the player to be removed
      */
     private void showConfirmKickDialog(String username) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        CustomAlert alert = new CustomAlert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Spieler entfernen");
         alert.setHeaderText("Willst du " + username + " wirklich aus der Lobby entfernen?");
         Optional<ButtonType> result = alert.showAndWait();
