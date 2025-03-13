@@ -931,20 +931,20 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
     @Override
-    public void giveCard(CardExchangeConfirmationEvent request) {
-        IGame game = getGame(request.getLobbyId());
+    public void giveCard(CardExchangeConfirmationEvent response) {
+        IGame game = getGame(response.getLobbyId());
 
-        IPlayer confirmingPlayer = game.getPlayer(request.getReceivingPlayer()
+        IPlayer confirmingPlayer = game.getPlayer(response.getReceivingPlayer()
                                                          .getUsername());
-        IPlayer requestingPlayer = game.getPlayer(request.getRequestingPlayer()
+        IPlayer requestingPlayer = game.getPlayer(response.getRequestingPlayer()
                                                          .getUsername());
 
         try {
             ICard requestCard = playerManagement.getCard(
-                    request.getLobbyId(),
+                    response.getLobbyId(),
                     confirmingPlayer.getUser()
                                     .getUsername(),
-                    request.getRequestingCard()
+                    response.getRequestingCard()
                            .getId()
 
             );
@@ -954,8 +954,14 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             confirmingPlayer.getCards()
                             .remove(requestCard);
             ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
+            sendServerMessageEvent(
+                    response.getLobbyId(),
+                    "Spieler " + requestingPlayer.getUser().getUsername() + " hat die Karte " + requestCard.getTitle() + " von " +
+                            "Spieler " + confirmingPlayer.getUser().getUsername() + " bekommen."
+            );
+
         } catch (PlayerManagementException e) {
-            new StatusResponse(request.getLobbyId(), false, "Player not found");
+            new StatusResponse(response.getLobbyId(), false, "Player not found");
         }
 
 
@@ -983,5 +989,10 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         requestingPlayer.getCards()
                         .remove(requestCard);
         ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                "Spieler " + receivingPlayer.getUser().getUsername() + " hat die Karte " + requestCard.getTitle() + " von " +
+                        "Spieler " + requestingPlayer.getUser().getUsername() + " bekommen."
+        );
     }
 }

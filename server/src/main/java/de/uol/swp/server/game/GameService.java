@@ -354,8 +354,10 @@ public class GameService extends AbstractService implements GameStateChangeListe
     }
 
     @Subscribe
-    public void onAvailableShareKnowledgePlayersRequest(de.uol.swp.common.game.message.request.AvailableShareKnowledgePlayersRequest request) {
+    public void onAvailableShareKnowledgePlayersRequest(AvailableShareKnowledgePlayersRequest request) {
         LOG.debug("Got AvailableShareKnowledgePlayersRequest for lobby {}", request.getLobbyId());
+        sendServerMessageEvent(request.getLobbyId(),
+                "Spieler " + gameManagement.getGame(request.getLobbyId()).getCurrentPlayer().getUser().getUsername() + " möchte Wissen teilen");
         IGame game = gameManagement.getGame(request.getLobbyId());
 
 
@@ -435,10 +437,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
                 )
         );
-        sendServerMessageEvent(
-                request.getLobbyId(),
-                "Spieler " + request.getUsername() + " hat die Karte der Stadt " + "in der er steht" + " erhalten"
-        );
+
 
     }
 
@@ -454,18 +453,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         GameMapper.toDTO(gameManagement.getGame(response.getLobbyId()))
                 )
         );
-        sendServerMessageEvent(
-                response.getLobbyId(),
-                "Spieler " + response.getCardExchangeConfirmationRequest()
-                                     .getRequestingPlayer()
-                                     .getUsername() + " hat die Karte " + response.getCardExchangeConfirmationRequest()
-                                                                                  .getRequestingCard()
-                                                                                  .getTitle() + " von Spieler " + response.getCardExchangeConfirmationRequest()
-                                                                                                                          .getReceiver()
-                                                                                                                          .get(0)
-                                                                                                                          .getUser()
-                                                                                                                          .getUsername() + " bekommen."
-        );
+
 
     }
 

@@ -238,6 +238,7 @@ public class GameService {
      */
     public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
         LOG.debug("Share knowledge button is selected");
+
         eventBus.post(new de.uol.swp.common.game.message.request.AvailableShareKnowledgePlayersRequest(lobbyId));
 
 
