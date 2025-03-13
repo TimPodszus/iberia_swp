@@ -150,23 +150,37 @@ public class CardService extends AbstractService {
     @Subscribe
     public void onForTheGoodCauseEvent(ForTheGoodCauseEvent event) {
         LOG.debug("[LobbyId: {}] Received ForTheGoodCauseEvent", event.getLobbyId());
-        List<EventCard> cards = cardManagement.getCardsFromPlayerDiscardPile(event.getLobbyId(), EventCard.class);
-
-        List<ICardDTO> cardDtos = new ArrayList<>();
-        for (EventCard eventCard : cards) {
-            if (eventCard instanceof ForTheGoodCauseEventCard) {
-                break;
-            }
-            cardDtos.add(CardMapper.toDTO(eventCard));
-        }
-        CardSelectionEvent cardSelectionEvent = new CardSelectionEvent(event.getLobbyId(), cardDtos);
-
         IUser user = userManagement.getUser(event.getUsername());
         Session session = authenticationService.getSession(user)
                                                .orElseThrow(() -> {
                                                    LOG.error("[LobbyId: {}] Session not found", event.getLobbyId());
                                                    return new SessionNotFoundException();
                                                });
+        List<EventCard> cards = cardManagement.getCardsFromPlayerDiscardPile(event.getLobbyId(), EventCard.class);
+
+        if (cards.isEmpty()) {
+            cardManagement.returnLastPlayedCard(event.getLobbyId(), event.getUsername());
+
+            StatusResponse response = new StatusResponse(event.getLobbyId(),
+                    false,
+                    "Stadtkarte konnte nicht im Ablagestapel gefunden werden"
+            );
+            response.setSession(session);
+            post(response);
+
+            return;
+        }
+
+        List<ICardDTO> cardDtos = new ArrayList<>();
+
+        for (EventCard eventCard : cards) {
+            if (eventCard instanceof ForTheGoodCauseEventCard) {
+                break;
+            }
+            cardDtos.add(CardMapper.toDTO(eventCard));
+        }
+
+        CardSelectionEvent cardSelectionEvent = new CardSelectionEvent(event.getLobbyId(), cardDtos);
         cardSelectionEvent.setReceiver(List.of(session));
         post(cardSelectionEvent);
         LOG.info("[LobbyId: {}] Sent CardSelectionEvent to user", event.getLobbyId());
