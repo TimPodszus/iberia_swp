@@ -234,8 +234,6 @@ public class GameServiceTest extends EventBusBasedTest {
 
     /**
      * Tests the onMovePlayerRequest method with a not logged-in player to take with.
-     *
-     * @throws GameException if there is an error in game management
      */
     @Test
     void testOnMovePlayerRequestWithNotLoggedInPlayerToTakeWith() throws IllegalGameStateException, GameException {
@@ -371,81 +369,6 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, atLeast(1)).getAvailableActions("lobbyId", user);
         assertInstanceOf(AvailableActionsResponse.class, event);
     }
-
-    //    /**
-    //     * Tests setting player positioning when the lobby is not found.
-    //     *
-    //     * @throws GameException if there is an error in game management
-    //     */
-    //    @Test
-    //    void testOnPositionRequest_LobbyNotFound() throws IllegalGameStateException, GameException {
-    //        PositioningRequest positioningRequest = mock(PositioningRequest.class);
-    //        when(gameManagement.setPositioning(positioningRequest)).thenReturn(mock(IGame.class));
-    //        when(lobbyManagement.getLobby(LOBBY_CODE)).thenReturn(null);
-    //        when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
-    //
-    //        post(positioningRequest);
-    //
-    //        verify(gameManagement, times(1)).setPositioning(positioningRequest);
-    //        verify(lobbyManagement, times(1)).getLobby(LOBBY_CODE);
-    //        assertNull(event, "No event should be posted when the lobby is not found.");
-    //    }
-    //
-    //    /**
-    //     * Tests setting player positioning when the game is null.
-    //     *
-    //     * @throws GameException if there is an error in game management
-    //     */
-    //    @Test
-    //    void testOnPositionRequest_GameIsNull() throws IllegalGameStateException, GameException {
-    //        PositioningRequest positioningRequest = mock(PositioningRequest.class);
-    //        when(gameManagement.setPositioning(positioningRequest)).thenReturn(mock(IGame.class));
-    //        when(gameManagement.setPositioning(positioningRequest)).thenReturn(null);
-    //        when(positioningRequest.getLobbyId()).thenReturn(LOBBY_CODE);
-    //
-    //        post(positioningRequest);
-    //
-    //        verify(gameManagement, times(1)).setPositioning(positioningRequest);
-    //        assertNull(event, "No event should be posted when the game is null.");
-    //    }
-    //
-    //    /**
-    //     * Tests the onPositionRequest method when an IllegalGameStateException is thrown.
-    //     * Ensures that a StatusResponse event is posted with a failure status.
-    //     *
-    //     * @throws IllegalGameStateException if the game is in an illegal state
-    //     * @throws GameException             if there is an error in the game logic
-    //     * @throws InterruptedException      if the thread is interrupted
-    //     */
-    //    @Test
-    //    void testOnPositionRequest_IllegalGameState() throws IllegalGameStateException, GameException, InterruptedException {
-    //        PositioningRequest positioningRequest = new PositioningRequest(LOBBY_CODE, 2);
-    //        when(gameManagement.setPositioning(positioningRequest)).thenThrow(IllegalGameStateException.class);
-    //
-    //        postAndWait(positioningRequest);
-    //
-    //        assertInstanceOf(StatusResponse.class, event);
-    //        assertFalse(((StatusResponse) event).isSuccess());
-    //    }
-    //
-    //    /**
-    //     * Tests the onPositionRequest method when a GameException is thrown.
-    //     * Ensures that a StatusResponse event is posted with a failure status.
-    //     *
-    //     * @throws IllegalGameStateException if the game is in an illegal state
-    //     * @throws GameException             if there is an error in the game logic
-    //     * @throws InterruptedException      if the thread is interrupted
-    //     */
-    //    @Test
-    //    void testOnPositionRequest_GameException() throws IllegalGameStateException, GameException, InterruptedException {
-    //        PositioningRequest positioningRequest = new PositioningRequest(LOBBY_CODE, 2);
-    //        when(gameManagement.setPositioning(positioningRequest)).thenThrow(GameException.class);
-    //
-    //        postAndWait(positioningRequest);
-    //
-    //        assertInstanceOf(StatusResponse.class, event);
-    //        assertFalse(((StatusResponse) event).isSuccess());
-    //    }
 
     /**
      * Tests setting player positioning when the game is not null.
@@ -812,5 +735,4 @@ public class GameServiceTest extends EventBusBasedTest {
 
         assertInstanceOf(StatusResponse.class, event);
     }
-
 }
