@@ -66,6 +66,8 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -783,13 +785,16 @@ public class GamePresenter extends AbstractPresenter {
      */
     private void loadSvgIntoWebView() {
         WebEngine webEngine = webViewMap.getEngine();
-        try {
-            String svgContent = new String(Files.readAllBytes(Paths.get("client/src/main/resources/img/iberia-map.svg")));
+        try (InputStream inputStream = getClass().getResourceAsStream("/img/iberia-map.svg")) {
+            if (inputStream == null) {
+                throw new IOException("SVG file not found");
+            }
+            String svgContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
             String htmlContent = "<html><head><style>html, body { background-color: #c6ecff; margin: 1; padding: 0; width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }svg { width: 100%; height: 100%; object-fit: contain; }</style></head><body>" + svgContent + "</body></html>";
             webEngine.loadContent(htmlContent, "text/html");
-        } catch (IOException e) {
-            LOG.error(e);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
