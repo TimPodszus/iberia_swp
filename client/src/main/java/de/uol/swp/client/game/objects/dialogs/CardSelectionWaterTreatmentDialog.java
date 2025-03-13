@@ -154,22 +154,25 @@ public class CardSelectionWaterTreatmentDialog extends AbstractDialog<Pair<CityC
         HBox cardBox = new HBox();
         cardBox.getStyleClass()
                .add(HBOX_STYLE);
-        for (AbstractCard card : this.displayedPlayerCards) {
-            card.setOnMouseClicked(mouseEvent -> onCardClicked(card.getCardId()));
-            cardBox.getChildren()
-                   .add(card);
+        if (!this.displayedPlayerCards.isEmpty()) {
+            for (AbstractCard card : this.displayedPlayerCards) {
+                card.setOnMouseClicked(mouseEvent -> onCardClicked(card.getCardId()));
+                cardBox.getChildren()
+                       .add(card);
+            }
+            ScrollPane scrollPane = new ScrollPane();
+            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            scrollPane.setContent(cardBox);
+            scrollPane.getStyleClass()
+                      .add(SCROLL_PANE);
+            scrollPane.setFitToWidth(true);
+
+            VBox mainBox = (VBox) super.getDialogPane()
+                                       .getContent();
+            mainBox.getChildren()
+                   .addAll(scrollPane);
         }
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setContent(cardBox);
-        scrollPane.getStyleClass().add(SCROLL_PANE);
-
-        VBox mainBox = (VBox) super.getDialogPane()
-                                   .getContent();
-        mainBox.getChildren()
-               .addAll(scrollPane);
     }
-
 
     /**
      * Handles the event when a card is clicked.

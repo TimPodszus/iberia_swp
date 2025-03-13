@@ -7,6 +7,7 @@ import de.uol.swp.client.auth.LoginPresenter;
 import de.uol.swp.client.auth.events.ShowLoginViewEvent;
 import de.uol.swp.client.game.GamePresenter;
 import de.uol.swp.client.game.objects.dialogs.ConfirmLeaveGameDialog;
+import de.uol.swp.client.game.objects.dialogs.CustomAlert;
 import de.uol.swp.client.lobby.data.LobbySceneData;
 import de.uol.swp.client.lobby.overview.LobbyOverviewPresenter;
 import de.uol.swp.client.lobby.detail.LobbyDetailPresenter;
@@ -412,7 +413,8 @@ public class SceneManager {
         Platform.runLater(() -> {
             LOG.debug("[LobbyId: {}] User has been removed", event.getLobbyId());
             closeStage(event.getLobbyId());
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Sie wurden aus der Lobby entfernt.");
+            CustomAlert alert = new CustomAlert(Alert.AlertType.INFORMATION);
+            alert.setContentText("Sie wurden aus der Lobby entfernt.");
             alert.show();
         });
     }
@@ -461,7 +463,8 @@ public class SceneManager {
      */
     public void showError(String message, String e) {
         Platform.runLater(() -> {
-            Alert a = new Alert(Alert.AlertType.ERROR, message + e);
+            CustomAlert a = new CustomAlert(Alert.AlertType.ERROR);
+            a.setContentText(message + e);
             // based on: https://stackoverflow.com/questions/28417140/styling-default-javafx-dialogs/28421229#28421229
             DialogPane pane = a.getDialogPane();
             pane.getStylesheets()
@@ -535,7 +538,8 @@ public class SceneManager {
      */
     public void showLoginErrorScreen() {
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Fehler bei der Anmeldung");
+            CustomAlert alert = new CustomAlert(Alert.AlertType.ERROR);
+            alert.setContentText("Fehler bei der Anmeldung");
             // based on: https://stackoverflow.com/questions/28417140/styling-default-javafx-dialogs/28421229#28421229
             DialogPane pane = alert.getDialogPane();
             pane.getStylesheets()

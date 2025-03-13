@@ -1,16 +1,10 @@
 package de.uol.swp.client.game.objects.dialogs;
 
-import de.uol.swp.client.game.GameService;
-import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-
+import javafx.stage.Window;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
@@ -18,72 +12,50 @@ import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class GameStartDialog {
+public class GameStartDialog extends AbstractDialog<ButtonType> {
+    private static final String TITLE = "Startposition wählen";
+    private static final String HEADER_TEXT = null;
+    private static final String CONTENT_TEXT = "Bitte wähle eine Startstadt aus, indem du auf sie klickst.";
+    private static final String LABEL_TEXT1 = "Bitte wähle eine Startstadt aus, indem du auf sie klickst.";
+    private static final String LABEL_TEXT2 = "Du kannst nur eine Stadt auswählen, dessen Stadtkarte du bereits auf der Hand hast.";
+    private static final String LABEL_TEXT3 = "Für weitere Infos findest du die Anleitung hier:";
+    private static final String RULES_URL = "https://images-cdn.zmangames.com/us-east-1/filer_public/c3/62/c362beb7-bb07-4834-92f9-693de3f4eda5/zm7120_pandemic_iberia_rules.pdf";
 
-    private static final String LABEL_STYLE = "-fx-font-size: 14px; -fx-padding: 10px;";
-    private static final String BUTTON_STYLE = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 5px;";
-    private static final String RULES_BUTTON_STYLE = "-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 5px;";
-    private static final String LAYOUT_STYLE = "-fx-background-color: #FFCB83; -fx-background-radius: 10px; -fx-alignment: center;";
+    public GameStartDialog(Window owner) {
+        setTitle(TITLE);
+        initOwner(owner);
+        setHeaderText(HEADER_TEXT);
+        setContentText(CONTENT_TEXT);
 
-    public static void showStartDialog() {
-        Platform.runLater(() -> {
-            Stage dialog = new Stage();
-            dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.setTitle("Startposition wählen");
-
-            VBox layout = createLayout();
-            Scene scene = new Scene(layout, 600, 200);
-            dialog.setScene(scene);
-            dialog.showAndWait();
-        });
+        initializeDialog();
     }
 
-    private static VBox createLayout() {
-        Label messageLabel1 = createLabel("Bitte wähle eine Startstadt aus indem du auf sie klickst.");
-        Label messageLabel2 = createLabel(
-                "Du kannst nur eine Stadt auswählen, dessen Stadtkarte du bereits auf der Hand hast.");
-        Label messageLabel3 = createLabel("Für weitere Infos findest du die Anleitung hier");
+    private void initializeDialog() {
+        VBox layout = new VBox();
+        layout.getStyleClass().add(VBOX_STYLE);
+        layout.getChildren().addAll(
+                new Label(LABEL_TEXT1),
+                new Label(LABEL_TEXT2),
+                new Label(LABEL_TEXT3)
+        );
 
-        Button closeButton = createCloseButton();
-        Button rulesButton = createRulesButton();
 
-        HBox buttonBox = new HBox(10, closeButton, rulesButton);
-        buttonBox.setStyle("-fx-alignment: center; -fx-spacing: 10px;");
+        ButtonType buttonType = new ButtonType("Anleitung", ButtonBar.ButtonData.HELP);
+        getDialogPane().getButtonTypes().addAll(ButtonType.OK, buttonType);
+        getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add(APPROVE_BUTTON);
+        getDialogPane().setContent(layout);
 
-        VBox layout = new VBox(5, messageLabel1, messageLabel2, messageLabel3, buttonBox);
-        layout.setPadding(new Insets(20));
-        layout.setStyle(LAYOUT_STYLE);
-
-        return layout;
+        Button rulesButton = (Button) getDialogPane().lookupButton(buttonType);
+        if (rulesButton != null) {
+            rulesButton.setOnAction(e -> openRules());
+        }
     }
 
-    private static Label createLabel(String text) {
-        Label label = new Label(text);
-        label.setStyle(LABEL_STYLE);
-        return label;
-    }
-
-    private static Button createCloseButton() {
-        Button closeButton = new Button("Verstanden");
-        closeButton.setStyle(BUTTON_STYLE);
-        closeButton.setOnAction(e -> ((Stage) closeButton.getScene()
-                                                         .getWindow()).close());
-        return closeButton;
-    }
-
-    private static Button createRulesButton() {
-        Button rulesButton = new Button("Anleitung");
-        rulesButton.setStyle(RULES_BUTTON_STYLE);
-        rulesButton.setOnAction(e -> {
-            try {
-                Desktop.getDesktop()
-                       .browse(new URI(
-                               "https://images-cdn.zmangames.com/us-east-1/filer_public/c3/62/c362beb7-bb07-4834-92f9-693de3f4eda5/zm7120_pandemic_iberia_rules.pdf"));
-            } catch (IOException | URISyntaxException ioException) {
-                Logger.getLogger(GameService.class.getName())
-                      .log(Level.WARNING, "Browseraufruf der Regeln hat nicht funktioniert", ioException);
-            }
-        });
-        return rulesButton;
+    private void openRules() {
+        try {
+            Desktop.getDesktop().browse(new URI(RULES_URL));
+        } catch (IOException | URISyntaxException ioException) {
+            Logger.getLogger(GameStartDialog.class.getName()).log(Level.WARNING, "Browseraufruf der Regeln hat nicht funktioniert", ioException);
+        }
     }
 }
