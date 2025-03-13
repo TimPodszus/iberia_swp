@@ -6,12 +6,14 @@ import de.uol.swp.common.connection.dto.DestinationInfo;
 import de.uol.swp.common.connection.response.AvailableDestinationsResponse;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.GameActions;
+import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.game.message.response.PoliticianSecondRoleActionResponse;
 import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.request.MovePlayerRequest;
@@ -54,6 +56,7 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static de.uol.swp.server.game.states.DrawCardState.MAX_CARDS_DRAWABLE;
 
@@ -356,8 +359,13 @@ public class GameService extends AbstractService implements GameStateChangeListe
     @Subscribe
     public void onAvailableShareKnowledgePlayersRequest(AvailableShareKnowledgePlayersRequest request) {
         LOG.debug("Got AvailableShareKnowledgePlayersRequest for lobby {}", request.getLobbyId());
-        sendServerMessageEvent(request.getLobbyId(),
-                "Spieler " + gameManagement.getGame(request.getLobbyId()).getCurrentPlayer().getUser().getUsername() + " möchte Wissen teilen");
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                "Spieler " + gameManagement.getGame(request.getLobbyId())
+                                           .getCurrentPlayer()
+                                           .getUser()
+                                           .getUsername() + " möchte Wissen teilen"
+        );
         IGame game = gameManagement.getGame(request.getLobbyId());
 
 
@@ -370,6 +378,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
         try {
             if (playerHasCityCard) {
+
                 LOG.debug("Player has the city card for the current city");
                 List<IPlayerDTO> availablePlayers = PlayerMapper.toDTOList(game.getPlayers()
                                                                                .stream()
@@ -380,6 +389,22 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                                                                                                                   .getUser()
                                                                                                                                                   .getUsername()))
                                                                                .toList());
+                if (game.getCurrentPlayer()
+                        .getRole()
+                        .getName()
+                        .equals(RoleEnum.POLITICIAN) && availablePlayers.isEmpty()) {
+                    availablePlayers = game.getPlayers()
+                                           .stream()
+                                           .filter(player -> !player.getUser()
+                                                                    .getUsername()
+                                                                    .equals(game.getCurrentPlayer()
+                                                                                .getUser()
+                                                                                .getUsername()))
+                                           .map(PlayerMapper::toDTO)
+                                           .collect(Collectors.toList());
+
+
+                }
                 gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
                 AvailableShareKnowledgePlayersResponse response = new AvailableShareKnowledgePlayersResponse(
                         request.getLobbyId(),
@@ -671,6 +696,41 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 lobbyManagement.getLobby(lobbyId),
                 new BoardUpdateEvent(lobbyId, GameMapper.toDTO(gameManagement.getGame(lobbyId)))
         );
+    }
+
+    @Subscribe
+    public void onPoliticianSecondRoleActionRequest(PoliticianSecondRoleActionRequest request) {
+        LOG.debug("Got PoliticianSecondRoleActionRequest for lobby {}", request.getLobbyId());
+        Map<String, List<ICardDTO>> availableCards = gameManagement.getAvailableCardsForPoliticianSecondRoleAction(
+                request.getLobbyId());
+        gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
+        Session session = request.getSession()
+                                 .orElseThrow(() -> new SessionNotFoundException("Session not found"));
+        PoliticianSecondRoleActionResponse response = new PoliticianSecondRoleActionResponse(
+                request.getLobbyId(),
+                availableCards,
+                gameManagement.getGame(request.getLobbyId())
+                              .getCurrentPlayer()
+                              .getUser()
+                              .getUsername()
+        );
+        response.setSession(session);
+        post(response);
+    }
+
+    @Subscribe
+    public void onCardExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request) {
+        LOG.debug("Got CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
+        gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
+        gameManagement.swapCardsWithDiscardPile(request.getCardsToExchange(), request.getLobbyId());
+        sendToAllInLobby(
+                lobbyManagement.getLobby(request.getLobbyId()),
+                new BoardUpdateEvent(
+                        request.getLobbyId(),
+                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
+                )
+        );
+
     }
 
 }

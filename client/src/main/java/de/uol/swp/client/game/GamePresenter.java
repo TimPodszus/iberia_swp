@@ -439,13 +439,10 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.TRAIN
-        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
-                cityId,
-                TransportMode.NONE
-        );
+                TransportMode.CARRIAGE
+        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
     }
 
     /**
@@ -695,7 +692,7 @@ public class GamePresenter extends AbstractPresenter {
                    .getRole()
                    .getName()
                    .equals(RoleEnum.POLITICIAN)) {
-            //gameService.politicianActionTradeWithDiscardPile(this.gameDTO, lobbyId);
+            gameService.politicianActionTradeWithDiscardPile(this.gameDTO, lobbyId);
         }
 
     }

@@ -1,6 +1,7 @@
 package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
+import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
 import de.uol.swp.client.game.objects.dialogs.PlayerSelectionForCardExchangeDialog;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
@@ -15,6 +16,7 @@ import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
+import de.uol.swp.common.game.message.response.PoliticianSecondRoleActionResponse;
 import de.uol.swp.common.plague.message.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.message.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.message.request.TreatPlagueRequest;
@@ -30,6 +32,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static de.uol.swp.client.game.ConfirmationDialog.showConfirmationDialog;
@@ -419,5 +422,25 @@ public class GameService {
     public void politicianActionGiveCardToPlayer(String lobbyId) {
         eventBus.post(new AvailableShareKnowledgePlayersRequest(lobbyId));
 
+    }
+
+    public void politicianActionTradeWithDiscardPile(IGameDTO gameDTO, String lobbyId) {
+        eventBus.post(new PoliticianSecondRoleActionRequest(lobbyId));
+    }
+
+    @Subscribe
+    public void onPoliticianSecondRoleActionResponse(PoliticianSecondRoleActionResponse response) {
+        LOG.debug("Received PoliticianSecondRoleActionResponse: {}", response);
+        Platform.runLater(() -> {
+            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                    response.getCurrentPlayer(),
+                    response.getCards()
+            );
+            Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+            result.ifPresent(map -> {
+                LOG.debug("Card exchange result: {}", map);
+                eventBus.post(new CardsExchangeWithDiscardPileRequest(map, response.getLobbyId()));
+            });
+        });
     }
 }

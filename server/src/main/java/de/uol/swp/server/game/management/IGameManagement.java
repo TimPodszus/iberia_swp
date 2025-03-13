@@ -1,5 +1,6 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
@@ -20,6 +21,7 @@ import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IGameManagement {
 
@@ -160,8 +162,34 @@ public interface IGameManagement {
      */
     void removeGame(String lobbyCode);
 
+    /**
+     * Processes a card exchange confirmation event.
+     *
+     * @param cardExchangeConfirmationRequest the request containing details of the card exchange
+     */
     void giveCard(CardExchangeConfirmationEvent cardExchangeConfirmationRequest);
 
+    /**
+     * Processes a share knowledge request.
+     *
+     * @param shareKnowledgeRequest the request containing details of the knowledge sharing
+     */
     void giveCard(ShareKnowledgeRequest shareKnowledgeRequest);
+
+    /**
+     * Retrieves the available cards for the politician's second role action in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby for which to retrieve available cards
+     * @return a map of available cards, keyed by card ID
+     */
+    Map<String, List<ICardDTO>> getAvailableCardsForPoliticianSecondRoleAction(String lobbyId);
+
+    /**
+     * Swaps the specified cards with the discard pile in the game associated with the given lobby ID.
+     *
+     * @param cards   a map of card IDs to card data transfer objects (DTOs) representing the cards to be swapped
+     * @param lobbyId the ID of the lobby in which the game is happening
+     */
+    void swapCardsWithDiscardPile(Map<String, ICardDTO> cards, String lobbyId);
 }
 
