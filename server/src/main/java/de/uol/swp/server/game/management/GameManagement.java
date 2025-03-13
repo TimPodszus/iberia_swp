@@ -411,6 +411,17 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         int currentCityId = currentPlayer.getCurrentPosition()
                                          .getId();
 
+
+        long playersInCity = game.getPlayers()
+                                 .stream()
+                                 .filter(player -> player.getCurrentPosition()
+                                                         .getId() == currentCityId)
+                                 .count();
+
+        if (playersInCity < 2) {
+            return false;
+        }
+
         return game.getPlayers()
                    .stream()
                    .filter(player -> player.getCurrentPosition()
