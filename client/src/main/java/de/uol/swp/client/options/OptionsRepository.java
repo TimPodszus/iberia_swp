@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -83,15 +84,15 @@ public class OptionsRepository {
     private void loadProperties() throws IOException {
         properties = new Properties();
 
-        String resourcePath = Objects.requireNonNull(Thread.currentThread()
-                                                           .getContextClassLoader()
-                                                           .getResource(""))
-                                     .getPath();
-
-        String path = resourcePath + OPTIONS_FILE;
-
-        try (FileInputStream fis = new FileInputStream(path)) {
-            properties.load(fis);
+        try (
+                InputStream inputStream = getClass().getClassLoader()
+                                                    .getResourceAsStream(OPTIONS_FILE)
+        ) {
+            if (inputStream != null) {
+                properties.load(inputStream);
+            } else {
+                throw new IOException("Properties file not found: " + OPTIONS_FILE);
+            }
         }
     }
 
@@ -101,12 +102,7 @@ public class OptionsRepository {
      * @throws IOException if an I/O error occurs when writing to the output stream.
      */
     private void saveProperties() throws IOException {
-        String resourcePath = Objects.requireNonNull(Thread.currentThread()
-                                                           .getContextClassLoader()
-                                                           .getResource(""))
-                                     .getPath();
-        String path = resourcePath + OPTIONS_FILE;
-        try (FileOutputStream fos = new FileOutputStream(path)) {
+        try (FileOutputStream fos = new FileOutputStream(OPTIONS_FILE)) {
             properties.store(fos, null);
         }
     }
