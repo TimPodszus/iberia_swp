@@ -431,10 +431,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
         LOG.debug("Got ShareKnowledgeRequest for lobby {}", request.getLobbyId());
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
         gameManagement.giveCard(request);
-        sendServerMessageEvent(
-                request.getLobbyId(),
-                "Spieler " + request.getUsername() + " hat die Karte der Stadt " + "in der er steht" + " erhalten"
-        );
         sendToAllInLobby(
                 lobbyManagement.getLobby(request.getLobbyId()),
                 new BoardUpdateEvent(
@@ -442,6 +438,11 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
                 )
         );
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                "Spieler " + request.getUsername() + " hat die Karte der Stadt " + "in der er steht" + " erhalten"
+        );
+
     }
 
     @Subscribe
@@ -449,6 +450,13 @@ public class GameService extends AbstractService implements GameStateChangeListe
         gameManagement.unlockGameInWaitForConfirmation(response.getLobbyId());
         LOG.debug("Got CardExchangeConfirmationRequest for lobby {}", response.getLobbyId());
         gameManagement.giveCard(response.getCardExchangeConfirmationRequest());
+        sendToAllInLobby(
+                lobbyManagement.getLobby(response.getLobbyId()),
+                new BoardUpdateEvent(
+                        response.getLobbyId(),
+                        GameMapper.toDTO(gameManagement.getGame(response.getLobbyId()))
+                )
+        );
         sendServerMessageEvent(
                 response.getLobbyId(),
                 "Spieler " + response.getCardExchangeConfirmationRequest()
@@ -461,13 +469,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                                                                                           .getUser()
                                                                                                                           .getUsername() + " bekommen."
         );
-        sendToAllInLobby(
-                lobbyManagement.getLobby(response.getLobbyId()),
-                new BoardUpdateEvent(
-                        response.getLobbyId(),
-                        GameMapper.toDTO(gameManagement.getGame(response.getLobbyId()))
-                )
-        );
+
     }
 
 
