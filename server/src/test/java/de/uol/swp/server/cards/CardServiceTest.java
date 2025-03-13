@@ -254,6 +254,22 @@ public class CardServiceTest extends EventBusBasedTest {
         assertThrows(SessionNotFoundException.class, () -> cardService.onForTheGoodCauseEvent(forTheGoodCauseEvent));
     }
 
+    @Test
+    void testOnForTheGoodCauseEvent_NoEventCardsFound() throws InterruptedException {
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        when(userManagement.getUser("testuser")).thenReturn(user);
+        when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
+        when(cardManagement.getCardsFromPlayerDiscardPile("lobbyId", EventCard.class)).thenReturn(List.of());
+
+        ForTheGoodCauseEvent forTheGoodCauseEvent = new ForTheGoodCauseEvent("lobbyId", "testuser");
+        postAndWait(forTheGoodCauseEvent);
+
+        assertInstanceOf(StatusResponse.class, this.event, "Expected CardSelectionEvent");
+        assertFalse(((StatusResponse) this.event).isSuccess());
+        verify(cardManagement, times(1)).returnLastPlayedCard("lobbyId", "testuser");
+    }
+
     /**
      * Tests the GetCardRequest.
      *
