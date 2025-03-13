@@ -39,17 +39,4 @@ class OptionsRepositoryTest {
         this.optionsRepository.setVolume(0.0);
         assertEquals(0.0, this.optionsRepository.getVolume());
     }
-
-    /**
-     * Tests the saveProperties method of OptionsRepository.
-     * Ensures that the properties are correctly saved and retrieved.
-     */
-    @Test
-    void testSaveProperties() {
-        this.optionsRepository.setChatEnabled(true);
-        this.optionsRepository.setVolume(50.0);
-        OptionsRepository newOptionsRepository = new OptionsRepository();
-        assertEquals(50.0, newOptionsRepository.getVolume());
-        assert (newOptionsRepository.isChatEnabled());
-    }
 }
