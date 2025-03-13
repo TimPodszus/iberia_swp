@@ -900,7 +900,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                     user.getUsername() + " hat das Spiel verlassen. Das Spiel wurde aufgrund von zu wenigen Spielern beendet"
             );
 
-            game.getPlayers().remove(player);
+            game.getPlayers()
+                .remove(player);
             if (!(game.getState() instanceof EndGameState)) {
                 game.setState(new EndGameState(false));
             }
@@ -952,6 +953,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                             .add(requestCard);
             confirmingPlayer.getCards()
                             .remove(requestCard);
+            ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
         } catch (PlayerManagementException e) {
             new StatusResponse(request.getLobbyId(), false, "Player not found");
         }
@@ -980,5 +982,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                        .add(requestCard);
         requestingPlayer.getCards()
                         .remove(requestCard);
+        ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
     }
 }
