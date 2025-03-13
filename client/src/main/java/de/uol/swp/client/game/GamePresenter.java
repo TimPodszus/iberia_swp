@@ -68,8 +68,6 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -441,10 +439,13 @@ public class GamePresenter extends AbstractPresenter {
         return role != RoleEnum.SAILOR && checkPlayersTransportMode(
                 cityId,
                 TransportMode.SHIP
-        ) && !checkPlayersTransportMode(cityId, TransportMode.TRAIN) && !checkPlayersTransportMode(
+        ) && !checkPlayersTransportMode(
                 cityId,
-                TransportMode.CARRIAGE
-        ) && !checkPlayersTransportMode(cityId, TransportMode.NONE);
+                TransportMode.TRAIN
+        ) && !checkPlayersTransportMode(cityId, TransportMode.CARRIAGE) && !checkPlayersTransportMode(
+                cityId,
+                TransportMode.NONE
+        );
     }
 
     /**
@@ -676,37 +677,7 @@ public class GamePresenter extends AbstractPresenter {
                    .getName()
                    .equals(RoleEnum.POLITICIAN)) {
             LOG.debug("Current player is a politician");
-            Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
-            List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
-                                                          .getCards()
-                                                          .stream()
-                                                          .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                                                 .getCurrentPosition()
-                                                                                                 .getId())
-                                                          .toList();
-            cardsToExchange.put(
-                    gameDTO.getCurrentPlayer()
-                           .getUsername(), currentPlayerCityCard
-            );
-            for (IPlayerDTO player : gameDTO.getPlayers()) {
-                if (!player.getUsername()
-                           .equals(gameDTO.getCurrentPlayer()
-                                          .getUsername())) {
-                    cardsToExchange.put(player.getUsername(), player.getCards());
-                }
-                LOG.debug("Cards to exchange: {}", cardsToExchange);
-                Platform.runLater(() -> {
-                    CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
-                            gameDTO.getCurrentPlayer()
-                                   .getUsername(), cardsToExchange
-                    );
-                    Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
-                    result.ifPresent(map -> {
-                        LOG.debug("Card exchange result: {}", map);
-                        //    eventBus.post(new CardsExchangeRequest(map, lobbyId));
-                    });
-                });
-            }
+            gameService.politicianActionGiveCardToPlayer(lobbyId);
         } else if (gameDTO.getCurrentPlayer()
                           .getRole()
                           .getName()

@@ -238,10 +238,7 @@ public class GameService {
      */
     public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
         LOG.debug("Share knowledge button is selected");
-
         eventBus.post(new de.uol.swp.common.game.message.request.AvailableShareKnowledgePlayersRequest(lobbyId));
-
-
     }
 
 
@@ -348,61 +345,6 @@ public class GameService {
         eventBus.post(new TreatPlagueRequest(lobbyId, cityId, selectedPlague));
     }
 
-    //    public void politicianActionTradeWithDiscardPile(IGameDTO gameDTO, String lobbyId) {
-    //        boolean playerHasCityCard = gameDTO.getCurrentPlayer()
-    //                                           .getCards()
-    //                                           .stream()
-    //                                           .anyMatch(card -> card.getId() == gameDTO.getCurrentPlayer()
-    //                                                                                    .getCurrentPosition()
-    //                                                                                    .getId());
-    //
-    //        Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
-    //
-    //        if (playerHasCityCard) {
-    //            gameDTO.getCurrentPlayer()
-    //                   .getCards()
-    //                   .stream()
-    //                   .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-    //                                                          .getCurrentPosition()
-    //                                                          .getId())
-    //                   .findFirst()
-    //                   .ifPresent(card -> {
-    //                       List<ICardDTO> cardOfCurrentCity = new ArrayList<>();
-    //                       cardOfCurrentCity.add(card);
-    //                       cardsToExchange.put(
-    //                               gameDTO.getCurrentPlayer()
-    //                                      .getUsername(), cardOfCurrentCity
-    //                       );
-    //                   });
-    //            cardsToExchange.put("Discard Pile", gameDTO.getPlayerCardDiscardPile());
-    //        } else {
-    //            cardsToExchange.put(
-    //                    gameDTO.getCurrentPlayer()
-    //                           .getUsername(),
-    //                    gameDTO.getCurrentPlayer()
-    //                           .getCards()
-    //            );
-    //            cardsToExchange.put(
-    //                    "Discard Pile",
-    //                    gameDTO.getPlayerCardDiscardPile()
-    //                           .stream()
-    //                           .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-    //                                                                  .getCurrentPosition()
-    //                                                                  .getId())
-    //                           .toList()
-    //            );
-    //        }
-    //
-    //        CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
-    //                gameDTO.getCurrentPlayer()
-    //                       .getUsername(), cardsToExchange
-    //        );
-    //        Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
-    //        result.ifPresent(map -> {
-    //            LOG.debug("Card exchange result: {}", map);
-    //            eventBus.post(new CardsExchangeWithDiscardPileRequest(map, lobbyId));
-    //        });
-    //    }
 
     /**
      * Posts a request to research a plague for the given game lobby.
@@ -469,4 +411,13 @@ public class GameService {
     }
 
 
+    /**
+     * Sends a request to give a card to a player.
+     *
+     * @param lobbyId the ID of the lobby where the request is to be sent
+     */
+    public void politicianActionGiveCardToPlayer(String lobbyId) {
+        eventBus.post(new AvailableShareKnowledgePlayersRequest(lobbyId));
+
+    }
 }
