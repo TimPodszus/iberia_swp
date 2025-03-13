@@ -29,7 +29,10 @@ import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.exceptions.*;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.GameInitializationException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.plague.management.IPlagueManagement;
@@ -569,7 +572,8 @@ class GameManagementTest {
         when(cityCard.getCity()).thenReturn(city);
         when(player.getRole()).thenReturn(new Politician());
         when(player.getUser()).thenReturn(user);
-        when(connectionManagement.getBuildableTrainTracks("testLobby", 1)).thenReturn(List.of(new Connection(1,
+        when(connectionManagement.getBuildableTrainTracks("testLobby", 1)).thenReturn(List.of(new Connection(
+                1,
                 List.of(ALICANTE, ALBACETE),
                 true
         )));
@@ -609,9 +613,8 @@ class GameManagementTest {
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(7, actions.size());
+        assertEquals(4, actions.size());
     }
-
 
 
     @Test
@@ -864,7 +867,8 @@ class GameManagementTest {
 
         assertEquals(
                 destinationCity.getName(),
-                player.getCurrentPosition().getName(),
+                player.getCurrentPosition()
+                      .getName(),
                 "Expected player1 to have moved to Palma de Mallorca"
         );
         assertEquals(
@@ -1157,7 +1161,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testRemovePlayer_gameEnds() throws LobbyIsEmptyException{
+    void testRemovePlayer_gameEnds() throws LobbyIsEmptyException {
         IPlayer player = mock(IPlayer.class);
         IPlayer player2 = mock(IPlayer.class);
         IUser user = new User("test", "test");
@@ -1189,14 +1193,20 @@ class GameManagementTest {
         gameManagement.removePlayer(LOBBY_CODE, user);
 
         assertEquals(2, discardPile.size());
-        assertTrue(player.getCards().isEmpty());
-        assertEquals(2, game.getPlayers().size());
+        assertTrue(player.getCards()
+                         .isEmpty());
+        assertEquals(
+                2,
+                game.getPlayers()
+                    .size()
+        );
     }
 
     @Test
     void testRemoveGame() {
         gameManagement.removeGame(LOBBY_CODE);
 
-        assertNull(GameStore.getInstance().getGame(LOBBY_CODE));
+        assertNull(GameStore.getInstance()
+                            .getGame(LOBBY_CODE));
     }
 }

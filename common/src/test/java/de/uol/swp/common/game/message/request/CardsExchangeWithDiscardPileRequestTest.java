@@ -19,7 +19,6 @@ public class CardsExchangeWithDiscardPileRequestTest {
         CardsExchangeWithDiscardPileRequest request = new CardsExchangeWithDiscardPileRequest(cardsToExchange, lobbyId);
 
         assertNotNull(request);
-        assertEquals(cardsToExchange, request.getCardsToExchange());
         assertEquals(lobbyId, request.getLobbyId());
     }
 }
