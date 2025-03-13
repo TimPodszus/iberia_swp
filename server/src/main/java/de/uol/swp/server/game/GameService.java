@@ -381,10 +381,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
                 AvailableShareKnowledgePlayersResponse response = new AvailableShareKnowledgePlayersResponse(
                         request.getLobbyId(),
-                        availablePlayers,
-                        game.getCurrentPlayer()
-                            .getRole()
-                            .getName()
+                        availablePlayers
                 );
                 Session session = request.getSession()
                                          .orElseThrow(() -> new SessionNotFoundException("Session not found"));
