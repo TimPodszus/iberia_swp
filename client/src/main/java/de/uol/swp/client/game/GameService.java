@@ -147,9 +147,9 @@ public class GameService {
     public void onCardExchangeConfirmationEvent(CardExchangeConfirmationEvent request) {
         LOG.debug("Received CardExchangeConfirmationRequest: {}", request);
         Platform.runLater(() -> {
-            boolean accepted = showConfirmationDialog("Do you want to share the card " + request.getRequestingCard()
-                                                                                                .getTitle() + " " + "with " + request.getRequestingPlayer()
-                                                                                                                                     .getUsername() + "?");
+            boolean accepted = showConfirmationDialog("Möchtest du die Karte " + request.getRequestingCard()
+                                                                                        .getTitle() + " " + "an " + request.getRequestingPlayer()
+                                                                                                                           .getUsername() + " geben?");
             CardExchangeConfirmationRequest response = new CardExchangeConfirmationRequest(
                     request.getLobbyId(),
                     accepted,
