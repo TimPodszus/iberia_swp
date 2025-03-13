@@ -8,16 +8,13 @@ import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
-import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
-import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
@@ -120,22 +117,6 @@ public interface IGameManagement {
      */
     void increaseCurrentPlayerActions(IGame game, int amount);
 
-    /**
-     * Shares knowledge by discarding a card and receiving another card.
-     *
-     * @param cardToDiscardID the ID of the card to be discarded
-     * @param cardToReceiveID the ID of the card to be received
-     * @param lobbyId         the ID of the lobby in which the game is happening
-     * @param service         the game service
-     * @throws CardNotFoundException     if the card to be discarded or received is not found
-     * @throws PlayerManagementException if an error occurs during the process
-     */
-    void shareKnowledgeWithDiscardPile(
-            int cardToDiscardID,
-            int cardToReceiveID,
-            String lobbyId,
-            GameService service
-    ) throws CardNotFoundException, PlayerManagementException;
 
     /**
      * Ends the turn for the current player in the specified lobby.

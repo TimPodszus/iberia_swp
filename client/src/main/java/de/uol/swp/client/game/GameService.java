@@ -146,6 +146,14 @@ public class GameService {
     }
 
 
+    /**
+     * Handles the CardExchangeConfirmationEvent.
+     * This method is called when a CardExchangeConfirmationEvent is posted to the EventBus.
+     * It shows a confirmation dialog to the user asking if they want to give a card to another player.
+     * Based on the user's response, it sends a CardExchangeConfirmationRequest.
+     *
+     * @param request the CardExchangeConfirmationEvent containing the details of the card exchange request
+     */
     @Subscribe
     public void onCardExchangeConfirmationEvent(CardExchangeConfirmationEvent request) {
         LOG.debug("Received CardExchangeConfirmationRequest: {}", request);
@@ -161,8 +169,6 @@ public class GameService {
             LOG.debug("Sending CardExchangeConfirmationResponse: {}", response);
             eventBus.post(response);
         });
-
-
     }
 
     @Subscribe
@@ -424,10 +430,21 @@ public class GameService {
 
     }
 
+    /**
+     * Sends a request to trade cards with the discard pile for the politician's second role action.
+     *
+     * @param gameDTO the game data transfer object containing game state information
+     * @param lobbyId the ID of the lobby where the request is to be sent
+     */
     public void politicianActionTradeWithDiscardPile(IGameDTO gameDTO, String lobbyId) {
         eventBus.post(new PoliticianSecondRoleActionRequest(lobbyId));
     }
 
+    /**
+     * Handles the response for the politician's second role action.
+     *
+     * @param response the response containing the current player and the cards
+     */
     @Subscribe
     public void onPoliticianSecondRoleActionResponse(PoliticianSecondRoleActionResponse response) {
         LOG.debug("Received PoliticianSecondRoleActionResponse: {}", response);

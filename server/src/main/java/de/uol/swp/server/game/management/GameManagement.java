@@ -27,7 +27,6 @@ import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.ICityManagement;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
-import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -268,7 +267,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     /**
      * Draws an infection card from the deck.
      *
-     * @return The drawn infection card, or null if no card can be drawn
+     * @return The drawn infection card
      */
     public InfectionCard drawInfectionCard(IGame game) {
         List<InfectionCard> infectionCardDrawPile = game.getInfectionCardDrawPile();
@@ -276,7 +275,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         if (infectionCardDrawPile.isEmpty()) {
             throw new IllegalStateException("Infection card draw pile is empty");
         }
-        InfectionCard card = null;
+        InfectionCard card;
         if (game.getState() instanceof InfectionState infectionState) {
             if (game.isFavorableTimeEventCardPlayed()) {
                 card = infectionCardDrawPile.remove(infectionCardDrawPile.size() - 1);
@@ -342,7 +341,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return actions;
     }
 
-
+    /**
+     * Checks if the first role action is available for the current player.
+     *
+     * @param lobbyCode The code of the lobby
+     * @return true if the first role action is available, false otherwise
+     */
     private boolean roleActionOneAvailable(String lobbyCode) {
         IGame game = getGame(lobbyCode);
         if (game.getCurrentPlayer()
@@ -365,6 +369,13 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return false;
     }
 
+    /**
+     * Checks if the second role action is available for the current player.
+     * This action is specific to the Politician role.
+     *
+     * @param lobbyCode The code of the lobby
+     * @return true if the second role action is available, false otherwise
+     */
     private boolean roleActionTwoAvailable(String lobbyCode) {
         if (getGame(lobbyCode).getCurrentPlayer()
                               .getRole()
@@ -454,6 +465,12 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                                                    .getId() == currentCityId));
     }
 
+    /**
+     * Checks if an infection is treatable in the current city of the current player.
+     *
+     * @param lobbyCode The code of the lobby
+     * @return true if there is an infection with severity greater than 0, false otherwise
+     */
     private boolean isInfectionTreatable(String lobbyCode) {
         ICity city = getGame(lobbyCode).getCurrentPlayer()
                                        .getCurrentPosition();
@@ -462,11 +479,24 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                    .anyMatch(infection -> infection.getSeverity() > 0);
     }
 
+    /**
+     * Checks if the plague is researchable in the specified game.
+     *
+     * @param lobbyId The ID of the lobby
+     * @return true if the plague can be researched, false otherwise
+     */
     private boolean isPlagueResearchable(String lobbyId) {
         IGame game = getGame(lobbyId);
         return plagueManagement.canResearchPlague(game);
     }
 
+    /**
+     * Checks if a water treatment can be placed in the specified game.
+     *
+     * @param lobbyCode The code of the lobby
+     * @param user      The user requesting the water treatment placement
+     * @return true if there are available regions for water treatment, false otherwise
+     */
     boolean isWaterTreatmentPlaceable(String lobbyCode, IUser user) {
         IGame game = getGame(lobbyCode);
         Set<IRegionDTO> availableRegions = new HashSet<>();
@@ -868,52 +898,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     }
 
 
-    @Override
-    public void shareKnowledgeWithDiscardPile(
-            int cardToDiscardID,
-            int cardToReceiveID,
-            String lobbyId,
-            GameService gameService
-    ) throws PlayerManagementException {
-        IGame game = getGame(lobbyId);
-        ICard cardToDiscard = playerManagement.getCard(
-                lobbyId,
-                game.getCurrentPlayer()
-                    .getUser()
-                    .getUsername(),
-                cardToDiscardID
-        );
-        try {
-
-
-            ICard cardToReceive = game.getPlayerCardDiscardPile()
-                                      .stream()
-                                      .filter(card -> card.getId() == cardToReceiveID)
-                                      .findFirst()
-                                      .orElseThrow(() -> new GameManagementException("Card not found in discard pile"));
-
-
-            game.getCurrentPlayer()
-                .getCards()
-                .add(cardToReceive);
-            game.getPlayerCardDiscardPile()
-                .remove(cardToReceive);
-            game.getPlayerCardDiscardPile()
-                .add(cardToDiscard);
-            game.getCurrentPlayer()
-                .getCards()
-                .remove(cardToDiscard);
-        } catch (GameManagementException e) {
-            new StatusResponse(lobbyId, false, "Card not found in discard pile");
-        }
-        LOG.debug("Cards exchanged with discard pile");
-        IGameState gameState = game.getState();
-        ((PlayerTurnState) gameState).reduceActionsRemaining(game);
-        LOG.trace("ReducedActionsRemaining");
-
-        gameService.sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
-    }
-
     public void removePlayer(String lobbyId, IUser user) throws LobbyIsEmptyException {
         IGame game = getGame(lobbyId);
         IPlayer player = game.getPlayer(user.getUsername());
@@ -1083,6 +1067,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         return returnMap;
     }
 
+    @Override
     public void swapCardsWithDiscardPile(Map<String, ICardDTO> cards, String lobbyId) {
         IGame game = getGame(lobbyId);
         IPlayer player = game.getCurrentPlayer();

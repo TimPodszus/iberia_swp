@@ -25,7 +25,6 @@ import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
-import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
@@ -1031,27 +1030,6 @@ class GameManagementTest {
         verify(playerTurnState, never()).setActionsRemaining(anyInt());
     }
 
-
-    @Test
-    void testShareKnowledgeWithDiscardPile() throws PlayerManagementException {
-        // Arrange
-        int cardToDiscardID = 1;
-        int cardToReceiveID = 2;
-        String lobbyId = "lobbyCode";
-        GameService gameService = mock(GameService.class);
-        IPlayer player1 = new Player(new User("user1", "pass1"), "gameId");
-        ICard discardCard = new CityCard(2, "cardToReceive", mock(ICity.class));
-        ArrayList<ICard> discardPile = new ArrayList<>();
-        discardPile.add(discardCard);
-        when(game.getCurrentPlayer()).thenReturn(player1);
-        when(game.getPlayerCardDiscardPile()).thenReturn(discardPile);
-        when(game.getState()).thenReturn(new PlayerTurnState());
-
-
-        gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, lobbyId, gameService);
-
-        verify(gameService).sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
-    }
 
     @Test
     void testEndTurn() throws IllegalGameStateException {
