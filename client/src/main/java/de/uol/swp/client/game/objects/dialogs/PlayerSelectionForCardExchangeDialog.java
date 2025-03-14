@@ -71,7 +71,9 @@ public class PlayerSelectionForCardExchangeDialog extends AbstractDialog<String>
     private void setButtons() {
         super.getDialogPane()
              .getButtonTypes()
-             .addAll(ButtonType.CANCEL);
+             .addAll(ButtonType.OK, ButtonType.CANCEL);
+        super.getDialogPane().lookupButton(ButtonType.OK).setDisable(true);
+
         super.getDialogPane()
              .lookupButton(ButtonType.CANCEL)
              .getStyleClass()
