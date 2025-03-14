@@ -14,8 +14,10 @@ import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
+import de.uol.swp.common.game.message.event.SwapCardsConfirmationEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
+import de.uol.swp.common.game.message.response.ExchangeOfLettersResponse;
 import de.uol.swp.common.game.message.response.PoliticianSecondRoleActionResponse;
 import de.uol.swp.common.plague.message.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.message.request.ResearchPlagueRequest;
@@ -459,5 +461,36 @@ public class GameService {
                 eventBus.post(new CardsExchangeWithDiscardPileRequest(map, response.getLobbyId()));
             });
         });
+    }
+
+    @Subscribe
+    public void onExchangeOfLettersResponse(ExchangeOfLettersResponse response) {
+        LOG.debug("Received ExchangeOfLettersResponse: {}", response);
+        Platform.runLater(() -> {
+            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                    response.getRequestingPlayer(),
+                    response.getAvailableExchangeCards()
+            );
+            Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+            result.ifPresent(map -> {
+                LOG.debug("Card exchange result: {}", map);
+                eventBus.post(new CardsExchangeRequest(map, response.getLobbyId(), response.getRequestingPlayer()));
+            });
+        });
+    }
+
+    @Subscribe
+    public void onSwapCardsConfirmationEvent(SwapCardsConfirmationEvent event) {
+        LOG.debug("Received SwapCardsConfirmationEvent: {}", event);
+        Platform.runLater(() -> {
+            boolean accepted = showConfirmationDialog("Möchtest du die Karte " + event.getOtherPlayerCard()
+                                                                                      .getTitle() + " " + "an " + event.getRequestingPlayer() + " im Tausch für " + event.getRequestingPlayerCard()
+                                                                                                                                                                         .getTitle() + " geben?");
+
+            SwapCardsConfirmedRequest request = new SwapCardsConfirmedRequest(event.getLobbyId(), accepted, event);
+            eventBus.post(request);
+        });
+
+
     }
 }
