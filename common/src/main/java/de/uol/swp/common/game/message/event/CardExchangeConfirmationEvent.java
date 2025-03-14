@@ -13,32 +13,29 @@ import java.util.Objects;
 @Getter
 public class CardExchangeConfirmationEvent extends AbstractGameEvent {
 
-    boolean isGiveRequest;
-    IPlayerDTO requestingPlayer;
+
+    IPlayerDTO givingCardPlayer;
     ICardDTO requestingCard;
-    IPlayerDTO receivingPlayer;
+    IPlayerDTO receivingCardPlayer;
 
     /**
      * Constructs a new CardExchangeConfirmationEvent.
      *
-     * @param lobbyId          the ID of the lobby
-     * @param isGiveRequest    whether the request is to give a card
-     * @param requestingPlayer the player requesting the card exchange
-     * @param requestingCard   the card being requested
-     * @param receivingPlayer  the player receiving the card
+     * @param lobbyId             the ID of the lobby
+     * @param givingCardPlayer    the player requesting the card exchange
+     * @param requestingCard      the card being requested
+     * @param receivingCardPlayer the player receiving the card
      */
     public CardExchangeConfirmationEvent(
             String lobbyId,
-            boolean isGiveRequest,
-            IPlayerDTO requestingPlayer,
+            IPlayerDTO givingCardPlayer,
             ICardDTO requestingCard,
-            IPlayerDTO receivingPlayer
+            IPlayerDTO receivingCardPlayer
     ) {
         super(lobbyId);
-        this.isGiveRequest = isGiveRequest;
-        this.requestingPlayer = requestingPlayer;
+        this.givingCardPlayer = givingCardPlayer;
         this.requestingCard = requestingCard;
-        this.receivingPlayer = receivingPlayer;
+        this.receivingCardPlayer = receivingCardPlayer;
     }
 
     /**
@@ -53,13 +50,10 @@ public class CardExchangeConfirmationEvent extends AbstractGameEvent {
             return false;
         }
         CardExchangeConfirmationEvent that = (CardExchangeConfirmationEvent) o;
-        return isGiveRequest == that.isGiveRequest && Objects.equals(
-                requestingPlayer,
-                that.requestingPlayer
-        ) && Objects.equals(
+        return Objects.equals(givingCardPlayer, that.givingCardPlayer) && Objects.equals(
                 requestingCard,
                 that.requestingCard
-        ) && Objects.equals(receivingPlayer, that.receivingPlayer);
+        ) && Objects.equals(receivingCardPlayer, that.receivingCardPlayer);
     }
 
     /**
@@ -69,7 +63,7 @@ public class CardExchangeConfirmationEvent extends AbstractGameEvent {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(isGiveRequest, requestingPlayer, requestingCard, receivingPlayer);
+        return Objects.hash(givingCardPlayer, requestingCard, receivingCardPlayer);
     }
 
 

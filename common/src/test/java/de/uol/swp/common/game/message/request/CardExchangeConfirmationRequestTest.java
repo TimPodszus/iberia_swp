@@ -14,14 +14,12 @@ class CardExchangeConfirmationRequestTest {
     void testEquals() {
         CardExchangeConfirmationEvent event1 = new CardExchangeConfirmationEvent(
                 "lobbyId",
-                true,
                 mock(IPlayerDTO.class),
                 mock(ICardDTO.class),
                 mock(IPlayerDTO.class)
         );
         CardExchangeConfirmationEvent event2 = new CardExchangeConfirmationEvent(
                 "lobbyId",
-                true,
                 mock(IPlayerDTO.class),
                 mock(ICardDTO.class),
                 mock(IPlayerDTO.class)
@@ -38,17 +36,13 @@ class CardExchangeConfirmationRequestTest {
     void testHashCode() {
         CardExchangeConfirmationEvent event1 = new CardExchangeConfirmationEvent(
                 "lobbyId",
-                true,
-                mock(IPlayerDTO.class),
-                mock(ICardDTO.class),
-                mock(IPlayerDTO.class)
+
+                mock(IPlayerDTO.class), mock(ICardDTO.class), mock(IPlayerDTO.class)
         );
         CardExchangeConfirmationEvent event2 = new CardExchangeConfirmationEvent(
                 "lobbyId",
-                true,
-                mock(IPlayerDTO.class),
-                mock(ICardDTO.class),
-                mock(IPlayerDTO.class)
+
+                mock(IPlayerDTO.class), mock(ICardDTO.class), mock(IPlayerDTO.class)
         );
         CardExchangeConfirmationRequest request1 = new CardExchangeConfirmationRequest("lobby1", true, event1);
         CardExchangeConfirmationRequest request2 = new CardExchangeConfirmationRequest("lobby1", true, event1);
@@ -62,10 +56,8 @@ class CardExchangeConfirmationRequestTest {
     void testConstructorAndGetters() {
         CardExchangeConfirmationEvent event = new CardExchangeConfirmationEvent(
                 "lobbyId",
-                true,
-                mock(IPlayerDTO.class),
-                mock(ICardDTO.class),
-                mock(IPlayerDTO.class)
+
+                mock(IPlayerDTO.class), mock(ICardDTO.class), mock(IPlayerDTO.class)
         );
         CardExchangeConfirmationRequest request = new CardExchangeConfirmationRequest("lobby1", true, event);
 

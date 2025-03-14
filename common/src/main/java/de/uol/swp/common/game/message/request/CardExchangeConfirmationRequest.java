@@ -12,11 +12,12 @@ public class CardExchangeConfirmationRequest extends AbstractGameRequest {
     CardExchangeConfirmationEvent cardExchangeConfirmationEvent;
     boolean accepted;
 
-    public CardExchangeConfirmationRequest(String lobbyId, boolean accepted, CardExchangeConfirmationEvent request) {
+    public CardExchangeConfirmationRequest(String lobbyId, boolean accepted, CardExchangeConfirmationEvent event) {
         super(lobbyId);
         this.accepted = accepted;
-        this.cardExchangeConfirmationEvent = request;
+        this.cardExchangeConfirmationEvent = event;
     }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -30,7 +31,6 @@ public class CardExchangeConfirmationRequest extends AbstractGameRequest {
     public int hashCode() {
         return Objects.hashCode(cardExchangeConfirmationEvent);
     }
-
 
 
 }

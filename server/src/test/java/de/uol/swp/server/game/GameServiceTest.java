@@ -794,21 +794,43 @@ public class GameServiceTest extends EventBusBasedTest {
 
     @Test
     void testOnShareKnowledgeRequest() {
-        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", "sourcePlayer");
+        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", "targetPlayer");
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);
         request.setSession(session);
 
         IGame game = new Game(2, "lobbyId");
+        IPlayer currentPlayer = new Player(user, "lobbyId");
+        ICity currentCity = new CityRepository().getCity(1);
+        currentPlayer.setCurrentPosition(currentCity);
+        currentPlayer.getCards()
+                     .add(new CityCard(1, "CityName", currentCity));
+        game.getPlayers()
+            .add(currentPlayer);
+        game.setCurrentPlayerIndex(0);
+        currentPlayer.setRole(new CountryDoctor());
+        IUser targetUser = new User("targetPlayer", "password");
+        IPlayer targetPlayer = new Player(targetUser, "lobbyId");
+        game.getPlayers()
+            .add(targetPlayer);
+        targetPlayer.setRole(new CountryDoctor());
+
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
-        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
-        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
-        game.setState(new PlayerTurnState());
+        when(authenticationService.getSession(targetUser)).thenReturn(Optional.of(UUIDSession.create(targetUser)));
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby(
+                "lobbyId",
+                "Test",
+                List.of(user, targetUser),
+                user,
+                4
+        ));
+
         gameService.onShareKnowledgeRequest(request);
 
         verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("lobbyId");
-        verify(gameManagement, times(1)).giveCard(request);
-        verify(gameService, times(2)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+        verify(gameManagement, times(1)).lockGameInWaitForConfirmation("lobbyId");
+        verify(gameService, times(2)).sendToAllInLobby(any(ILobby.class), any(BoardUpdateEvent.class));
+        verify(gameService, times(1)).post(any(CardExchangeConfirmationEvent.class));
     }
 
     @Test
@@ -863,7 +885,7 @@ public class GameServiceTest extends EventBusBasedTest {
                 Map.of(
                         "cardKey",
                         mock(ICardDTO.class)
-                ), "lobbyId"
+        ), "lobbyId"
         );
         IUser user = new User("testuser", "testpassword");
         Session session = UUIDSession.create(user);

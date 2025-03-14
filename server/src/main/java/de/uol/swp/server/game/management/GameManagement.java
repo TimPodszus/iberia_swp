@@ -949,31 +949,31 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     public void giveCard(CardExchangeConfirmationEvent response) {
         IGame game = getGame(response.getLobbyId());
 
-        IPlayer confirmingPlayer = game.getPlayer(response.getReceivingPlayer()
-                                                          .getUsername());
-        IPlayer requestingPlayer = game.getPlayer(response.getRequestingPlayer()
+        IPlayer receivingCardPlayer = game.getPlayer(response.getReceivingCardPlayer()
+                                                             .getUsername());
+        IPlayer givingCardPlayer = game.getPlayer(response.getGivingCardPlayer()
                                                           .getUsername());
 
         try {
             ICard requestCard = playerManagement.getCard(
                     response.getLobbyId(),
-                    confirmingPlayer.getUser()
+                    givingCardPlayer.getUser()
                                     .getUsername(),
                     response.getRequestingCard()
                             .getId()
 
             );
 
-            requestingPlayer.getCards()
-                            .add(requestCard);
-            confirmingPlayer.getCards()
+            receivingCardPlayer.getCards()
+                               .add(requestCard);
+            givingCardPlayer.getCards()
                             .remove(requestCard);
             ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
             sendServerMessageEvent(
                     response.getLobbyId(),
-                    "Spieler " + requestingPlayer.getUser()
-                                                 .getUsername() + " hat die Karte " + requestCard.getTitle() + " von " + "Spieler " + confirmingPlayer.getUser()
-                                                                                                                                                      .getUsername() + " bekommen."
+                    "Spieler " + receivingCardPlayer.getUser()
+                                                    .getUsername() + " hat die Karte " + requestCard.getTitle() + " von " + "Spieler " + givingCardPlayer.getUser()
+                                                                                                                                                         .getUsername() + " bekommen."
             );
 
         } catch (PlayerManagementException e) {
