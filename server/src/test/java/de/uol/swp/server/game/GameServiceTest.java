@@ -49,6 +49,7 @@ import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.region.RegionRepository;
 import de.uol.swp.server.role.CountryDoctor;
+import de.uol.swp.server.role.Politician;
 import de.uol.swp.server.role.Sailor;
 import de.uol.swp.server.usermanagement.AuthenticationService;
 import de.uol.swp.server.usermanagement.IUser;
@@ -663,19 +664,6 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameService).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 
-    @Test
-    void testSendBoardUpdateAfterCardExchangeWithDiscardPile() {
-        String lobbyId = "testLobbyId";
-        IGame game = new Game(2, lobbyId);
-        ILobby lobby = mock(ILobby.class);
-
-        when(gameManagement.getGame(lobbyId)).thenReturn(game);
-        when(lobbyManagement.getLobby(lobbyId)).thenReturn(lobby);
-
-        gameService.sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
-
-        verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
-    }
 
     @Test
     void testOnUserLeavedGameRequest() throws LobbyIsEmptyException, LobbyNotFoundException {
@@ -815,12 +803,12 @@ public class GameServiceTest extends EventBusBasedTest {
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
         ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
         when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
-
+        game.setState(new PlayerTurnState());
         gameService.onShareKnowledgeRequest(request);
 
         verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("lobbyId");
         verify(gameManagement, times(1)).giveCard(request);
-        verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+        verify(gameService, times(2)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 
     @Test
@@ -842,8 +830,8 @@ public class GameServiceTest extends EventBusBasedTest {
         gameService.onCardExchangeConfirmationRequest(request);
 
         verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("lobbyId");
-        verify(gameManagement, times(1)).giveCard(request.getCardExchangeConfirmationRequest());
-        verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+        verify(gameManagement, times(1)).giveCard(request.getCardExchangeConfirmationEvent());
+        verify(gameService, times(2)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 
     @Test
@@ -858,11 +846,11 @@ public class GameServiceTest extends EventBusBasedTest {
         game.setCurrentPlayerIndex(0);
         game.getPlayers()
             .add(currentPlayer);
-
+        currentPlayer.setRole(new Politician());
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
         when(gameManagement.getAvailableCardsForPoliticianSecondRoleAction("lobbyId")).thenReturn(Map.of());
         when(authenticationService.getSession(user)).thenReturn(Optional.of(session));
-
+        when(lobbyManagement.getLobby(any())).thenReturn(mock(ILobby.class));
         gameService.onPoliticianSecondRoleActionRequest(request);
 
         verify(gameManagement, times(1)).lockGameInWaitForConfirmation("lobbyId");
@@ -890,6 +878,6 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("lobbyId");
         verify(gameManagement, times(1)).swapCardsWithDiscardPile(request.getCardsToExchange(), "lobbyId");
-        verify(gameService, times(1)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+        verify(gameService, times(2)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 }

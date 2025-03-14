@@ -71,6 +71,6 @@ class CardExchangeConfirmationRequestTest {
 
         assertEquals("lobby1", request.getLobbyId());
         assertTrue(request.isAccepted());
-        assertEquals(event, request.getCardExchangeConfirmationRequest());
+        assertEquals(event, request.getCardExchangeConfirmationEvent());
     }
 }
