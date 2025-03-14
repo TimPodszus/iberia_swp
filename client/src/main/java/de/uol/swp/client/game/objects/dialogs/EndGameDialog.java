@@ -1,42 +1,35 @@
 package de.uol.swp.client.game.objects.dialogs;
 
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class EndGameDialog {
+public class EndGameDialog extends AbstractDialog<ButtonType> {
+    private final Stage gameStage;
 
-    private final boolean hasWon;
-    private final AnchorPane gameScreen;
+    public EndGameDialog(boolean hasWon, Stage gameStage) {
+        this.gameStage = gameStage;
 
-    public EndGameDialog(boolean hasWon, AnchorPane gameScreen) {
-        this.hasWon = hasWon;
-        this.gameScreen = gameScreen;
+        setTitle(hasWon ? "Sie haben gewonnen" : "Sie haben verloren");
+        setHeaderText(null);
+        setContentText("Wählen Sie eine Option:");
+
+        initializeDialog();
     }
 
-    public void showEndGameDialog() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(hasWon ? "Sie haben gewonnen" : "Sie haben verloren");
-        alert.setHeaderText(null);
-        alert.setContentText("Wählen Sie eine Option:");
+    private void initializeDialog() {
+        ButtonType leaveGameButton = new ButtonType("Spiel verlassen", ButtonBar.ButtonData.OK_DONE);
+        ButtonType returnToGameButton = new ButtonType("Zurück zum Spiel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        ButtonType leaveGameButton = new ButtonType("Spiel verlassen");
-        ButtonType returnToGameButton = new ButtonType("Zurück zum Spiel");
+        getDialogPane().getButtonTypes().setAll(leaveGameButton, returnToGameButton);
+        getDialogPane().lookupButton(leaveGameButton).getStyleClass().add(DENY_BUTTON);
 
-        alert.getButtonTypes().setAll(leaveGameButton, returnToGameButton);
-
-        alert.showAndWait().ifPresent(response -> {
-            if (response == leaveGameButton) {
-                Platform.runLater(() -> {
-                    Stage stage = (Stage) gameScreen.getScene().getWindow();
-                    stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
-                });
-            } else if (response == returnToGameButton) {
-                alert.close();
+        setResultConverter(dialogButton -> {
+            if (dialogButton == leaveGameButton) {
+                Platform.runLater(() -> gameStage.fireEvent(new WindowEvent(gameStage, WindowEvent.WINDOW_CLOSE_REQUEST)));
             }
+            return dialogButton;
         });
     }
 }
