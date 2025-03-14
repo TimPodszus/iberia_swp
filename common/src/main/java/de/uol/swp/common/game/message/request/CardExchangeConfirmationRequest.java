@@ -9,28 +9,28 @@ import java.util.Objects;
 @Getter
 public class CardExchangeConfirmationRequest extends AbstractGameRequest {
 
-    CardExchangeConfirmationEvent cardExchangeConfirmationRequest;
+    CardExchangeConfirmationEvent cardExchangeConfirmationEvent;
     boolean accepted;
 
+    public CardExchangeConfirmationRequest(String lobbyId, boolean accepted, CardExchangeConfirmationEvent request) {
+        super(lobbyId);
+        this.accepted = accepted;
+        this.cardExchangeConfirmationEvent = request;
+    }
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
         CardExchangeConfirmationRequest that = (CardExchangeConfirmationRequest) o;
-        return Objects.equals(cardExchangeConfirmationRequest, that.cardExchangeConfirmationRequest);
+        return Objects.equals(cardExchangeConfirmationEvent, that.cardExchangeConfirmationEvent);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(cardExchangeConfirmationRequest);
+        return Objects.hashCode(cardExchangeConfirmationEvent);
     }
 
-    public CardExchangeConfirmationRequest(String lobbyId, boolean accepted, CardExchangeConfirmationEvent request) {
-        super(lobbyId);
-        this.accepted = accepted;
-        this.cardExchangeConfirmationRequest = request;
-    }
 
 
 }

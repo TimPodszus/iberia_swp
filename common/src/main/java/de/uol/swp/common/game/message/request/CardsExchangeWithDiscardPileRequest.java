@@ -12,6 +12,18 @@ public class CardsExchangeWithDiscardPileRequest extends AbstractGameRequest {
 
     Map<String, ICardDTO> cardsToExchange;
 
+    /**
+     * Constructs a new CardsExchangeRequest.
+     *
+     * @param cardsToExchange the map of cards to exchange
+     * @param lobbyId         the ID of the lobby
+     */
+    public CardsExchangeWithDiscardPileRequest(Map<String, ICardDTO> cardsToExchange, String lobbyId) {
+        super(lobbyId);
+        this.cardsToExchange = cardsToExchange;
+
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -26,15 +38,5 @@ public class CardsExchangeWithDiscardPileRequest extends AbstractGameRequest {
         return Objects.hashCode(cardsToExchange);
     }
 
-    /**
-     * Constructs a new CardsExchangeRequest.
-     *
-     * @param cardsToExchange the map of cards to exchange
-     * @param lobbyId         the ID of the lobby
-     */
-    public CardsExchangeWithDiscardPileRequest(Map<String, ICardDTO> cardsToExchange, String lobbyId) {
-        super(lobbyId);
-        this.cardsToExchange = cardsToExchange;
 
-    }
 }
