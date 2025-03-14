@@ -2,9 +2,11 @@ package de.uol.swp.common.game.message.request;
 
 import de.uol.swp.common.game.message.AbstractGameRequest;
 import de.uol.swp.common.game.message.event.SwapCardsConfirmationEvent;
+import lombok.Getter;
 
 import java.util.Objects;
 
+@Getter
 public class SwapCardsConfirmedRequest extends AbstractGameRequest {
 
     SwapCardsConfirmationEvent event;

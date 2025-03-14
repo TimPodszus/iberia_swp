@@ -467,10 +467,10 @@ public class GameService {
     public void onExchangeOfLettersResponse(ExchangeOfLettersResponse response) {
         LOG.debug("Received ExchangeOfLettersResponse: {}", response);
         Platform.runLater(() -> {
-            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
-                    response.getRequestingPlayer(),
-                    response.getAvailableExchangeCards()
-            );
+            Map<String, List<ICardDTO>> availableExchangeCards = response.getAvailableExchangeCards();
+            String requestingPlayer = response.getRequestingPlayer();
+            LOG.debug("Available exchange cards: {}", availableExchangeCards);
+            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(requestingPlayer, availableExchangeCards);
             Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
             result.ifPresent(map -> {
                 LOG.debug("Card exchange result: {}", map);
@@ -484,7 +484,7 @@ public class GameService {
         LOG.debug("Received SwapCardsConfirmationEvent: {}", event);
         Platform.runLater(() -> {
             boolean accepted = showConfirmationDialog("Möchtest du die Karte " + event.getOtherPlayerCard()
-                                                                                      .getTitle() + " " + "an " + event.getRequestingPlayer() + " im Tausch für " + event.getRequestingPlayerCard()
+                                                                                      .getTitle() + " " + "an " + event.getRequestingPlayer() + " im tausch für " + event.getRequestingPlayerCard()
                                                                                                                                                                          .getTitle() + " geben?");
 
             SwapCardsConfirmedRequest request = new SwapCardsConfirmedRequest(event.getLobbyId(), accepted, event);

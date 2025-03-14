@@ -9,9 +9,11 @@ import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.TransportMode;
 import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
+import de.uol.swp.common.game.message.event.SwapCardsConfirmationEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
 import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
+import de.uol.swp.common.game.message.request.SwapCardsConfirmedRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.region.IRegionDTO;
 import de.uol.swp.server.AbstractManagement;
@@ -1104,5 +1106,32 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             LOG.error("Card not found");
 
         }
+    }
+
+    @Override
+    public void swapCards(SwapCardsConfirmedRequest request) {
+        IGame game = getGame(request.getLobbyId());
+        SwapCardsConfirmationEvent event = request.getEvent();
+        IPlayer requestingPlayer = game.getPlayer(event.getRequestingPlayer());
+        IPlayer confirmingPlayer = game.getPlayer(event.getTargetPlayer());
+        ICard requestingCard = requestingPlayer.getCard(event.getRequestingPlayerCard()
+                                                             .getId());
+        ICard confirmingPlayerCard = confirmingPlayer.getCard(event.getOtherPlayerCard()
+                                                                   .getId());
+
+        requestingPlayer.getCards()
+                        .add(confirmingPlayerCard);
+        confirmingPlayer.getCards()
+                        .remove(confirmingPlayerCard);
+        confirmingPlayer.getCards()
+                        .add(requestingCard);
+        requestingPlayer.getCards()
+                        .remove(requestingCard);
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                "Spieler " + event.getRequestingPlayer() + " und " + event.getTargetPlayer() + "haben " + "Karten getauscht"
+        );
+
+
     }
 }

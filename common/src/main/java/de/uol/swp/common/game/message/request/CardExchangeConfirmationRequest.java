@@ -17,6 +17,7 @@ public class CardExchangeConfirmationRequest extends AbstractGameRequest {
         this.accepted = accepted;
         this.cardExchangeConfirmationEvent = request;
     }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -30,7 +31,6 @@ public class CardExchangeConfirmationRequest extends AbstractGameRequest {
     public int hashCode() {
         return Objects.hashCode(cardExchangeConfirmationEvent);
     }
-
 
 
 }
