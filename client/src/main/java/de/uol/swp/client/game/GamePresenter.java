@@ -1099,8 +1099,10 @@ public class GamePresenter extends AbstractPresenter {
 
         Platform.runLater(() -> {
             updateBoard(gameDTO);
-            GameStartDialog.showStartDialog();
             updatePlayers(gameDTO.getPlayers());
+
+            GameStartDialog dialog = new GameStartDialog(gameScreen.getScene().getWindow());
+            dialog.showAndWait();
         });
     }
 
@@ -1877,16 +1879,16 @@ public class GamePresenter extends AbstractPresenter {
                     gameDTO.getWaterTreatmentsLeft(),
                     gameDTO.getState()
             );
-            dialog.showAndWaitForResult()
-                  .thenAccept(selectedValue -> {
-                      if (selectedValue != null) {
-                          LOG.debug("[LobbyId: {}] Player has selected {} water treatments", lobbyId, selectedValue);
-                          gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
-                      } else {
-                          LOG.debug("[LobbyId: {}] Player has not selected any water treatments", lobbyId);
-                          gameService.sendTreatWaterEventRequest(lobbyId, regionId, 0, true);
-                      }
-                  });
+            dialog.showAndWait().ifPresentOrElse(
+                    selectedValue -> {
+                        LOG.debug("[LobbyId: {}] Player has selected {} water treatments", lobbyId, selectedValue);
+                        gameService.sendTreatWaterEventRequest(lobbyId, regionId, selectedValue, false);
+                    },
+                    () -> {
+                        LOG.debug("[LobbyId: {}] Player has not selected any water treatments", lobbyId);
+                        gameService.sendTreatWaterEventRequest(lobbyId, regionId, 0, true);
+                    }
+            );
         });
         resetRegionStyle();
     }
@@ -1940,8 +1942,10 @@ public class GamePresenter extends AbstractPresenter {
             return;
         }
 
-        EndGameDialog dialog = new EndGameDialog(event.isVictory(), gameScreen);
-        Platform.runLater(dialog::showEndGameDialog);
+        Platform.runLater(() -> {
+            EndGameDialog dialog = new EndGameDialog(event.isVictory(), (Stage) gameScreen.getScene().getWindow());
+            dialog.showAndWait();
+        });
     }
 
     /**
@@ -2136,7 +2140,7 @@ public class GamePresenter extends AbstractPresenter {
         }
         LOG.debug("[LobbyId: {}] Got failed game response", lobbyId);
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
+            CustomAlert alert = new CustomAlert(Alert.AlertType.ERROR);
             alert.setTitle("Fehler");
             alert.setHeaderText("Fehler bei der Anfrage");
             alert.setContentText(response.getDescription());

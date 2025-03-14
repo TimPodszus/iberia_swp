@@ -27,12 +27,12 @@ public class SelectCityToTreatDialog extends AbstractDialog<ICityDTO> {
      * @param cities A list of cities to choose from. Each city will be displayed by its name.
      */
     public SelectCityToTreatDialog(List<ICityDTO> cities) {
-        setTitle("Zusatzaktion der Rolle Landarzt");
-        setHeaderText("Du kannst einen zusätzlichen Würfel aus der Stadt oder\n" + "einer Stadt an einer angrenzenden Region\n" + "entfernen");
+        setTitle("Seuchenwürfel entfernen");
+        setHeaderText("Wähle eine Stadt, aus der du Seuchenwürfel entfernen möchtest.");
 
         for (ICityDTO city : cities) {
             cityMap.put(city.getName()
-                            .toString(), city);
+                            .getDisplayName(), city);
         }
 
         cityListView = new ListView<>();
