@@ -18,11 +18,11 @@ public class CardsExchangeRequestTest {
         String playerToTrade = "player1";
         String lobbyId = "test-lobby-id";
 
-        CardsExchangeRequest request = new CardsExchangeRequest(cardsToExchange, cityId, playerToTrade, lobbyId);
+        CardsExchangeRequest request = new CardsExchangeRequest(cardsToExchange, lobbyId, playerToTrade);
 
         assertNotNull(request);
-        assertEquals(cityId, request.getCityId());
-        assertEquals(playerToTrade, request.getPlayerToTrade());
+
+        assertEquals(playerToTrade, request.getRequestingPlayer());
         assertEquals(lobbyId, request.getLobbyId());
     }
 }
