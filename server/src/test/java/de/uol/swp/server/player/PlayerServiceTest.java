@@ -30,6 +30,7 @@ import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.PlacePreventionMarkerState;
+import de.uol.swp.server.game.states.PlayerTurnState;
 import de.uol.swp.server.game.states.WaitForPositioning;
 import de.uol.swp.server.game.states.IGameState;
 import de.uol.swp.server.game.store.GameStore;
@@ -481,6 +482,7 @@ public class PlayerServiceTest extends EventBusBasedTest {
         when(playerManagement.determineRegionsForNurse(player, oldPosition, newPosition)).thenReturn(regions);
         when(player.getGameId()).thenReturn(LOBBY_ID);
         when(playerManagement.getGame(LOBBY_ID)).thenReturn(game);
+        game.setState(new PlayerTurnState());
 
         playerService.onPositionChanged(player, oldPosition, newPosition);
 
