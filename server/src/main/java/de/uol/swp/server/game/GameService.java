@@ -454,6 +454,14 @@ public class GameService extends AbstractService implements GameStateChangeListe
     public void onShareKnowledgeRequest(ShareKnowledgeRequest request) {
         LOG.debug("Got ShareKnowledgeRequest for lobby {}", request.getLobbyId());
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
+
+        IGame game = gameManagement.getGame(request.getLobbyId());
+        if (!(game.getState() instanceof PlayerTurnState)) {
+            LOG.error("Game is not in PlayerTurnState, cannot process ShareKnowledgeRequest");
+            sendStatusResponse(request, false, "Spiel ist nicht im Spielerzug-Zustand, Wissen teilen nicht möglich");
+            return;
+        }
+
         gameManagement.giveCard(request);
         sendToAllInLobby(
                 lobbyManagement.getLobby(request.getLobbyId()),
@@ -462,9 +470,10 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
                 )
         );
-
-
     }
+
+
+
 
     @Subscribe
     public void onCardExchangeConfirmationRequest(CardExchangeConfirmationRequest response) {
