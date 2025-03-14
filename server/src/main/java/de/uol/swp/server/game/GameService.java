@@ -10,7 +10,10 @@ import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
-import de.uol.swp.common.game.message.response.*;
+import de.uol.swp.common.game.message.response.AvailableActionsResponse;
+import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
+import de.uol.swp.common.game.message.response.CreateGameResponse;
+import de.uol.swp.common.game.message.response.PoliticianSecondRoleActionResponse;
 import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.request.MovePlayerRequest;
@@ -21,7 +24,6 @@ import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
-import de.uol.swp.server.cards.events.ExchangeOfLettersEvent;
 import de.uol.swp.server.cards.events.FavorableTimeEvent;
 import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.CityMapper;
@@ -52,7 +54,6 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -360,47 +361,50 @@ public class GameService extends AbstractService implements GameStateChangeListe
         LOG.debug("Got AvailableShareKnowledgePlayersRequest for lobby {}", request.getLobbyId());
         IPlayer currentPlayer = gameManagement.getGame(request.getLobbyId())
                                               .getCurrentPlayer();
-        String currentPlayerUsername = currentPlayer.getUser()
-                                                    .getUsername();
+        String currentPlayerUsername = currentPlayer.getUser().getUsername();
         IGame game = gameManagement.getGame(request.getLobbyId());
 
         List<IPlayer> playersInGame = game.getPlayers();
-        sendServerMessageEvent(request.getLobbyId(), "Spieler " + currentPlayerUsername + " möchte Wissen teilen");
+        sendServerMessageEvent(
+                request.getLobbyId(),
+                "Spieler " + currentPlayerUsername + " möchte Wissen teilen"
+        );
 
 
         ICity currentCity = game.getCurrentPlayer()
                                 .getCurrentPosition();
         boolean playerHasCityCard = currentPlayer.getCards()
-                                                 .stream()
-                                                 .anyMatch(card -> card.getId() == currentCity.getId());
+                                        .stream()
+                                        .anyMatch(card -> card.getId() == currentCity.getId());
 
         try {
             if (playerHasCityCard) {
 
                 LOG.debug("Player has the city card for the current city");
-                List<IPlayerDTO> availablePlayers = PlayerMapper.toDTOList(playersInGame.stream()
-                                                                                        .filter(player -> player.getCurrentPosition()
-                                                                                                                .equals(currentCity) && !player.getUser()
-                                                                                                                                               .getUsername()
-                                                                                                                                               .equals(currentPlayerUsername))
-                                                                                        .toList());
-                if (currentPlayer.getRole()
-                                 .getName()
-                                 .equals(RoleEnum.POLITICIAN) && availablePlayers.isEmpty()) {
-                    availablePlayers = playersInGame.stream()
-                                                    .filter(player -> !player.getUser()
-                                                                             .getUsername()
-                                                                             .equals(currentPlayerUsername))
-                                                    .map(PlayerMapper::toDTO)
-                                                    .collect(Collectors.toList());
+                List<IPlayerDTO> availablePlayers = PlayerMapper.toDTOList(playersInGame
+                                                                               .stream()
+                                                                               .filter(player -> player.getCurrentPosition()
+                                                                                                       .equals(currentCity) && !player.getUser()
+                                                                                                                                      .getUsername()
+                                                                                                                                      .equals(currentPlayerUsername))
+                                                                               .toList());
+                if (currentPlayer
+                        .getRole()
+                        .getName()
+                        .equals(RoleEnum.POLITICIAN) && availablePlayers.isEmpty()) {
+                    availablePlayers = playersInGame
+                                           .stream()
+                                           .filter(player -> !player.getUser()
+                                                                    .getUsername()
+                                                                    .equals(currentPlayerUsername))
+                                           .map(PlayerMapper::toDTO)
+                                           .collect(Collectors.toList());
 
 
                 }
                 gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
-                sendToAllInLobby(
-                        lobbyManagement.getLobby(request.getLobbyId()),
-                        new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game))
-                );
+                sendToAllInLobby(lobbyManagement.getLobby(request.getLobbyId()), new BoardUpdateEvent(request.getLobbyId(),
+                        GameMapper.toDTO(game)));
                 AvailableShareKnowledgePlayersResponse response = new AvailableShareKnowledgePlayersResponse(
                         request.getLobbyId(),
                         availablePlayers
@@ -412,13 +416,13 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 post(response);
             } else {
                 LOG.trace("Player does not have the city card for the current city");
-                IPlayer playerWithCityCard = playersInGame.stream()
-                                                          .filter(player -> player.getCards()
-                                                                                  .stream()
-                                                                                  .anyMatch(card -> card.getId() == currentCity.getId()))
-                                                          .findFirst()
-                                                          .orElseThrow(() -> new PlayerManagementException(
-                                                                  "Player not found"));
+                IPlayer playerWithCityCard = playersInGame
+                                                 .stream()
+                                                 .filter(player -> player.getCards()
+                                                                         .stream()
+                                                                         .anyMatch(card -> card.getId() == currentCity.getId()))
+                                                 .findFirst()
+                                                 .orElseThrow(() -> new PlayerManagementException("Player not found"));
                 ICardDTO currentCityCard = CardMapper.toDTO(playerWithCityCard.getCard(currentCity.getId()));
                 List<Session> session = authenticationService.getSession(playerWithCityCard.getUser())
                                                              .stream()
@@ -434,10 +438,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 LOG.debug("Sending CardExchangeConfirmationRequest for session {}", session);
                 requestToAsk.setReceiver(session);
                 gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
-                sendToAllInLobby(
-                        lobbyManagement.getLobby(request.getLobbyId()),
-                        new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game))
-                );
+                sendToAllInLobby(lobbyManagement.getLobby(request.getLobbyId()), new BoardUpdateEvent(request.getLobbyId(),
+                        GameMapper.toDTO(game)));
                 post(requestToAsk);
 
             }
@@ -453,13 +455,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
     public void onShareKnowledgeRequest(ShareKnowledgeRequest request) {
         LOG.debug("Got ShareKnowledgeRequest for lobby {}", request.getLobbyId());
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(request.getLobbyId()),
-                new BoardUpdateEvent(
-                        request.getLobbyId(),
-                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
-                )
-        );
+        sendToAllInLobby(lobbyManagement.getLobby(request.getLobbyId()), new BoardUpdateEvent(request.getLobbyId(),
+                GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))));
         IGame game = gameManagement.getGame(request.getLobbyId());
         if (!(game.getState() instanceof PlayerTurnState)) {
             LOG.error("Game is not in PlayerTurnState, cannot process ShareKnowledgeRequest");
@@ -478,16 +475,13 @@ public class GameService extends AbstractService implements GameStateChangeListe
     }
 
 
+
+
     @Subscribe
     public void onCardExchangeConfirmationRequest(CardExchangeConfirmationRequest response) {
         gameManagement.unlockGameInWaitForConfirmation(response.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(response.getLobbyId()),
-                new BoardUpdateEvent(
-                        response.getLobbyId(),
-                        GameMapper.toDTO(gameManagement.getGame(response.getLobbyId()))
-                )
-        );
+        sendToAllInLobby(lobbyManagement.getLobby(response.getLobbyId()), new BoardUpdateEvent(response.getLobbyId(),
+                GameMapper.toDTO(gameManagement.getGame(response.getLobbyId()))));
         LOG.debug("Got CardExchangeConfirmationRequest for lobby {}", response.getLobbyId());
         gameManagement.giveCard(response.getCardExchangeConfirmationEvent());
         sendToAllInLobby(
@@ -639,43 +633,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
     }
 
-    @Subscribe
-    public void onExchangeOfLettersEvent(ExchangeOfLettersEvent event) {
-        LOG.debug("[Lobby: {}] Received ExchangeOfLettersEvent", event.getLobbyId());
-        IGame game = gameManagement.getGame(event.getLobbyId());
-        Map<String, List<ICardDTO>> availableExchangePartners = new HashMap<>();
-        for (IPlayer player : game.getPlayers()) {
-            if (!player.getUser()
-                       .getUsername()
-                       .equals(event.getUsername())) {
-                availableExchangePartners.put(
-                        player.getUser()
-                              .getUsername(),
-                        player.getCards()
-                              .stream()
-                              .map(CardMapper::toDTO)
-                              .toList()
-                );
-            }
-        }
-        gameManagement.lockGameInWaitForConfirmation(event.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(event.getLobbyId()),
-                new BoardUpdateEvent(event.getLobbyId(), GameMapper.toDTO(game))
-        );
-        Session session = authenticationService.getSession(game.getCurrentPlayer()
-                                                               .getUser())
-                                               .orElseThrow(() -> new SessionNotFoundException("Session not found"));
-        ExchangeOfLettersResponse response = new ExchangeOfLettersResponse(
-                event.getLobbyId(),
-                availableExchangePartners,
-                event.getUsername()
-        );
-        response.setSession(session);
-        post(response);
-
-    }
-
     /**
      * Handles the end turn request from a player. This method retrieves the user from the session,
      * ends the turn for the user in the specified lobby, and sends a board update event to all players in the lobby.
@@ -760,13 +717,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
         Map<String, List<ICardDTO>> availableCards = gameManagement.getAvailableCardsForPoliticianSecondRoleAction(
                 request.getLobbyId());
         gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(request.getLobbyId()),
-                new BoardUpdateEvent(
-                        request.getLobbyId(),
-                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
-                )
-        );
+        sendToAllInLobby(lobbyManagement.getLobby(request.getLobbyId()), new BoardUpdateEvent(request.getLobbyId(),
+                GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))));
         Session session = request.getSession()
                                  .orElseThrow(() -> new SessionNotFoundException("Session not found"));
         PoliticianSecondRoleActionResponse response = new PoliticianSecondRoleActionResponse(
@@ -785,13 +737,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
     public void onCardExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request) {
         LOG.debug("Got CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(request.getLobbyId()),
-                new BoardUpdateEvent(
-                        request.getLobbyId(),
-                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
-                )
-        );
+        gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
+        sendToAllInLobby(lobbyManagement.getLobby(request.getLobbyId()), new BoardUpdateEvent(request.getLobbyId(),
+                GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))));
         gameManagement.swapCardsWithDiscardPile(request.getCardsToExchange(), request.getLobbyId());
         sendToAllInLobby(
                 lobbyManagement.getLobby(request.getLobbyId()),
@@ -800,46 +748,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
                 )
         );
-
-    }
-
-    @Subscribe
-    public void onCardsExchangeRequest(CardsExchangeRequest request) {
-        LOG.debug("Got CardsExchangeRequest for lobby {}", request.getLobbyId());
-        String requestingPlayer = request.getRequestingPlayer();
-        Map<String, ICardDTO> map = request.getCardsToExchange();
-        try {
-            if (map.size() == 2) {
-                String otherPlayer = map.keySet()
-                                        .stream()
-                                        .filter(key -> !key.equals(requestingPlayer))
-                                        .findFirst()
-                                        .orElseThrow(() -> new GameException("Other player not found"));
-                ICardDTO requestingPlayerCard = map.get(requestingPlayer);
-                ICardDTO otherPlayerCard = map.get(otherPlayer);
-
-
-                SwapCardsConfirmationEvent event = new SwapCardsConfirmationEvent(
-                        request.getLobbyId(),
-                        requestingPlayer,
-                        otherPlayer,
-                        requestingPlayerCard,
-                        otherPlayerCard
-                );
-                Session session = authenticationService.getSession(gameManagement.getGame(request.getLobbyId())
-                                                                                 .getPlayer(otherPlayer)
-                                                                                 .getUser())
-                                                       .orElseThrow(() -> new SessionNotFoundException(
-                                                               "Session not found"));
-                List<Session> sessionList = List.of(session);
-                event.setReceiver(sessionList);
-            } else {
-                throw new GameException("Map does not have exactly two entries");
-            }
-        } catch (GameException e) {
-            LOG.error("Error in CardsExchangeRequest");
-        }
-
 
     }
 
