@@ -1,47 +1,41 @@
 package de.uol.swp.common.game.message.request;
 
-import de.uol.swp.common.cards.data.ICardDTO;
-import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class ShareKnowledgeRequestTest {
+class ShareKnowledgeRequestTest {
 
     @Test
-    public void testShareKnowledgeRequest() {
-        String lobbyId = "testLobby";
-        boolean success = true;
-        String player1 = "player1";
-        String player2 = "player2";
-        ICardDTO card1 = mock(ICardDTO.class);
-        ICardDTO card2 = mock(ICardDTO.class);
-
-        ShareKnowledgeEvent event = new ShareKnowledgeEvent(lobbyId, player1, player2, card1, card2);
-
-        ShareKnowledgeRequest request = new ShareKnowledgeRequest(lobbyId, success, event);
+    void testConstructorAndGetters() {
+        String lobbyId = "lobby123";
+        String username = "user1";
+        ShareKnowledgeRequest request = new ShareKnowledgeRequest(lobbyId, username);
 
         assertEquals(lobbyId, request.getLobbyId());
-        assertEquals(success, request.isSuccess());
-        assertEquals(event, request.getShareKnowledgeEvent());
+        assertEquals(username, request.getUsername());
     }
 
     @Test
-    public void testEqualsAndHashCode() {
-        String lobbyId = "testLobby";
-        boolean success = true;
-        String player1 = "player1";
-        String player2 = "player2";
-        ICardDTO card1 = mock(ICardDTO.class);
-        ICardDTO card2 = mock(ICardDTO.class);
-
-        ShareKnowledgeEvent event = new ShareKnowledgeEvent(lobbyId, player1, player2, card1, card2);
-
-        ShareKnowledgeRequest request1 = new ShareKnowledgeRequest(lobbyId, success, event);
-        ShareKnowledgeRequest request2 = new ShareKnowledgeRequest(lobbyId, success, event);
+    void testEquals() {
+        String lobbyId = "lobby123";
+        String username = "user1";
+        ShareKnowledgeRequest request1 = new ShareKnowledgeRequest(lobbyId, username);
+        ShareKnowledgeRequest request2 = new ShareKnowledgeRequest(lobbyId, username);
+        ShareKnowledgeRequest request3 = new ShareKnowledgeRequest("lobby456", username);
 
         assertEquals(request1, request2);
+        assertNotEquals(request1, request3);
+    }
+
+    @Test
+    void testHashCode() {
+        String lobbyId = "lobby123";
+        String username = "user1";
+        ShareKnowledgeRequest request1 = new ShareKnowledgeRequest(lobbyId, username);
+        ShareKnowledgeRequest request2 = new ShareKnowledgeRequest(lobbyId, username);
+
         assertEquals(request1.hashCode(), request2.hashCode());
     }
 }

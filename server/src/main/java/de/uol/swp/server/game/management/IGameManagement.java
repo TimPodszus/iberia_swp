@@ -1,25 +1,24 @@
 package de.uol.swp.server.game.management;
 
+import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.game.GameActions;
-import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
+import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
-import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.connection.data.IConnection;
-import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.IGame;
 import de.uol.swp.server.game.exceptions.GameException;
 import de.uol.swp.server.game.exceptions.GameInitializationException;
 import de.uol.swp.server.game.exceptions.IllegalGameStateException;
 import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
-import de.uol.swp.server.player.data.IPlayer;
-import de.uol.swp.server.player.management.PlayerManagementException;
 import de.uol.swp.server.usermanagement.IUser;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IGameManagement {
 
@@ -37,7 +36,7 @@ public interface IGameManagement {
      *
      * @param request The request with where the position is to be set
      * @throws GameException             if setting the positioning fails
-     * @throws IllegalStateException if the game is in a state that does not allow positioning
+     * @throws IllegalGameStateException if the game is in a state that does not allow positioning
      */
     void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException;
 
@@ -109,24 +108,6 @@ public interface IGameManagement {
      */
     void unlockGameInWaitForConfirmation(String lobbyId);
 
-    /**
-     * Handles the acceptance of a share knowledge request.
-     *
-     * @param currentPlayer the player currently taking the action
-     * @param targetPlayer  the player with whom knowledge is being shared
-     * @param lobbyId       the ID of the lobby in which the game is happening
-     * @param event         the event representing the share knowledge request
-     * @param gameService   the game service
-     * @throws PlayerManagementException if an error occurs during the process
-     */
-    void shareKnowledgeRequestAccepted(
-            IPlayer currentPlayer,
-            IPlayer targetPlayer,
-            String lobbyId,
-            ShareKnowledgeEvent event,
-            GameService gameService
-    ) throws PlayerManagementException;
-
 
     /**
      * Increases the number of actions the current player has in the game.
@@ -136,22 +117,6 @@ public interface IGameManagement {
      */
     void increaseCurrentPlayerActions(IGame game, int amount);
 
-    /**
-     * Shares knowledge by discarding a card and receiving another card.
-     *
-     * @param cardToDiscardID the ID of the card to be discarded
-     * @param cardToReceiveID the ID of the card to be received
-     * @param lobbyId         the ID of the lobby in which the game is happening
-     * @param service         the game service
-     * @throws CardNotFoundException     if the card to be discarded or received is not found
-     * @throws PlayerManagementException if an error occurs during the process
-     */
-    void shareKnowledgeWithDiscardPile(
-            int cardToDiscardID,
-            int cardToReceiveID,
-            String lobbyId,
-            GameService service
-    ) throws CardNotFoundException, PlayerManagementException;
 
     /**
      * Ends the turn for the current player in the specified lobby.
@@ -177,5 +142,35 @@ public interface IGameManagement {
      * @param lobbyCode the code of the lobby whose game is to be removed
      */
     void removeGame(String lobbyCode);
+
+    /**
+     * Processes a card exchange confirmation event.
+     *
+     * @param cardExchangeConfirmationRequest the request containing details of the card exchange
+     */
+    void giveCard(CardExchangeConfirmationEvent cardExchangeConfirmationRequest);
+
+    /**
+     * Processes a share knowledge request.
+     *
+     * @param shareKnowledgeRequest the request containing details of the knowledge sharing
+     */
+    void giveCard(ShareKnowledgeRequest shareKnowledgeRequest);
+
+    /**
+     * Retrieves the available cards for the politician's second role action in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby for which to retrieve available cards
+     * @return a map of available cards, keyed by card ID
+     */
+    Map<String, List<ICardDTO>> getAvailableCardsForPoliticianSecondRoleAction(String lobbyId);
+
+    /**
+     * Swaps the specified cards with the discard pile in the game associated with the given lobby ID.
+     *
+     * @param cards   a map of card IDs to card data transfer objects (DTOs) representing the cards to be swapped
+     * @param lobbyId the ID of the lobby in which the game is happening
+     */
+    void swapCardsWithDiscardPile(Map<String, ICardDTO> cards, String lobbyId);
 }
 

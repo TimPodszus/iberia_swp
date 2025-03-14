@@ -22,9 +22,7 @@ import de.uol.swp.common.game.*;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.*;
-import de.uol.swp.common.game.message.request.CardsExchangeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
-import de.uol.swp.common.game.message.response.KnowledgeSharedEvent;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.dto.IPlagueDTO;
 import de.uol.swp.common.plague.message.response.AvailablePlaguesResponse;
@@ -70,8 +68,6 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -678,43 +674,14 @@ public class GamePresenter extends AbstractPresenter {
                    .getName()
                    .equals(RoleEnum.POLITICIAN)) {
             LOG.debug("Current player is a politician");
-            Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
-            List<ICardDTO> currentPlayerCityCard = gameDTO.getCurrentPlayer()
-                                                          .getCards()
-                                                          .stream()
-                                                          .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                                                 .getCurrentPosition()
-                                                                                                 .getId())
-                                                          .toList();
-            cardsToExchange.put(
-                    gameDTO.getCurrentPlayer()
-                           .getUsername(), currentPlayerCityCard
-            );
-            for (IPlayerDTO player : gameDTO.getPlayers()) {
-                if (!player.getUsername()
-                           .equals(gameDTO.getCurrentPlayer()
-                                          .getUsername())) {
-                    cardsToExchange.put(player.getUsername(), player.getCards());
-                }
-                LOG.debug("Cards to exchange: {}", cardsToExchange);
-                Platform.runLater(() -> {
-                    CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
-                            gameDTO.getCurrentPlayer()
-                                   .getUsername(), cardsToExchange
-                    );
-                    Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
-                    result.ifPresent(map -> {
-                        LOG.debug("Card exchange result: {}", map);
-                        eventBus.post(new CardsExchangeRequest(map, lobbyId));
-                    });
-                });
-            }
+            gameService.politicianActionGiveCardToPlayer(lobbyId);
         } else if (gameDTO.getCurrentPlayer()
                           .getRole()
                           .getName()
                           .equals(RoleEnum.SCIENTIST_OF_THE_ROYAL_ACADEMY)) {
             gameService.sendGetCardsToSortRequest(lobbyId);
         }
+
     }
 
 
@@ -727,6 +694,7 @@ public class GamePresenter extends AbstractPresenter {
                    .equals(RoleEnum.POLITICIAN)) {
             gameService.politicianActionTradeWithDiscardPile(this.gameDTO, lobbyId);
         }
+
     }
 
     /**
@@ -751,7 +719,8 @@ public class GamePresenter extends AbstractPresenter {
     @FXML
     private void onLeaveGameClicked(ActionEvent event) {
         LOG.debug("Leave Game button clicked");
-        Stage stage = (Stage) gameScreen.getScene().getWindow();
+        Stage stage = (Stage) gameScreen.getScene()
+                                        .getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
@@ -1957,32 +1926,6 @@ public class GamePresenter extends AbstractPresenter {
 
     }
 
-    /**
-     * Handles the KnowledgeSharedEvent.
-     * <p>
-     * This method is called when a KnowledgeSharedEvent is received. It updates the game board
-     * with the latest data from the event and logs the result of the knowledge sharing action.
-     *
-     * @param response the KnowledgeSharedEvent containing the game data
-     */
-    @Subscribe
-    public void onKnowledgeSharedEvent(KnowledgeSharedEvent response) {
-        if (!response.getLobbyId()
-                     .equals(this.lobbyId)) {
-            return;
-        }
-
-        LOG.debug("Received ShareKnowledgeResponse");
-        if (response.wasSuccessful()) {
-            LOG.info("Knowledge shared");
-            LOG.trace("Updating board of Game {}", response.getGameDTO());
-            this.gameDTO = response.getGameDTO();
-            Platform.runLater(() -> updateBoard(response.getGameDTO()));
-        } else {
-            LOG.info("Knowledge not shared");
-        }
-
-    }
 
     /**
      * Handles the EndGameEvent.
@@ -2093,8 +2036,7 @@ public class GamePresenter extends AbstractPresenter {
                         LOG.info("Selected plague: {}", selectedPlague);
                         gameService.sendTreatPlagueRequest(lobbyId, cityIdToTreat, selectedPlague);
                         treatInfectionButton.setSelected(false);
-                    },
-                    () -> treatInfectionButton.setSelected(false)
+                    }, () -> treatInfectionButton.setSelected(false)
             );
         });
     }

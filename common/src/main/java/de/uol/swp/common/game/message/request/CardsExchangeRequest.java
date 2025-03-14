@@ -13,10 +13,8 @@ import java.util.Objects;
 @Getter
 public class CardsExchangeRequest extends AbstractGameRequest {
 
-    /**
-     * Map of cards to exchange, where the key is a string identifier and the value is the card DTO.
-     */
-    Map<String, ICardDTO> cardsToExchange;
+    int cityId;
+    String playerToTrade;
 
     /**
      * Constructs a new CardsExchangeRequest.
@@ -24,36 +22,29 @@ public class CardsExchangeRequest extends AbstractGameRequest {
      * @param cardsToExchange the map of cards to exchange
      * @param lobbyId         the ID of the lobby
      */
-    public CardsExchangeRequest(Map<String, ICardDTO> cardsToExchange, String lobbyId) {
+    public CardsExchangeRequest(
+            Map<String, ICardDTO> cardsToExchange,
+            int cityId,
+            String playerToTrade,
+            String lobbyId
+    ) {
         super(lobbyId);
-        this.cardsToExchange = cardsToExchange;
+        this.cityId = cityId;
+        this.playerToTrade = playerToTrade;
+
     }
 
-    /**
-     * Checks if this request is equal to another object.
-     *
-     * @param o the object to compare with
-     * @return true if the objects are equal, false otherwise
-     */
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
         CardsExchangeRequest that = (CardsExchangeRequest) o;
-        return Objects.equals(cardsToExchange, that.cardsToExchange) && Objects.equals(getLobbyId(), that.getLobbyId());
+        return cityId == that.cityId && Objects.equals(playerToTrade, that.playerToTrade);
     }
 
-    /**
-     * Computes the hash code for this request.
-     *
-     * @return the hash code
-     */
     @Override
     public int hashCode() {
-        return Objects.hash(cardsToExchange, getLobbyId());
+        return Objects.hash(cityId, playerToTrade);
     }
 }
