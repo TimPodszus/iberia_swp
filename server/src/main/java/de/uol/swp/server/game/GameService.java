@@ -33,10 +33,7 @@ import de.uol.swp.server.connection.ConnectionMapper;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.exceptions.GameException;
-import de.uol.swp.server.game.exceptions.GameInitializationException;
-import de.uol.swp.server.game.exceptions.IllegalGameStateException;
-import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
+import de.uol.swp.server.game.exceptions.*;
 import de.uol.swp.server.game.management.IGameManagement;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.lobby.data.ILobby;
@@ -544,9 +541,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
     private void changedToEndGameState(IGame game, EndGameState endGameState) {
         ILobby lobby = lobbyManagement.getLobby(game.getGameId());
         sendToAllInLobby(lobby, new EndGameEvent(game.getGameId(), endGameState.isVictory()));
-        sendServerMessageEvent(
-                game.getGameId(),
-                "Das Spiel ist beendet! " + (endGameState.isVictory() ? "Ihr habt gewonnen! 🎉" : "Ihr habt verloren. ✂️")
+        sendServerMessageEvent(game.getGameId(),
+                "Das Spiel ist beendet! " + (endGameState.isVictory() ? "Ihr habt gewonnen!" : "Ihr habt verloren.")
         );
     }
 
@@ -561,9 +557,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 .isEmpty()) {
             game.setState(new EndGameState(false));
             LOG.info("[LobbyID: {}] Nachziehstapel ist leer", game.getGameId());
-            sendServerMessageEvent(
-                    game.getGameId(),
-                    "Das Spiel ist beendet! Der Nachziehstapel ist leer – ihr habt verloren. ✂️"
+            sendServerMessageEvent(game.getGameId(),
+                    "Das Spiel ist beendet! Der Nachziehstapel ist leer – ihr habt verloren."
             );
         } else if (drawCardState.getCardsDrawn() < MAX_CARDS_DRAWABLE) {
             if (game.getPreviousState() instanceof PlayerTurnState) {
@@ -699,25 +694,32 @@ public class GameService extends AbstractService implements GameStateChangeListe
      */
     @Subscribe
     public void onUserLeavedGameRequest(UserLeavedGameRequest event) {
-        IGame game = gameManagement.getGame(event.getLobbyId());
+        IGame game;
+        try {
+            game = gameManagement.getGame(event.getLobbyId());
+        } catch (GameNotFoundException e) {
+            game = null;
+        }
         IUser user = UserMapper.toUser(event.getSession()
                                             .orElseThrow(SessionNotFoundException::new)
                                             .getUser());
         try {
             lobbyManagement.removeUser(event.getLobbyId(), user.getUsername());
-            gameManagement.removePlayer(event.getLobbyId(), user);
+            if (game != null) {
+                gameManagement.removePlayer(event.getLobbyId(), user);
+
+                IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
+                ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
+                sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
+            } else {
+                post(new LobbyClosedEvent(event.getLobbyId()));
+            }
         } catch (LobbyIsEmptyException e) {
             post(new LobbyClosedEvent(game.getGameId()));
-
-            return;
         } catch (LobbyNotFoundException e) {
             LOG.fatal("[LobbyID: {}] Lobby not found", event.getLobbyId());
             sendStatusResponse(event, false, "Lobby wurde nicht gefunden");
-            return;
         }
-        IGameDTO gameDTO = GameMapper.toDTO(gameManagement.getGame(event.getLobbyId()));
-        ILobby lobby = lobbyManagement.getLobby(event.getLobbyId());
-        sendToAllInLobby(lobby, new BoardUpdateEvent(event.getLobbyId(), gameDTO));
     }
 
 
