@@ -1,0 +1,34 @@
+package de.uol.swp.server.usermanagement;
+
+import java.io.Serializable;
+
+/**
+ * Interface for different kinds of user objects.
+ * This interface is for unifying different kinds of user objects throughout the
+ * project. With this being the base project it is currently only used for the UserDTO
+ * objects.
+ *
+ * @see de.uol.swp.common.user.UserDTO
+ * @author Marco Grawunder
+ * @since 2019-08-05
+ */
+public interface IUser extends Serializable {
+
+    /**
+     * Getter for the username variable
+     *
+     * @return username of the user as String
+     * @since 2019-08-05
+     */
+    String getUsername();
+
+    String getPassword();
+
+    /**
+     * Creates a duplicate of this object leaving its password empty
+     *
+     * @return Copy of this with empty password field
+     * @since 2019-08-05
+     */
+    IUser getWithoutPassword();
+}

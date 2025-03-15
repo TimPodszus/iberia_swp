@@ -1,0 +1,28 @@
+.background-pane {
+    -fx-background-color: #FFCB83;
+}
+
+.content-pane {
+    -fx-background-color: white;
+    -fx-font-family: 'sans-serif';
+    -fx-background-radius: 24px;
+    -fx-padding: 24px;
+}
+
+.search-button {
+    -fx-background-color: #858585;
+    -fx-background-radius: 6px;
+    -fx-border-color: black;
+    -fx-border-radius: 6px;
+    -fx-text-fill: white;
+    -fx-padding: 6 12 6 12;
+}
+
+.back-button {
+    -fx-background-color: #6c5100;
+    -fx-background-radius: 6px;
+    -fx-border-color: black;
+    -fx-border-radius: 6px;
+    -fx-text-fill: white;
+    -fx-padding: 6 12 6 12;
+}

@@ -1,15 +1,18 @@
 package de.uol.swp.common.lobby.dto;
 
-import de.uol.swp.common.lobby.Lobby;
-import de.uol.swp.common.user.User;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
+import de.uol.swp.common.user.IUserDTO;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+
 
 /**
  * Object to transfer the information of a game lobby
- *
  * This object is used to communicate the current state of game lobbies between
  * the server and clients. It contains information about the Name of the lobby,
  * who owns the lobby and who joined the lobby.
@@ -17,65 +20,31 @@ import java.util.TreeSet;
  * @author Marco Grawunder
  * @since 2019-10-08
  */
-public class LobbyDTO implements Lobby {
+@Getter
+@AllArgsConstructor
+public class LobbyDTO implements ILobbyDTO, Serializable {
 
+
+    private final String lobbyId;
     private final String name;
-    private User owner;
-    private final Set<User> users = new TreeSet<>();
-
-    /**
-     * Constructor
-     *
-     * @param name    The name the lobby should have
-     * @param creator The user who created the lobby and therefore shall be the
-     *                owner
-     * @since 2019-10-08
-     */
-    public LobbyDTO(String name, User creator) {
-        this.name = name;
-        this.owner = creator;
-        this.users.add(creator);
-    }
+    private final List<IUserDTO> users;
+    private IUserDTO owner;
+    private final int difficulty;
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public void joinUser(User user) {
-        this.users.add(user);
-    }
-
-    @Override
-    public void leaveUser(User user) {
-        if (users.size() == 1) {
-            throw new IllegalArgumentException("Lobby must contain at least one user!");
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
-        if (users.contains(user)) {
-            this.users.remove(user);
-            if (this.owner.equals(user)) {
-                updateOwner(users.iterator().next());
-            }
-        }
+        LobbyDTO lobbyDTO = (LobbyDTO) o;
+        return difficulty == lobbyDTO.difficulty && Objects.equals(lobbyId, lobbyDTO.lobbyId) && Objects.equals(
+                name,
+                lobbyDTO.name
+        ) && Objects.equals(users, lobbyDTO.users) && Objects.equals(owner, lobbyDTO.owner);
     }
 
     @Override
-    public void updateOwner(User user) {
-        if (!this.users.contains(user)) {
-            throw new IllegalArgumentException("User " + user.getUsername() + "not found. Owner must be member of lobby!");
-        }
-        this.owner = user;
+    public int hashCode() {
+        return Objects.hash(lobbyId, name, users, owner, difficulty);
     }
-
-    @Override
-    public User getOwner() {
-        return owner;
-    }
-
-    @Override
-    public Set<User> getUsers() {
-        return Collections.unmodifiableSet(users);
-    }
-
 }

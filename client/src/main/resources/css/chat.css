@@ -1,0 +1,12 @@
+.chat-username{
+    -fx-font-weight: bold;
+    -fx-margin: 0 8px;
+}
+
+.chat-pane {
+    -fx-background-color: #FFCB83;
+}
+
+.chat-container {
+    -fx-background-color: #FFFFFF;
+}

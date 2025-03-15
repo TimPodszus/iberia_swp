@@ -1,6 +1,6 @@
 package de.uol.swp.common.user.response;
 
-import de.uol.swp.common.message.AbstractResponseMessage;
+import de.uol.swp.common.message.response.AbstractResponseMessage;
 
 /**
  * A response, that the user registration was successful
@@ -12,4 +12,6 @@ import de.uol.swp.common.message.AbstractResponseMessage;
  * @since 2019-09-02
  */
 public class RegistrationSuccessfulResponse extends AbstractResponseMessage {
+    public RegistrationSuccessfulResponse() {
+    }
 }

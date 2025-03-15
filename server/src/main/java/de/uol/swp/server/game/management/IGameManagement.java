@@ -1,0 +1,177 @@
+package de.uol.swp.server.game.management;
+
+import de.uol.swp.common.cards.data.ICardDTO;
+import de.uol.swp.common.game.GameActions;
+import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
+import de.uol.swp.common.game.message.request.CreateGameRequest;
+import de.uol.swp.common.game.message.request.PositioningRequest;
+import de.uol.swp.common.game.message.request.SwapCardsConfirmedRequest;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.city.data.ICity;
+import de.uol.swp.server.connection.data.IConnection;
+import de.uol.swp.server.game.data.IGame;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.GameInitializationException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
+import de.uol.swp.server.usermanagement.IUser;
+
+import java.util.List;
+import java.util.Map;
+
+public interface IGameManagement {
+
+    /**
+     * Creates and initializes a new game based on the provided request.
+     *
+     * @param request the game creation request containing user and difficulty information
+     * @return the newly created game
+     * @throws GameInitializationException if creating and initializing the game fails
+     */
+    IGame createAndInitializeGame(CreateGameRequest request) throws GameInitializationException;
+
+    /**
+     * Sets the initial positioning of a player in the game based on the provided city.
+     *
+     * @param request The request with where the position is to be set
+     * @throws GameException             if setting the positioning fails
+     * @throws IllegalGameStateException if the game is in a state that does not allow positioning
+     */
+    void setPositioning(PositioningRequest request) throws GameException, IllegalGameStateException;
+
+    /**
+     * Draws a player card. The specific behavior of this method should be defined.
+     */
+    InfectionCard drawInfectionCard(IGame game);
+
+    /**
+     * Adds an infection card to the infection card discard pile.
+     */
+    void discardInfectionCard(IGame game, InfectionCard infectionCard);
+
+    /**
+     * Retrieves the list of available actions for a given lobby.
+     *
+     * @param lobbyId the ID of the lobby for which to retrieve available actions
+     * @return a list of available game actions
+     */
+    List<GameActions> getAvailableActions(String lobbyId, IUser user);
+
+    /**
+     * Moves a player to a specified city in the game.
+     *
+     * @param user    the user representing the player to be moved
+     * @param lobbyId the id of the lobby in which the game is happening
+     * @param city    the city to which the player will be moved
+     * @param card    the card used to move the player
+     *                <p>
+     * @throws GameException             if moving the player fails
+     * @throws IllegalGameStateException if the game is in an illegal state
+     */
+    void movePlayer(IUser user, String lobbyId, ICity city, ICard card) throws GameException, IllegalGameStateException;
+
+    /**
+     * Retrieves the game with the specified lobby code.
+     *
+     * @param lobbyId the id of the lobby in which the game is happening
+     * @return the game with the specified lobby code
+     */
+    IGame getGame(String lobbyId);
+
+    /**
+     * Builds a train track between two cities in the game.
+     *
+     * @param user       the user representing the player building the train track
+     * @param lobbyId    the id of the lobby in which the game is happening
+     * @param connection the connection representing the train track to be built
+     * @throws GameException             if building the train track fails
+     * @throws IllegalGameStateException if the game is in a state, where building a train track is not allowed
+     */
+    void buildTrainTrack(
+            IUser user,
+            String lobbyId,
+            IConnection connection
+    ) throws GameException, IllegalGameStateException;
+
+    /**
+     * Locks the game in a wait-for-confirmation state.
+     *
+     * @param lobbyId the ID of the lobby in which the game is happening
+     */
+    void lockGameInWaitForConfirmation(String lobbyId);
+
+    /**
+     * Unlocks the game from a wait-for-confirmation state and sets the game state to the previous state.
+     *
+     * @param lobbyId the ID of the lobby in which the game is happening
+     */
+    void unlockGameInWaitForConfirmation(String lobbyId);
+
+
+    /**
+     * Increases the number of actions the current player has in the game.
+     *
+     * @param game   the game in which the current player's actions are to be increased
+     * @param amount the amount by which to increase the current player's actions
+     */
+    void increaseCurrentPlayerActions(IGame game, int amount);
+
+
+    /**
+     * Ends the turn for the current player in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby in which the game is happening
+     * @param user    the user representing the player whose turn is to be ended
+     * @throws IllegalGameStateException if the turn cannot be ended due to the current game state
+     */
+    void endTurn(String lobbyId, IUser user) throws IllegalGameStateException;
+
+    /**
+     * Removes a player from the specified lobby.
+     *
+     * @param lobbyCode the code of the lobby from which the player is to be removed
+     * @param user      the user representing the player to be removed
+     * @throws LobbyIsEmptyException if the lobby is empty after removing the player
+     */
+    void removePlayer(String lobbyCode, IUser user) throws LobbyIsEmptyException;
+
+    /**
+     * Removes the game associated with the specified lobby code.
+     *
+     * @param lobbyCode the code of the lobby whose game is to be removed
+     */
+    void removeGame(String lobbyCode);
+
+    /**
+     * Processes a card exchange confirmation event.
+     *
+     * @param cardExchangeConfirmationRequest the request containing details of the card exchange
+     */
+    void giveCard(CardExchangeConfirmationEvent cardExchangeConfirmationRequest);
+
+    /**
+     * Retrieves the available cards for the politician's second role action in the specified lobby.
+     *
+     * @param lobbyId the ID of the lobby for which to retrieve available cards
+     * @return a map of available cards, keyed by card ID
+     */
+    Map<String, List<ICardDTO>> getAvailableCardsForPoliticianSecondRoleAction(String lobbyId);
+
+    /**
+     * Swaps the specified cards with the discard pile in the game associated with the given lobby ID.
+     *
+     * @param cards   a map of card IDs to card data transfer objects (DTOs) representing the cards to be swapped
+     * @param lobbyId the ID of the lobby in which the game is happening
+     */
+    void swapCardsWithDiscardPile(Map<String, ICardDTO> cards, String lobbyId);
+
+    /**
+     * Swaps the specified cards in the game based on the provided request.
+     *
+     * @param request the request containing details of the cards to be swapped
+     */
+    void swapCards(SwapCardsConfirmedRequest request);
+
+}
+
