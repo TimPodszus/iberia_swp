@@ -10,10 +10,7 @@ import de.uol.swp.common.game.RoleEnum;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.event.*;
 import de.uol.swp.common.game.message.request.*;
-import de.uol.swp.common.game.message.response.AvailableActionsResponse;
-import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
-import de.uol.swp.common.game.message.response.CreateGameResponse;
-import de.uol.swp.common.game.message.response.PoliticianSecondRoleActionResponse;
+import de.uol.swp.common.game.message.response.*;
 import de.uol.swp.common.lobby.message.event.LobbyClosedEvent;
 import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.request.MovePlayerRequest;
@@ -24,6 +21,7 @@ import de.uol.swp.server.cards.CardMapper;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
 import de.uol.swp.server.cards.events.AnotherDayEvent;
+import de.uol.swp.server.cards.events.ExchangeOfLettersEvent;
 import de.uol.swp.server.cards.events.FavorableTimeEvent;
 import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.CityMapper;
@@ -51,6 +49,7 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -541,7 +540,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
     private void changedToEndGameState(IGame game, EndGameState endGameState) {
         ILobby lobby = lobbyManagement.getLobby(game.getGameId());
         sendToAllInLobby(lobby, new EndGameEvent(game.getGameId(), endGameState.isVictory()));
-        sendServerMessageEvent(game.getGameId(),
+        sendServerMessageEvent(
+                game.getGameId(),
                 "Das Spiel ist beendet! " + (endGameState.isVictory() ? "Ihr habt gewonnen!" : "Ihr habt verloren.")
         );
     }
@@ -557,7 +557,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 .isEmpty()) {
             game.setState(new EndGameState(false));
             LOG.info("[LobbyID: {}] Nachziehstapel ist leer", game.getGameId());
-            sendServerMessageEvent(game.getGameId(),
+            sendServerMessageEvent(
+                    game.getGameId(),
                     "Das Spiel ist beendet! Der Nachziehstapel ist leer – ihr habt verloren."
             );
         } else if (drawCardState.getCardsDrawn() < MAX_CARDS_DRAWABLE) {
@@ -783,6 +784,112 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 )
         );
 
+    }
+
+
+    @Subscribe
+    public void onCardsExchangeRequest(CardsExchangeRequest request) {
+        gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
+        sendToAllInLobby(
+                lobbyManagement.getLobby(request.getLobbyId()),
+                new BoardUpdateEvent(
+                        request.getLobbyId(),
+                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
+                )
+        );
+
+        LOG.debug("Got CardsExchangeRequest for lobby {}", request.getLobbyId());
+        String requestingPlayer = request.getRequestingPlayer();
+        Map<String, ICardDTO> map = request.getCardsToExchange();
+        try {
+            if (map.size() == 2) {
+                String otherPlayer = map.keySet()
+                                        .stream()
+                                        .filter(key -> !key.equals(requestingPlayer))
+                                        .findFirst()
+                                        .orElseThrow(() -> new GameException("Other player not found"));
+                ICardDTO requestingPlayerCard = map.get(requestingPlayer);
+                ICardDTO otherPlayerCard = map.get(otherPlayer);
+
+
+                SwapCardsConfirmationEvent event = new SwapCardsConfirmationEvent(
+                        request.getLobbyId(),
+                        requestingPlayer,
+                        otherPlayer,
+                        requestingPlayerCard,
+                        otherPlayerCard
+                );
+                Session session = authenticationService.getSession(gameManagement.getGame(request.getLobbyId())
+                                                                                 .getPlayer(otherPlayer)
+                                                                                 .getUser())
+                                                       .orElseThrow(() -> new SessionNotFoundException(
+                                                               "Session not found"));
+                List<Session> sessionList = List.of(session);
+                event.setReceiver(sessionList);
+                bus.post(event);
+            } else {
+                throw new GameException("Map does not have exactly two entries");
+            }
+        } catch (GameException e) {
+            LOG.error("Error in CardsExchangeRequest");
+        }
+
+
+    }
+
+    @Subscribe
+    public void onExchangeOfLettersEvent(ExchangeOfLettersEvent event) {
+        LOG.debug("[Lobby: {}] Received ExchangeOfLettersEvent", event.getLobbyId());
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        Map<String, List<ICardDTO>> availableExchangePartners = new HashMap<>();
+        for (IPlayer player : game.getPlayers()) {
+            availableExchangePartners.put(
+                    player.getUser()
+                          .getUsername(),
+                    player.getCards()
+                          .stream()
+                          .map(CardMapper::toDTO)
+                          .toList()
+            );
+
+        }
+        gameManagement.lockGameInWaitForConfirmation(event.getLobbyId());
+        sendToAllInLobby(
+                lobbyManagement.getLobby(event.getLobbyId()),
+                new BoardUpdateEvent(event.getLobbyId(), GameMapper.toDTO(game))
+        );
+        Session session = authenticationService.getSession(game.getPlayer(event.getUsername())
+                                                               .getUser())
+                                               .orElseThrow(() -> new SessionNotFoundException("Session not found"));
+        ExchangeOfLettersResponse response = new ExchangeOfLettersResponse(
+                event.getLobbyId(),
+                availableExchangePartners,
+                event.getUsername()
+        );
+        response.setSession(session);
+        post(response);
+
+    }
+
+    @Subscribe
+    public void onSwapCardsConfirmedRequest(SwapCardsConfirmedRequest request) {
+        LOG.debug("Got SwapCardsConfirmedRequest for lobby {}", request.getLobbyId());
+        gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
+        sendToAllInLobby(
+                lobbyManagement.getLobby(request.getLobbyId()),
+                new BoardUpdateEvent(
+                        request.getLobbyId(),
+                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
+                )
+        );
+        gameManagement.swapCards(request);
+        sendToAllInLobby(
+                lobbyManagement.getLobby(request.getLobbyId()),
+                new BoardUpdateEvent(
+                        request.getLobbyId(),
+                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
+                )
+        );
     }
 
 }

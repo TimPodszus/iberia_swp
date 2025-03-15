@@ -338,7 +338,7 @@ public class CardManagementTest {
         List<ICard> allCards = cardManagement.getCardsFromPlayerDiscardPile(LOBBY_ID, ICard.class);
         List<CityCard> cityCards = cardManagement.getCardsFromPlayerDiscardPile(LOBBY_ID, CityCard.class);
 
-        assertEquals(105, allCards.size());
+        assertEquals(106, allCards.size());
         assertEquals(48, cityCards.size());
     }
 

@@ -5,6 +5,7 @@ import de.uol.swp.common.city.CityName;
 import de.uol.swp.common.connection.response.BuildableTrainTracksResponse;
 import de.uol.swp.common.game.message.event.BoardUpdateEvent;
 import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
+import de.uol.swp.common.game.message.event.SwapCardsConfirmationEvent;
 import de.uol.swp.common.game.message.request.*;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
 import de.uol.swp.common.game.message.response.CreateGameResponse;
@@ -63,10 +64,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -792,46 +790,6 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, times(1)).lockGameInWaitForConfirmation("lobbyId");
     }
 
-    @Test
-    void testOnShareKnowledgeRequest() {
-        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", "targetPlayer");
-        IUser user = new User("testuser", "testpassword");
-        Session session = UUIDSession.create(user);
-        request.setSession(session);
-
-        IGame game = new Game(2, "lobbyId");
-        IPlayer currentPlayer = new Player(user, "lobbyId");
-        ICity currentCity = new CityRepository().getCity(1);
-        currentPlayer.setCurrentPosition(currentCity);
-        currentPlayer.getCards()
-                     .add(new CityCard(1, "CityName", currentCity));
-        game.getPlayers()
-            .add(currentPlayer);
-        game.setCurrentPlayerIndex(0);
-        currentPlayer.setRole(new CountryDoctor());
-        IUser targetUser = new User("targetPlayer", "password");
-        IPlayer targetPlayer = new Player(targetUser, "lobbyId");
-        game.getPlayers()
-            .add(targetPlayer);
-        targetPlayer.setRole(new CountryDoctor());
-
-        when(gameManagement.getGame("lobbyId")).thenReturn(game);
-        when(authenticationService.getSession(targetUser)).thenReturn(Optional.of(UUIDSession.create(targetUser)));
-        when(lobbyManagement.getLobby("lobbyId")).thenReturn(new Lobby(
-                "lobbyId",
-                "Test",
-                List.of(user, targetUser),
-                user,
-                4
-        ));
-
-        gameService.onShareKnowledgeRequest(request);
-
-        verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("lobbyId");
-        verify(gameManagement, times(1)).lockGameInWaitForConfirmation("lobbyId");
-        verify(gameService, times(2)).sendToAllInLobby(any(ILobby.class), any(BoardUpdateEvent.class));
-        verify(gameService, times(1)).post(any(CardExchangeConfirmationEvent.class));
-    }
 
     @Test
     void testOnCardExchangeConfirmationRequest() {
@@ -900,6 +858,63 @@ public class GameServiceTest extends EventBusBasedTest {
 
         verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("lobbyId");
         verify(gameManagement, times(1)).swapCardsWithDiscardPile(request.getCardsToExchange(), "lobbyId");
+        verify(gameService, times(2)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
+    }
+
+    @Test
+    void testOnCardsExchangeRequest() throws SessionNotFoundException {
+        String lobbyId = "lobby123";
+        String requestingPlayer = "player1";
+        String otherPlayer = "player2";
+        ICardDTO requestingPlayerCard = mock(ICardDTO.class);
+        ICardDTO otherPlayerCard = mock(ICardDTO.class);
+        Map<String, ICardDTO> map = new HashMap<>();
+        map.put(requestingPlayer, requestingPlayerCard);
+        map.put(otherPlayer, otherPlayerCard);
+        CardsExchangeRequest request = new CardsExchangeRequest(map, lobbyId, requestingPlayer);
+        Session session = mock(Session.class);
+        when(session.getUser()).thenReturn(mock(IUserDTO.class));
+        when(authenticationService.getSession(any())).thenReturn(Optional.of(session));
+        IGame game = mock(IGame.class);
+        when(gameManagement.getGame(lobbyId)).thenReturn(game);
+        ILobby lobby = mock(ILobby.class);
+        when(lobbyManagement.getLobby(lobbyId)).thenReturn(lobby);
+        when(game.getCityRepository()).thenReturn(mock(CityRepository.class));
+        when(game.getConnectionRepository()).thenReturn(mock(ConnectionRepository.class));
+        when(game.getRegionRepository()).thenReturn(mock(RegionRepository.class));
+        when(game.getPlagueRepository()).thenReturn(mock(PlagueRepository.class));
+        when(game.getState()).thenReturn(new PlayerTurnState());
+        when(game.getPlayer(any())).thenReturn(mock(Player.class));
+
+
+        gameService.onCardsExchangeRequest(request);
+
+        verify(gameManagement).unlockGameInWaitForConfirmation(lobbyId);
+        verify(gameManagement, times(2)).getGame(lobbyId);
+        verify(lobbyManagement).getLobby(lobbyId);
+    }
+
+    @Test
+    void testOnSwapCardsConfirmedRequest() {
+        SwapCardsConfirmedRequest request = new SwapCardsConfirmedRequest(
+                "lobbyId",
+                true,
+                mock(SwapCardsConfirmationEvent.class)
+
+        );
+        IUser user = new User("testuser", "testpassword");
+        Session session = UUIDSession.create(user);
+        request.setSession(session);
+
+        IGame game = new Game(2, "lobbyId");
+        when(gameManagement.getGame("lobbyId")).thenReturn(game);
+        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
+        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+
+        gameService.onSwapCardsConfirmedRequest(request);
+
+        verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("lobbyId");
+        verify(gameManagement, times(1)).swapCards(request);
         verify(gameService, times(2)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 }
