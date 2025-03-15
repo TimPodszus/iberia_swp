@@ -965,10 +965,19 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
             );
 
-            receivingCardPlayer.getCards()
-                               .add(requestCard);
-            givingCardPlayer.getCards()
-                            .remove(requestCard);
+            playerManagement.addCard(
+                    response.getLobbyId(),
+                    receivingCardPlayer.getUser()
+                                       .getUsername(),
+                    requestCard
+            );
+            playerManagement.discardPlayerCard(
+                    response.getLobbyId(),
+                    givingCardPlayer.getUser()
+                                    .getUsername(),
+                    requestCard.getId()
+            );
+
             ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
             sendServerMessageEvent(
                     response.getLobbyId(),
@@ -979,6 +988,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
         } catch (PlayerManagementException e) {
             new StatusResponse(response.getLobbyId(), false, "Player not found");
+        } catch (GameException e) {
+            LOG.error("Error when giving Card");
         }
 
 
@@ -1053,10 +1064,18 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                             .orElseThrow(() -> new CardNotFoundException(
                                                     "Card not found in discard pile"));
 
-            player.getCards()
-                  .add(cardFromDiscardPile);
-            player.getCards()
-                  .remove(cardToDiscard);
+            playerManagement.addCard(
+                    lobbyId,
+                    player.getUser()
+                          .getUsername(),
+                    cardFromDiscardPile
+            );
+            playerManagement.discardPlayerCard(
+                    lobbyId,
+                    player.getUser()
+                          .getUsername(),
+                    cardToDiscard.getId()
+            );
             game.getPlayerCardDiscardPile()
                 .remove(cardFromDiscardPile);
             game.getPlayerCardDiscardPile()
@@ -1073,33 +1092,41 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         } catch (CardNotFoundException e) {
             LOG.error("Card not found");
 
+        } catch (GameException e) {
+            LOG.error("Error when trading Card with discard Pile");
         }
     }
 
     @Override
     public void swapCards(SwapCardsConfirmedRequest request) {
-        IGame game = getGame(request.getLobbyId());
-        SwapCardsConfirmationEvent event = request.getEvent();
-        IPlayer requestingPlayer = game.getPlayer(event.getRequestingPlayer());
-        IPlayer confirmingPlayer = game.getPlayer(event.getTargetPlayer());
-        ICard requestingCard = requestingPlayer.getCard(event.getRequestingPlayerCard()
-                                                             .getId());
-        ICard confirmingPlayerCard = confirmingPlayer.getCard(event.getOtherPlayerCard()
-                                                                   .getId());
+        try {
+            IGame game = getGame(request.getLobbyId());
+            String lobbyId = request.getLobbyId();
+            SwapCardsConfirmationEvent event = request.getEvent();
+            IPlayer requestingPlayer = game.getPlayer(event.getRequestingPlayer());
+            String requestingPlayerName = requestingPlayer.getUser()
+                                                          .getUsername();
+            IPlayer confirmingPlayer = game.getPlayer(event.getTargetPlayer());
+            String confirmingPlayerName = confirmingPlayer.getUser()
+                                                          .getUsername();
+            ICard requestingCard = requestingPlayer.getCard(event.getRequestingPlayerCard()
+                                                                 .getId());
+            ICard confirmingPlayerCard = confirmingPlayer.getCard(event.getOtherPlayerCard()
+                                                                       .getId());
 
-        requestingPlayer.getCards()
-                        .add(confirmingPlayerCard);
-        confirmingPlayer.getCards()
-                        .remove(confirmingPlayerCard);
-        confirmingPlayer.getCards()
-                        .add(requestingCard);
-        requestingPlayer.getCards()
-                        .remove(requestingCard);
-        game.setState(game.getPreviousState());
-        sendServerMessageEvent(
-                request.getLobbyId(),
-                "Spieler " + event.getRequestingPlayer() + " und " + event.getTargetPlayer() + "haben " + "Karten getauscht"
-        );
+            playerManagement.addCard(lobbyId, requestingPlayerName, confirmingPlayerCard);
+            playerManagement.discardPlayerCard(lobbyId, confirmingPlayerName, confirmingPlayerCard.getId());
+            playerManagement.addCard(lobbyId, confirmingPlayerName, requestingCard);
+            playerManagement.discardPlayerCard(lobbyId, requestingPlayerName, requestingCard.getId());
+
+            game.setState(game.getPreviousState());
+            sendServerMessageEvent(
+                    request.getLobbyId(),
+                    "Spieler " + event.getRequestingPlayer() + " und " + event.getTargetPlayer() + "haben " + "Karten getauscht"
+            );
+        } catch (GameException e) {
+            LOG.error("Error when swapping cards");
+        }
 
 
     }

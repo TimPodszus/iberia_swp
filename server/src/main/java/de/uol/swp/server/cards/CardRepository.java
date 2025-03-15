@@ -139,14 +139,5 @@ public class CardRepository {
         cards.put(214, new HospitalFoundationEventCard(214));
         cards.put(215, new ForTheGoodCauseEventCard(215));
         cards.put(216, new ExchangeOfLettersEventCard(216));
-        cards.put(217, new ExchangeOfLettersEventCard(217));
-        cards.put(218, new ExchangeOfLettersEventCard(218));
-        cards.put(219, new ExchangeOfLettersEventCard(219));
-        cards.put(220, new ExchangeOfLettersEventCard(220));
-        cards.put(221, new ExchangeOfLettersEventCard(221));
-        cards.put(222, new ExchangeOfLettersEventCard(222));
-        cards.put(223, new ExchangeOfLettersEventCard(223));
-        cards.put(224, new ExchangeOfLettersEventCard(224));
-        cards.put(225, new ExchangeOfLettersEventCard(225));
     }
 }

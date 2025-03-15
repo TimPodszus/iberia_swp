@@ -503,6 +503,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
             gameManagement.giveCard(response.getCardExchangeConfirmationEvent());
         } else {
             sendServerMessageEvent(response.getLobbyId(), "Spieler hat den Kartenwechsel abgelehnt");
+
         }
         sendToAllInLobby(
                 lobbyManagement.getLobby(response.getLobbyId()),
@@ -774,14 +775,27 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
                 )
         );
-        gameManagement.swapCardsWithDiscardPile(request.getCardsToExchange(), request.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(request.getLobbyId()),
-                new BoardUpdateEvent(
-                        request.getLobbyId(),
-                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
-                )
-        );
+        try {
+            if (gameManagement.getGame(request.getLobbyId())
+                              .getState() instanceof PlayerTurnState) {
+                gameManagement.swapCardsWithDiscardPile(request.getCardsToExchange(), request.getLobbyId());
+            } else {
+                throw new IllegalGameStateException("Illegal Game State");
+            }
+            sendToAllInLobby(
+                    lobbyManagement.getLobby(request.getLobbyId()),
+                    new BoardUpdateEvent(
+                            request.getLobbyId(),
+                            GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
+                    )
+            );
+        } catch (IllegalGameStateException e) {
+            LOG.error(
+                    "Error in CardsExchangeWithDiscardPileRequest due to illegal game state. State: {}",
+                    gameManagement.getGame(request.getLobbyId())
+                                  .getState()
+            );
+        }
 
     }
 
