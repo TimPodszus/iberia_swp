@@ -423,10 +423,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
                 CardExchangeConfirmationEvent requestToAsk = new CardExchangeConfirmationEvent(
                         request.getLobbyId(),
-                        false,
-                        PlayerMapper.toDTO(game.getCurrentPlayer()),
+                        PlayerMapper.toDTO(playerWithCityCard),
                         currentCityCard,
-                        PlayerMapper.toDTO(playerWithCityCard)
+                        PlayerMapper.toDTO(game.getCurrentPlayer())
                 );
                 LOG.debug("Sending CardExchangeConfirmationRequest for session {}", session);
                 requestToAsk.setReceiver(session);
@@ -450,21 +449,32 @@ public class GameService extends AbstractService implements GameStateChangeListe
     public void onShareKnowledgeRequest(ShareKnowledgeRequest request) {
         LOG.debug("Got ShareKnowledgeRequest for lobby {}", request.getLobbyId());
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(request.getLobbyId()),
-                new BoardUpdateEvent(
-                        request.getLobbyId(),
-                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
-                )
-        );
         IGame game = gameManagement.getGame(request.getLobbyId());
-        if (!(game.getState() instanceof PlayerTurnState)) {
-            LOG.error("Game is not in PlayerTurnState, cannot process ShareKnowledgeRequest");
-            sendStatusResponse(request, false, "Spiel ist nicht im Spielerzug-Zustand, Wissen teilen nicht möglich");
-            return;
-        }
+        LOG.debug(
+                "GameState: {}",
+                gameManagement.getGame(request.getLobbyId())
+                              .getState()
+        );
+        IPlayer currentPlayer = gameManagement.getGame(request.getLobbyId())
+                                              .getCurrentPlayer();
+        sendToAllInLobby(
+                lobbyManagement.getLobby(request.getLobbyId()),
+                new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game))
+        );
 
-        gameManagement.giveCard(request);
+        CardExchangeConfirmationEvent requestToAsk = new CardExchangeConfirmationEvent(
+                request.getLobbyId(),
+                PlayerMapper.toDTO(currentPlayer),
+                CardMapper.toDTO(currentPlayer.getCard(currentPlayer.getCurrentPosition()
+                                                                    .getId())),
+                PlayerMapper.toDTO(game.getPlayer(request.getUsername()))
+        );
+        List<Session> session = authenticationService.getSession(game.getPlayer(request.getUsername())
+                                                                     .getUser())
+                                                     .stream()
+                                                     .toList();
+        gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
+
         sendToAllInLobby(
                 lobbyManagement.getLobby(request.getLobbyId()),
                 new BoardUpdateEvent(
@@ -472,6 +482,9 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
                 )
         );
+        requestToAsk.setReceiver(session);
+        post(requestToAsk);
+
     }
 
 
@@ -486,7 +499,11 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 )
         );
         LOG.debug("Got CardExchangeConfirmationRequest for lobby {}", response.getLobbyId());
-        gameManagement.giveCard(response.getCardExchangeConfirmationEvent());
+        if (response.isAccepted()) {
+            gameManagement.giveCard(response.getCardExchangeConfirmationEvent());
+        } else {
+            sendServerMessageEvent(response.getLobbyId(), "Spieler hat den Kartenwechsel abgelehnt");
+        }
         sendToAllInLobby(
                 lobbyManagement.getLobby(response.getLobbyId()),
                 new BoardUpdateEvent(
@@ -494,8 +511,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
                         GameMapper.toDTO(gameManagement.getGame(response.getLobbyId()))
                 )
         );
-
-
     }
 
 
@@ -525,7 +540,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
     private void changedToEndGameState(IGame game, EndGameState endGameState) {
         ILobby lobby = lobbyManagement.getLobby(game.getGameId());
         sendToAllInLobby(lobby, new EndGameEvent(game.getGameId(), endGameState.isVictory()));
-        sendServerMessageEvent(game.getGameId(),
+        sendServerMessageEvent(
+                game.getGameId(),
                 "Das Spiel ist beendet! " + (endGameState.isVictory() ? "Ihr habt gewonnen!" : "Ihr habt verloren.")
         );
     }
@@ -541,7 +557,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 .isEmpty()) {
             game.setState(new EndGameState(false));
             LOG.info("[LobbyID: {}] Nachziehstapel ist leer", game.getGameId());
-            sendServerMessageEvent(game.getGameId(),
+            sendServerMessageEvent(
+                    game.getGameId(),
                     "Das Spiel ist beendet! Der Nachziehstapel ist leer – ihr habt verloren."
             );
         } else if (drawCardState.getCardsDrawn() < MAX_CARDS_DRAWABLE) {
@@ -631,40 +648,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 event.getLobbyId(),
                 event.getUsername() + " hat die Eventkarte 'Günstige Zeit' gespielt und in der nächsten " + "Infektionsphase wird nur die unterste Karte vom Infektionsstapel gezogen"
         );
-
-    }
-
-    @Subscribe
-    public void onExchangeOfLettersEvent(ExchangeOfLettersEvent event) {
-        LOG.debug("[Lobby: {}] Received ExchangeOfLettersEvent", event.getLobbyId());
-        IGame game = gameManagement.getGame(event.getLobbyId());
-        Map<String, List<ICardDTO>> availableExchangePartners = new HashMap<>();
-        for (IPlayer player : game.getPlayers()) {
-            availableExchangePartners.put(
-                    player.getUser()
-                          .getUsername(),
-                    player.getCards()
-                          .stream()
-                          .map(CardMapper::toDTO)
-                          .toList()
-            );
-
-        }
-        gameManagement.lockGameInWaitForConfirmation(event.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(event.getLobbyId()),
-                new BoardUpdateEvent(event.getLobbyId(), GameMapper.toDTO(game))
-        );
-        Session session = authenticationService.getSession(game.getPlayer(event.getUsername())
-                                                               .getUser())
-                                               .orElseThrow(() -> new SessionNotFoundException("Session not found"));
-        ExchangeOfLettersResponse response = new ExchangeOfLettersResponse(
-                event.getLobbyId(),
-                availableExchangePartners,
-                event.getUsername()
-        );
-        response.setSession(session);
-        post(response);
 
     }
 
@@ -784,6 +767,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
     public void onCardExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request) {
         LOG.debug("Got CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
+        gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
         sendToAllInLobby(
                 lobbyManagement.getLobby(request.getLobbyId()),
                 new BoardUpdateEvent(
@@ -801,6 +785,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         );
 
     }
+
 
     @Subscribe
     public void onCardsExchangeRequest(CardsExchangeRequest request) {
@@ -849,6 +834,40 @@ public class GameService extends AbstractService implements GameStateChangeListe
             LOG.error("Error in CardsExchangeRequest");
         }
 
+
+    }
+
+    @Subscribe
+    public void onExchangeOfLettersEvent(ExchangeOfLettersEvent event) {
+        LOG.debug("[Lobby: {}] Received ExchangeOfLettersEvent", event.getLobbyId());
+        IGame game = gameManagement.getGame(event.getLobbyId());
+        Map<String, List<ICardDTO>> availableExchangePartners = new HashMap<>();
+        for (IPlayer player : game.getPlayers()) {
+            availableExchangePartners.put(
+                    player.getUser()
+                          .getUsername(),
+                    player.getCards()
+                          .stream()
+                          .map(CardMapper::toDTO)
+                          .toList()
+            );
+
+        }
+        gameManagement.lockGameInWaitForConfirmation(event.getLobbyId());
+        sendToAllInLobby(
+                lobbyManagement.getLobby(event.getLobbyId()),
+                new BoardUpdateEvent(event.getLobbyId(), GameMapper.toDTO(game))
+        );
+        Session session = authenticationService.getSession(game.getPlayer(event.getUsername())
+                                                               .getUser())
+                                               .orElseThrow(() -> new SessionNotFoundException("Session not found"));
+        ExchangeOfLettersResponse response = new ExchangeOfLettersResponse(
+                event.getLobbyId(),
+                availableExchangePartners,
+                event.getUsername()
+        );
+        response.setSession(session);
+        post(response);
 
     }
 

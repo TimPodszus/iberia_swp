@@ -12,7 +12,6 @@ import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.event.SwapCardsConfirmationEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
 import de.uol.swp.common.game.message.request.SwapCardsConfirmedRequest;
 import de.uol.swp.common.game.message.response.StatusResponse;
 import de.uol.swp.common.region.IRegionDTO;
@@ -951,31 +950,31 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
     public void giveCard(CardExchangeConfirmationEvent response) {
         IGame game = getGame(response.getLobbyId());
 
-        IPlayer confirmingPlayer = game.getPlayer(response.getReceivingPlayer()
-                                                          .getUsername());
-        IPlayer requestingPlayer = game.getPlayer(response.getRequestingPlayer()
+        IPlayer receivingCardPlayer = game.getPlayer(response.getReceivingCardPlayer()
+                                                             .getUsername());
+        IPlayer givingCardPlayer = game.getPlayer(response.getGivingCardPlayer()
                                                           .getUsername());
 
         try {
             ICard requestCard = playerManagement.getCard(
                     response.getLobbyId(),
-                    confirmingPlayer.getUser()
+                    givingCardPlayer.getUser()
                                     .getUsername(),
                     response.getRequestingCard()
                             .getId()
 
             );
 
-            requestingPlayer.getCards()
-                            .add(requestCard);
-            confirmingPlayer.getCards()
+            receivingCardPlayer.getCards()
+                               .add(requestCard);
+            givingCardPlayer.getCards()
                             .remove(requestCard);
             ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
             sendServerMessageEvent(
                     response.getLobbyId(),
-                    "Spieler " + requestingPlayer.getUser()
-                                                 .getUsername() + " hat die Karte " + requestCard.getTitle() + " von " + "Spieler " + confirmingPlayer.getUser()
-                                                                                                                                                      .getUsername() + " bekommen."
+                    "Spieler " + receivingCardPlayer.getUser()
+                                                    .getUsername() + " hat die Karte " + requestCard.getTitle() + " von " + "Spieler " + givingCardPlayer.getUser()
+                                                                                                                                                         .getUsername() + " bekommen."
             );
 
         } catch (PlayerManagementException e) {
@@ -985,37 +984,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
     }
 
-    @Override
-    public void giveCard(ShareKnowledgeRequest request) {
-        IGame game = getGame(request.getLobbyId());
-
-        IPlayer receivingPlayer = game.getPlayer(request.getUsername());
-        IPlayer requestingPlayer = game.getCurrentPlayer();
-        try {
-            ICard requestCard = game.getCurrentPlayer()
-                                    .getCards()
-                                    .stream()
-                                    .filter(card -> card.getId() == game.getCurrentPlayer()
-                                                                        .getCurrentPosition()
-                                                                        .getId())
-                                    .findFirst()
-                                    .orElseThrow(() -> new CardNotFoundException("Card not found"));
-
-            receivingPlayer.getCards()
-                           .add(requestCard);
-            requestingPlayer.getCards()
-                            .remove(requestCard);
-            ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
-            sendServerMessageEvent(
-                    request.getLobbyId(),
-                    "Spieler " + receivingPlayer.getUser()
-                                                .getUsername() + " hat die Karte " + requestCard.getTitle() + " von " + "Spieler " + requestingPlayer.getUser()
-                                                                                                                                                     .getUsername() + " bekommen."
-            );
-        } catch (CardNotFoundException e) {
-            LOG.error("Card not found");
-        }
-    }
 
     @Override
     public Map<String, List<ICardDTO>> getAvailableCardsForPoliticianSecondRoleAction(String lobbyId) {

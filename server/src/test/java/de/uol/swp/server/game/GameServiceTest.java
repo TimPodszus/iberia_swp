@@ -790,24 +790,6 @@ public class GameServiceTest extends EventBusBasedTest {
         verify(gameManagement, times(1)).lockGameInWaitForConfirmation("lobbyId");
     }
 
-    @Test
-    void testOnShareKnowledgeRequest() {
-        ShareKnowledgeRequest request = new ShareKnowledgeRequest("lobbyId", "sourcePlayer");
-        IUser user = new User("testuser", "testpassword");
-        Session session = UUIDSession.create(user);
-        request.setSession(session);
-
-        IGame game = new Game(2, "lobbyId");
-        when(gameManagement.getGame("lobbyId")).thenReturn(game);
-        ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
-        when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
-        game.setState(new PlayerTurnState());
-        gameService.onShareKnowledgeRequest(request);
-
-        verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("lobbyId");
-        verify(gameManagement, times(1)).giveCard(request);
-        verify(gameService, times(2)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
-    }
 
     @Test
     void testOnCardExchangeConfirmationRequest() {

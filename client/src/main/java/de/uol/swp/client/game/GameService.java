@@ -161,8 +161,8 @@ public class GameService {
         LOG.debug("Received CardExchangeConfirmationRequest: {}", request);
         Platform.runLater(() -> {
             boolean accepted = showConfirmationDialog("Möchtest du die Karte " + request.getRequestingCard()
-                                                                                        .getTitle() + " " + "an " + request.getRequestingPlayer()
-                                                                                                                           .getUsername() + " geben?");
+                                                                                        .getTitle() + " " + "mit " + request.getGivingCardPlayer()
+                                                                                                                            .getUsername() + " teilen?");
             CardExchangeConfirmationRequest response = new CardExchangeConfirmationRequest(
                     request.getLobbyId(),
                     accepted,
@@ -462,6 +462,7 @@ public class GameService {
             });
         });
     }
+
 
     @Subscribe
     public void onExchangeOfLettersResponse(ExchangeOfLettersResponse response) {
