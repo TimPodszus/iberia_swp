@@ -338,11 +338,7 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         ILobby lobby = lobbyManagement.getLobby(request.getLobbyId());
 
         playerManagement.placePreventionMarker(request.getLobbyId(), request.getRegionId());
-        if(game.getPreviousState() instanceof WaitForPositioning waitForPositioningState && waitForPositioningState.getPositionedPlayersCount() == game.getPlayers().size()) {
-            game.setState(new PlayerTurnState());
-        } else {
-            game.setState(game.getPreviousState());
-        }
+        game.setState(game.getPreviousState());
         LOG.debug("[LobbyId: {}] PlacePreventionMarkerRequest processed successfully", request.getLobbyId());
         sendStatusResponse(request, true, "Präventionsmarker wurde erfolgreich platziert");
         sendToAllInLobby(lobby, new BoardUpdateEvent(request.getLobbyId(), GameMapper.toDTO(game)));
