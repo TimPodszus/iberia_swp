@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class TreatPlagueDialog extends AbstractDialog<PlagueName> {
 
-    private static final String HEADER = "Treat Plague";
+    private static final String HEADER = "Seuche behandeln";
     private final boolean dismissible;
     private final List<IInfectionDTO> plagues;
     private PlagueName selectedPlague;

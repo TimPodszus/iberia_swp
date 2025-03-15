@@ -201,4 +201,24 @@ public class ServerMessageProvider {
             return "Die Seuche " + plagueName + " wurde durch " + username + " erfolgreich behandelt!";
         }
     }
+
+    /**
+     * Returns a random message for a new plague research in a city.
+     *
+     * @param player The player who researches the plague
+     * @param plague The plague name
+     * @return A random message for a new plague research in a city
+     */
+    public static String researchPlagueMessage(IPlayer player, PlagueName plague) {
+        int randomNumber = random.nextInt(2);
+        String username = player.getUser()
+                                .getUsername();
+        String plagueName = plague.getDisplayName();
+        if (randomNumber == 1) {
+            return username +  "hat ein Heilmittel gegen " + plagueName + " entdeckt – die Seuche kann sich nicht " +
+                    "mehr ausbreiten!";
+        } else {
+            return "Dank " + username + " ist die Plage" + plagueName + "gestoppt. Doch was lauert als Nächstes?";
+        }
+    }
 }
