@@ -85,6 +85,7 @@ public class CardExchangeDialog extends AbstractDialog<Map<String, ICardDTO>> {
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setContent(vBox);
         scrollPane.getStyleClass().add(SCROLL_PANE);
+        scrollPane.setFitToWidth(true);
         super.getDialogPane()
              .setContent(scrollPane);
 
