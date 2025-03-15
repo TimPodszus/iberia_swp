@@ -13,8 +13,9 @@ import java.util.Objects;
 @Getter
 public class CardsExchangeRequest extends AbstractGameRequest {
 
-    int cityId;
-    String playerToTrade;
+    String requestingPlayer;
+    Map<String, ICardDTO> cardsToExchange;
+
 
     /**
      * Constructs a new CardsExchangeRequest.
@@ -22,15 +23,10 @@ public class CardsExchangeRequest extends AbstractGameRequest {
      * @param cardsToExchange the map of cards to exchange
      * @param lobbyId         the ID of the lobby
      */
-    public CardsExchangeRequest(
-            Map<String, ICardDTO> cardsToExchange,
-            int cityId,
-            String playerToTrade,
-            String lobbyId
-    ) {
+    public CardsExchangeRequest(Map<String, ICardDTO> cardsToExchange, String lobbyId, String requestingPlayer) {
         super(lobbyId);
-        this.cityId = cityId;
-        this.playerToTrade = playerToTrade;
+        this.cardsToExchange = cardsToExchange;
+        this.requestingPlayer = requestingPlayer;
 
     }
 
@@ -39,12 +35,17 @@ public class CardsExchangeRequest extends AbstractGameRequest {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        CardsExchangeRequest that = (CardsExchangeRequest) o;
-        return cityId == that.cityId && Objects.equals(playerToTrade, that.playerToTrade);
+        CardsExchangeRequest request = (CardsExchangeRequest) o;
+        return Objects.equals(requestingPlayer, request.requestingPlayer) && Objects.equals(
+                cardsToExchange,
+                request.cardsToExchange
+        );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cityId, playerToTrade);
+        return Objects.hash(requestingPlayer, cardsToExchange);
     }
+
+
 }
