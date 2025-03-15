@@ -767,7 +767,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
     public void onCardExchangeWithDiscardPileRequest(CardsExchangeWithDiscardPileRequest request) {
         LOG.debug("Got CardsExchangeWithDiscardPileRequest for lobby {}", request.getLobbyId());
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
-        gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
         sendToAllInLobby(
                 lobbyManagement.getLobby(request.getLobbyId()),
                 new BoardUpdateEvent(
@@ -825,6 +824,14 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                        .orElseThrow(() -> new SessionNotFoundException(
                                                                "Session not found"));
                 List<Session> sessionList = List.of(session);
+                gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
+                sendToAllInLobby(
+                        lobbyManagement.getLobby(request.getLobbyId()),
+                        new BoardUpdateEvent(
+                                request.getLobbyId(),
+                                GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
+                        )
+                );
                 event.setReceiver(sessionList);
                 bus.post(event);
             } else {
@@ -875,6 +882,11 @@ public class GameService extends AbstractService implements GameStateChangeListe
     public void onSwapCardsConfirmedRequest(SwapCardsConfirmedRequest request) {
         LOG.debug("Got SwapCardsConfirmedRequest for lobby {}", request.getLobbyId());
         gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
+        LOG.debug(
+                "GameState is now {}",
+                gameManagement.getGame(request.getLobbyId())
+                              .getState()
+        );
         sendToAllInLobby(
                 lobbyManagement.getLobby(request.getLobbyId()),
                 new BoardUpdateEvent(
@@ -883,6 +895,8 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 )
         );
         gameManagement.swapCards(request);
+        gameManagement.getGame(request.getLobbyId())
+                      .setState(new PlayerTurnState());
         sendToAllInLobby(
                 lobbyManagement.getLobby(request.getLobbyId()),
                 new BoardUpdateEvent(
