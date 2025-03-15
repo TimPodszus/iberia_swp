@@ -1,10 +1,10 @@
 package de.uol.swp.client.user;
 
-import de.uol.swp.common.user.User;
+
+import de.uol.swp.common.user.IUserDTO;
 
 /**
  * An interface for all methods of the client user service
- *
  * As the communication with the server is based on events, the
  * returns of the call must be handled by events
  *
@@ -27,52 +27,28 @@ public interface ClientUserService {
      * Log out from server
      *
      * @implNote the User Object has to contain a unique identifier in order to
-     * 			 remove the correct user
+     * remove the correct user
      * @since 2017-03-17
      */
-    void logout(User user);
+    void logout(IUserDTO user);
 
     /**
      * Create a new persistent user
      *
-     * @implNote the User Object has to contain a unique identifier in order to
-     * 			 remove the correct user
      * @param user The user to create
+     * @implNote the User Object has to contain a unique identifier in order to
+     * remove the correct user
      * @since 2019-09-02
      */
-    void createUser(User user);
+    void createUser(IUserDTO user);
+
 
     /**
-     * Removes a user from the sore
+     * Change the password of a user
      *
-     * Remove the User specified by the User object.
-     *
-     * @implNote the User Object has to contain a unique identifier in order to
-     * 			 remove the correct user
-     * @param user The user to remove
-     * @since 2019-10-10
-     */
-    void dropUser(User user);
-
-    /**
-     * Update a user
-     *
-     * Updates the User specified by the User object.
-     *
-     * @implNote the User Object has to contain a unique identifier in order to
-     * 			 update the correct user
-     * @param user the user object containing all infos to
-     *             update, if some values are not set, (e.g. password is "")
-     *             these fields are not updated
+     * @param user        The user whose password is to be changed
+     * @param newPassword The new password to set
      * @since 2019-09-02
      */
-    void updateUser(User user);
-
-    /**
-     * Retrieve the list of all current logged in users
-     *
-     * @since 2017-03-17
-     */
-    void retrieveAllUsers();
-
+    void changePassword(IUserDTO user, String newPassword);
 }

@@ -1,0 +1,50 @@
+package de.uol.swp.common.game.message.event;
+
+import de.uol.swp.common.game.dto.GameDTO;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class BoardUpdateEventTest {
+    @Mock
+    private GameDTO gameDTO1;
+
+    @Mock
+    private GameDTO gameDTO2;
+
+    private BoardUpdateEvent event1;
+    private BoardUpdateEvent event2;
+    private BoardUpdateEvent event3;
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+
+        event1 = new BoardUpdateEvent("Test", gameDTO1);
+        event2 = new BoardUpdateEvent("Test", gameDTO1);
+        event3 = new BoardUpdateEvent("Test", gameDTO2);
+    }
+
+    @Test
+    void testEquals() {
+        assertEquals(event1, event2);
+        assertNotEquals(event1, event3);
+        assertNotEquals(null, event1);
+        assertNotEquals("test", event1);
+        assertEquals(event1, event1);
+    }
+
+    @Test
+    void testHashCode() {
+        assertEquals(event1.hashCode(), event2.hashCode());
+        assertNotEquals(event1.hashCode(), event3.hashCode());
+    }
+
+    @Test
+    void getGameDTO() {
+        assertEquals(gameDTO1, event1.getGameDTO());
+    }
+}

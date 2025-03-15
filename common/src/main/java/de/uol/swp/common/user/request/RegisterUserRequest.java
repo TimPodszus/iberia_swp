@@ -1,20 +1,20 @@
 package de.uol.swp.common.user.request;
 
-import de.uol.swp.common.message.AbstractRequestMessage;
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.message.request.AbstractRequestMessage;
+import de.uol.swp.common.user.IUserDTO;
 
 import java.util.Objects;
 
 /**
  * Request to register a new user
  *
- * @see de.uol.swp.common.user.User
+ * @see IUserDTO
  * @author Marco Grawunder
  * @since 2019-09-02
  */
 public class RegisterUserRequest extends AbstractRequestMessage {
 
-    private final User toCreate;
+    private final IUserDTO toCreate;
 
     /**
      * Constructor
@@ -22,7 +22,7 @@ public class RegisterUserRequest extends AbstractRequestMessage {
      * @param user the new User to create
      * @since 2019-09-02
      */
-    public RegisterUserRequest(User user){
+    public RegisterUserRequest(IUserDTO user){
         this.toCreate = user;
     }
 
@@ -37,7 +37,7 @@ public class RegisterUserRequest extends AbstractRequestMessage {
      * @return the new user to create
      * @since 2019-09-02
      */
-    public User getUser() {
+    public IUserDTO getUser() {
         return toCreate;
     }
 

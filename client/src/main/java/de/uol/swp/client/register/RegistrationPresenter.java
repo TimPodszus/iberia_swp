@@ -59,7 +59,7 @@ public class RegistrationPresenter extends AbstractPresenter {
 
     /**
      * Method called when the cancel button is pressed
-     *
+     * <p>
      * This Method is called when the cancel button is pressed. It posts an instance
      * of the RegistrationCanceledEvent to the EventBus the SceneManager is subscribed
      * to.
@@ -76,7 +76,7 @@ public class RegistrationPresenter extends AbstractPresenter {
 
     /**
      * Method called when the register button is pressed
-     *
+     * <p>
      * This Method is called when the register button is pressed. It posts an instance
      * of the RegistrationErrorEvent to the EventBus the SceneManager is subscribed
      * to, if one of the fields is empty or the password fields are not equal.
@@ -93,13 +93,13 @@ public class RegistrationPresenter extends AbstractPresenter {
     @FXML
     void onRegisterButtonPressed(ActionEvent event) {
         if (Strings.isNullOrEmpty(loginField.getText())){
-            eventBus.post(new RegistrationErrorEvent("Username cannot be empty"));
+            eventBus.post(new RegistrationErrorEvent("Username kann nicht leer sein"));
         } else if (!passwordField1.getText().equals(passwordField2.getText())) {
-            eventBus.post(new RegistrationErrorEvent("Passwords are not equal"));
+            eventBus.post(new RegistrationErrorEvent("Passwörter stimmen nicht überein"));
         } else if (Strings.isNullOrEmpty(passwordField1.getText())) {
-            eventBus.post(new RegistrationErrorEvent("Password cannot be empty"));
+            eventBus.post(new RegistrationErrorEvent("Passwort muss gesetzt werden"));
         } else {
-            userService.createUser(new UserDTO(loginField.getText(), passwordField1.getText(), "empty"));
+            userService.createUser(new UserDTO(loginField.getText(), passwordField1.getText()));
         }
     }
 

@@ -1,12 +1,9 @@
 package de.uol.swp.server.usermanagement;
 
-
 import de.uol.swp.server.EventBusBasedTest;
+import de.uol.swp.server.usermanagement.management.UserManagement;
 import org.greenrobot.eventbus.Subscribe;
-
 import de.uol.swp.common.user.Session;
-import de.uol.swp.common.user.User;
-import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.common.user.message.UserLoggedOutMessage;
 import de.uol.swp.common.user.request.LoginRequest;
 import de.uol.swp.common.user.request.LogoutRequest;
@@ -14,27 +11,47 @@ import de.uol.swp.common.user.request.RetrieveAllOnlineUsersRequest;
 import de.uol.swp.common.user.response.AllOnlineUsersResponse;
 import de.uol.swp.server.message.ClientAuthorizedMessage;
 import de.uol.swp.server.message.ServerExceptionMessage;
-import de.uol.swp.server.usermanagement.store.MainMemoryBasedUserStore;
 import de.uol.swp.server.usermanagement.store.UserStore;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
-
-
+/**
+ * Test class for AuthenticationService.
+ */
 public class AuthenticationServiceTest extends EventBusBasedTest {
 
-    final User user = new UserDTO("name", "password", "email@test.de");
-    final User user2 = new UserDTO("name2", "password2", "email@test.de2");
-    final User user3 = new UserDTO("name3", "password3", "email@test.de3");
+    final IUser user = new User("name", "password");
+    final IUser user2 = new User("name2", "password2");
+    final IUser user3 = new User("name3", "password3");
 
-    final UserStore userStore = new MainMemoryBasedUserStore();
-    final UserManagement userManagement = new UserManagement(userStore);
-    final AuthenticationService authService = new AuthenticationService(getBus(), userManagement);
+    @Mock
+    UserManagement userManagement;
 
-    // for any expected event, there needs to be a subscriber
+    @Mock
+    UserStore userStore;
+
+    AuthenticationService authService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        userStore = mock(UserStore.class);
+        userManagement = mock(UserManagement.class);
+        authService = new AuthenticationService(getBus(), userManagement);
+    }
+
     @Subscribe
     public void onEvent(ClientAuthorizedMessage e) {
         handleEvent(e);
@@ -56,98 +73,74 @@ public class AuthenticationServiceTest extends EventBusBasedTest {
     }
 
     @Test
-    void loginTest() throws InterruptedException {
-        userManagement.createUser(user);
+    void loginTest() {
         final LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
-        postAndWait(loginRequest);
-        assertTrue(userManagement.isLoggedIn(user));
-        // is message send
-        assertTrue(event instanceof ClientAuthorizedMessage);
-        userManagement.dropUser(user);
+        post(loginRequest);
+        verify(userManagement, atLeast(1)).login(user.getUsername(), user.getPassword());
     }
 
     @Test
     void loginTestFail() throws InterruptedException {
-        userManagement.createUser(user);
-        final LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword() + "äüö");
+        final LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
+        when(userManagement.login(user.getUsername(), user.getPassword())).thenThrow(new RuntimeException("Test"));
         postAndWait(loginRequest);
-
-        assertFalse(userManagement.isLoggedIn(user));
-        assertTrue(event instanceof ServerExceptionMessage);
-        userManagement.dropUser(user);
+        assertInstanceOf(ServerExceptionMessage.class, event);
     }
 
     @Test
-    void logoutTest() throws InterruptedException {
+    void logoutTest() {
         loginUser(user);
-        Optional<Session> session = authService.getSession(user);
-
-        assertTrue(session.isPresent());
         final LogoutRequest logoutRequest = new LogoutRequest();
-        logoutRequest.setSession(session.get());
-
-        postAndWait(logoutRequest);
-
-        assertFalse(userManagement.isLoggedIn(user));
-        assertFalse(authService.getSession(user).isPresent());
-        assertTrue(event instanceof UserLoggedOutMessage);
+        authService.getSession(user)
+                   .ifPresent(logoutRequest::setSession);
+        post(logoutRequest);
+        verify(userManagement, atLeast(1)).logout(user);
     }
 
-    private void loginUser(User userToLogin) {
-        userManagement.createUser(userToLogin);
+    private void loginUser(IUser userToLogin) {
         final LoginRequest loginRequest = new LoginRequest(userToLogin.getUsername(), userToLogin.getPassword());
+        when(userManagement.login(userToLogin.getUsername(), userToLogin.getPassword())).thenReturn(userToLogin);
         post(loginRequest);
-
-        assertTrue(userManagement.isLoggedIn(userToLogin));
-        userManagement.dropUser(userToLogin);
     }
 
     @Test
     void loggedInUsers() throws InterruptedException {
         loginUser(user);
-
         RetrieveAllOnlineUsersRequest request = new RetrieveAllOnlineUsersRequest();
         postAndWait(request);
-        assertTrue(event instanceof AllOnlineUsersResponse);
-
-        assertEquals(1, ((AllOnlineUsersResponse) event).getUsers().size());
-        assertEquals(user, ((AllOnlineUsersResponse) event).getUsers().get(0));
-
+        assertInstanceOf(AllOnlineUsersResponse.class, event);
+        assertEquals(
+                1,
+                ((AllOnlineUsersResponse) event).getUsers()
+                                                .size()
+        );
+        assertEquals(
+                UserMapper.toDTO(user),
+                ((AllOnlineUsersResponse) event).getUsers()
+                                                .get(0)
+        );
     }
 
-    // TODO: replace with parametrized test
     @Test
     void twoLoggedInUsers() throws InterruptedException {
-        List<User> users = new ArrayList<>();
-        users.add(user);
-        users.add(user2);
-        Collections.sort(users);
-
-        users.forEach(this::loginUser);
-
+        loginUser(user);
+        loginUser(user2);
         RetrieveAllOnlineUsersRequest request = new RetrieveAllOnlineUsersRequest();
         postAndWait(request);
-
-        assertTrue(event instanceof AllOnlineUsersResponse);
-
-        List<User> returnedUsers = new ArrayList<>(((AllOnlineUsersResponse) event).getUsers());
-
-        assertEquals(2,returnedUsers.size());
-
-        Collections.sort(returnedUsers);
-        assertEquals(returnedUsers, users);
-
+        assertInstanceOf(AllOnlineUsersResponse.class, event);
+        List<IUser> users = UserMapper.toUser(((AllOnlineUsersResponse) event).getUsers());
+        assertEquals(2, users.size());
+        assertTrue(users.contains(user));
+        assertTrue(users.contains(user2));
     }
-
 
     @Test
     void loggedInUsersEmpty() throws InterruptedException {
         RetrieveAllOnlineUsersRequest request = new RetrieveAllOnlineUsersRequest();
         postAndWait(request);
-        assertTrue(event instanceof AllOnlineUsersResponse);
-
-        assertTrue(((AllOnlineUsersResponse) event).getUsers().isEmpty());
-
+        assertInstanceOf(AllOnlineUsersResponse.class, event);
+        assertTrue(((AllOnlineUsersResponse) event).getUsers()
+                                                   .isEmpty());
     }
 
     @Test
@@ -155,27 +148,20 @@ public class AuthenticationServiceTest extends EventBusBasedTest {
         loginUser(user);
         loginUser(user2);
         loginUser(user3);
-        Set<User> users = new TreeSet<>();
+        Set<IUser> users = new TreeSet<>();
         users.add(user);
         users.add(user2);
         users.add(user3);
-
-
         Optional<Session> session1 = authService.getSession(user);
         Optional<Session> session2 = authService.getSession(user2);
         Optional<Session> session3 = authService.getSession(user2);
-
         assertTrue(session1.isPresent());
         assertTrue(session2.isPresent());
         assertTrue(session3.isPresent());
-
         List<Session> sessions = authService.getSessions(users);
-
         assertEquals(3, sessions.size());
         assertTrue(sessions.contains(session1.get()));
         assertTrue(sessions.contains(session2.get()));
         assertTrue(sessions.contains(session3.get()));
-
     }
-
 }

@@ -1,8 +1,10 @@
 package de.uol.swp.common.user;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Test Class for the UserDTO
@@ -12,84 +14,35 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class UserDTOTest {
 
-    private static final User defaultUser = new UserDTO("marco", "marco", "marco@grawunder.de");
-    private static final User secondsUser = new UserDTO("marco2", "marco", "marco@grawunder.de");
+    private static final IUserDTO defaultUser = new UserDTO("marco", "marco");
+    private static final IUserDTO secondUser = new UserDTO("marco2", "marco");
 
-    /**
-     * This test check whether the username can be null
-     *
-     * If the constructor does not throw an Exception the test fails
-     *
-     * @since 2019-09-04
-     */
-    @Test
-    void createUserWithEmptyName() {
-        assertThrows(IllegalArgumentException.class, () -> new UserDTO(null, "", ""));
-    }
-
-    /**
-     * This test check whether the password can be null
-     *
-     * If the constructor does not throw an Exception the test fails
-     *
-     * @since 2019-09-04
-     */
-    @Test
-    void createUserWithEmptyPassword() {
-        assertThrows(IllegalArgumentException.class, () -> new UserDTO("", null, ""));
-    }
-
-    /**
-     * This test checks if the copy constructor works correctly
-     *
-     * This test fails if any of the fields mismatch or the objects are not considered equal
-     *
-     * @since 2019-09-04
-     */
-    @Test
-    void createWithExistingUser() {
-
-        User newUser = UserDTO.create(defaultUser);
-
-        // Test with equals method
-        assertEquals(defaultUser, newUser);
-
-        // Test every attribute
-        assertEquals(defaultUser.getUsername(), newUser.getUsername());
-        assertEquals(defaultUser.getPassword(), newUser.getPassword());
-        assertEquals(defaultUser.getEMail(), newUser.getEMail());
-    }
 
     /**
      * This test checks if the createWithoutPassword function generates the Object correctly
-     *
      * This test fails if the usernames or emails do not match or the password is not empty.
      *
      * @since 2019-09-04
      */
     @Test
     void createWithExistingUserWithoutPassword() {
-        User newUser = UserDTO.createWithoutPassword(defaultUser);
+        IUserDTO newUser = UserDTO.createWithoutPassword(defaultUser);
 
         // Test every attribute
         assertEquals(defaultUser.getUsername(), newUser.getUsername());
         assertEquals("", newUser.getPassword());
-        assertEquals( defaultUser.getEMail(), newUser.getEMail());
 
-        // Test with equals method
-        assertEquals(defaultUser, newUser);
     }
 
     /**
      * This test checks if the getWithoutPassword function generates the Object correctly
-     *
      * This test fails if the usernames do not match or the password is not empty.
      *
      * @since 2019-09-04
      */
     @Test
     void getWithoutPassword() {
-        User userWithoutPassword = defaultUser.getWithoutPassword();
+        IUserDTO userWithoutPassword = defaultUser.getWithoutPassword();
 
         assertEquals("", userWithoutPassword.getPassword());
         assertEquals(defaultUser.getUsername(), userWithoutPassword.getUsername());
@@ -97,19 +50,17 @@ class UserDTOTest {
 
     /**
      * Test if two different users are equal
-     *
      * This test fails if they are considered equal
      *
      * @since 2019-09-04
      */
     @Test
     void usersNotEquals_User() {
-        assertNotEquals(defaultUser, secondsUser);
+        assertNotEquals(defaultUser, secondUser);
     }
 
-     /**
+    /**
      * Test of compare function
-     *
      * This test compares two different users. It fails if the function returns
      * that both of them are equal.
      *
@@ -117,20 +68,37 @@ class UserDTOTest {
      */
     @Test
     void userCompare() {
-        assertEquals(defaultUser.compareTo(secondsUser), -1);
+        assertEquals(defaultUser.compareTo((UserDTO) secondUser), -1);
     }
 
     /**
-     * Test if the HashCode of a copied object matches the one of the original
-     *
-     * This test fails if the codes do not match
-     *
-     * @since 2019-09-04
+     * Tests the constructor that creates a UserDTO from an IUserDTO instance,
+     * ensuring that the username and password are correctly copied.
      */
     @Test
-    void testHashCode() {
-        User newUser = UserDTO.create(defaultUser);
-        assertEquals(newUser.hashCode(), defaultUser.hashCode());
+    void testUserDTOConstructorFromIUserDTO() {
+        IUserDTO mockUser = Mockito.mock(IUserDTO.class);
+        Mockito.when(mockUser.getUsername())
+               .thenReturn("testUser");
+        Mockito.when(mockUser.getPassword())
+               .thenReturn("securePass");
 
+        UserDTO userDTO = new UserDTO(mockUser);
+
+        assertEquals("testUser", userDTO.getUsername());
+        assertEquals("securePass", userDTO.getPassword());
     }
+
+    /**
+     * Tests the equals method to ensure it correctly returns false
+     * when comparing a UserDTO instance with null or an object of a different class.
+     */
+    @Test
+    void testEqualsWithDifferentClassAndNull() {
+        UserDTO user = new UserDTO("testUser", "password");
+
+        assertNotEquals(null, user);
+        assertNotEquals(user, new Object());
+    }
+
 }
