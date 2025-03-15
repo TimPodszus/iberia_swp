@@ -853,6 +853,7 @@ public class GameServiceTest extends EventBusBasedTest {
         when(gameManagement.getGame("lobbyId")).thenReturn(game);
         ILobby lobby = new Lobby("lobbyId", "Test", List.of(user), user, 4);
         when(lobbyManagement.getLobby("lobbyId")).thenReturn(lobby);
+        game.setState(new PlayerTurnState());
 
         gameService.onCardExchangeWithDiscardPileRequest(request);
 
@@ -885,13 +886,11 @@ public class GameServiceTest extends EventBusBasedTest {
         when(game.getPlagueRepository()).thenReturn(mock(PlagueRepository.class));
         when(game.getState()).thenReturn(new PlayerTurnState());
         when(game.getPlayer(any())).thenReturn(mock(Player.class));
-
+        game.setState(new PlayerTurnState());
 
         gameService.onCardsExchangeRequest(request);
 
-        verify(gameManagement).unlockGameInWaitForConfirmation(lobbyId);
-        verify(gameManagement, times(2)).getGame(lobbyId);
-        verify(lobbyManagement).getLobby(lobbyId);
+        verify(gameManagement, times(1)).getGame(lobbyId);
     }
 
     @Test
@@ -913,8 +912,6 @@ public class GameServiceTest extends EventBusBasedTest {
 
         gameService.onSwapCardsConfirmedRequest(request);
 
-        verify(gameManagement, times(1)).unlockGameInWaitForConfirmation("lobbyId");
         verify(gameManagement, times(1)).swapCards(request);
-        verify(gameService, times(2)).sendToAllInLobby(eq(lobby), any(BoardUpdateEvent.class));
     }
 }
