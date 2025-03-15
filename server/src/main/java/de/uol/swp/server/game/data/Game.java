@@ -1,0 +1,280 @@
+package de.uol.swp.server.game.data;
+
+import de.uol.swp.server.cards.CardRepository;
+import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.cards.data.EpidemicCard;
+import de.uol.swp.server.cards.data.ICard;
+import de.uol.swp.server.cards.data.InfectionCard;
+import de.uol.swp.server.cards.data.eventcards.EventCard;
+import de.uol.swp.server.city.CityRepository;
+import de.uol.swp.server.connection.ConnectionRepository;
+import de.uol.swp.server.game.GameStateChangeListener;
+import de.uol.swp.server.game.states.IGameState;
+import de.uol.swp.server.game.states.StartState;
+import de.uol.swp.server.plague.data.PlagueRepository;
+import de.uol.swp.server.player.data.IPlayer;
+import de.uol.swp.server.region.RegionRepository;
+import de.uol.swp.server.role.RoleRepository;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+@Getter
+@AllArgsConstructor
+public class Game implements IGame {
+    /**
+     * Unique identifier for the game.
+     */
+
+    private String gameId;
+
+    /**
+     * Repository for role-related data.
+     */
+    private RoleRepository roleRepository;
+
+    /**
+     * Repository for city-related data.
+     */
+    @Getter
+    private CityRepository cityRepository;
+
+    /**
+     * Repository for region-related data.
+     */
+    private RegionRepository regionRepository;
+
+    /**
+     * Repository for connection-related data.
+     */
+    private ConnectionRepository connectionRepository;
+
+    /**
+     * Repository for the plagues.
+     */
+    private PlagueRepository plagueRepository;
+
+    /**
+     * Repository for card-related data.
+     */
+    private CardRepository cardRepository;
+
+    /**
+     * Counter for the number of infections.
+     */
+    @Setter
+    private int infectionCounter;
+
+    /**
+     * Current escalation stage of the game.
+     */
+    @Setter
+    private int escalationStage;
+
+    /**
+     * Number of water treatments left.
+     */
+    @Setter
+    private int waterTreatmentsLeft;
+
+    /**
+     * Number of tracks left.
+     */
+    @Setter
+    private int tracksLeft;
+
+    /**
+     * Draw pile for infection cards.
+     */
+    @Setter
+    private List<InfectionCard> infectionCardDrawPile;
+
+    /**
+     * Discard pile for infection cards.
+     */
+    private List<InfectionCard> infectionCardDiscardPile;
+
+    /**
+     * Draw pile for player cards.
+     */
+    private List<ICard> playerCardDrawPile;
+
+    /**
+     * Discard pile for player cards.
+     */
+    private List<ICard> playerCardDiscardPile;
+
+    /**
+     * List of players in the game.
+     */
+    private List<IPlayer> players;
+
+    /**
+     * Index of the current player.
+     */
+    @Setter
+    private int currentPlayerIndex;
+
+    /**
+     * Current state of the game.
+     */
+    private IGameState state;
+
+    /**
+     * Previous state of the game.
+     */
+    @Setter
+    private IGameState previousState;
+
+    /**
+     * Difficulty level of the game.
+     */
+    private int difficulty;
+
+    /**
+     * Listener for game state changes.
+     */
+    @Setter
+    private GameStateChangeListener gameStateChangeListener;
+
+    /**
+     * Flag indicating whether the favorable time event card has been played.
+     */
+    @Setter
+    private boolean favorableTimeEventCardPlayed;
+
+    /**
+     * Constructs a new Game instance with default values.
+     * Initializes repositories and sets initial game state.
+     */
+    public Game(int difficulty, String lobbyCode) {
+        this.gameId = lobbyCode;
+        this.cityRepository = new CityRepository();
+        this.regionRepository = new RegionRepository(this.cityRepository);
+        this.connectionRepository = new ConnectionRepository();
+        this.plagueRepository = new PlagueRepository();
+        this.cardRepository = new CardRepository(cityRepository);
+        this.infectionCounter = 1;
+        this.escalationStage = 0;
+        this.waterTreatmentsLeft = 14;
+        this.tracksLeft = 20;
+        this.difficulty = difficulty;
+        this.infectionCardDrawPile = new ArrayList<>();
+        this.infectionCardDiscardPile = new ArrayList<>();
+        this.playerCardDrawPile = new ArrayList<>();
+        this.playerCardDiscardPile = new ArrayList<>();
+        this.players = new ArrayList<>();
+        this.currentPlayerIndex = 0;
+        this.state = new StartState();
+        initializeGame(difficulty);
+    }
+
+    @Override
+    public void initializeGame(int difficulty) {
+        createInfectionCards();
+        createPlayerCards();
+        Collections.shuffle(infectionCardDrawPile);
+        Collections.shuffle(playerCardDrawPile);
+    }
+
+    /**
+     * Creates the infection cards for the game.
+     */
+    private void createInfectionCards() {
+        cardRepository.getCards()
+                      .values()
+                      .stream()
+                      .filter(InfectionCard.class::isInstance)
+                      .map(InfectionCard.class::cast)
+                      .forEach(infectionCardDrawPile::add);
+    }
+
+    /**
+     * Creates the player cards for the game.
+     */
+    private void createPlayerCards() {
+        cardRepository.getCards()
+                      .values()
+                      .stream()
+                      .filter(card -> card instanceof CityCard || card instanceof EventCard)
+                      .forEach(playerCardDrawPile::add);
+    }
+
+    /**
+     * Creates an epidemic card with the given ID.
+     *
+     * @param id the ID of the epidemic card
+     * @return the newly created epidemic card
+     */
+    public EpidemicCard createEpidemicCard(int id) {
+        return new EpidemicCard(id, "Epidemiekarte", "");
+    }
+
+    @Override
+    public void gameStartShuffle(int numSubDecks) {
+        if (numSubDecks <= 0) {
+            throw new IllegalArgumentException("Number of sub-decks must be greater than zero.");
+        }
+        List<List<ICard>> subDecks = splitIntoSubDecks(playerCardDrawPile, numSubDecks);
+        for (int i = 0; i < numSubDecks; i++) {
+            subDecks.get(i)
+                    .add(createEpidemicCard(numSubDecks));
+            Collections.shuffle(subDecks.get(i));
+        }
+        playerCardDrawPile.clear();
+        for (List<ICard> deck : subDecks) {
+            playerCardDrawPile.addAll(deck);
+        }
+    }
+
+    @Override
+    public List<List<ICard>> splitIntoSubDecks(List<ICard> deck, int numSubDecks) {
+        List<List<ICard>> subDecks = new ArrayList<>();
+        int subDeckSize = deck.size() / numSubDecks;
+        int leftover = deck.size() % numSubDecks;
+
+        for (int i = 0; i < numSubDecks; i++) {
+            int start = i * subDeckSize + Math.min(i, leftover);
+            int end = start + subDeckSize + (i < leftover ? 1 : 0);
+            subDecks.add(new ArrayList<>(deck.subList(start, end)));
+        }
+
+        return subDecks;
+    }
+
+    /**
+     * Retrieves the current player whose turn it is in the game.
+     *
+     * @return the {@link IPlayer} object representing the current player
+     */
+    public IPlayer getCurrentPlayer() {
+        return this.players.get(currentPlayerIndex);
+    }
+
+    public void setState(IGameState state) {
+        this.previousState = this.state;
+        this.state = state;
+        if (gameStateChangeListener != null) {
+            gameStateChangeListener.onGameStateChange(this);
+        }
+    }
+
+    public IPlayer getPlayer(String username) {
+        for (IPlayer player : players) {
+            if (player.getUser()
+                      .getUsername()
+                      .equals(username)) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    public void incrementCurrentPlayerIndex(Integer userAmount) {
+        this.setCurrentPlayerIndex(currentPlayerIndex == userAmount - 1 ? 0 : currentPlayerIndex + 1);
+    }
+}

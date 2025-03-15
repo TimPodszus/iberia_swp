@@ -1,0 +1,60 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  MAVEN_CLI_OPTS: "--batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository
+
+build-job:
+  image: maven:3.8.6-openjdk-18
+  stage: build
+  script:
+    - echo "Starting Maven build for all modules..."
+    - echo "$CI_DOTENV_SQL_PASSWORD" > /builds/swp/2024/ga/iberia/server/src/main/resources/.env
+    - mvn $MAVEN_CLI_OPTS clean package -DskipTests
+  artifacts:
+    paths:
+      - /builds/swp/2024/ga/iberia/server/target/server-1.0.0-jar-with-dependencies.jar
+    expire_in: 2 days
+
+unit-test-job:
+  image: maven:3.8.6-openjdk-18
+  stage: test
+  script:
+    - echo "Running unit tests across all modules..."
+    - mvn $MAVEN_CLI_OPTS verify
+  artifacts:
+    when: always
+    paths:
+      - target/
+    expire_in: 2 days
+    reports:
+      junit: "**/target/surefire-reports/*.xml"
+
+  coverage: '/Total\s+coverage:\s+(\d+\.\d+)%/'
+
+
+deploy-job:
+  image: docker:20.10.8
+  stage: deploy
+  services:
+    - docker:20.10.8-dind
+  before_script:
+    - docker info
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE" server/.
+    - docker push "$CI_REGISTRY_IMAGE"
+  dependencies:
+    - build-job
+  only:
+    - master
+    - development

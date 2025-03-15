@@ -1,8 +1,6 @@
 package de.uol.swp.server.usermanagement.store;
 
-import de.uol.swp.common.user.User;
-
-import java.util.List;
+import de.uol.swp.server.usermanagement.IUser;
 import java.util.Optional;
 
 /**
@@ -22,7 +20,7 @@ public interface UserStore {
      * @return The User without password information, if found
      * @since 2019-08-13
      */
-    Optional<User> findUser(String username, String password);
+    Optional<IUser> findUser(String username, String password);
 
     /**
      * Find a user only by name
@@ -31,45 +29,31 @@ public interface UserStore {
      * @return The User without password information, if found
      * @since 2019-08-13
      */
-    Optional<User> findUser(String username);
+    Optional<IUser> findUser(String username);
 
     /**
      * Create a new user
      *
      * @param username username of the new user
      * @param password password the user wants to use
-     * @param eMail email address of the new user
      * @return The User without password information
      * @since 2019-08-13
      */
-    User createUser(String username, String password, String eMail);
+    IUser createUser(String username, String password);
+
+    IUser createUser(IUser user);
 
     /**
      * Update user. Update only given fields. Username cannot be changed
      *
      * @param username username of the user to be modified
      * @param password new password
-     * @param eMail new email address
-     * @return The User without password information
      * @since 2019-08-13
      */
-    User updateUser(String username, String password, String eMail);
-
-    /**
-     * Remove user from store
-     *
-     * @param username the username of the user to remove
-     * @since 2019-10-10
-     */
-    void removeUser(String username);
-
-
-    /**
-     * Retrieves the list of all users.
-     * @return A list of all users without password information
-     * @since 2019-08-13
-     */
-    List<User> getAllUsers();
-
-
+    IUser updateUser(String username, String password);
 }
+
+
+
+
+

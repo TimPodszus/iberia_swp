@@ -1,0 +1,212 @@
+.infection-grade {
+    -fx-fill: lightgrey;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.infection-grade-active {
+    -fx-stroke: red;
+    -fx-stroke-width: 2;
+}
+
+.pile {
+    -fx-border-color: black;
+    -fx-border-width: 1;
+    -fx-border-insets: -1;
+    -fx-background-color: lightgrey;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.pile-highlighted {
+    -fx-border-color: #77E44C;
+    -fx-border-width: 3;
+    -fx-border-insets: -3;
+    -fx-background-color: lightgrey;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.outbreak-level {
+    -fx-fill: lightgrey;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.escalation-stage-active {
+    -fx-stroke: red;
+    -fx-stroke-width: 2;
+}
+
+.plague-marker {
+    -fx-border-color: black;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.plague-marker-red {
+    -fx-background-color: red;
+}
+
+.plague-marker-blue {
+    -fx-background-color: blue;
+}
+
+.plague-marker-yellow {
+    -fx-background-color: yellow;
+}
+
+.plague-marker-black {
+    -fx-background-color: black;
+}
+
+.city {
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.city-highlighted {
+    -fx-stroke: #77E44C;
+    -fx-stroke-width: 3;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.city-blue {
+    -fx-background-color: blue;
+}
+
+.city-yellow {
+    -fx-background-color: yellow;
+}
+
+.city-black {
+    -fx-background-color: black;
+}
+
+.city-red {
+    -fx-background-color: red;
+}
+
+.train-connection {
+    -fx-stroke-dash-array: 12;
+    -fx-stroke-width: 10;
+    -fx-stroke: brown;
+}
+
+.connection-highlighted {
+    -fx-stroke-width: 10;
+    -fx-stroke: #77E44C;
+}
+
+.action-button {
+    -fx-padding: 6 8 8 8;
+    -fx-background-insets: 0, 0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color: linear-gradient(from 0% 93% to 0% 100%, #a34313 0%, #903b12 100%),
+    #9d4024,
+    #d86e3a,
+    radial-gradient(center 50% 50%, radius 100%, #d86e3a, #c54e2c);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.action-button.current-player {
+    -fx-padding: 6 8 8 8;
+    -fx-background-insets: 0, 0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color: linear-gradient(from 0% 93% to 0% 100%, #13a335 0%, #139532 100%),
+    #199f39,
+    #60ff7f,
+    radial-gradient(center 50% 50%, radius 100%, #6eff97, #30bd5f);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.end-turn-button {
+    -fx-padding: 6 8 8 8;
+    -fx-background-insets: 0, 0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color: linear-gradient(from 0% 93% to 0% 100%, #ff4d4d 0%, #ff0000 100%),
+    #ff4d4d,
+    #ff0000,
+    radial-gradient(center 50% 50%, radius 100%, #ff4d4d, #ff0000);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.action-button:selected {
+    -fx-padding: 6 8 8 8;
+    -fx-background-insets: 0, 0 0 2 0, 0 0 3 0, 0 0 4 0;
+    -fx-background-radius: 8;
+    -fx-background-color: linear-gradient(from 0% 93% to 0% 100%, #632c11 0%, #57260d 100%),
+    #682b1a,
+    #8f4e2d,
+    radial-gradient(center 50% 50%, radius 100%, #8f4e2a, #712f1f);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.85), 5, 0, 0, 2);
+}
+
+.action-buttons-box {
+    -fx-padding: 6 8 8 8;
+    -fx-background-radius: 8;
+    -fx-background-color: lightgrey;
+    -fx-border-color: black;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.hover-effect {
+    -fx-border-color: black;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgb(128, 128, 128), 20, 0, 0, 0);
+}
+
+.hover-effect-polygon {
+    -fx-fill: rgb(155, 155, 155, 0.3);
+}
+
+.water-mark {
+    visibility: false;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.water-mark-visible {
+    visibility: true;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.prev-mark {
+    visibility: false;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.prev-mark-visible {
+    visibility: true;
+    -fx-stroke: #3c3c3c;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+}
+
+.plague-cubes-display {
+    -fx-background-color: rgb(255, 255, 255, 0.7);
+}
+
+.plague-cubes-display-warning {
+    -fx-background-color: rgb(255, 0, 0, 0.7);
+}
+
+.hospital {
+    -fx-background-color: rgb(255, 255, 255, 0.7);
+}
+
+.region-highlight {
+    -fx-fill: rgb(119, 228, 76, 0.5);
+    -fx-stroke: #77E44C;
+    -fx-stroke-width: 3px;
+}
+
+.region-highlight:hover {
+    -fx-effect: dropshadow(gaussian, rgba(16, 133, 1, 0.7), 4, 0, 0, 1);
+}

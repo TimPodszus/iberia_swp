@@ -1,5 +1,5 @@
 .dialog-pane {
-    -fx-background-color: white;
+    -fx-background-color: #FFCB83;
     -fx-font-family: 'sans-serif';
 }
 
@@ -7,11 +7,85 @@
     -fx-text-fill: black;
 }
 
-.dialog-pane:header .header-panel {
-    -fx-background-color: white;
+.dialog-label {
+    -fx-background-color: #FFCB83;
+    -fx-text-fill: black;
 }
 
-.dialog-pane:header .header-panel .label {
-    -fx-font-style: italic;
-    -fx-font-size: 2em;
+.dialog-pane .content {
+    -fx-alignment: center;
+    -fx-margin: 20px;
+    -fx-background-color: #FFCB83;
+}
+
+.dialog-hbox {
+    -fx-alignment: center;
+    -fx-spacing: 20px;
+    -fx-background-color: #FFCB83;
+}
+
+.dialog-vbox {
+    -fx-spacing: 10px;
+    -fx-background-color: #FFCB83;
+}
+
+.dialog-scroll-pane {
+    -fx-alignment: center;
+    -fx-background-color: #FFCB83;
+}
+
+.dialog-pane .header-panel {
+    -fx-margin: 20px;
+    -fx-background-color: #FFCB83;
+}
+
+.dialog-pane .button-bar {
+    -fx-margin: 20px;
+    -fx-background-color: #FFCB83;
+}
+
+.input {
+    -fx-padding: 0 64 12 64;
+    -fx-text-alignment: left;
+}
+
+.form-pane {
+    -fx-background-color: white;
+    -fx-font-family: 'sans-serif';
+    -fx-background-radius: 24px;
+    -fx-padding: 24px;
+}
+
+.button {
+    -fx-background-color: #858585;
+    -fx-background-radius: 6px;
+    -fx-border-color: black;
+    -fx-border-radius: 6px;
+    -fx-text-fill: white;
+    -fx-padding: 6 12 6 12;
+}
+
+.primary-button{
+    -fx-background-color: #FFCB83;
+    -fx-border-color: #917149;
+    -fx-text-fill: black;
+}
+
+.approve-button{
+    -fx-background-color: #319f4d;
+    -fx-border-color: #174a24;
+}
+
+.deny-button {
+    -fx-background-color: #c10000;
+    -fx-border-color: #5c0000;
+}
+
+.menu-button {
+    -fx-padding: 6 12 6 12;
+    -fx-margin: 24px 0 0 0;
+}
+
+.title{
+    -fx-font-size: 36px;
 }

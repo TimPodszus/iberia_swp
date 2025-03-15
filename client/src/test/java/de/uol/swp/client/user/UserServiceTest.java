@@ -2,20 +2,18 @@ package de.uol.swp.client.user;
 
 
 import de.uol.swp.client.EventBusBasedTest;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-
-import de.uol.swp.common.user.User;
+import de.uol.swp.common.game.message.request.ChangePasswordRequest;
+import de.uol.swp.common.user.IUserDTO;
 import de.uol.swp.common.user.UserDTO;
 import de.uol.swp.common.user.request.*;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * This a test of the class is used to hide the communication details
@@ -28,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UserServiceTest extends EventBusBasedTest {
 
-    final User defaultUser = new UserDTO("Marco", "test", "marco@test.de");
+    final IUserDTO defaultUser = new UserDTO("Marco", "test");
 
 
     /**
@@ -42,7 +40,7 @@ public class UserServiceTest extends EventBusBasedTest {
      */
     private void loginUser() throws InterruptedException {
         UserService userService = new UserService(getBus());
-        userService.login(defaultUser.getUsername(), defaultUser.getPassword());
+        userService.login(defaultUser.getUsername(), "Test");
         waitForLock();
     }
 
@@ -88,11 +86,10 @@ public class UserServiceTest extends EventBusBasedTest {
     void loginTest() throws InterruptedException {
         loginUser();
 
-        assertTrue(event instanceof LoginRequest);
+        assertInstanceOf(LoginRequest.class, event);
 
         LoginRequest loginRequest = (LoginRequest) event;
         assertEquals(loginRequest.getUsername(), defaultUser.getUsername());
-        assertEquals(loginRequest.getPassword(), defaultUser.getPassword());
     }
 
     /**
@@ -119,7 +116,7 @@ public class UserServiceTest extends EventBusBasedTest {
 
         waitForLock();
 
-        assertTrue(event instanceof LogoutRequest);
+        assertInstanceOf(LogoutRequest.class, event);
 
         LogoutRequest request = (LogoutRequest) event;
 
@@ -148,85 +145,35 @@ public class UserServiceTest extends EventBusBasedTest {
 
         waitForLock();
 
-        assertTrue(event instanceof RegisterUserRequest);
+        assertInstanceOf(RegisterUserRequest.class, event);
 
         RegisterUserRequest request = (RegisterUserRequest) event;
 
-        assertEquals(request.getUser().getUsername(), defaultUser.getUsername());
-        assertEquals(request.getUser().getPassword(), defaultUser.getPassword());
-        assertEquals(request.getUser().getEMail(), defaultUser.getEMail());
+        assertEquals(
+                request.getUser()
+                       .getUsername(), defaultUser.getUsername()
+        );
+
         assertFalse(request.authorizationNeeded());
 
     }
 
-    /**
-     * Test for the updateUser routine
-     * <p>
-     * This Test creates a new UserService object registered to the EventBus of
-     * this test class. It then calls the updateUser function of the object using
-     * the defaultUser as parameter and waits for it to post an updateUserRequest
-     * object on the EventBus.
-     * If this happens within one second, it checks if the user in the request object
-     * is the same as the default user and if authorization is needed.
-     * Authorization should be needed.
-     * If any of these checks fail or the method takes to long, this test is unsuccessful.
-     *
-     * @throws InterruptedException thrown by lock.await()
-     * @since 2019-10-10
-     */
+
     @Test
-    void updateUserTest() throws InterruptedException {
-        UserService userService = new UserService(getBus());
-        userService.updateUser(defaultUser);
+    void testChangePassword() {
+        String newPassword = "newPassword123";
+        EventBus eventBus = mock(EventBus.class);
+        UserService userService = new UserService(eventBus);
 
-        waitForLock();
 
-        assertTrue(event instanceof UpdateUserRequest);
+        userService.changePassword(defaultUser, newPassword);
 
-        UpdateUserRequest request = (UpdateUserRequest) event;
+        ArgumentCaptor<ChangePasswordRequest> captor = ArgumentCaptor.forClass(ChangePasswordRequest.class);
+        verify(eventBus).post(captor.capture());
 
-        assertEquals(request.getUser().getUsername(), defaultUser.getUsername());
-        assertEquals(request.getUser().getPassword(), defaultUser.getPassword());
-        assertEquals(request.getUser().getEMail(), defaultUser.getEMail());
-        assertTrue(request.authorizationNeeded());
+        ChangePasswordRequest request = captor.getValue();
+        assertEquals(defaultUser, request.getUserDTO());
+        assertEquals(newPassword, request.getNewPassword());
     }
-
-    /**
-     * Test for the dropUser routine
-     * <p>
-     * This test case has to be implemented after the respective dropUser method
-     * has been implemented
-     *
-     * @since 2019-10-10
-     */
-    @Test
-    void dropUserTest() {
-        UserService userService = new UserService(getBus());
-        userService.dropUser(defaultUser);
-
-        // TODO: Add when method is implemented
-    }
-
-    /**
-     * Test for the retrieveAllUsers routine
-     * <p>
-     * This Test creates a new UserService object registered to the EventBus of
-     * this test class. It then calls the retrieveAllUsers function of the object
-     * and waits for it to post a retrieveAllUsersRequest object on the EventBus.
-     * If this happens within one second, the test is successful.
-     *
-     * @throws InterruptedException thrown by lock.await()
-     * @since 2019-10-10
-     */
-    @Test
-    void retrieveAllUsersTest() throws InterruptedException {
-        UserService userService = new UserService(getBus());
-        userService.retrieveAllUsers();
-
-        waitForLock();
-
-        assertTrue(event instanceof RetrieveAllOnlineUsersRequest);
-    }
-
 
 }

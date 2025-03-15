@@ -1,9 +1,9 @@
 package de.uol.swp.common.lobby.message;
 
-import de.uol.swp.common.user.UserDTO;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Test for the abstract lobby request
@@ -11,49 +11,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @see de.uol.swp.common.lobby.message.AbstractLobbyRequest
  * @since 2023-05-14
  */
-public class AbstractLobbyRequestTest {
-
-    final String lobbyName = "Test";
-    final UserDTO user = new UserDTO("Marco", "Marco", "Marco@Grawunder.com");
-    final UserDTO user1 = new UserDTO("Marco1", "Marco1", "Marco1@Grawunder.com");
-
+class AbstractLobbyRequestTest {
 
     /**
-     * Test for creation of the AbstractLobbyRequests
-     *
-     * This test checks if the lobbyName and the user of the AbstractLobbyRequest gets
-     * set correctly during the creation of the request
-     *
-     * @since 2023-05-14
+     * Tests the equals and hashCode methods of AbstractLobbyRequest.
      */
     @Test
-    void createAbstractLobbyRequest() {
-        AbstractLobbyRequest request = new AbstractLobbyRequest(lobbyName, user);
+    void testEqualsAndHashCode() {
+        AbstractLobbyRequest request1 = new AbstractLobbyRequest("lobby1");
+        AbstractLobbyRequest request2 = new AbstractLobbyRequest("lobby1");
+        AbstractLobbyRequest request3 = new AbstractLobbyRequest("lobby2");
 
-        assertEquals(lobbyName, request.getName());
-        assertEquals(user, request.getUser());
+        assertEquals(request1, request1);
+        assertEquals(request1, request2);
+
+        assertNotEquals(request1, request3);
+        assertNotEquals(request1, null);
+        assertNotEquals(request1, new Object());
+
+        assertEquals(request1.hashCode(), request2.hashCode());
+        assertNotEquals(request1.hashCode(), request3.hashCode());
     }
-
-    /**
-     * Test for set new lobbyName and new user of the AbstractLobbyRequests
-     *
-     * This test checks if the lobbyName and the user of the AbstractLobbyRequest gets
-     * set correctly during setting new lobbyName and user of the request
-     *
-     * @since 2023-05-14
-     */
-    @Test
-    void setAbstractLobbyNameAndUser() {
-        AbstractLobbyRequest request = new AbstractLobbyRequest(lobbyName, user);
-
-        assertEquals(lobbyName, request.getName());
-        assertEquals(user, request.getUser());
-
-        request.setName("Test1");
-        request.setUser(user1);
-
-        assertEquals("Test1", request.getName());
-        assertEquals(user1, request.getUser());
-    }
-
 }

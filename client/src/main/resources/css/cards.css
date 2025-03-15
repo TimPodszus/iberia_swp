@@ -1,0 +1,9 @@
+.card {
+    -fx-border-color: black;
+    -fx-border-width: 1;
+}
+
+.card-selected {
+    -fx-border-color: #77E44C;
+    -fx-border-width: 3;
+}
