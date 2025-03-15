@@ -1095,6 +1095,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                         .add(requestingCard);
         requestingPlayer.getCards()
                         .remove(requestingCard);
+        game.setState(game.getPreviousState());
         sendServerMessageEvent(
                 request.getLobbyId(),
                 "Spieler " + event.getRequestingPlayer() + " und " + event.getTargetPlayer() + "haben " + "Karten getauscht"

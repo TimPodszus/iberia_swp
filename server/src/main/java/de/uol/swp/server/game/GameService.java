@@ -788,14 +788,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
 
     @Subscribe
     public void onCardsExchangeRequest(CardsExchangeRequest request) {
-        gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(request.getLobbyId()),
-                new BoardUpdateEvent(
-                        request.getLobbyId(),
-                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
-                )
-        );
 
         LOG.debug("Got CardsExchangeRequest for lobby {}", request.getLobbyId());
         String requestingPlayer = request.getRequestingPlayer();
@@ -810,7 +802,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
                 ICardDTO requestingPlayerCard = map.get(requestingPlayer);
                 ICardDTO otherPlayerCard = map.get(otherPlayer);
 
-
                 SwapCardsConfirmationEvent event = new SwapCardsConfirmationEvent(
                         request.getLobbyId(),
                         requestingPlayer,
@@ -824,14 +815,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
                                                        .orElseThrow(() -> new SessionNotFoundException(
                                                                "Session not found"));
                 List<Session> sessionList = List.of(session);
-                gameManagement.lockGameInWaitForConfirmation(request.getLobbyId());
-                sendToAllInLobby(
-                        lobbyManagement.getLobby(request.getLobbyId()),
-                        new BoardUpdateEvent(
-                                request.getLobbyId(),
-                                GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
-                        )
-                );
                 event.setReceiver(sessionList);
                 bus.post(event);
             } else {
@@ -860,11 +843,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
             );
 
         }
-        gameManagement.lockGameInWaitForConfirmation(event.getLobbyId());
-        sendToAllInLobby(
-                lobbyManagement.getLobby(event.getLobbyId()),
-                new BoardUpdateEvent(event.getLobbyId(), GameMapper.toDTO(game))
-        );
         Session session = authenticationService.getSession(game.getPlayer(event.getUsername())
                                                                .getUser())
                                                .orElseThrow(() -> new SessionNotFoundException("Session not found"));
@@ -881,19 +859,6 @@ public class GameService extends AbstractService implements GameStateChangeListe
     @Subscribe
     public void onSwapCardsConfirmedRequest(SwapCardsConfirmedRequest request) {
         LOG.debug("Got SwapCardsConfirmedRequest for lobby {}", request.getLobbyId());
-        gameManagement.unlockGameInWaitForConfirmation(request.getLobbyId());
-        LOG.debug(
-                "GameState is now {}",
-                gameManagement.getGame(request.getLobbyId())
-                              .getState()
-        );
-        sendToAllInLobby(
-                lobbyManagement.getLobby(request.getLobbyId()),
-                new BoardUpdateEvent(
-                        request.getLobbyId(),
-                        GameMapper.toDTO(gameManagement.getGame(request.getLobbyId()))
-                )
-        );
         gameManagement.swapCards(request);
         gameManagement.getGame(request.getLobbyId())
                       .setState(new PlayerTurnState());
