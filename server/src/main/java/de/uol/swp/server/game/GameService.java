@@ -347,7 +347,7 @@ public class GameService extends AbstractService implements GameStateChangeListe
         LOG.info("[LobbyID: {}] Asked player if he wants to be picked up", lobbyId);
         sendServerMessageEvent(
                 lobbyId,
-                "Spieler " + sourcePlayer + " bietet eine Mitfahrgelegenheit nach " + destination.getName() + " an."
+                "Spieler " + sourcePlayer + " bietet eine Mitfahrgelegenheit nach " + destination.getName().getDisplayName() + " an."
         );
         gameManagement.lockGameInWaitForConfirmation(lobbyId);
     }

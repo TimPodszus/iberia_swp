@@ -22,7 +22,10 @@ import de.uol.swp.common.game.*;
 import de.uol.swp.common.game.dto.IGameDTO;
 import de.uol.swp.common.game.message.AbstractGameResponse;
 import de.uol.swp.common.game.message.event.*;
+import de.uol.swp.common.game.message.request.CardExchangeConfirmationRequest;
+import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
 import de.uol.swp.common.game.message.response.AvailableActionsResponse;
+import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
 import de.uol.swp.common.infection.IInfectionDTO;
 import de.uol.swp.common.plague.dto.IPlagueDTO;
 import de.uol.swp.common.plague.message.response.AvailablePlaguesResponse;
@@ -70,6 +73,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static de.uol.swp.client.game.ConfirmationDialog.showConfirmationDialog;
 
 /**
  * Presenter class for the game screen.
@@ -2187,6 +2192,52 @@ public class GamePresenter extends AbstractPresenter {
             result.ifPresent(card -> {
                 LOG.debug("[LobbyId: {}] Player selected card {}", lobbyId, card.getId());
                 gameService.sendGetCardRequest(lobbyId, card.getId());
+            });
+        });
+    }
+
+    /**
+     * Handles the CardExchangeConfirmationEvent.
+     * This method is called when a CardExchangeConfirmationEvent is posted to the EventBus.
+     * It shows a confirmation dialog to the user asking if they want to give a card to another player.
+     * Based on the user's response, it sends a CardExchangeConfirmationRequest.
+     *
+     * @param request the CardExchangeConfirmationEvent containing the details of the card exchange request
+     */
+    @Subscribe
+    public void onCardExchangeConfirmationEvent(CardExchangeConfirmationEvent request) {
+        if (!request.getLobbyId()
+                  .equals(lobbyId)) {
+            return;
+        }
+        LOG.debug("Received CardExchangeConfirmationRequest: {}", request);
+        Platform.runLater(() -> {
+            boolean accepted = showConfirmationDialog("Möchtest du die Karte " + request.getRequestingCard()
+                                                                                        .getTitle() + " " + "mit " + request.getGivingCardPlayer()
+                                                                                                                            .getUsername() + " teilen?");
+            CardExchangeConfirmationRequest response = new CardExchangeConfirmationRequest(
+                    request.getLobbyId(),
+                    accepted,
+                    request
+            );
+            LOG.debug("Sending CardExchangeConfirmationResponse: {}", response);
+            eventBus.post(response);
+        });
+    }
+
+    @Subscribe
+    public void onAvailableShareKnowledgePlayersResponse(AvailableShareKnowledgePlayersResponse response) {
+        if (!response.getLobbyId()
+                    .equals(lobbyId)) {
+            return;
+        }
+        LOG.debug("Current player has the current city card");
+        Platform.runLater(() -> {
+            PlayerSelectionForCardExchangeDialog dialog = new PlayerSelectionForCardExchangeDialog(response.getPlayers());
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(player -> {
+                LOG.debug("Player selected: {}", player);
+                eventBus.post(new ShareKnowledgeRequest(response.getLobbyId(), player));
             });
         });
     }

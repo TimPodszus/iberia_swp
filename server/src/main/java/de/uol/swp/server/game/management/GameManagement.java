@@ -991,10 +991,7 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
         } catch (GameException e) {
             LOG.error("Error when giving Card");
         }
-
-
     }
-
 
     @Override
     public Map<String, List<ICardDTO>> getAvailableCardsForPoliticianSecondRoleAction(String lobbyId) {
@@ -1078,8 +1075,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
             );
             game.getPlayerCardDiscardPile()
                 .remove(cardFromDiscardPile);
-            game.getPlayerCardDiscardPile()
-                .add(cardToDiscard);
             ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
 
             sendServerMessageEvent(
