@@ -5,6 +5,7 @@ import de.uol.swp.common.city.ICityDTO;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.server.AbstractManagement;
 import de.uol.swp.server.cards.data.CityCard;
+import de.uol.swp.server.chat.ServerMessageProvider;
 import de.uol.swp.server.city.CityMapper;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.game.data.IGame;
@@ -114,11 +115,14 @@ public class PlagueManagement extends AbstractManagement implements IPlagueManag
 
             playerTurnState.reduceActionsRemaining(game);
 
+            sendServerMessageEvent(
+                    game.getGameId(),
+                    ServerMessageProvider.researchPlagueMessage(game.getCurrentPlayer(), plague.getName())
+            );
         } else {
             LOG.error("Invalid game state {} for researching a plague.", game.getState());
             throw new IllegalGameStateException("Invalid game state for treating plague.");
         }
-
     }
 
     /**

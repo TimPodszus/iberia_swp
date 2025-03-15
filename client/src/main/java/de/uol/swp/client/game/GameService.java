@@ -2,7 +2,6 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
-import de.uol.swp.client.game.objects.dialogs.PlayerSelectionForCardExchangeDialog;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.request.GetCardRequest;
@@ -13,10 +12,8 @@ import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.event.SwapCardsConfirmationEvent;
 import de.uol.swp.common.game.message.request.*;
-import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
 import de.uol.swp.common.game.message.response.ExchangeOfLettersResponse;
 import de.uol.swp.common.game.message.response.PoliticianSecondRoleActionResponse;
 import de.uol.swp.common.plague.message.request.AvailablePlaguesRequest;
@@ -145,47 +142,6 @@ public class GameService {
     public void sendAvailableActionsRequest(String lobbyId) {
         LOG.debug("[LobbyId: {}] Sending AvailableActionsRequest", lobbyId);
         eventBus.post(new AvailableActionsRequest(lobbyId));
-    }
-
-
-    /**
-     * Handles the CardExchangeConfirmationEvent.
-     * This method is called when a CardExchangeConfirmationEvent is posted to the EventBus.
-     * It shows a confirmation dialog to the user asking if they want to give a card to another player.
-     * Based on the user's response, it sends a CardExchangeConfirmationRequest.
-     *
-     * @param request the CardExchangeConfirmationEvent containing the details of the card exchange request
-     */
-    @Subscribe
-    public void onCardExchangeConfirmationEvent(CardExchangeConfirmationEvent request) {
-        LOG.debug("Received CardExchangeConfirmationRequest: {}", request);
-        Platform.runLater(() -> {
-            boolean accepted = showConfirmationDialog("Möchtest du die Karte " + request.getRequestingCard()
-                                                                                        .getTitle() + " " + "mit " + request.getGivingCardPlayer()
-                                                                                                                            .getUsername() + " teilen?");
-            CardExchangeConfirmationRequest response = new CardExchangeConfirmationRequest(
-                    request.getLobbyId(),
-                    accepted,
-                    request
-            );
-            LOG.debug("Sending CardExchangeConfirmationResponse: {}", response);
-            eventBus.post(response);
-        });
-    }
-
-    @Subscribe
-    public void onAvailableShareKnowledgePlayersResponse(AvailableShareKnowledgePlayersResponse response) {
-        LOG.debug("Current player has the current city card");
-        Platform.runLater(() -> {
-            PlayerSelectionForCardExchangeDialog dialog = new PlayerSelectionForCardExchangeDialog(response.getPlayers());
-            Optional<String> result = dialog.showAndWait();
-            result.ifPresent(player -> {
-                LOG.debug("Player selected: {}", player);
-                eventBus.post(new ShareKnowledgeRequest(response.getLobbyId(), player));
-            });
-        });
-
-
     }
 
     /**
