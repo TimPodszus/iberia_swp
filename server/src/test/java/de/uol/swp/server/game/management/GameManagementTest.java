@@ -17,7 +17,6 @@ import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.cards.data.eventcards.OnTheMoveDayAndNightEventCard;
 import de.uol.swp.server.cards.data.eventcards.StateMobilizationEventCard;
-import de.uol.swp.server.cards.management.CardNotFoundException;
 import de.uol.swp.server.city.CityRepository;
 import de.uol.swp.server.city.data.ICity;
 import de.uol.swp.server.city.management.CityManagement;
@@ -26,10 +25,12 @@ import de.uol.swp.server.connection.ConnectionRepository;
 import de.uol.swp.server.connection.data.Connection;
 import de.uol.swp.server.connection.data.IConnection;
 import de.uol.swp.server.connection.management.IConnectionManagement;
-import de.uol.swp.server.game.GameService;
 import de.uol.swp.server.game.data.Game;
 import de.uol.swp.server.game.data.IGame;
-import de.uol.swp.server.game.exceptions.*;
+import de.uol.swp.server.game.exceptions.GameException;
+import de.uol.swp.server.game.exceptions.GameInitializationException;
+import de.uol.swp.server.game.exceptions.IllegalGameStateException;
+import de.uol.swp.server.game.exceptions.LobbyIsEmptyException;
 import de.uol.swp.server.game.states.*;
 import de.uol.swp.server.game.store.GameStore;
 import de.uol.swp.server.plague.management.IPlagueManagement;
@@ -569,7 +570,8 @@ class GameManagementTest {
         when(cityCard.getCity()).thenReturn(city);
         when(player.getRole()).thenReturn(new Politician());
         when(player.getUser()).thenReturn(user);
-        when(connectionManagement.getBuildableTrainTracks("testLobby", 1)).thenReturn(List.of(new Connection(1,
+        when(connectionManagement.getBuildableTrainTracks("testLobby", 1)).thenReturn(List.of(new Connection(
+                1,
                 List.of(ALICANTE, ALBACETE),
                 true
         )));
@@ -577,7 +579,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(6, actions.size());
+        assertEquals(3, actions.size());
     }
 
     @Test
@@ -609,7 +611,7 @@ class GameManagementTest {
         when(game.getState()).thenReturn(new PlayerTurnState());
         List<GameActions> actions = gameManagement.getAvailableActions(lobbyCode, user);
 
-        assertEquals(4, actions.size());
+        assertEquals(3, actions.size());
     }
 
 
@@ -863,7 +865,8 @@ class GameManagementTest {
 
         assertEquals(
                 destinationCity.getName(),
-                player.getCurrentPosition().getName(),
+                player.getCurrentPosition()
+                      .getName(),
                 "Expected player1 to have moved to Palma de Mallorca"
         );
         assertEquals(
@@ -1028,98 +1031,6 @@ class GameManagementTest {
     }
 
 
-    //    /**
-    //     * Tests the shareKnowledgeRequestAccepted method.
-    //     * Ensures that the knowledge sharing between players is handled correctly.
-    //     *
-    //     * @throws PlayerManagementException if there is an error in player management
-    //     */
-    //    @Test
-    //    void shareKnowledgeRequestAcceptedTest() throws PlayerManagementException {
-    //        IGame notMockedGame = new Game(
-    //                "testGame",
-    //                mock(RoleRepository.class),
-    //                mock(CityRepository.class),
-    //                mock(RegionRepository.class),
-    //                mock(ConnectionRepository.class),
-    //                mock(PlagueRepository.class),
-    //                mock(CardRepository.class),
-    //                1,
-    //                0,
-    //                14,
-    //                20,
-    //                new ArrayList<>(),
-    //                new ArrayList<>(),
-    //                new ArrayList<>(),
-    //                new ArrayList<>(),
-    //                new ArrayList<>(),
-    //                0,
-    //                new PlayerTurnState(),
-    //                mock(IGameState.class),
-    //                1,
-    //                mock(GameStateChangeListener.class)
-    //        );
-    //        IPlayer currentPlayer = new Player(new User("test", "test"));
-    //        ICard currentPlayerCard = new CityCard(1, "test", mock(ICity.class));
-    //        currentPlayer.getCards()
-    //                     .add(currentPlayerCard);
-    //
-    //        IPlayer targetPlayer = new Player(new User("test2", "test2"));
-    //        ICard targetPlayerCard = new CityCard(2, "test2", mock(ICity.class));
-    //        targetPlayer.getCards()
-    //                    .add(targetPlayerCard);
-    //
-    //        String lobbyId = "testLobby";
-    //        ILobbyManagement lobbyManagement = mock(ILobbyManagement.class);
-    //        GameStore.getInstance()
-    //                 .addGame(lobbyId, notMockedGame);
-    //
-    //        when(playerManagement.getCard("testLobby", "test", 1)).thenReturn(currentPlayerCard);
-    //        when(playerManagement.getCard("testLobby", "test2", 2)).thenReturn(targetPlayerCard);
-    //
-    //        GameService gameService = mock(GameService.class);
-    //        ShareKnowledgeEvent event = new ShareKnowledgeEvent(
-    //                lobbyId,
-    //                currentPlayer.getUser()
-    //                             .getUsername(),
-    //                targetPlayer.getUser()
-    //                            .getUsername(),
-    //                CardMapper.toDTO(currentPlayerCard),
-    //                CardMapper.toDTO(targetPlayerCard)
-    //        );
-    //
-    //        gameManagement.shareKnowledgeRequestAccepted(currentPlayer, targetPlayer, lobbyId, event, gameService);
-    //        System.out.println("Current Player Cards: " + currentPlayer.getCards() + currentPlayerCard.getTitle());
-    //        System.out.println("Target Player Cards: " + targetPlayer.getCards() + targetPlayerCard.getTitle());
-    //
-    //        assert (currentPlayer.getCards()
-    //                             .contains(targetPlayerCard));
-    //        assert (targetPlayer.getCards()
-    //                            .contains(currentPlayerCard));
-    //        verify(gameService, times(1)).sendToAllInLobby(any(), any());
-    //    }
-
-    @Test
-    void testShareKnowledgeWithDiscardPile() throws PlayerManagementException, CardNotFoundException {
-        // Arrange
-        int cardToDiscardID = 1;
-        int cardToReceiveID = 2;
-        String lobbyId = "lobbyCode";
-        GameService gameService = mock(GameService.class);
-        IPlayer player1 = new Player(new User("user1", "pass1"), "gameId");
-        ICard discardCard = new CityCard(2, "cardToReceive", mock(ICity.class));
-        ArrayList<ICard> discardPile = new ArrayList<>();
-        discardPile.add(discardCard);
-        when(game.getCurrentPlayer()).thenReturn(player1);
-        when(game.getPlayerCardDiscardPile()).thenReturn(discardPile);
-        when(game.getState()).thenReturn(new PlayerTurnState());
-
-
-        gameManagement.shareKnowledgeWithDiscardPile(cardToDiscardID, cardToReceiveID, lobbyId, gameService);
-
-        verify(gameService).sendBoardUpdateAfterCardExchangeWithDiscardPile(lobbyId);
-    }
-
     @Test
     void testEndTurn() throws IllegalGameStateException {
         IPlayer player = mock(IPlayer.class);
@@ -1156,7 +1067,7 @@ class GameManagementTest {
     }
 
     @Test
-    void testRemovePlayer_gameEnds() throws LobbyIsEmptyException{
+    void testRemovePlayer_gameEnds() throws LobbyIsEmptyException {
         IPlayer player = mock(IPlayer.class);
         IPlayer player2 = mock(IPlayer.class);
         IUser user = new User("test", "test");
@@ -1188,14 +1099,22 @@ class GameManagementTest {
         gameManagement.removePlayer(LOBBY_CODE, user);
 
         assertEquals(2, discardPile.size());
-        assertTrue(player.getCards().isEmpty());
-        assertEquals(2, game.getPlayers().size());
+        assertTrue(player.getCards()
+                         .isEmpty());
+        assertEquals(
+                2,
+                game.getPlayers()
+                    .size()
+        );
     }
 
     @Test
     void testRemoveGame() {
         gameManagement.removeGame(LOBBY_CODE);
 
-        assertNull(GameStore.getInstance().getGame(LOBBY_CODE));
+        assertNull(GameStore.getInstance()
+                            .getGame(LOBBY_CODE));
     }
+
+
 }

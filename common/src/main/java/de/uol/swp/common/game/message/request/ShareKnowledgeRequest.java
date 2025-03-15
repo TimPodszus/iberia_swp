@@ -1,7 +1,6 @@
 package de.uol.swp.common.game.message.request;
 
 import de.uol.swp.common.game.message.AbstractGameRequest;
-import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
 import lombok.Getter;
 
 import java.util.Objects;
@@ -11,20 +10,16 @@ import java.util.Objects;
  */
 @Getter
 public class ShareKnowledgeRequest extends AbstractGameRequest {
-    ShareKnowledgeEvent shareKnowledgeEvent;
-    boolean success;
+    String username;
 
     /**
      * Constructs a new ShareKnowledgeRequest.
      *
-     * @param lobbyId             the ID of the lobby
-     * @param success             whether the knowledge sharing was successful
-     * @param shareKnowledgeEvent the event associated with the knowledge sharing
+     * @param lobbyId the ID of the lobby
      */
-    public ShareKnowledgeRequest(String lobbyId, boolean success, ShareKnowledgeEvent shareKnowledgeEvent) {
+    public ShareKnowledgeRequest(String lobbyId, String username) {
         super(lobbyId);
-        this.success = success;
-        this.shareKnowledgeEvent = shareKnowledgeEvent;
+        this.username = username;
     }
 
     /**
@@ -42,10 +37,9 @@ public class ShareKnowledgeRequest extends AbstractGameRequest {
             return false;
         }
         ShareKnowledgeRequest that = (ShareKnowledgeRequest) o;
-        return success == that.success && Objects.equals(getLobbyId(), that.getLobbyId()) && Objects.equals(
-                shareKnowledgeEvent,
-                that.shareKnowledgeEvent
-        );
+        return Objects.equals(getLobbyId(), that.getLobbyId());
+
+
     }
 
     /**
@@ -55,15 +49,8 @@ public class ShareKnowledgeRequest extends AbstractGameRequest {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(getLobbyId(), success, shareKnowledgeEvent);
-    }
-
-    /**
-     * Checks if the knowledge sharing was accepted.
-     *
-     * @return true if the knowledge sharing was successful, false otherwise
-     */
-    public boolean isAccepted() {
-        return success;
+        return Objects.hash(getLobbyId());
     }
 }
+
+
