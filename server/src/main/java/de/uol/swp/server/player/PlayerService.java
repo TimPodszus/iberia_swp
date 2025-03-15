@@ -32,8 +32,6 @@ import de.uol.swp.server.lobby.data.ILobby;
 import de.uol.swp.server.lobby.management.ILobbyManagement;
 import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.data.IPlayer;
-import de.uol.swp.server.player.data.IPlayer;
-import de.uol.swp.server.player.data.CardsAmountChangeListener;
 import de.uol.swp.server.player.management.IPlayerManagement;
 import de.uol.swp.server.usermanagement.IUser;
 import de.uol.swp.server.usermanagement.UserMapper;
@@ -363,6 +361,9 @@ public class PlayerService extends AbstractService implements CardsAmountChangeL
         LOG.error("[LobbyId: {}] Session not present", player.getGameId());
         List<IRegionDTO> regions = playerManagement.determineRegionsForNurse(player, oldPosition, newPosition);
         IGame game = playerManagement.getGame(player.getGameId());
+        if (!(game.getState() instanceof PlayerTurnState || game.getState() instanceof WaitForPositioning)) {
+            return;
+        }
         game.setState(new PlacePreventionMarkerState());
         LOG.debug("[LobbyId: {}] Regions for nurse determined successfully", player.getGameId());
         RegionsForPreventionMarkerEvent event = new RegionsForPreventionMarkerEvent(
