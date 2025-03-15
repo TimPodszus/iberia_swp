@@ -2,6 +2,7 @@ package de.uol.swp.client.game;
 
 import com.google.inject.Inject;
 import de.uol.swp.client.game.objects.dialogs.CardExchangeDialog;
+import de.uol.swp.client.game.objects.dialogs.PlayerSelectionForCardExchangeDialog;
 import de.uol.swp.common.cards.data.CityCardDTO;
 import de.uol.swp.common.cards.data.ICardDTO;
 import de.uol.swp.common.cards.request.GetCardRequest;
@@ -12,12 +13,13 @@ import de.uol.swp.common.connection.request.AvailableDestinationsRequest;
 import de.uol.swp.common.connection.request.BuildableTrainTracksRequest;
 import de.uol.swp.common.game.PlagueName;
 import de.uol.swp.common.game.dto.IGameDTO;
-import de.uol.swp.common.game.message.event.ShareKnowledgeEvent;
+import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.*;
+import de.uol.swp.common.game.message.response.AvailableShareKnowledgePlayersResponse;
+import de.uol.swp.common.game.message.response.PoliticianSecondRoleActionResponse;
 import de.uol.swp.common.plague.message.request.AvailablePlaguesRequest;
 import de.uol.swp.common.plague.message.request.ResearchPlagueRequest;
 import de.uol.swp.common.plague.message.request.TreatPlagueRequest;
-import de.uol.swp.common.player.IPlayerDTO;
 import de.uol.swp.common.player.message.request.*;
 import de.uol.swp.common.region.message.request.AvailableRegionsRequest;
 import de.uol.swp.common.region.message.request.WaterTreatmentEventRequest;
@@ -29,7 +31,9 @@ import org.apache.logging.log4j.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static de.uol.swp.client.game.ConfirmationDialog.showConfirmationDialog;
 
@@ -55,7 +59,7 @@ public class GameService {
      * Requests available destinations for the specified city.
      *
      * @param lobbyId the lobby code of the game for which available destinations are to be requested
-     * @param cityId    the ID of the city for which available destinations are to be requested
+     * @param cityId  the ID of the city for which available destinations are to be requested
      */
     public void requestAvailableDestination(String lobbyId, int cityId) {
         LOG.debug("[LobbyId: {}] Sending requestAvailableDestination", lobbyId);
@@ -122,8 +126,9 @@ public class GameService {
 
     /**
      * Sends a Request to set the position of the player.
+     *
      * @param lobbyId the ID of the lobby
-     * @param id the ID of the player
+     * @param id      the ID of the player
      */
     public void setPosition(String lobbyId, int id) {
         LOG.debug("[LobbyId: {}] Sending setPosition", lobbyId);
@@ -140,35 +145,52 @@ public class GameService {
         eventBus.post(new AvailableActionsRequest(lobbyId));
     }
 
+
     /**
-     * Handles the ShareKnowledgeEvent.
+     * Handles the CardExchangeConfirmationEvent.
+     * This method is called when a CardExchangeConfirmationEvent is posted to the EventBus.
+     * It shows a confirmation dialog to the user asking if they want to give a card to another player.
+     * Based on the user's response, it sends a CardExchangeConfirmationRequest.
      *
-     * @param event the ShareKnowledgeEvent containing information about the knowledge sharing
+     * @param request the CardExchangeConfirmationEvent containing the details of the card exchange request
      */
     @Subscribe
-    public void onShareKnowledgeEvent(ShareKnowledgeEvent event) {
-        LOG.debug("Received ShareKnowledgeEvent");
+    public void onCardExchangeConfirmationEvent(CardExchangeConfirmationEvent request) {
+        LOG.debug("Received CardExchangeConfirmationRequest: {}", request);
         Platform.runLater(() -> {
-            boolean accepted = showConfirmationDialog("Do you want to share the card " + event.getTargetPlayerCard()
-                                                                                              .getTitle() + " " + "with " + event.getTargetPlayer() + " in exchange for " + event.getCurrentPlayerCard()
-                                                                                                                                                                                 .getTitle() + "?");
-            ShareKnowledgeRequest request = new ShareKnowledgeRequest(event.getLobbyId(), accepted, event);
-            request.setMessageContext(event.getMessageContext()
-                                           .orElse(null));
-            LOG.trace(
-                    "Posting ShareKnowledgeRequest: {} with MessageContext {} ",
-                    request,
-                    request.getMessageContext()
+            boolean accepted = showConfirmationDialog("Möchtest du die Karte " + request.getRequestingCard()
+                                                                                        .getTitle() + " " + "mit " + request.getGivingCardPlayer()
+                                                                                                                            .getUsername() + " teilen?");
+            CardExchangeConfirmationRequest response = new CardExchangeConfirmationRequest(
+                    request.getLobbyId(),
+                    accepted,
+                    request
             );
-            eventBus.post(request);
+            LOG.debug("Sending CardExchangeConfirmationResponse: {}", response);
+            eventBus.post(response);
         });
+    }
+
+    @Subscribe
+    public void onAvailableShareKnowledgePlayersResponse(AvailableShareKnowledgePlayersResponse response) {
+        LOG.debug("Current player has the current city card");
+        Platform.runLater(() -> {
+            PlayerSelectionForCardExchangeDialog dialog = new PlayerSelectionForCardExchangeDialog(response.getPlayers());
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(player -> {
+                LOG.debug("Player selected: {}", player);
+                eventBus.post(new ShareKnowledgeRequest(response.getLobbyId(), player));
+            });
+        });
+
+
     }
 
     /**
      * Sends a request to get buildable train tracks for the specified city.
      *
      * @param lobbyId the code of the lobby
-     * @param cityId    the ID of the city
+     * @param cityId  the ID of the city
      */
     public void requestBuildableTrainTracks(String lobbyId, int cityId) {
         LOG.debug("[LobbyId: {}] Sending requestBuildableTrainTracks", lobbyId);
@@ -178,7 +200,7 @@ public class GameService {
     /**
      * Sends a request to build a train track.
      *
-     * @param lobbyId    the code of the lobby
+     * @param lobbyId      the code of the lobby
      * @param connectionId the ID of the connection
      */
     public void buildTrainTrack(String lobbyId, int connectionId) {
@@ -190,7 +212,7 @@ public class GameService {
      * Sends a request to share a ride to the specified city.
      *
      * @param lobbyId the code of the lobby
-     * @param cityId    the ID of the city to which the ride is to be shared
+     * @param cityId  the ID of the city to which the ride is to be shared
      */
     public void sendShareRideRequest(String lobbyId, int cityId) {
         LOG.debug("[LobbyId: {}] Sending ShareRideRequest", lobbyId);
@@ -225,111 +247,15 @@ public class GameService {
      */
     public void sendShareKnowledgeRequest(IGameDTO gameDTO, String lobbyId) {
         LOG.debug("Share knowledge button is selected");
-        if (gameDTO.getCurrentPlayer()
-                   .getCards()
-                   .stream()
-                   .allMatch(card -> card.getId() != gameDTO.getCurrentPlayer()
-                                                            .getCurrentPosition()
-                                                            .getId())) {
-            LOG.debug("Current player has cards that are not from the current position");
-            IPlayerDTO playerWithCityCard = gameDTO.getPlayers()
-                                                   .stream()
-                                                   .filter(playerDTO -> playerDTO.getCards()
-                                                                                 .stream()
-                                                                                 .anyMatch(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                                                                          .getCurrentPosition()
-                                                                                                                          .getId()))
-                                                   .findFirst()
-                                                   .orElse(null);
-            if (playerWithCityCard != null) {
-                LOG.debug("Found player with city card: {}", playerWithCityCard.getUsername());
-                Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
-                List<ICardDTO> playerWithCityCardOnlyCityCard = new ArrayList<>();
-                playerWithCityCardOnlyCityCard.add(playerWithCityCard.getCards()
-                                                                     .stream()
-                                                                     .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                                                            .getCurrentPosition()
-                                                                                                            .getId())
-                                                                     .findFirst()
-                                                                     .orElseThrow());
-                cardsToExchange.put(
-                        gameDTO.getCurrentPlayer()
-                               .getUsername(),
-                        gameDTO.getCurrentPlayer()
-                               .getCards()
-                );
-                cardsToExchange.put(playerWithCityCard.getUsername(), playerWithCityCardOnlyCityCard);
-                LOG.debug(
-                        "Player {} can select cards now from the following list {}",
-                        gameDTO.getCurrentPlayer()
-                               .getUsername(),
-                        cardsToExchange
-                );
-                CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
-                        gameDTO.getCurrentPlayer()
-                               .getUsername(), cardsToExchange
-                );
-                Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
-                result.ifPresent(map -> {
-                    LOG.debug("Card exchange result: {}", map);
-                    eventBus.post(new CardsExchangeRequest(map, lobbyId));
-                });
-                LOG.trace("Card Exchange Request sent to {}", playerWithCityCard.getUsername());
-            } else {
-                LOG.debug("No player found with city card");
-            }
-        } else {
-            LOG.debug("Current Player has currentCity Card");
-            Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
-            List<IPlayerDTO> playersInSameCity = gameDTO.getPlayers()
-                                                        .stream()
-                                                        .filter(playerDTO -> playerDTO.getCurrentPosition()
-                                                                                      .getId() == gameDTO.getCurrentPlayer()
-                                                                                                         .getCurrentPosition()
-                                                                                                         .getId())
-                                                        .toList();
-            List<ICardDTO> cardOfCurrentCity = new ArrayList<>();
-            for (IPlayerDTO playerDTO : playersInSameCity) {
-                if (playerDTO.getUsername()
-                             .equals(gameDTO.getCurrentPlayer()
-                                            .getUsername())) {
-
-                    cardOfCurrentCity.add(gameDTO.getCurrentPlayer()
-                                                 .getCards()
-                                                 .stream()
-                                                 .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                                        .getCurrentPosition()
-                                                                                        .getId())
-                                                 .findFirst()
-                                                 .orElseThrow());
-                } else {
-                    cardsToExchange.put(playerDTO.getUsername(), playerDTO.getCards());
-                }
-            }
-            cardsToExchange.put(
-                    gameDTO.getCurrentPlayer()
-                           .getUsername(), cardOfCurrentCity
-            );
-            LOG.debug("Players in the same city: {}", playersInSameCity);
-            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
-                    gameDTO.getCurrentPlayer()
-                           .getUsername(), cardsToExchange
-            );
-            Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
-            result.ifPresent(map -> {
-                LOG.debug("Card exchange result: {}", map);
-                eventBus.post(new CardsExchangeRequest(map, lobbyId));
-            });
-            LOG.trace("Card Exchange Request sent");
-        }
+        eventBus.post(new de.uol.swp.common.game.message.request.AvailableShareKnowledgePlayersRequest(lobbyId));
     }
 
 
     /**
      * Sends a request to perform water treatment in the specified region.
      *
-     * @param lobbyId the code of the lobby
-     * @param regionId  the ID of the region where the water treatment is to be performed
+     * @param lobbyId  the code of the lobby
+     * @param regionId the ID of the region where the water treatment is to be performed
      */
     public void sendWaterTreatmentRegionRequest(String lobbyId, int regionId) {
         LOG.debug("[LobbyId: {}] Sending WaterTreatmentRegionRequest", lobbyId);
@@ -339,10 +265,10 @@ public class GameService {
     /**
      * Sends a request to perform water treatment in the specified region.
      *
-     * @param lobbyId the code of the lobby
-     * @param regionId  the ID of the region where the water treatment is to be performed
-     * @param amount    the amount of water treatments to be performed
-     * @param card      the city card to be used for the water treatment
+     * @param lobbyId  the code of the lobby
+     * @param regionId the ID of the region where the water treatment is to be performed
+     * @param amount   the amount of water treatments to be performed
+     * @param card     the city card to be used for the water treatment
      */
     public void sendWaterTreatmentRequest(String lobbyId, int regionId, int amount, CityCardDTO card) {
         LOG.debug("[LobbyId: {}] Sending WaterTreatmentRequest", lobbyId);
@@ -428,61 +354,6 @@ public class GameService {
         eventBus.post(new TreatPlagueRequest(lobbyId, cityId, selectedPlague));
     }
 
-    public void politicianActionTradeWithDiscardPile(IGameDTO gameDTO, String lobbyId) {
-        boolean playerHasCityCard = gameDTO.getCurrentPlayer()
-                                           .getCards()
-                                           .stream()
-                                           .anyMatch(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                                    .getCurrentPosition()
-                                                                                    .getId());
-
-        Map<String, List<ICardDTO>> cardsToExchange = new HashMap<>();
-
-        if (playerHasCityCard) {
-            gameDTO.getCurrentPlayer()
-                   .getCards()
-                   .stream()
-                   .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                          .getCurrentPosition()
-                                                          .getId())
-                   .findFirst()
-                   .ifPresent(card -> {
-                       List<ICardDTO> cardOfCurrentCity = new ArrayList<>();
-                       cardOfCurrentCity.add(card);
-                       cardsToExchange.put(
-                               gameDTO.getCurrentPlayer()
-                                      .getUsername(), cardOfCurrentCity
-                       );
-                   });
-            cardsToExchange.put("Discard Pile", gameDTO.getPlayerCardDiscardPile());
-        } else {
-            cardsToExchange.put(
-                    gameDTO.getCurrentPlayer()
-                           .getUsername(),
-                    gameDTO.getCurrentPlayer()
-                           .getCards()
-            );
-            cardsToExchange.put(
-                    "Discard Pile",
-                    gameDTO.getPlayerCardDiscardPile()
-                           .stream()
-                           .filter(card -> card.getId() == gameDTO.getCurrentPlayer()
-                                                                  .getCurrentPosition()
-                                                                  .getId())
-                           .toList()
-            );
-        }
-
-        CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
-                gameDTO.getCurrentPlayer()
-                       .getUsername(), cardsToExchange
-        );
-        Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
-        result.ifPresent(map -> {
-            LOG.debug("Card exchange result: {}", map);
-            eventBus.post(new CardsExchangeWithDiscardPileRequest(map, lobbyId));
-        });
-    }
 
     /**
      * Posts a request to research a plague for the given game lobby.
@@ -518,7 +389,7 @@ public class GameService {
     /**
      * Sends a Request to place a prevention marker in the specified region.
      *
-     * @param lobbyId The ID of the lobby where the prevention marker is to be placed
+     * @param lobbyId  The ID of the lobby where the prevention marker is to be placed
      * @param regionId The ID of the region where the prevention marker is to be placed
      */
     public void sendPlacePreventionMarkerRequest(String lobbyId, int regionId) {
@@ -536,6 +407,7 @@ public class GameService {
         eventBus.post(new HospitalFoundationEventRequest(lobbyId, cityId));
     }
 
+
     /**
      * Sends a request to get a card from the card stack.
      *
@@ -545,5 +417,47 @@ public class GameService {
     public void sendGetCardRequest(String lobbyId, int cardId) {
         eventBus.post(new GetCardRequest(lobbyId, cardId));
         LOG.info("[Lobby: {}] Sent GetCardRequest", lobbyId);
+    }
+
+
+    /**
+     * Sends a request to give a card to a player.
+     *
+     * @param lobbyId the ID of the lobby where the request is to be sent
+     */
+    public void politicianActionGiveCardToPlayer(String lobbyId) {
+        eventBus.post(new AvailableShareKnowledgePlayersRequest(lobbyId));
+
+    }
+
+    /**
+     * Sends a request to trade cards with the discard pile for the politician's second role action.
+     *
+     * @param gameDTO the game data transfer object containing game state information
+     * @param lobbyId the ID of the lobby where the request is to be sent
+     */
+    public void politicianActionTradeWithDiscardPile(IGameDTO gameDTO, String lobbyId) {
+        eventBus.post(new PoliticianSecondRoleActionRequest(lobbyId));
+    }
+
+    /**
+     * Handles the response for the politician's second role action.
+     *
+     * @param response the response containing the current player and the cards
+     */
+    @Subscribe
+    public void onPoliticianSecondRoleActionResponse(PoliticianSecondRoleActionResponse response) {
+        LOG.debug("Received PoliticianSecondRoleActionResponse: {}", response);
+        Platform.runLater(() -> {
+            CardExchangeDialog cardExchangeDialog = new CardExchangeDialog(
+                    response.getCurrentPlayer(),
+                    response.getCards()
+            );
+            Optional<Map<String, ICardDTO>> result = cardExchangeDialog.showAndWait();
+            result.ifPresent(map -> {
+                LOG.debug("Card exchange result: {}", map);
+                eventBus.post(new CardsExchangeWithDiscardPileRequest(map, response.getLobbyId()));
+            });
+        });
     }
 }

@@ -11,29 +11,21 @@ import lombok.Getter;
 public class ShareKnowledgeEvent extends AbstractGameEvent {
     private final String currentPlayer;
     private final String targetPlayer;
-    private final ICardDTO currentPlayerCard;
-    private final ICardDTO targetPlayerCard;
+    private final ICardDTO cityCard;
+
 
     /**
      * Constructs a new ShareKnowledgeEvent.
      *
-     * @param lobbyId           the ID of the lobby where the event occurs
-     * @param currentPlayer     the player who is sharing knowledge
-     * @param targetPlayer      the player who is receiving knowledge
-     * @param currentPlayerCard the card of the current player
-     * @param targetPlayerCard  the card of the target player
+     * @param lobbyId       the ID of the lobby where the event occurs
+     * @param currentPlayer the player who is sharing knowledge
+     * @param targetPlayer  the player who is receiving knowledge
      */
-    public ShareKnowledgeEvent(
-            String lobbyId,
-            String currentPlayer,
-            String targetPlayer,
-            ICardDTO currentPlayerCard,
-            ICardDTO targetPlayerCard
-    ) {
+    public ShareKnowledgeEvent(String lobbyId, String currentPlayer, String targetPlayer, ICardDTO cityCard) {
         super(lobbyId);
         this.currentPlayer = currentPlayer;
         this.targetPlayer = targetPlayer;
-        this.currentPlayerCard = currentPlayerCard;
-        this.targetPlayerCard = targetPlayerCard;
+        this.cityCard = cityCard;
+
     }
 }
