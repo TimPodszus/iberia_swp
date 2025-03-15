@@ -5,7 +5,7 @@ import de.uol.swp.common.game.GameActions;
 import de.uol.swp.common.game.message.event.CardExchangeConfirmationEvent;
 import de.uol.swp.common.game.message.request.CreateGameRequest;
 import de.uol.swp.common.game.message.request.PositioningRequest;
-import de.uol.swp.common.game.message.request.ShareKnowledgeRequest;
+import de.uol.swp.common.game.message.request.SwapCardsConfirmedRequest;
 import de.uol.swp.server.cards.data.ICard;
 import de.uol.swp.server.cards.data.InfectionCard;
 import de.uol.swp.server.city.data.ICity;
@@ -151,13 +151,6 @@ public interface IGameManagement {
     void giveCard(CardExchangeConfirmationEvent cardExchangeConfirmationRequest);
 
     /**
-     * Processes a share knowledge request.
-     *
-     * @param shareKnowledgeRequest the request containing details of the knowledge sharing
-     */
-    void giveCard(ShareKnowledgeRequest shareKnowledgeRequest);
-
-    /**
      * Retrieves the available cards for the politician's second role action in the specified lobby.
      *
      * @param lobbyId the ID of the lobby for which to retrieve available cards
@@ -172,5 +165,13 @@ public interface IGameManagement {
      * @param lobbyId the ID of the lobby in which the game is happening
      */
     void swapCardsWithDiscardPile(Map<String, ICardDTO> cards, String lobbyId);
+
+    /**
+     * Swaps the specified cards in the game based on the provided request.
+     *
+     * @param request the request containing details of the cards to be swapped
+     */
+    void swapCards(SwapCardsConfirmedRequest request);
+
 }
 
