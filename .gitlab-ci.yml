@@ -56,5 +56,5 @@ deploy-job:
   dependencies:
     - build-job
   only:
-    - master
+    - main
     - development
