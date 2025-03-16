@@ -971,12 +971,8 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
                                        .getUsername(),
                     requestCard
             );
-            playerManagement.discardPlayerCard(
-                    response.getLobbyId(),
-                    givingCardPlayer.getUser()
-                                    .getUsername(),
-                    requestCard.getId()
-            );
+            givingCardPlayer.getCards()
+                            .remove(requestCard);
 
             ((PlayerTurnState) game.getState()).reduceActionsRemaining(game);
             sendServerMessageEvent(
@@ -988,8 +984,6 @@ public class GameManagement extends AbstractManagement implements IGameManagemen
 
         } catch (PlayerManagementException e) {
             new StatusResponse(response.getLobbyId(), false, "Player not found");
-        } catch (GameException e) {
-            LOG.error("Error when giving Card");
         }
     }
 
